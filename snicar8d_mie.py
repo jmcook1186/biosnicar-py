@@ -9,7 +9,7 @@
     import xarray as xr
     import matplotlib.pyplot as plt
 
-    """ temporary variable assignment for testing """
+    """ temporary variable assignment for testing: will be defined in driver function eventually """
 
     coszen = 0.57
     DIRECT = True
@@ -53,6 +53,9 @@
     MSSglacieralg4 = np.array([0,0,0,0,0])
     MSSglacieralg5 = np.array([0,0,0,0,0])
 
+
+
+
     """ BEGIN FUNCTION """
 
     # set working directory (location of netcdf library)
@@ -83,8 +86,12 @@
                 line = float(line.rstrip("\n"))
                 flx_slr.append(line)
         flx_slr = np.array(flx_slr)
-        Fs = [flx_slr[i] / (mu_not * np.pi) for i in range(nbr_wvl)]
+        flx_slr[flx_slr==0]=1e-30
+        Fs = flx_slr / (mu_not * np.pi)
+
+
         Fd = np.zeros(nbr_wvl)
+
     else:
         with open(str(dir_base + dir_mie_files + "mlw_sfc_flx_frc_cld.txt")) as file:
             for line in file:
@@ -306,6 +313,7 @@
     C_mns_top = np.zeros([nbr_lyr, nbr_wvl])
 
     for i in range(nbr_lyr):
+
         if np.sum(Fs) > 0.0:
 
             C_pls_btm[i,:] = (SSA_star[i,:]*np.pi*Fs*np.exp(-(tau_clm[i,:]+tau_star[i,:])/mu_not)*
@@ -321,6 +329,14 @@
 
             C_mns_top[i,:] = (SSA_star[i,:] * np.pi * Fs * np.exp(-tau_clm[i,:]/mu_not) * ((gamma1[i,:]+(1/mu_not))
                                 * gamma4[i,:] + (gamma2[i,:]*gamma3[i,:])))/((lam[i,:]**2)-(1/mu_not**2))
+
+    else:
+        # no direct-beam flux:
+        C_pls_btm[i,:] = 0
+        C_mns_btm[i,:] = 0
+        C_pls_top[i,:] = 0
+        C_mns_top[i,:] = 0
+
 
 
     # Toon equations 41-43.
@@ -348,13 +364,11 @@
 
         elif i%2==1: # if remainder of i/2 = 1 (i.e. if i is odd)
             n = int(np.ceil(i/2)) # this is floor in matlab/fortran version but ceiling here because of indexing from 0
-            print(i, 'odd number layer', 'n = ', n)
             A[i, :] = (e2[n-1, :] * e3[n-1, :]) - (e4[n-1, :] * e1[n-1, :])
             B[i, :] = (e1[n-1, :] * e1[n, :]) - (e3[n-1, :] * e3[n, :])
             D[i, :] = (e3[n-1, :] * e4[n-1 + 1, :] - e1[n-1, :] * e2[n, :])
             E[i, :] = (e3[n-1, :] * (C_pls_top[n, :] - C_pls_btm[n-1, :])) + (
                         e1[n, :] * (C_mns_btm[n-1, :] - C_mns_top[n, :]))
-
 
         elif (i%2==0) & (i>0): #if remainder of i/2 = 0, i.e. i is even
             n = int(i/2)
@@ -386,132 +400,75 @@
     for i in np.arange(1,2*nbr_lyr,1):
         Y[i,:] = DS[i,:] - (AS[i,:]*Y[i-1,:])
 
-"""
+    # direct beam flux at the bottom of each layer (Toon et al. eq 50)
+    direct = np.zeros([nbr_lyr,nbr_wvl])
+    F_net = np.zeros([nbr_lyr, nbr_wvl])
+    intensity = np.zeros([nbr_lyr, nbr_wvl])
+    F_top_pls = np.zeros([1,nbr_wvl])
+    F_up = np.zeros([nbr_lyr,nbr_wvl])
+    F_down = np.zeros([nbr_lyr,nbr_wvl])
+    F_net2 = np.zeros([nbr_lyr, nbr_wvl])
+    intensity2 = np.zeros([nbr_lyr, nbr_wvl])
 
-All correct to here according to benchmarks against Matlab version
-NB: some discrepancies between python and matlab versions in AS, DS and X. All similar and likely due to rounding errors
-due to different precision for floats
+    for i in np.arange(0,nbr_lyr,1):
 
-"""
+        direct[i,:] = mu_not * np.pi * np.array(Fs) * np.exp(-(tau_clm[i,:] + tau_star[i,:]) / mu_not)
 
-"""
+        # net flux (positive upward = F_up - F_down) at the base of each layer (Toon et al. Eq 48)
+        F_net[i,:] = (Y[2*i-1,:] * (e1[i,:] - e3[i,:])) + (Y[2*i-1] * (e2[i,:] - e4[i,:])) + C_pls_btm[i,:] - C_mns_btm[i,:] - direct[i,:]
 
-
-     
-NOTE: DIRECT IS NOW BOOLEAN
-OMEGA is now SSA
-ext_cff_mss is now MAC
-mss_cnc_aer is now MSS...
-
-"""
-
-
-
-
-
-    for n=1:nbr_lyr
-            % Direct
-    beam
-    flux
-    at
-    the
-    base
-    of
-    each
-    layer(Eq.
-    50)
-    direct(1: nbr_wvl, n) = mu_not * pi * Fs. * exp(-(tau_clm(:, n) + tau_star(:, n))./ mu_not);
-
-    % Net
-    flux(positive
-    upward = F_up - F_down) at
-    the
-    base
-    of
-    each
-    % layer(Eq.
-    48)
-    F_net(1: nbr_wvl, n) = (Y(:, (2 * n-1)).*(e1(:, n) - e3(:, n))) +...
-        (Y(:, (2 * n)).*(e2(:, n) - e4(:, n))) + ...
-    C_pls_btm(:, n) - C_mns_btm(:, n) - direct(:, n);
-
-    % Mean
-    intensity
-    at
-    the
-    base
-    of
-    each
-    layer(Eq.
-    49):
-    intensity(1: nbr_wvl, n) = (1 / mu_one). * ...
-        (Y(:, (2 * n - 1)).*(e1(:, n) + e3(:, n)) + ...
-    Y(:, (2 * n)).*(e2(:, n) + e4(:, n)) + C_pls_btm(:, n) + C_mns_btm(:, n)) +...
-        (direct(:, n)./ mu_not);
-
-    intensity(1: nbr_wvl, n) = intensity(1: nbr_wvl, n)./ (4 * pi);
-    end
-
-    % Upward
-    flux
-    at
-    upper
-    model
-    boundary(Eq.
-    31):
-    F_top_pls = (Y(:, 1). * (exp(-lambda (:, 1). * tau_star(:, 1))+GAMMA(:, 1))) + ...
-        (Y(:, 2).*(exp(-lambda (:, 1). * tau_star(:, 1))-GAMMA(:, 1))) + ...
-    C_pls_top(:, 1);
+        # mean intensity at the base of each layer (Toon et al. Eq 49)
+        intensity[i,:] = (1/mu_one) * (Y[2*i,:] * (e1[i,:] + e3[i,:]) + Y[2*i-1,:] * (e2[i,:] + e4[i,:]) + C_pls_btm[i,:] + C_mns_btm[i,:]) + (direct[i,:]/mu_not)
+        intensity[i, :] = intensity[i, :] / (4 * np.pi)
 
 
-    for n=1:nbr_lyr
-            % Upward
-    flux
-    at
-    the
-    bottom
-    of
-    each
-    layer
-    interface(Eq.
-    31)
-    F_up(1: nbr_wvl, n) = ...
-    Y(:, 2 * n - 1).*(exp(0) + GAMMA(:, n). * exp(-
-    lambda (:, n).*tau_star(:, n))) +...
-    Y(:, 2 * n).*(exp(0) - GAMMA(:, n). * exp(-
-    lambda (:, n).*tau_star(:, n))) +...
-    C_pls_btm(:, n);
+    # Upward flux at upper model boundary (Toon et al Eq 31)
+    F_top_pls = (Y[0,:] * (np.exp(-lam[0,:] * tau_star[0,:]) + GAMMA[0,:])) + (Y[1,:] * (np.exp(-lam[0,:] * tau_star[0,:])-GAMMA[0,:])) + C_pls_top[0,:]
 
-    % Downward
-    flux
-    at
-    the
-    bottom
-    of
-    each
-    layer
-    interface(Eq.
-    32,
-    % plus
-    direct - beam
-    component):
-    F_down(1: nbr_wvl, n) = ...
-    Y(:, 2 * n - 1).*(GAMMA(:, n). * exp(0) + exp(-
-    lambda (:, n).*tau_star(:, n))) + ...
-    Y(:, 2 * n).*(GAMMA(:, n). * exp(0) - exp(-
-    lambda (:, n).*tau_star(:, n))) + ...
-    C_mns_btm(:, n) + direct(:, n);
 
-    % Derived
-    net(upward - downward)
-    flux
-    % (should equal F_net, Eq.48)
-    F_net2(1: nbr_wvl, n) = F_up(1: nbr_wvl, n) - F_down(1: nbr_wvl, n);
+    for i in np.arange(0,nbr_lyr,1):
+        # Upward flux at the bottom of each layer interface (Toon et al. Eq31)
+        F_up[i,:] = Y[2*i,:] * (np.exp(0) + GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i-1,:] * (np.exp(0) - GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + C_pls_btm[i,:]
 
-    % planar
-    intensity:
-    intensity2(1:nbr_wvl, n) = F_up(1: nbr_wvl, n) + F_down(1: nbr_wvl, n);
-    end
+        # Downward flux at the bottom of each layer interface (Toon et al. Eq32) plus direct beam component
+        F_down[i,:] = Y[2*i,:] * (GAMMA[i,:] * np.exp(0) + np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i-1,:] * (GAMMA[i,:] * np.exp(0) - np.exp(-lam[i,:] * tau_star[i,:])) + C_mns_btm[i,:] + direct[i,:];
+
+        """
+        All OK to here according to benchmarks against Matlab version
+
+        NOTE: DIRECT IS NOW BOOLEAN
+        OMEGA is now SSA
+        ext_cff_mss is now MAC
+        mss_cnc_aer is now MSS...
+        lambda is now lam
+
+        """
+
+        # Derived net flux (should equal F_net from Eq 48)
+        F_net2[i,:] = F_up[i,:] - F_down[i,:]
+
+        # planar intensity
+        intensity2[i,:] = F_up[i,:] + F_down[i,:]
+
+
+        """
+        Problem with F_net2 and intensity2: do not match the matlab version. Possibly indicative of errors in layer indexing earlier in the script
+        
+        """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     % surface
     planar
