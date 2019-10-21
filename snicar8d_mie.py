@@ -46,6 +46,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
         Fd = np.zeros(nbr_wvl)
 
     else:
+
         with open(str(dir_base + dir_mie_files + "mlw_sfc_flx_frc_cld.txt")) as file:
             for line in file:
                 line = float(line.rstrip("\n"))
@@ -87,7 +88,6 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
         asm_prm = temp['asm_prm'].values
         g_snw[i,:] = asm_prm
-
 
     # open netcdf files
     FILE_soot1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot1))
@@ -145,7 +145,6 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     MACaer[13,:] = FILE_snw_alg['ext_cff_mss'].values
     MACaer[14,:] = FILE_glacier_algae1['ext_cff_mss'].values
     MACaer[15,:] = FILE_glacier_algae2['ext_cff_mss'].values
-
 
     Gaer = np.zeros([nbr_aer,nbr_wvl])
 
@@ -395,19 +394,20 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     D = np.zeros([2*nbr_lyr,nbr_wvl])
     E = np.zeros([2*nbr_lyr,nbr_wvl])
 
-
     ###########################################
     # Initialize tridiagonal matrix solution
     ###########################################
 
-    # expanding the number of layers to 2*nbr_lyr
+    # expanding the number of layers to 2*nbr_lyr so that fluxes at upper and lower
+    # layer boundaries can be resolved. This section was confusing to code - for each layer
+    # index (n) a second pair of indices (2 x i) are required. Different solutions are
+    # applied depending upon whether i is even or odd. To translate the indexing for this 
+    # from FORTRAN/MATLAB into Python, it was necessary to assert n = (i/2)-1 for even layers
+    # and n = floor(i/2) for odd layers, with specific rules for the boundaries i = 0 and 
+    # i = nbr_lyrs-1 (i.e. top surface and bottom surface).
 
-    ####### NB HARDCODING LAYER NUMBERS IN THE FOLLOWING A,B,D,E CALCULATIONS MAKES THE CODE 
-    ####### APPLICABLE TO <=5 LAYER CONFIGURATIONS ONLY!!
-    # TODO: Fix this!
-
-    for i in np.arange(0,2*nbr_lyr,1):
-
+    for i in np.arange(0,2*nbr_lyr-1,1):
+ 
         #TOP LAYER    
         if i==0:
             A[0,:] = 0.0
@@ -422,22 +422,21 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             D[i,:] = 0.0
             E[i,:] = S_sfc[:] - C_pls_btm[nbr_lyr-1,:] + (R_sfc * C_mns_btm[nbr_lyr-1,:])
     
-        # LAYERS 2,4
-        elif (i == 2)|(1==4):
-            n = int(i/2)
-            A[i,:] = (e2[n+1,:] * e1[n,:])-(e3[n,:] * e4[n+1,:])
-            B[i,:] = (e2[n,:] * e2[n+1,:])-(e4[n,:] * e4[n+1,:])
-            D[i,:] = (e1[n+1,:] * e4[n+1,:])-(e2[n+1,:] * e3[n+1,:])
-            E[i,:] = (e2[n+1,:] * (C_pls_top[n+1,:] - C_pls_btm[n,:])) + (e4[n+1,:] * (C_mns_top[n+1,:] - C_mns_btm[n,:]))
-
-        # LAYERS 1,3
-        elif (i == 1)|(1==3):
-            n = int(np.floor(i/2))
+        # EVEN NUMBERED LAYERS
+        elif i%2==0:
+            n = int(i/2)-1
             A[i,:] = (e2[n,:] * e3[n,:])-(e4[n,:] * e1[n,:])
             B[i,:] = (e1[n,:] * e1[n+1,:])-(e3[n,:] * e3[n+1,:])
             D[i,:] = (e3[n,:] * e4[n+1,:])-(e1[n,:] * e2[n+1,:])
             E[i,:] = (e3[n,:] * (C_pls_top[n+1,:] - C_pls_btm[n,:])) +  (e1[n,:] * (C_mns_btm[n,:] - C_mns_top[n+1,:]))
 
+        # ODD NUMBERED LAYERS
+        elif i%2!=0:
+            n = int(np.floor(i/2))
+            A[i,:] = (e2[n+1,:] * e1[n,:])-(e3[n,:] * e4[n+1,:])
+            B[i,:] = (e2[n,:] * e2[n+1,:])-(e4[n,:] * e4[n+1,:])
+            D[i,:] = (e1[n+1,:] * e4[n+1,:])-(e2[n+1,:] * e3[n+1,:])
+            E[i,:] = (e2[n+1,:] * (C_pls_top[n+1,:] - C_pls_btm[n,:])) + (e4[n+1,:] * (C_mns_top[n+1,:] - C_mns_btm[n,:]))
 
     # Now the actual tridiagonal matrix solving. Simply dividing A/B and E/B 
     # throws an exception due to division by zero. Here we use numpy's nan_to_num
@@ -472,32 +471,31 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
         else:
             Y[i,:] = DS[i,:] - (AS[i,:]*Y[i-1,:])
     
-
     #############################################################
     # CALCULATE DIRECT BEAM FLUX AT BOTTOM OF EACH LAYER
 
     # loop through layers
-    for i in np.arange(0,nbr_lyr,1):
+    for i in np.arange(0,nbr_lyr-1,1):
         # (Toon et al. eq 50)
         direct[i,:] = mu_not * np.pi * Fs * np.exp(-(tau_clm[i,:] + tau_star[i,:]) / mu_not)
 
         # net flux (positive upward = F_up - F_down) at the base of each layer (Toon et al. Eq 48)
-        F_net[i,:] = (Y[2*i-1,:] * (e1[i,:] - e3[i,:])) + (Y[2*i-1] * (e2[i,:] - e4[i,:])) + C_pls_btm[i,:] - C_mns_btm[i,:] - direct[i,:]
+        F_net[i,:] = (Y[2*i-1,:] * (e1[i,:] - e3[i,:])) + (Y[2*i] * (e2[i,:] - e4[i,:])) + C_pls_btm[i,:] - C_mns_btm[i,:] - direct[i,:]
 
         # mean intensity at the base of each layer (Toon et al. Eq 49)
-        intensity[i,:] = (1/mu_one) * (Y[2*i,:] * (e1[i,:] + e3[i,:]) + Y[2*i-1,:] * (e2[i,:] + e4[i,:]) + C_pls_btm[i,:] + C_mns_btm[i,:]) + (direct[i,:]/mu_not)
+        intensity[i,:] = (1/mu_one) * (Y[2*i,:] * (e1[i,:] + e3[i,:]) + Y[2*i+1,:] * (e2[i,:] + e4[i,:]) + C_pls_btm[i,:] + C_mns_btm[i,:]) + (direct[i,:]/mu_not)
         intensity[i, :] = intensity[i, :] / (4 * np.pi)
 
 
     # Upward flux at upper model boundary (Toon et al Eq 31)
     F_top_pls = (Y[0,:] * (np.exp(-lam[0,:] * tau_star[0,:]) + GAMMA[0,:])) + (Y[1,:] * (np.exp(-lam[0,:] * tau_star[0,:])-GAMMA[0,:])) + C_pls_top[0,:]
 
-    for i in np.arange(0,nbr_lyr,1):
+    for i in np.arange(0,nbr_lyr-1,1):
         # Upward flux at the bottom of each layer interface (Toon et al. Eq31)
-        F_up[i,:] = Y[2*i,:] * (np.exp(0) + GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i-1,:] * (np.exp(0) - GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + C_pls_btm[i,:]
+        F_up[i,:] = Y[2*i-1,:] * (np.exp(0) + GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i+1,:] * (np.exp(0) - GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + C_pls_btm[i,:]
 
         # Downward flux at the bottom of each layer interface (Toon et al. Eq32) plus direct beam component
-        F_down[i,:] = Y[2*i,:] * (GAMMA[i,:] * np.exp(0) + np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i-1,:] * (GAMMA[i,:] * np.exp(0) - np.exp(-lam[i,:] * tau_star[i,:])) + C_mns_btm[i,:] + direct[i,:];
+        F_down[i,:] = Y[2*i-1,:] * (GAMMA[i,:] * np.exp(0) + np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i+1,:] * (GAMMA[i,:] * np.exp(0) - np.exp(-lam[i,:] * tau_star[i,:])) + C_mns_btm[i,:] + direct[i,:]
 
         # Derived net (upward-downward) flux (should equal F_net)
         F_net2[i,:] = F_up[i,:] - F_down[i,:]

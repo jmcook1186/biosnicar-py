@@ -2,6 +2,10 @@
 
 Translation of the BioSNICAR_GO model into Python (including translation of the original SNICAR model)
 
+# Current Development status
+
+21 Oct 2019: Mie scattering version of snicar functional. No unit testing done yet, pending access to previous SNICAR versions for benchmarking.
+
 # In this repo
 
 # Background
@@ -16,7 +20,7 @@ applies a variation of the calculations depending upon whether the layer number 
 2) SZA limits
 The two stream aproximation seems to fall apart at high zenith angles (>~0.57). This is common to all versions of SNICAR and is explained in Toon et al. (1989).
 
-3)Snow algae
+3) Snow algae
 While glacir algae MACs have been determined empirically, we have included only a hypothetical snow algae with potentially
 realistic pigemnt concentrations derived from the literature. 
 A more accurate, empirically-derived set of single scattering
