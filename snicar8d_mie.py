@@ -18,14 +18,14 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     dir_mie_files = "Mie_files/"
 
     # retrieve wavelength from arbitrary choice of netcdf file
-    temp = xr.open_dataset(str(dir_base+dir_mie_files+"ice_wrn_0200.nc"))
+    temp = xr.open_dataset(str(dir_base+dir_mie_files+"ice_wrn_0500.nc"))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
 
     # set reflectance of underlying surface
     R_sfc = [R_sfc for _ in range(nbr_wvl)]
-    R_sfc=np.array(R_sfc)
+    R_sfc = np.array(R_sfc)
 
     # Incoming Irradiance
     # calculate mu_not
@@ -51,6 +51,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             for line in file:
                 line = float(line.rstrip("\n"))
                 flx_slr.append(line)
+        
         flx_slr = np.array(flx_slr)
         flx_slr[flx_slr==0]=1e-30
 
@@ -77,17 +78,19 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             s1 = "{}".format(str(rds_snw[i]))
             s1 = s1.rjust(4,'0')
             FILE_ice = str(dir_base+dir_mie_files+fl_stb1+s1+fl_stb2)
+    
+        print(f"loading ice optical properties from: {FILE_ice}")
 
     # read in single scattering albedo, MAC and g for ice crystals in each layer
-        temp = xr.open_dataset(FILE_ice)
-        SSA = temp['ss_alb'].values
-        SSA_snw[i,:] = SSA
+        with xr.open_dataset(FILE_ice) as temp:
+            SSA = temp['ss_alb'].values
+            SSA_snw[i,:] = SSA
 
-        ext_cff_mss = temp['ext_cff_mss'].values
-        MAC_snw[i,:] = ext_cff_mss
+            ext_cff_mss = temp['ext_cff_mss'].values
+            MAC_snw[i,:] = ext_cff_mss
 
-        asm_prm = temp['asm_prm'].values
-        g_snw[i,:] = asm_prm
+            asm_prm = temp['asm_prm'].values
+            g_snw[i,:] = asm_prm
 
     # open netcdf files
     FILE_soot1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot1))
@@ -289,7 +292,6 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
     S_sfc = R_sfc * mu_not * np.exp(-(tau_clm[nbr_lyr-1,:] + tau_star[nbr_lyr-1,:])/mu_not)*np.pi * Fs
 
-
     ######################################################
     # Apply Two-Stream Approximation (Toon et al, table 1)
     ######################################################
@@ -360,7 +362,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     C_pls_top = np.zeros([nbr_lyr, nbr_wvl])
     C_mns_top = np.zeros([nbr_lyr, nbr_wvl])
 
-    for i in range(nbr_lyr):
+    for i in np.arange(0,nbr_lyr,1):
 
         if np.sum(Fs) > 0.0:
 
@@ -406,7 +408,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     # and n = floor(i/2) for odd layers, with specific rules for the boundaries i = 0 and 
     # i = nbr_lyrs-1 (i.e. top surface and bottom surface).
 
-    for i in np.arange(0,2*nbr_lyr-1,1):
+    for i in np.arange(0,2*nbr_lyr,1):
  
         #TOP LAYER    
         if i==0:
@@ -421,7 +423,8 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             B[i,:] = e2[nbr_lyr-1,:]-(R_sfc * e4[nbr_lyr-1,:])
             D[i,:] = 0.0
             E[i,:] = S_sfc[:] - C_pls_btm[nbr_lyr-1,:] + (R_sfc * C_mns_btm[nbr_lyr-1,:])
-    
+
+
         # EVEN NUMBERED LAYERS
         elif i%2==0:
             n = int(i/2)-1
@@ -431,7 +434,8 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             E[i,:] = (e3[n,:] * (C_pls_top[n+1,:] - C_pls_btm[n,:])) +  (e1[n,:] * (C_mns_btm[n,:] - C_mns_top[n+1,:]))
 
         # ODD NUMBERED LAYERS
-        elif i%2!=0:
+        elif (i%2 ==1) and (i < 2*nbr_lyr-1):
+
             n = int(np.floor(i/2))
             A[i,:] = (e2[n+1,:] * e1[n,:])-(e3[n,:] * e4[n+1,:])
             B[i,:] = (e2[n,:] * e2[n+1,:])-(e4[n,:] * e4[n+1,:])
@@ -465,17 +469,18 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     # Toon et al Eq 47
     Y = np.zeros([nbr_lyr*2,nbr_wvl])
 
-    for i in np.arange(0,2*nbr_lyr,1):
+    for i in np.arange(0,2*nbr_lyr-1,1):
         if i ==0:
             Y[0,:] = DS[0,:]
         else:
             Y[i,:] = DS[i,:] - (AS[i,:]*Y[i-1,:])
+
     
     #############################################################
     # CALCULATE DIRECT BEAM FLUX AT BOTTOM OF EACH LAYER
 
     # loop through layers
-    for i in np.arange(0,nbr_lyr-1,1):
+    for i in np.arange(0,nbr_lyr,1):
         # (Toon et al. eq 50)
         direct[i,:] = mu_not * np.pi * Fs * np.exp(-(tau_clm[i,:] + tau_star[i,:]) / mu_not)
 
@@ -483,29 +488,32 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
         F_net[i,:] = (Y[2*i-1,:] * (e1[i,:] - e3[i,:])) + (Y[2*i] * (e2[i,:] - e4[i,:])) + C_pls_btm[i,:] - C_mns_btm[i,:] - direct[i,:]
 
         # mean intensity at the base of each layer (Toon et al. Eq 49)
-        intensity[i,:] = (1/mu_one) * (Y[2*i,:] * (e1[i,:] + e3[i,:]) + Y[2*i+1,:] * (e2[i,:] + e4[i,:]) + C_pls_btm[i,:] + C_mns_btm[i,:]) + (direct[i,:]/mu_not)
+        intensity[i,:] = (1/mu_one) * (Y[2*i-1,:] * (e1[i,:] + e3[i,:]) + Y[2*i,:] * (e2[i,:] + e4[i,:]) + C_pls_btm[i,:] + C_mns_btm[i,:]) + (direct[i,:]/mu_not)
         intensity[i, :] = intensity[i, :] / (4 * np.pi)
 
 
     # Upward flux at upper model boundary (Toon et al Eq 31)
     F_top_pls = (Y[0,:] * (np.exp(-lam[0,:] * tau_star[0,:]) + GAMMA[0,:])) + (Y[1,:] * (np.exp(-lam[0,:] * tau_star[0,:])-GAMMA[0,:])) + C_pls_top[0,:]
 
-    for i in np.arange(0,nbr_lyr-1,1):
+
+    for i in np.arange(0,nbr_lyr,1):
         # Upward flux at the bottom of each layer interface (Toon et al. Eq31)
-        F_up[i,:] = Y[2*i-1,:] * (np.exp(0) + GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i+1,:] * (np.exp(0) - GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + C_pls_btm[i,:]
+        F_up[i,:] = Y[2*i-1,:] * (np.exp(0) + GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i,:] * (np.exp(0) - GAMMA[i,:] * np.exp(-lam[i,:] * tau_star[i,:])) + C_pls_btm[i,:]
 
         # Downward flux at the bottom of each layer interface (Toon et al. Eq32) plus direct beam component
-        F_down[i,:] = Y[2*i-1,:] * (GAMMA[i,:] * np.exp(0) + np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i+1,:] * (GAMMA[i,:] * np.exp(0) - np.exp(-lam[i,:] * tau_star[i,:])) + C_mns_btm[i,:] + direct[i,:]
+        F_down[i,:] = Y[2*i-1,:] * (GAMMA[i,:] * np.exp(0) + np.exp(-lam[i,:] * tau_star[i,:])) + Y[2*i,:] * (GAMMA[i,:] * np.exp(0) - np.exp(-lam[i,:] * tau_star[i,:])) + C_mns_btm[i,:] + direct[i,:]
 
         # Derived net (upward-downward) flux (should equal F_net)
         F_net2[i,:] = F_up[i,:] - F_down[i,:]
 
-        # surface planar intensity
-        intensity2_top[:] = F_top_pls + ((mu_not * np.pi * Fs) + Fd)
+        intensity2[i,:] = F_up[i,:] + F_down[i,:]
+    
+    # surface planar intensity
+    intensity2_top[:] = F_top_pls + ((mu_not * np.pi * Fs) + Fd)
 
     # Net flux at lower model boundary = bulk transmission through entire media
     # = energy absorbed by underlying surface
-    F_btm_net[0,:] = -F_net[-1,:]
+    F_btm_net[0,:] = -F_net[nbr_lyr-1,:]
 
     # Hemispheric wavelength-dependent albedo
     albedo = F_top_pls/ ((mu_not * np.pi * Fs)+Fd)
@@ -548,7 +556,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
     # Energy conservation check:
     # % Incident direct + diffuse radiation equals(absorbed + transmitted + bulk_reflected)
-    energy_sum = (mu_not * np.pi * Fs) + Fd - (np.sum(F_abs,axis=0) + F_btm_net + F_top_pls)
+    energy_sum = (mu_not * np.pi * Fs) + Fd - (sum(F_abs) + F_btm_net + F_top_pls)
 
     # spectrally-integrated terms:
     # energy conservation total error
