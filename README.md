@@ -4,7 +4,7 @@ Translation of the BioSNICAR_GO model into Python (including translation of the 
 
 # Current Development status
 
-21 Oct 2019: Mie scattering version of snicar functional. No unit testing done yet, pending access to previous SNICAR versions for benchmarking. Geometrical optics versions are not yet translated into Python and therefore setting GeometricOptics = 1 in the driver script raises an exception and will not run.
+21 Oct 2019: Mie scattering version of snicar functional and tested against Matlab version. Geometrical optics versions are not yet translated into Python and therefore setting GeometricOptics = 1 in the driver script raises an exception and will not run.
 
 # In this repo
 
@@ -17,7 +17,7 @@ snicar_mie_tests.py: script for running unit tests against matlab version
 Unit_Tests: contains csv files for albedo predicted by Matlab version as target values for unit testing
 
 ## Repository Structure
-
+```
 BioSNICAR_GO_PY
 |
 |----- snicar8d_mie.py
@@ -37,7 +37,7 @@ BioSNICAR_GO_PY
               |----rds_albedo.csv
               |----rho_albedo.csv
 
-
+```
 # Background
 
 # How to use
