@@ -27,8 +27,8 @@ GeometricOptics = False
 ## 2. RADIATIVE TRANSFER CONFIGURATION
 
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
-APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
-DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
+APRX_TYP = 3        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
+DELTA    = 0        # 1= Apply Delta approximation, 0= No delta
 coszen   = 0.57    # if DIRECT give cosine of solar zenith angle 
 
 #############################################
