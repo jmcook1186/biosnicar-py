@@ -1,10 +1,13 @@
-###############################################################
-################# SNICAR DRIVER SCRIPT ########################
-
 """
+#####################################################################
+################# BioSNICAR_GO DRIVER SCRIPT ########################
+
 This script is used to configure the 2-stream radiative transfer
-model SNICAR. Here variable values are defined, the model called
+model BioSNICAR_GO. Here variable values are defined, the model called
 and the results plotted. 
+
+NB. Setting Mie = 1, GO = 0 and algal impurities = 0 is equivalent to
+running the original SNICAR model of Flanner et al. (2007, 2009)
 
 Author: Joseph Cook, October 2019
 
@@ -20,8 +23,8 @@ import matplotlib.pyplot as plt
 # 2) CHOOSE METHOD FOR DETERMINING OPTICAL PROPERTIES OF ICE GRAINS
 # for small spheres choose Mie, for hexagonal plates or columns of any size
 # choose GeometricOptics
-Mie = False
-GeometricOptics = True
+Mie = True
+GeometricOptics = False
 
 ######################################
 ## 2. RADIATIVE TRANSFER CONFIGURATION
@@ -56,7 +59,7 @@ nbr_aer = 16 # Define total number of different LAPs/aerosols in model
 # set filename stubs
 stb1 = 'algae_geom_' # %name stub 1
 stb2 = '.nc'  # file extension
-wrkdir2 = '/home/joe/Code/BioSNICAR_GO/Algal_Optical_Props/' # working directory
+wrkdir2 = '/home/joe/Code/BioSNICAR_GO_PY/Data/Algal_Optical_Props/' # working directory
 snw_stb1 = 'snw_alg_' # name stub for snow algae
 
 # CHOOSE DIMENSIONS OF GLACIER ALGAE 1

@@ -61,28 +61,33 @@ optical properties are averaged over these wavelength ranges and output as three
 property library: Algal_Optical_Properties_3band. To use this option set ThreeBand to True in the functions
 calculate_optical_params() and netcdf_updater()
 
+
+# NB MAKE SURE OUTPUT PATH FROM BIOOPTICAL_MODEL.PY AND INPUT PATHS IN ALGAE_GO.PY MATCH!!!
+
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-filepath = '/home/joe/Code/BioSNICAR_GO/Algal_Optical_Props/' # save path for full spectrum version
-filepath3Band = '/home/joe/Code/BioSNICAR_GO/Algal_Optical_Properties_3band/' #save path for 3 band version
+filepath = '/home/joe/Code/BioSNICAR_GO_py/Algal_Optical_Props/' # save path for full spectrum version
+filepath3Band = '/home/joe/Code/BioSNICAR_GO_py/Algal_Optical_Properties_3band/' #save path for 3 band version
 
 # DEFINE FUNCTIONS
 
 def preprocess_RI():
+
     # load input files for real RI, imaginary RI, mass absorption coefficient. Set wavelength array.
     wavelengths = np.arange(0.305, 5, 0.01)  # 300 - 5000 nm in 10 nm steps
-    reals = pd.read_csv('/home/joe/Code/BioSNICAR_GO/snw_alg1_20_7_2019_Real.csv', header=None)
+    reals = pd.read_csv('/home/joe/Code/BioSNICAR_GO_py/snw_alg1_20_7_2019_Real.csv', header=None)
     reals = np.array(reals)
-    imags = pd.read_csv('/home/joe/Code/BioSNICAR_GO/snw_alg1_20_7_2019_KK.csv', header=None)
+    imags = pd.read_csv('/home/joe/Code/BioSNICAR_GO_py/snw_alg1_20_7_2019_KK.csv', header=None)
     imags = np.array(imags)
-    MAC = pd.read_csv('/home/joe/Code/BioSNICAR_GO/snw_alg1_20_7_2019_MAC.csv', names=['vals'], header=None, index_col=None)
+    MAC = pd.read_csv('/home/joe/Code/BioSNICAR_GO_py/snw_alg1_20_7_2019_MAC.csv', names=['vals'], header=None, index_col=None)
     MAC = np.array(MAC['vals'])
 
     return reals, imags, MAC, wavelengths
+
 
 def calc_optical_params(r, depth, reals, imags, wavelengths, plots=False, report_dims=False, ThreeBand=False):
 

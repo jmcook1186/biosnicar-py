@@ -69,23 +69,25 @@ import matplotlib.pyplot as plt
 import csv
 import pandas as pd
 
+wdir = '/home/joe/Code/BioSNICAR_GO_PY/'
+
 def bio_optical(load_MAC = True, apply_packaging_correction=True, calc_MAC = False, calc_k = True, pig_mass = True,
                 pig_frac = False, Pottier = False, Cook = True, cell_dm_weight = 0.82, chla = 0.01, chlb = 0.00066,
                 ppro = 0.01, psyn = 0, purp = 0.068, Xw = 0.8, density= 1400, nm = 1.4, savefiles = False,
                 savepath = "path", savefilename = "name", plot_optical_props = True, plot_pigment_MACs = True):
 
     data = pd.DataFrame() # set up dataframe for storing optical properties
-
+    
     if load_MAC: # choose this option to load an empirically derived MAC from file
 
         if apply_packaging_correction: # optionally apply correction for packaging effect
-            MAC = pd.read_csv('/home/joe/Code/BioSNICAR_GO/phenol_mac_packaging_corr.csv',header=None,names=['MAC'])
+            MAC = pd.read_csv(str(wdir+'Data/phenol_mac_packaging_corrected.csv'),header=None,names=['MAC'])
             MAC = MAC[0:4695] # subsample to appropriate resolution for snicar
             MAC = MAC[0:-1:10]
             data['MAC'] = MAC['MAC'].dropna() # drop NaNs and save to dataframe
 
         else:
-            MAC = pd.read_csv('/home/joe/Code/BioSNICAR_GO/Empirical_MAC.csv',header=None,names=['MAC'])
+            MAC = pd.read_csv(str(wdir+'Data/Empirical_MAC.csv'),header=None,names=['MAC'])
             MAC = MAC[0:4695] # subsample to appropriate resolution for snicar
             MAC = MAC[0:-1:10]
             data['MAC'] = MAC['MAC'].dropna() # drop NaNs and save to dataframe
@@ -116,49 +118,50 @@ def bio_optical(load_MAC = True, apply_packaging_correction=True, calc_MAC = Fal
         WL = np.arange(300,5000,10)
         WLmeters = [i*1e-9 for i in (WL)]
     
-        with open('/home/joe/Code/chlorophyll-a.csv')as f:
+        with open(str(wdir+'Data/chlorophyll-a.csv'))as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
                     cellf = float(cell)*1e-6
                     Ea1.append(cellf)
     
-        with open('/home/joe/Code/chlorophyll-b.csv') as f:
+        with open(str(wdir+'Data/chlorophyll-b.csv')) as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
                     cellf = float(cell)*1e-6
                     Ea2.append(cellf)
     
-        with open('/home/joe/Code/Photoprotective_carotenoids.csv')as f:
+        with open(str(wdir+'Data/Photoprotective_carotenoids.csv'))as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
                     cellf = float(cell)*1e-6
                     Ea3.append(cellf)
     
-        with open('/home/joe/Code/Photosynthetic_carotenoids.csv')as f:
+        with open(str(wdir+'Data/Photosynthetic_carotenoids.csv'))as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
                     cellf = float(cell)*1e-6
                     Ea4.append(cellf)
     
-        with open('/home/joe/Code/BioSNICAR_GO/phenol_mac_correction.csv')as f:
+        with open(str(wdir+'Data/phenol_MAC.csv'))as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
                     cellf = float(cell)
                     Ea5.append(cellf)
     
-        with open('/home/joe/Code/water_RI.csv')as f:
+        with open(str(wdir+'Data/water_RI.csv'))as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
                     cellf = float(cell)
                     WatRI.append(cellf)
+      
         # read in correction factor for packaging effect (from Chris W paper)
-        with open('/home/joe/Code/BioSNICAR_GO/phenol_mac_correction.csv')as f:
+        with open(str(wdir+'Data/phenol_mac_correction.csv'))as f:
             reader = csv.reader(f, delimiter=',')
             for row in reader:
                 for cell in row:
@@ -314,7 +317,7 @@ def bio_optical(load_MAC = True, apply_packaging_correction=True, calc_MAC = Fal
 # NB pigment data is provided here in units of mg per cell
 k_list, real_list, MAC, data = bio_optical(
         load_MAC= False,
-        apply_packaging_correction=True,
+        apply_packaging_correction=False,
         calc_MAC = True,
         calc_k = True,
         pig_mass = False,
@@ -331,7 +334,7 @@ k_list, real_list, MAC, data = bio_optical(
         density= 1400, 
         nm = 1.4, 
         savefiles = False,
-        savepath = '/home/joe/Code/BioSNICAR_GO/',
+        savepath = str(wdir+'Outputs/'),
         savefilename = "snw_alg1_20_7_2019",
         plot_optical_props = True,
         plot_pigment_MACs = True)
