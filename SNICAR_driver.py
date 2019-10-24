@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 # 2) CHOOSE METHOD FOR DETERMINING OPTICAL PROPERTIES OF ICE GRAINS
 # for small spheres choose Mie, for hexagonal plates or columns of any size
 # choose GeometricOptics
-Mie = True
-GeometricOptics = False
+Mie = False
+GeometricOptics = True
 
 ######################################
 ## 2. RADIATIVE TRANSFER CONFIGURATION

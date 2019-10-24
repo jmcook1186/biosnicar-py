@@ -80,8 +80,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             s1 = str(side_length[i])
             s2 = str(depth[i])
             FILE_ice = str(dir_base+dir_GO_files+fl_stb1+s1+"_"+s2+fl_stb2)
-            print(f"FILE = {FILE_ice}")
-    
+   
 
     # read in single scattering albedo, MAC and g for ice crystals in each layer
         with xr.open_dataset(FILE_ice) as temp:
