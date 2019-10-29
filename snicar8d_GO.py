@@ -13,12 +13,12 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     import matplotlib.pyplot as plt
 
     # set working directory (location of netcdf library)
-    dir_base = "/home/joe/Code/BioSNICAR_GO/"
-    dir_alg = "Algal_Optical_Props/"
-    dir_GO_files = "GO_files/"
+    dir_base = "/home/joe/Code/BioSNICAR_GO_PY/"
+    dir_alg = "Data/Algal_Optical_Props/"
+    dir_GO_files = "Data/GO_files/"
 
     # retrieve wavelength from arbitrary choice of netcdf file
-    temp = xr.open_dataset(str(dir_base+dir_GO_files+"ice_geom_2000_2000.nc"))
+    temp = xr.open_dataset(str(dir_base+dir_GO_files+"ice_geom_5000_5000.nc"))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
