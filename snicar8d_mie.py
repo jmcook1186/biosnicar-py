@@ -1,4 +1,4 @@
-def snicar8d_mie(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, nbr_lyr, nbr_aer,
+def snicar8d_mie(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer,
 mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, 
 mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
 mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, 
@@ -11,9 +11,10 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     import numpy as np
     import xarray as xr
     import matplotlib.pyplot as plt
+    from IceOptical_Model.mie_coated_water_spheres import miecoated_driver
 
     # set working directory (location of netcdf library)
-    dir_base = "/home/joe/Code/BioSNICAR_GO_PY/"
+    dir_base = "/Users/niklasbohn/Desktop/BioSNICAR_GO_PY/"
     dir_alg = "Data/Algal_Optical_Props/"
     dir_mie_files = "Data/Mie_files/"
 
@@ -63,8 +64,10 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
     fl_stb1 = "ice_wrn_"
     fl_stb2 = ".nc"
+    fn_ice = dir_base + "Data/Refractive_Index_Ice_Warren_1984.csv"
+    fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
 
-    #set up empty arrays
+    # set up empty arrays
     SSA_snw = np.empty([nbr_lyr, nbr_wvl])
     MAC_snw = np.empty([nbr_lyr, nbr_wvl])
     g_snw = np.empty([nbr_lyr, nbr_wvl])
@@ -78,18 +81,27 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             s1 = "{}".format(str(rds_snw[i]))
             s1 = s1.rjust(4,'0')
             FILE_ice = str(dir_base+dir_mie_files+fl_stb1+s1+fl_stb2)
-    
 
-    # read in single scattering albedo, MAC and g for ice crystals in each layer
-        with xr.open_dataset(FILE_ice) as temp:
-            SSA = temp['ss_alb'].values
-            SSA_snw[i,:] = SSA
+    # read in single scattering albedo, MAC and g for ice crystals in each layer,
+    # optional with coated liquid water spheres
+        if rwater[i] > rds_snw[i]:
+            res = miecoated_driver(rice=rds_snw[i], rwater=rwater[i], fn_ice=fn_ice, fn_water=fn_water, wvl=wvl)
+            SSA_snw[i, :] = res["ssa"]
+            g_snw[i, :] = res["asymmetry"]
 
-            ext_cff_mss = temp['ext_cff_mss'].values
-            MAC_snw[i,:] = ext_cff_mss
+            with xr.open_dataset(FILE_ice) as temp:
+                ext_cff_mss = temp['ext_cff_mss'].values
+                MAC_snw[i, :] = ext_cff_mss
+        else:
+            with xr.open_dataset(FILE_ice) as temp:
+                SSA = temp['ss_alb'].values
+                SSA_snw[i,:] = SSA
 
-            asm_prm = temp['asm_prm'].values
-            g_snw[i,:] = asm_prm
+                ext_cff_mss = temp['ext_cff_mss'].values
+                MAC_snw[i,:] = ext_cff_mss
+
+                asm_prm = temp['asm_prm'].values
+                g_snw[i,:] = asm_prm
 
     # open netcdf files
     FILE_soot1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot1))
