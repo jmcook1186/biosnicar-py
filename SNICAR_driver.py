@@ -49,8 +49,9 @@ R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 rho_snw = [500, 500, 500, 500, 500] # density of each layer (unit = kg m-3)
 
 #SET ICE GRAIN DIMENSIONS
-# if using Mie optical properties, set rds_snw
+# if using Mie optical properties, set rds_snw and an optional coated liquid water sphere
 rds_snw = [500,500,500,500,500]
+rwater = [600, 600, 600, 600, 600]
 
 # if using GeometricOptics, set side_length and depth
 side_length = [5000,8000,15000,15000,15000] 
@@ -132,7 +133,7 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
         print("ERROR: BOTH MIE AND GO SELECTED: PLEASE CHOOSE ONE")
 
     elif Mie == True:
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_mie(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, nbr_lyr, nbr_aer, mss_cnc_soot1,
+        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_mie(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1,
         mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
         mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, 
         mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2,
