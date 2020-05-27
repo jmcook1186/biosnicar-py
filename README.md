@@ -319,9 +319,9 @@ This code is in active development. Collaboration ideas and pull-requests genera
 
 Please cite:
 
-Cook, J. et al. (2019): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019. 
+Cook, J. et al. (2019): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere, https://doi.org/10.5194/tc-2019-58, accepted for publication Dec 2019. 
 
-and the doi for the relevant release of this repository.
+and the doi for the relevant release of this repository (v0.1 doi: 10.5281/zenodo.3564517).
 
 # References
 

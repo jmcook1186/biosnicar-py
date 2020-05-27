@@ -109,11 +109,15 @@ The final function, net_cdf_updater() is used to dump the optical parameters and
 metadata into a netcdf file and save it into the working directory to be used as
 a lookup library for the two-stream radiative transfer model BioSNICAR_GO.
 
-NOTE: The extinction coefficient in the current implementation is 2 for all size parameters
+NOTE: The extinction coefficient in the GO implementation == 2 for all size parameters
 as assumed in the conventional geometric optics approximation.
 
 """
 
+
+##################
+# USER INPUTS
+##################
 
 from BioOptical_Funcs import bio_optical, preprocess_RI, calc_optical_params_GO, calc_optical_params_MIE, net_cdf_updater
 
@@ -130,6 +134,13 @@ MIE = True
 GO = False
 
 
+
+#####################
+# FUNCTION CALLS
+#####################
+
+
+# 1) bio-optical()
 k_list, real_list, MAC, data = bio_optical(
         wdir = basePath,
         load_MAC= False,
@@ -161,21 +172,50 @@ k_list, real_list, MAC, data = bio_optical(
         plot_pigment_MACs = False,
         saveplots = False)
 
+# 2) preprocess_RI()
+reals, imags, MAC, wavelengths = preprocess_RI(
+    RealsPath,
+    ImagsPath,
+    MACPath)
 
-reals, imags, MAC, wavelengths = preprocess_RI(RealsPath,ImagsPath,MACPath)
-
+# 3) calc_optical_params_GO() or calc_optical_params_MIE()
 if GO:
 
-    Assy_list, SSA_list, absXS_list, depth, r, Chi_abs_list, Reff, X_list = calc_optical_params(basePath, cell_radius, cell_length, reals, imags, wavelengths, plots=False, report_dims=True)
+    Assy_list, SSA_list, absXS_list, depth, r, \
+        Chi_abs_list, Reff, X_list = calc_optical_params(
+            basePath, 
+            cell_radius, 
+            cell_length, 
+            reals, 
+            imags, 
+            wavelengths, 
+            plots=False, 
+            report_dims=True)
 
 elif MIE:
   
-   Assy_list, SSA_list = calc_optical_params_MIE(basePath, cell_radius, cell_density, reals, imags, wavelengths, plots=True, savefigs=False) 
+   Assy_list, SSA_list = calc_optical_params_MIE(
+       basePath, 
+       cell_radius, 
+       cell_density, 
+       reals, 
+       imags, 
+       wavelengths, 
+       plots=True, 
+       savefigs=False) 
 
-net_cdf_updater(NetCDFpath, Assy_list, SSA_list, MAC, cell_length, cell_radius, cell_density)
+# 4) net_cdf_updater()
+net_cdf_updater(
+    NetCDFpath, 
+    Assy_list, 
+    SSA_list, 
+    MAC, 
+    cell_length, 
+    cell_radius, 
+    cell_density)
 
 
-# example loop for interating over many cell dimensions:
+# example loop for interating GO code over many cell dimensions:
 
 # for r in np.arange(1,7,1):
 #    for depth in np.arange(1,41,1):
