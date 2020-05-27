@@ -1,5 +1,4 @@
 """
-
 #####################################################################
 ################# BioSNICAR_GO DRIVER SCRIPT ########################
 
@@ -15,25 +14,30 @@ Author: Joseph Cook, October 2019
 ######################################################################
 ######################################################################
 
-
 """
-
-###########################
-# 1) Import SNICAR function
-
 from snicar8d_mie import snicar8d_mie
 from snicar8d_GO import snicar8d_GO
 import matplotlib.pyplot as plt
 import numpy as np
 
+##############################
+# 1) Choose plot/print options
+
+show_figs = False # toggle to display spectral albedo figure
+save_figs = False # toggle to save spectral albedo figure to file
+savepath = "/home/joe/Code/BioSNICAR_GO_PY/" # base path for saving figures
+print_BBA = True # toggle to print broadband albedo to terminal
+print_band_ratios = True # toggle to print various band ratios to terminal
+
 # 2) CHOOSE METHOD FOR DETERMINING OPTICAL PROPERTIES OF ICE GRAINS
 # for small spheres choose Mie, for hexagonal plates or columns of any size
 # choose GeometricOptics
+
 Mie = False
 GeometricOptics = True
 
 ######################################
-## 2. RADIATIVE TRANSFER CONFIGURATION
+## 3. RADIATIVE TRANSFER CONFIGURATION
 
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
@@ -41,7 +45,7 @@ DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
 coszen   = 0.57    # if DIRECT give cosine of solar zenith angle 
 
 #############################################
-## 3. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
+## 4. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
 
 dz = [0.001, 0.01, 0.01, 0.01, 0.01] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
@@ -49,7 +53,8 @@ R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 rho_snw = [500, 500, 500, 500, 500] # density of each layer (unit = kg m-3)
 
 #SET ICE GRAIN DIMENSIONS
-# if using Mie optical properties, set rds_snw and an optional coated liquid water sphere
+# if using Mie optical properties, set rds_snw and 
+# an optional coated liquid water sphere
 rds_snw = [500,500,500,500,500]
 rwater = [600, 600, 600, 600, 600]
 
@@ -57,9 +62,8 @@ rwater = [600, 600, 600, 600, 600]
 side_length = [5000,8000,15000,15000,15000] 
 depth = [5000,8000,15000,15000,15000]
 
-
 ##############################################
-## 4) SET LAP CHARACTERISTICS
+## 5) SET LAP CHARACTERISTICS
 
 nbr_aer = 16 # Define total number of different LAPs/aerosols in model
 
@@ -85,8 +89,7 @@ snw_alg = str(wrkdir2+snw_stb1+str(snw_algae_r)+stb2) # create filename string
 
 # SET UP IMPURITY MIXING RATIOS
 # PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
-# 
-plt.figure(1)
+
 for x in [1000, 10000, 100000, 200000, 300000, 500000]:
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon
@@ -104,7 +107,6 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis)
     mss_cnc_glacier_algae1 = [x,0,0,0,0]    # glacier algae type1
     mss_cnc_glacier_algae2 = [0,0,0,0,0]    # glacier algae type2
-
 
     ##########################################################################
     ################## CALL FUNCTIONS AND PLOT OUTPUTS #######################
@@ -130,7 +132,8 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
 
 
     if Mie == True and GeometricOptics == True:
-        print("ERROR: BOTH MIE AND GO SELECTED: PLEASE CHOOSE ONE")
+
+        print("ERROR: BOTH MIE AND GO MODES SELECTED: PLEASE CHOOSE ONE")
 
     elif Mie == True:
         [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_mie(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1,
@@ -150,9 +153,36 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
         FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
 
     else:
-        print("NEITHER MIE NOR GO SELECTED: PLEASE CHOOSE ONE")
+        
+        print("NEITHER MIE NOR GO MODE SELECTED: PLEASE CHOOSE ONE")
+    
+    if print_band_ratios:
 
+        I2DBA = albedo[40]/albedo[36]
+        I3DBA = (albedo[36] - albedo[40]) / albedo[45]
+        NDCI = ((albedo[40]-albedo[38])-(albedo[45]-albedo[38]))*((albedo[40]-albedo[38])/(albedo[45]-albedo[38]))
+        MCI = (albedo[40]-albedo[36])/(albedo[40]+albedo[36])
+        II = np.log(albedo[26])/np.log(albedo[56])
+
+        print("\nINDEX VALUES")
+        print("2DBA Index: ",I2DBA)
+        print("3DBA index: ", I3DBA)
+        print("NDCI index: ", NDCI)
+        print("MCI index: ", MCI)
+        print("Impurity Index: ", II)
+
+    if print_BBA:
+        print('BROADBAND ALBEDO = ', BBA)
 
     #### PLOT ALBEDO ######
     plt.plot(wvl, albedo), plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.3,1.5),plt.ylim(0,1)
-    print('BROADBAND ALBEDO = ', BBA), plt.axvline(x = 0.68,color='g',linestyle='dashed')
+    plt.axvline(x = 0.68,color='g',linestyle='dashed')
+
+
+
+if save_figs:
+    plt.savefig(str(savepath+"spectral_albedo.png"))
+
+if show_figs:
+    plt.show()
+
