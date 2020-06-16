@@ -17,6 +17,27 @@ The mineral dusts included in this version include four "global average" dusts w
 
 This functionality, combined with the geometric optics option for the ice matrix makes BioSNICAR_GO applicable to bare glacier ice surfaces as well as wet and dry snowpacks - a significant step forwards from the original BiOSNICAR model published in Cook et al (2017). The model currently includes options for 2 glacier algae of different user-defined dimensions and one snow algae.
 
+## Recent Additions
+
+In 2020 there have been several additions to the BioSNICAR model that have not yet been documented in any publication paper. These include:
+
+### 1) Refactor of bio-optical model
+The bio-optical model was refactored into a much more useable format. Hard coded variables were moved into the function call, the two bio-optical components (the mixing model and mie/go code) ware now controlled from a single driver script, and file paths were all synchronised.
+
+### 2) Update of glacier algae optical properties
+The new glacier algal optical properties account for intracellular protein attachment and packaging of pigments into specific regions of the cell rather than assuming uniform distribution through the cell.
+ 
+### 3) Addition of liquid water films
+Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
+   
+### 4) Addition of specular reflection function
+Specular reflection from the upper surface, scaled using a user-defined smoothness value is also now available. This approximates the the "specular-eddington" approach of Warren and Mullen (1984: doi 10.1029/JD093iD07p08403) and Dadic et al. (2013: doi 0.1002/jgrf.20098, 2013). If specular reflection is toggled ON, the model assumes the existence of a smooth layer at the upper surface where reflection occurs according to Fresnel's equations, giving a value for spectral specular reflectance (R) from the upper surface. This value is then used to attenuate the incoming irradiance that propagates to the two-stream multiple scattering model for n vertical layers below. The specular component is then added to the upwelling flux from the two-stream model when the material albedo is calculated.
+    
+(i.e. I* is total incoming irradiance, R is Fresnel reflectance from upper surface, I* x R is the specular component, I* x (1-R) is the irradiance propagated to the two-stream model, giving F_up, F-up_tot = (F_up + I* x R)).  
+
+Note that internal reflection (specular reflection of upwelling diffuse radiation from the underside of the upper ice/air boundary) is not yet accounted for. The specular reflection option is functional for both Mie and GO modes.
+
+
 # Model Structure
 
 <img src="./Assets/model_structure.jpg" width=1500>
@@ -29,16 +50,17 @@ It is recommended to run this code in a fresh environment as follows:
 ```
 conda create -n BioSNICAR_py python 3.6.8, numpy, scipy, matplotlib, pandas
 conda install xarray dask netCDF4 bottleneck
+pip install miepython
 
 ```
 
-or alternatively create from the yaml file provided in this repository (which also includes packages such as jupyter for running interactively in vscode).
+or alternatively linux users can create from the yaml file provided in this repository (which also includes packages such as jupyter for running interactively in vscode).
 
 ```
 conda env create -f BioSNICAR_py.yaml
 
 ```
-If creating a new environment in this way, please remember to update the prefix in the final line of the file to somethign appropriate to the new local machine.
+If creating a new environment in this way, please remember to update the prefix in the final line of the file to something appropriate to the new local machine. The .yaml file has been tested on Ubuntu 16.04 and 20.04.
 
 # In this repo
 

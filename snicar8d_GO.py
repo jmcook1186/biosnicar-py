@@ -1,4 +1,4 @@
-def snicar8d_GO(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, side_length, depth, nbr_lyr, nbr_aer,
+def snicar8d_GO(DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, side_length, depth, nbr_lyr, nbr_aer,
 mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, 
 mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
 mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, 
@@ -11,6 +11,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     import numpy as np
     import xarray as xr
     import matplotlib.pyplot as plt
+    from SpecularFuncs import fresnel
 
     # set working directory (location of netcdf library)
     dir_base = "/home/joe/Code/BioSNICAR_GO_PY/"
@@ -34,20 +35,59 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     flx_slr = []
 
     if DIRECT:
-
+    
         with open(str(dir_base + dir_GO_files + "mlw_sfc_flx_frc_clr.txt")) as file:
             for line in file:
                 line = float(line.rstrip("\n"))
                 flx_slr.append(line)
+        
         flx_slr = np.array(flx_slr)
         flx_slr[flx_slr==0]=1e-30
-        Fs = flx_slr / (mu_not * np.pi)
+        Fs_tot = flx_slr / (mu_not * np.pi)
+        Fs = Fs_tot.copy()
+
+        ############################################
+        # Apply external (air-ice) specular reflection
+        ############################################
+
+        # Grab real and imaginary refractive indices for air and ice and pass them to
+        # the fresnel function - this calculates the spectral fresnel coefficients that
+        # are then used to attenuate the incoming beam. The reflected portion is kept to 
+        # later add to F_top_pls in the final albedo calculation, but not used in the
+        # calculations of eddington albedo that depend on subsurface scattering. 
+
+        if specular_reflection:
+
+            nAir = np.ones(shape=(470)) # define n and k for air (array of ones)
+            kAir = np.zeros(shape=(470))+0.00000001
+
+            nIce = np.genfromtxt('/home/joe/Code/CryoconiteRTM/Data/ice_n.csv', delimiter=",")
+            nIce[nIce<1.0] = 1.0 # prevent math domain error - this is a negligible adjustment to a few wavelengths
+            kIce = np.genfromtxt ('/home/joe/Code/CryoconiteRTM/Data/ice_k.csv', delimiter=",")
+            
+            specular_component = []
+
+            for i in range(len(wvl)):
+                
+                # calculate losses at air/ice boundary 
+                R1 = fresnel(nAir[i],nIce[i],kAir[i],kIce[i],coszen) # external specular
+                R1 = R1 * smoothness # if 0, no specular component.
+
+                # calculate specular component of spectral albedo
+                specular_component.append(Fs[i] * R1)
+
+                # calculate transmitted portion, propagated to eddington albedo calculation as Fs
+                Fs[i] = Fs[i] * (1-R1)
+
+        ################################
+        ################################
 
         Fd = np.zeros(nbr_wvl)
 
     else:
 
         with open(str(dir_base + dir_GO_files + "mlw_sfc_flx_frc_cld.txt")) as file:
+            
             for line in file:
                 line = float(line.rstrip("\n"))
                 flx_slr.append(line)
@@ -73,7 +113,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
         if (side_length[i] == 0) | (depth[i] == 0):
 
-            print("ERROR: ICE GRAIN LENGTH AND/OR DEPTH SET TO ZERO")
+            raise("ERROR: ICE GRAIN LENGTH AND/OR DEPTH SET TO ZERO")
 
         else:
 
@@ -519,11 +559,18 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     # = energy absorbed by underlying surface
     F_btm_net[0,:] = -F_net[nbr_lyr-1,:]
 
-    # Hemispheric wavelength-dependent albedo
-    albedo = F_top_pls/ ((mu_not * np.pi * Fs)+ Fd)
+    # if specular reflection toggled ON, add specular component to upwelling flux at upper boundary
+    if specular_reflection:
+
+        # Hemispheric wavelength-dependent albedo
+        albedo = (F_top_pls + specular_component) / ((mu_not * np.pi * Fs_tot)+Fd)
+
+    else:      
+        # Hemispheric wavelength-dependent albedo
+        albedo = F_top_pls/ ((mu_not * np.pi * Fs_tot)+ Fd)
 
     # Net flux at upper model boundary
-    F_top_net[0,:] = F_top_pls - ((mu_not * np.pi * Fs) + Fd)
+    F_top_net[0,:] = F_top_pls - ((mu_not * np.pi * Fs_tot) + Fd)
 
     # absorbed flux in each layer (negative if there is net emission (bnd_typ = 4))
     for i in np.arange(0,nbr_lyr,1):
@@ -556,7 +603,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
     # Energy conservation check:
     # % Incident direct + diffuse radiation equals(absorbed + transmitted + bulk_reflected)
-    energy_sum = (mu_not * np.pi * Fs) + Fd - (sum(F_abs) + F_btm_net + F_top_pls)
+    energy_sum = (mu_not * np.pi * Fs_tot) + Fd - (sum(F_abs) + F_btm_net + F_top_pls)
 
     # spectrally-integrated terms:
     # energy conservation total error

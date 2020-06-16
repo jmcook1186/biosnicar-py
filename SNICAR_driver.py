@@ -23,12 +23,16 @@ import numpy as np
 ##############################
 # 1) Choose plot/print options
 
-show_figs = False # toggle to display spectral albedo figure
-save_figs = False # toggle to save spectral albedo figure to file
+show_figs = True # toggle to display spectral albedo figure
+save_figs = True # toggle to save spectral albedo figure to file
 savepath = "/home/joe/Code/BioSNICAR_GO_PY/" # base path for saving figures
 print_BBA = True # toggle to print broadband albedo to terminal
-print_band_ratios = True # toggle to print various band ratios to terminal
+print_band_ratios = False # toggle to print various band ratios to terminal
+smooth = True # apply optional smoothing function (Savitzky-Golay filter)
+window_size = 11 # if applying smoothing filter, define window size
+poly_order = 3 # if applying smoothing filter, define order of polynomial
 
+##################################################################
 # 2) CHOOSE METHOD FOR DETERMINING OPTICAL PROPERTIES OF ICE GRAINS
 # for small spheres choose Mie, for hexagonal plates or columns of any size
 # choose GeometricOptics
@@ -36,31 +40,38 @@ print_band_ratios = True # toggle to print various band ratios to terminal
 Mie = False
 GeometricOptics = True
 
+
 ######################################
 ## 3. RADIATIVE TRANSFER CONFIGURATION
 
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
-APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
+APRX_TYP = 3        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-coszen   = 0.57    # if DIRECT give cosine of solar zenith angle 
+coszen   = 0.3      # if DIRECT give cosine of solar zenith angle 
+
+##################################################################
+# TOGGLE SPECULAR REFLECTION ON/OFF and DEFINE ROUGHNESS
+
+specular_reflection = True # apply specular reflection at upper surface
+smoothness = 1 # degree of smoothness between 0-1 - scales fresnel coefficient
 
 #############################################
 ## 4. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
 
-dz = [0.001, 0.01, 0.01, 0.01, 0.01] # thickness of each vertical layer (unit = m)
+dz = [0.02, 0.02, 0.02, 0.02, 0.2] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [500, 500, 500, 500, 500] # density of each layer (unit = kg m-3)
+rho_snw = [700, 700, 700, 700, 700] # density of each layer (unit = kg m-3)
 
 #SET ICE GRAIN DIMENSIONS
 # if using Mie optical properties, set rds_snw and 
 # an optional coated liquid water sphere
-rds_snw = [500,500,500,500,500]
-rwater = [600, 600, 600, 600, 600]
+rds_snw = [2000,2000,2000,2000,2000]
+rwater = [0, 0, 0, 0, 0]
 
 # if using GeometricOptics, set side_length and depth
-side_length = [5000,8000,15000,15000,15000] 
-depth = [5000,8000,15000,15000,15000]
+side_length = [15000,15000,15000,15000,15000] 
+depth = [15000,15000,15000,15000,15000]
 
 ##############################################
 ## 5) SET LAP CHARACTERISTICS
@@ -75,8 +86,9 @@ snw_stb1 = 'snw_alg_' # name stub for snow algae
 
 # CHOOSE DIMENSIONS OF GLACIER ALGAE 1
 algae_r = 6 # algae radius
-algae_l = 120 # algae length
-glacier_algae1 = str(wrkdir2+stb1+str(algae_r)+'_'+str(algae_l)+stb2) # create filename string
+algae_l = 60 # algae length
+#glacier_algae1 = str(wrkdir2+stb1+str(algae_r)+'_'+str(algae_l)+stb2) # create filename string
+glacier_algae1 = str(wrkdir2+'RealPhenol_algae_geom_6_60.nc')
 
 # CHOOSE DIMENSIONS OF GLACIER ALGAE 2
 algae2_r = 6 # algae radius
@@ -90,7 +102,8 @@ snw_alg = str(wrkdir2+snw_stb1+str(snw_algae_r)+stb2) # create filename string
 # SET UP IMPURITY MIXING RATIOS
 # PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
 
-for x in [1000, 10000, 100000, 200000, 300000, 500000]:
+for x in [2000]:
+    
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon
     mss_cnc_dust1 = [0,0,0,0,0]    # global average dust 1
@@ -105,7 +118,7 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
     mss_cnc_GRISdustP2 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_GRISdustP3 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis)
-    mss_cnc_glacier_algae1 = [x,0,0,0,0]    # glacier algae type1
+    mss_cnc_glacier_algae1 = [0,0,0,0,0]    # glacier algae type1
     mss_cnc_glacier_algae2 = [0,0,0,0,0]    # glacier algae type2
 
     ##########################################################################
@@ -130,13 +143,22 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
     FILE_glacier_algae1 = glacier_algae1 # Glacier algae
     FILE_glacier_algae2 = glacier_algae2 # Glacier algae
 
+    # Error catching: invalid combinations of inut variables
+
+    if (DIRECT != 1) & (specular_reflection == True):
+        raise("ERROR: Specular reflection applied to diffuse incident radiation \n Please select\
+        direct beam and set beam angle or toggle specular reflection OFF.")
+    
+    if (specular_reflection == True) & ((coszen <0.3)or(coszen>0.9)):
+        raise("ERROR: outside valid range of solar zenith angle")
 
     if Mie == True and GeometricOptics == True:
 
         print("ERROR: BOTH MIE AND GO MODES SELECTED: PLEASE CHOOSE ONE")
 
     elif Mie == True:
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_mie(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1,
+
+        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_mie(DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1,
         mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
         mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, 
         mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2,
@@ -145,7 +167,7 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
 
     elif GeometricOptics == True:
 
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_GO(DIRECT, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, side_length, depth, nbr_lyr, nbr_aer, mss_cnc_soot1,
+        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_GO(DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, side_length, depth, nbr_lyr, nbr_aer, mss_cnc_soot1,
         mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
         mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, 
         mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2,
@@ -156,6 +178,11 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
         
         print("NEITHER MIE NOR GO MODE SELECTED: PLEASE CHOOSE ONE")
     
+    if smooth:
+        from scipy.signal import savgol_filter
+        yhat = savgol_filter(albedo, window_size, poly_order)
+        albedo = yhat
+
     if print_band_ratios:
 
         I2DBA = albedo[40]/albedo[36]
@@ -175,14 +202,14 @@ for x in [1000, 10000, 100000, 200000, 300000, 500000]:
         print('BROADBAND ALBEDO = ', BBA)
 
     #### PLOT ALBEDO ######
-    plt.plot(wvl, albedo), plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.3,1.5),plt.ylim(0,1)
-    plt.axvline(x = 0.68,color='g',linestyle='dashed')
+    plt.plot(wvl, albedo)
 
-
+plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.3,1.5),
+plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
 
 if save_figs:
     plt.savefig(str(savepath+"spectral_albedo.png"))
+    plt.show()
 
 if show_figs:
     plt.show()
-
