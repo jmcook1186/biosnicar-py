@@ -298,10 +298,10 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
 
     # optionally save files to savepath
     if savefiles: # optional save dataframe to csv files
-        data.to_csv(str(savepath+'{}_Dataset.csv'.format(savefilename)))
-        data['Imag'].to_csv(str(savepath+'{}_KK.csv'.format(savefilename)),header=None,index=False)
-        data['MAC'].to_csv(str(savepath+'{}_MAC.csv'.format(savefilename)),header=None,index=False)
-        data['Real'].to_csv(str(savepath+'{}_Real.csv'.format(savefilename)),header=None,index=False)
+        data.to_csv(str(savepath+'/Data/'+'{}_Dataset.csv'.format(savefilename)))
+        data['Imag'].to_csv(str(savepath+'/Data/'+'{}KK.csv'.format(savefilename)),header=None,index=False)
+        data['MAC'].to_csv(str(savepath+'/Data/'+'{}MAC.csv'.format(savefilename)),header=None,index=False)
+        data['Real'].to_csv(str(savepath+'/Data/'+'{}Real.csv'.format(savefilename)),header=None,index=False)
 
     # optionally plot figures to interative window
     if plot_optical_props:
@@ -630,7 +630,6 @@ def calc_optical_params_MIE(basePath, cell_radius, cell_density, reals, imags, w
 
         X = 2*np.pi*cell_radius/wavelengths[i]
 
-
         qext, qsca, qback, g = mie(complex(str("{}-{}j".format(m,k))),X)
 
         abs_coeff = 4 * np.pi * (imags[i] / wavelengths[i]*1000)
@@ -643,7 +642,9 @@ def calc_optical_params_MIE(basePath, cell_radius, cell_density, reals, imags, w
 
         MAC[i] = abs_coeff/cell_density # calculate mass absorption coefficient from cross section
         assym[i] = g
-        ss_alb = qqsca/qqext
+
+
+    ss_alb = qqsca/qqext
 
 
     if plots:
@@ -701,6 +702,6 @@ def net_cdf_updater(savepath, Assy_list, SSA_list, MAC, depth, r, density):
     algfile.attrs['density_kg_m3'] = density
     algfile.attrs[
         'origin'] = 'Optical properties derived from geometrical optics calculations (algae_go.py) with empirically derived MAC'
-    algfile.to_netcdf(str(savepath + 'RealPhenol_algae_geom_{}_{}TEST.nc'.format(str(r), str(depth))), mode='w')
+    algfile.to_netcdf(str(savepath + 'RealPhenol_algae_geom_{}_{}.nc'.format(str(r), str(depth))), mode='w')
 
     return

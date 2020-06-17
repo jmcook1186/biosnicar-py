@@ -20,12 +20,14 @@ from snicar8d_GO import snicar8d_GO
 import matplotlib.pyplot as plt
 import numpy as np
 
+# set dir_base to the location of the BioSNICAR_GO_PY folder
+dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
 ##############################
 # 1) Choose plot/print options
 
 show_figs = True # toggle to display spectral albedo figure
 save_figs = True # toggle to save spectral albedo figure to file
-savepath = "/home/joe/Code/BioSNICAR_GO_PY/" # base path for saving figures
+savepath = dir_base # base path for saving figures
 print_BBA = True # toggle to print broadband albedo to terminal
 print_band_ratios = False # toggle to print various band ratios to terminal
 smooth = True # apply optional smoothing function (Savitzky-Golay filter)
@@ -37,9 +39,8 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 # for small spheres choose Mie, for hexagonal plates or columns of any size
 # choose GeometricOptics
 
-Mie = False
-GeometricOptics = True
-
+Mie = True
+GeometricOptics = False
 
 ######################################
 ## 3. RADIATIVE TRANSFER CONFIGURATION
@@ -58,10 +59,10 @@ smoothness = 1 # degree of smoothness between 0-1 - scales fresnel coefficient
 #############################################
 ## 4. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
 
-dz = [0.02, 0.02, 0.02, 0.02, 0.2] # thickness of each vertical layer (unit = m)
+dz = [0.001, 0.02, 0.02, 0.02, 0.2] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [700, 700, 700, 700, 700] # density of each layer (unit = kg m-3)
+rho_snw = [800, 800, 800, 700, 800] # density of each layer (unit = kg m-3)
 
 #SET ICE GRAIN DIMENSIONS
 # if using Mie optical properties, set rds_snw and 
@@ -81,7 +82,7 @@ nbr_aer = 16 # Define total number of different LAPs/aerosols in model
 # set filename stubs
 stb1 = 'algae_geom_' # %name stub 1
 stb2 = '.nc'  # file extension
-wrkdir2 = '/home/joe/Code/BioSNICAR_GO_PY/Data/Algal_Optical_Props/' # working directory
+wrkdir2 = str(dir_base + '/Data/Algal_Optical_Props/') # working directory
 snw_stb1 = 'snw_alg_' # name stub for snow algae
 
 # CHOOSE DIMENSIONS OF GLACIER ALGAE 1
@@ -102,7 +103,7 @@ snw_alg = str(wrkdir2+snw_stb1+str(snw_algae_r)+stb2) # create filename string
 # SET UP IMPURITY MIXING RATIOS
 # PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
 
-for x in [2000]:
+for x in [20000]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon
@@ -118,7 +119,7 @@ for x in [2000]:
     mss_cnc_GRISdustP2 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_GRISdustP3 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis)
-    mss_cnc_glacier_algae1 = [0,0,0,0,0]    # glacier algae type1
+    mss_cnc_glacier_algae1 = [x,0,0,0,0]    # glacier algae type1
     mss_cnc_glacier_algae2 = [0,0,0,0,0]    # glacier algae type2
 
     ##########################################################################
@@ -158,21 +159,25 @@ for x in [2000]:
 
     elif Mie == True:
 
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_mie(DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1,
-        mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
-        mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, 
-        mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2,
-        FILE_dust3, FILE_dust4, FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2, 
+        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] =\
+        snicar8d_mie(dir_base, DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz,\
+        rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2,\
+        mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, mss_cnc_GRISdust2, mss_cnc_GRISdust3,\
+        mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, mss_cnc_snw_alg, mss_cnc_glacier_algae1,\
+        mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4,\
+        FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2,\
         FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
 
     elif GeometricOptics == True:
 
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = snicar8d_GO(DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, side_length, depth, nbr_lyr, nbr_aer, mss_cnc_soot1,
-        mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
-        mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, 
-        mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2,
-        FILE_dust3, FILE_dust4, FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2, 
-        FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
+        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] = \
+        snicar8d_GO(dir_base, DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, \
+        rho_snw, side_length, depth, nbr_lyr, nbr_aer, mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2,\
+        mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, mss_cnc_GRISdust2, mss_cnc_GRISdust3,\
+        mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, mss_cnc_snw_alg, mss_cnc_glacier_algae1,\
+        mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1,\
+        FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2, FILE_GRISdustP3,\
+        FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
 
     else:
         
@@ -199,6 +204,7 @@ for x in [2000]:
         print("Impurity Index: ", II)
 
     if print_BBA:
+
         print('BROADBAND ALBEDO = ', BBA)
 
     #### PLOT ALBEDO ######

@@ -1,4 +1,4 @@
-def snicar8d_mie(DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer,
+def snicar8d_mie(dir_base, DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer,
 mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, 
 mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
 mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, 
@@ -15,7 +15,6 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     from SpecularFuncs import fresnel
 
     # set working directory (location of netcdf library)
-    dir_base = "/home/joe/Code/BioSNICAR_GO_PY/"
     dir_alg = "Data/Algal_Optical_Props/"
     dir_mie_files = "Data/Mie_files/"
 
@@ -63,9 +62,9 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             nAir = np.ones(shape=(470)) # define n and k for air (array of ones)
             kAir = np.zeros(shape=(470))+0.00000001
 
-            nIce = np.genfromtxt('/home/joe/Code/CryoconiteRTM/Data/ice_n.csv', delimiter=",")
+            nIce = np.genfromtxt(str(dir_base+'/Data/ice_n.csv'), delimiter=",")
             nIce[nIce<1.0] = 1.0 # prevent math domain error - this is a negligible adjustment to a few wavelengths
-            kIce = np.genfromtxt ('/home/joe/Code/CryoconiteRTM/Data/ice_k.csv', delimiter=",")
+            kIce = np.genfromtxt (str(dir_base+'/Data/ice_k.csv'), delimiter=",")
             
             specular_component = []
 
