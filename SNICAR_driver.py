@@ -46,14 +46,14 @@ GeometricOptics = False
 ## 3. RADIATIVE TRANSFER CONFIGURATION
 
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
-APRX_TYP = 3        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
+APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-coszen   = 0.3      # if DIRECT give cosine of solar zenith angle 
+coszen   = 0.57      # if DIRECT give cosine of solar zenith angle 
 
 ##################################################################
-# TOGGLE SPECULAR REFLECTION ON/OFF and DEFINE ROUGHNESS
+# TOGGLE SPECULAR REFLECTION ON/OFF and DEFINE ROUGHNESS - NOT YET FUNCTIONAL!!!!
 
-specular_reflection = True # apply specular reflection at upper surface
+specular_reflection = False # apply specular reflection at upper surface
 smoothness = 1 # degree of smoothness between 0-1 - scales fresnel coefficient
 
 #############################################
@@ -62,17 +62,33 @@ smoothness = 1 # degree of smoothness between 0-1 - scales fresnel coefficient
 dz = [0.001, 0.02, 0.02, 0.02, 0.2] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [800, 800, 800, 700, 800] # density of each layer (unit = kg m-3)
+rho_snw = [650, 650, 650, 650, 650] # density of each layer (unit = kg m-3)
 
 #SET ICE GRAIN DIMENSIONS
+
 # if using Mie optical properties, set rds_snw and 
 # an optional coated liquid water sphere
-rds_snw = [2000,2000,2000,2000,2000]
+rds_snw = [1500,1500,1500,1500,1500]
 rwater = [0, 0, 0, 0, 0]
 
+# define snow grain shapes as per He et al (2016)
+# snw_shp can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3= koch snowflake
+# shp_fctr = ratio of nonspherical grain effective radii to that of equal-volume sphere
+    # 0=use recommended default value (He et al. 2017);
+    # use user-specified value (between 0 and 1)
+    # only activated when sno_shp > 1 (i.e. nonspherical)
+# snw_ar = aspect ratio: ratio of width to length
+
+# NOTE ONLY FUNCTIONAL IN MIE SCATTERING MODE because the single scattering optical 
+# properties in GO mode assume hexagonal columnar grains.
+
+snw_shp =[1,1,1,1,1]
+shp_fctr = [0,0,0,0,0]
+snw_ar = [0,0,0,0,0]
+
 # if using GeometricOptics, set side_length and depth
-side_length = [15000,15000,15000,15000,15000] 
-depth = [15000,15000,15000,15000,15000]
+side_length = [30000,30000,30000,30000,30000] 
+depth = [30000,30000,30000,30000,30000]
 
 ##############################################
 ## 5) SET LAP CHARACTERISTICS
@@ -103,7 +119,7 @@ snw_alg = str(wrkdir2+snw_stb1+str(snw_algae_r)+stb2) # create filename string
 # SET UP IMPURITY MIXING RATIOS
 # PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
 
-for x in [20000]:
+for x in [300000]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon
@@ -119,8 +135,8 @@ for x in [20000]:
     mss_cnc_GRISdustP2 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_GRISdustP3 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis)
-    mss_cnc_glacier_algae1 = [x,0,0,0,0]    # glacier algae type1
-    mss_cnc_glacier_algae2 = [0,0,0,0,0]    # glacier algae type2
+    mss_cnc_glacier_algae1 = [0,0,0,0,0]    # glacier algae type1
+    mss_cnc_glacier_algae2 = [x,0,0,0,0]    # glacier algae type2
 
     ##########################################################################
     ################## CALL FUNCTIONS AND PLOT OUTPUTS #######################
@@ -147,11 +163,11 @@ for x in [20000]:
     # Error catching: invalid combinations of inut variables
 
     if (DIRECT != 1) & (specular_reflection == True):
-        raise("ERROR: Specular reflection applied to diffuse incident radiation \n Please select\
+        raise ValueError("ERROR: Specular reflection applied to diffuse incident radiation \n Please select\
         direct beam and set beam angle or toggle specular reflection OFF.")
     
     if (specular_reflection == True) & ((coszen <0.3)or(coszen>0.9)):
-        raise("ERROR: outside valid range of solar zenith angle")
+        raise ValueError("ERROR: outside valid range of solar zenith angle")
 
     if Mie == True and GeometricOptics == True:
 
@@ -161,12 +177,12 @@ for x in [20000]:
 
         [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_slr_tot, abs_vis_tot, heat_rt, total_insolation] =\
         snicar8d_mie(dir_base, DIRECT, specular_reflection, smoothness, APRX_TYP, DELTA, coszen, R_sfc, dz,\
-        rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2,\
-        mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, mss_cnc_GRISdust2, mss_cnc_GRISdust3,\
-        mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, mss_cnc_snw_alg, mss_cnc_glacier_algae1,\
-        mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4,\
-        FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2,\
-        FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
+        rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
+        mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1,\
+        mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3,\
+        mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1,\
+        FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3,\
+        FILE_GRISdustP1, FILE_GRISdustP2,FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
 
     elif GeometricOptics == True:
 
