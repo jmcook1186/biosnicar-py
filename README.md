@@ -29,18 +29,26 @@ The new glacier algal optical properties account for intracellular protein attac
  
 ### 3) Addition of liquid water films
 Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
-   
-### 4) Addition of specular reflection function
-Specular reflection from the upper surface, scaled using a user-defined smoothness value is also now available. This approximates the the "specular-eddington" approach of Warren and Mullen (1984: doi 10.1029/JD093iD07p08403) and Dadic et al. (2013: doi 0.1002/jgrf.20098, 2013). If specular reflection is toggled ON, the model assumes the existence of a smooth layer at the upper surface where reflection occurs according to Fresnel's equations, giving a value for spectral specular reflectance (R) from the upper surface. This value is then used to attenuate the incoming irradiance that propagates to the two-stream multiple scattering model for n vertical layers below. The specular component is then added to the upwelling flux from the two-stream model when the material albedo is calculated.
-    
-(i.e. I* is total incoming irradiance, R is Fresnel reflectance from upper surface, I* x R is the specular component, I* x (1-R) is the irradiance propagated to the two-stream model, giving F_up, F-up_tot = (F_up + I* x R)).  
 
-**** <b>CAUTION!!</b> Note that internal reflection (specular reflection of upwelling diffuse radiation from the underside of the upper ice/air boundary) is not yet accounted for - this is the next most pressing item on my TODO list but likely requires replacing the tridiagonal matrix solver in SNICAR with a different procedure ***
+### 4) Addition of aspherical grains
+Adjustments to the single scattering optical properties of the ice grains resulting from variations in
+grain shape have been added to the model when run in Mie mode - running in GO mode assumes hexagonal
+columnar grains. These adjustments are from He et al. (2016) and enable the modelling of spheroids,
+hexagonal plates and Koch snowflakes.
+
+### 5) Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
+A second option for the treatment of multiple layers was added in October 2020. The user can now opt to
+include solid ice layers with fresnel reflections at their surfaces and solve the radiative transfer
+using the adding-doubling method as an alternative to the Toon et al (1989) matrix inversion method that was
+previously used that cannot include fresnel reflection and refraction. The A-D solver is pretty much a direct 
+translation of the Matlab code written by Chloe Whicker (UMich) who in turn built on work by Dang et al. (2019). 
+The solid ice layers can be positioned anywhere in the vertical profile, meaning unweathered ice beneath an 
+increasingly porous weathered crust can now be realistically simulated.
 
 
 # Model Structure
 
-<img src="./Assets/model_structure.jpg" width=1500>
+<img src="./Assets/model_structure2.jpg" width=1500>
 
 
 # Environment/Dependencies
@@ -66,8 +74,11 @@ If creating a new environment in this way, please remember to update the prefix 
 
 ## Files
 
-snicar8d_mie.py: main snicar function using mie optical properties
+snicar8d_mie.py: main snicar function using mie optical properties, acts as feeder cript for the rtm solvers
+snicar8d_Go.py: calculates layer optical properties and feeds toon et al tridiagona matrix solver
 SNICAR_driver.py: driver script for BioSNICAR_GO package
+two_stream_solver.py: Toon et al (1989) tridiagonal matrix solver
+adding_doubling.py: adding-doubling method radiative transfer solver
 snicar_mie_tests.py: script for running unit tests against matlab version
 BioSNICAR_py.yaml: exported environment
 Files in /UnitTests/SnicarX/ are all benchmark spectral albedos for unit testing as predicted by the Matlab version of SNICAR.
@@ -84,6 +95,8 @@ In this repository the requisite datasets are divided into four classes, each co
 
 4) Cell/pigment MACs: csv files containing the mass absorption coefficients for individual pigments or cells used in the Bio-optical model. These files are currently sved "loose" in the Data directory.
 
+5) bubbly_ice_files: optical properties for slabs of ice wth bubbles. numeric value in filename is the
+   effective radius of the bulk material (higher number  = fewer bubbles)
 
 ## Repository Structure
 ```
@@ -106,6 +119,8 @@ BioSNICAR_GO_PY
 |
 |-----Data
 |       |
+|       |- pigment MACs as csv files, ice and water refractive indices as .nc file
+|       |
 |       |---Algal_Optical_Props
 |       |      |
 |       |      |--all algal single scattering props in .nc
@@ -117,10 +132,13 @@ BioSNICAR_GO_PY
 |       |      |--mineral dust, ash and BC optical props in .nc
 |       |
 |       |---Mie_files
+|       |      |
+|       |      |--all ice single scattering props in .nc
+|       |      |--mineral dust, ash and BC optical props in .n
+|       |
+|       |---bubbly_ice_files
 |              |
-|              |--all ice single scattering props in .nc
-|              |--mineral dust, ash and BC optical props in .n
-|
+|              |--optical properties for ice slabs
 |
 |-----UnitTests
 |            |
@@ -339,11 +357,14 @@ This code is in active development. Collaboration ideas and pull-requests genera
 
 # Citation
 
-Please cite:
+If you use this code in a publication, please cite:
 
-Cook, J. et al. (2019): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere, https://doi.org/10.5194/tc-2019-58, accepted for publication Dec 2019. 
+Cook, J. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere, doi:10.5194/tc-14-309-2020 
 
-and the doi for the relevant release of this repository (v0.1 doi: 10.5281/zenodo.3564517).
+Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
+
+And if using the adding-doubling method please also cite Dang et al (2019) and Whicker et al (2021) as their code was translated to form the adding_doubling_solver.py script here. The aspherical grain correction equations come from He et al. (2016).
+
 
 # References
 
@@ -351,11 +372,19 @@ Cook JM, et al (2017) Quantifying bioalbedo: A new physically-based model and cr
 
 Cook, J. M. et al. (2019): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019. 
 
-Flanner, M. et al. (2007): Present-day climate forcing and response from black carbonin snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
+Dang, C., Zender, C., Flanner M. 2019. Intercomparison and improvement of two-stream shortwave radiative transfer schemes in Earth system models for a unified treatment of cryospheric surfaces. The Cryosphere, 13, 2325–2343, https://doi.org/10.5194/tc-13-2325-2019 
+
+Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
 
 Flanner, M et al. (2009) Springtime warming and reduced snow cover from
 carbonaceous particles. Atmospheric Chemistry and Physics, 9: 2481-2497, 2009.
 
+He, C., Liou, K.‐N., Takano, Y., Yang, P., Qi, L., & Chen, F. (2018). Impact of grain shape and multiple black carbon internal mixing on snow albedo: Parameterization and radiative effect analysis. Journal of Geophysical Research: Atmospheres, 123, 1253– 1268. https://doi.org/10.1002/2017JD027752 
+
 Polashenski et al. (2015): Neither dust nor black carbon causing apparent albedo decline in Greenland's dry snow zone: Implications for MODIS C5 surface reflectance, Geophys. Res. Lett., 42, 9319– 9327, doi:10.1002/2015GL065912, 2015.
 
+Toon, O. B., McKay, C. P., Ackerman, T. P., and Santhanam, K. (1989), Rapid calculation of radiative heating rates and photodissociation rates in inhomogeneous multiple scattering atmospheres, J. Geophys. Res., 94( D13), 16287– 16301, doi:10.1029/JD094iD13p16287. 
+
 van Diedenhoven et al. (2014): A flexible paramaterization for shortwave opticalproperties of ice crystals. Journal of the Atmospheric Sciences, 71: 1763 – 1782, doi:10.1175/JAS-D-13-0205.1
+
+Whicker et al. COMING SOON!
