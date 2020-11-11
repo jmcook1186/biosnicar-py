@@ -202,16 +202,16 @@ def adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr
                     #! the plane containing incident, reflected and refracted rays.
                     
                     #! Eq. 22  Briegleb & Light 2007
-                    # inputs to equation 21 below
-                    R1 = (mu0 - refindx*mu0n) / (mu0 + refindx*mu0n)    #reflection amplitude factor for perpendicular polarization
-                    R2 = (refindx*mu0 - mu0n) / (refindx*mu0 + mu0n)    #reflection amplitude factor for parallel polarization
-                    T1 = 2*mu0 / (mu0 + refindx*mu0n)                   #transmission amplitude factor for perpendicular polarization
-                    T2 = 2*mu0 / (refindx*mu0 + mu0n)                   #transmission amplitude factor for parallel polarization
+                    # inputs to equation 21 below 
+                    R1 = (mu0 - refindx * mu0n) / (mu0 + refindx * mu0n)    #reflection amplitude factor for perpendicular polarization
+                    R2 = (refindx*mu0 - mu0n) / (refindx * mu0 + mu0n)    #reflection amplitude factor for parallel polarization
+                    T1 = 2 * mu0 / (mu0 + refindx * mu0n)                   #transmission amplitude factor for perpendicular polarization
+                    T2 = 2 * mu0 / (refindx * mu0 + mu0n)                   #transmission amplitude factor for parallel polarization
                     
                     #! unpolarized light for direct beam
                     #! Eq. 21  Brigleb and light 2007
-                    Rf_dir_a = 0.5 * (R1*R1 + R2*R2) 
-                    Tf_dir_a = 0.5 * (T1*T1 + T2*T2)*refindx*mu0n/mu0 
+                    Rf_dir_a = 0.5 * (R1 * R1 + R2 * R2) 
+                    Tf_dir_a = 0.5 * (T1 * T1 + T2 * T2) * refindx * mu0n / mu0 
                     
                     #      ! precalculated diffuse reflectivities and transmissivities
                     #      ! for incident radiation above and below fresnel layer, using

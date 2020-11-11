@@ -178,21 +178,6 @@ Using the BioSNICAR_GO package is straightforwards. The user should not need to 
 
 BioOptical_model.py and Algae_GO.py are used to generate new optical properties for algae to include in BioSNICAR_GO. There should be sufficient in-script annotations to guide this process, although it is not suggested to apply purely theoretical optical properties in real scientific use-cases without some empirical "ground-truthing" as there are few published datasets for the MAC of snow and glacier algae to verify them against. In BioSNICAR_GO the glacier algal optical properties were empirically measured by Williamson et al (2020: PNAS) using data from the Black and Bloom project.
 
-# Known bugs and gotchas
-
-1) Diffuse + Eddington:
-   
-The combination of Eddington 2-stream approximation and diffuse incident radiation causes the albedo to go negative at wavelengths > ~1.4 um. Recommend using quadature or hemispheric mean approximations when diffuse
-incident radiation is required.
-
-2) SZA limits
-   
-The two stream aproximation seems to fall apart at high zenith angles (>~0.57). This is common to all versions of SNICAR and is explained in Toon et al. (1989).
-
-3) Snow algae
-   
-While glacier algae MACs have been determined empirically, there is only a hypothetical snow algae with potentially realistic pigemnt concentrations derived from the literature. A more accurate, empirically-derived set of single scattering optical properties for real snow algae is needed.
-
 
 # Unit Testing
 

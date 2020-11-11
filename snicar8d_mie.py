@@ -36,7 +36,6 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     from adding_doubling_solver import adding_doubling_solver
 
     # set working directory (location of netcdf library)
-    dir_alg = "Data/Algal_Optical_Props/"
     dir_mie_files = "Data/Mie_files/"
 
     # retrieve wavelength from arbitrary choice of netcdf file
@@ -53,7 +52,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     # calc cosine of solar zenith (radians)
     mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
     
-    print(mu_not)
+    print("\ncosine of solar zenith = ", mu_not)
     
     flx_slr = []
 
@@ -73,6 +72,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     else:
 
         with open(str(dir_base + dir_mie_files + "mlw_sfc_flx_frc_cld.txt")) as file:
+            
             for line in file:
                 line = float(line.rstrip("\n"))
                 flx_slr.append(line)
@@ -144,6 +144,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             # g_snw asymmetry factor parameterization coefficients (6 bands) from
             # Table 3 & Eqs. 6-7 in He et al. (2017)
             # assume same values for 4-5 um band, which leads to very small biases (<3%)
+            
             g_wvl = np.array([0.25,0.70,1.41,1.90,2.50,3.50,4.00,5.00]) # wavelength (um) division point
             g_wvl_center = np.array(g_wvl[1:8])/2 + np.array(g_wvl[0:7])/2  # center point for wavelength band
             g_b0 = np.array([9.76029E-01,9.67798E-01,1.00111E+00,1.00224E+00,9.64295E-01,9.97475E-01,9.97475E-01])
@@ -299,7 +300,6 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
     # read in aerosol optical properties
     SSAaer = np.zeros([nbr_aer,nbr_wvl])
-
     SSAaer[0,:] = FILE_soot1['ss_alb'].values[10:]
     SSAaer[1,:] = FILE_soot2['ss_alb'].values[10:]
     SSAaer[2,:] = FILE_dust1['ss_alb'].values
@@ -441,8 +441,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     g[g<=0]-0.001
     g[g>=1]=0.999
 
-
-    ### CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; ADD_DOUBLE = ADDING-DOUBLING METHOD)
+    # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; ADD_DOUBLE = ADDING-DOUBLING METHOD)
    
     if TOON: 
 
@@ -457,6 +456,5 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,\
             L_snw, flx_slr, DIRECT, rds_snw)
 
-    
 
     return wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt

@@ -62,10 +62,10 @@ ADD_DOUBLE = True # toggle adding-doubling solver
 ## 3. RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
+DIRECT   = 0        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 10      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+solzen   = 70      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
 
 
 #############################################
@@ -79,11 +79,11 @@ solzen   = 10      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 
     # use user-specified value (between 0 and 1)
     # only activated when sno_shp > 1 (i.e. nonspherical)
 
-dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
+dz = [0.001, 0.1, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 layer_type = [0,0,1,1,1]
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [600, 600, 910, 910, 910] # density of each layer (unit = kg m-3)
+rho_snw = [600, 700, 883, 883, 883] # density of each layer (unit = kg m-3)
 rds_snw = [2000,2000,2000,2000,2000] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
 snw_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
@@ -141,7 +141,7 @@ for x in [0]:
     mss_cnc_GRISdustP2 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_GRISdustP3 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis)
-    mss_cnc_glacier_algae1 = [100000,0,0,0,0]    # glacier algae type1
+    mss_cnc_glacier_algae1 = [0,0,0,0,0]    # glacier algae type1
     mss_cnc_glacier_algae2 = [0,0,0,0,0]    # glacier algae type2 
 
 
@@ -179,21 +179,35 @@ for x in [0]:
     elif TOON == True and ADD_DOUBLE == True:
 
         raise ValueError("ERROR: BOTH SOLVERS SELECTED: PLEASE CHOOSE EITHER TOON OR ADD_DOUBLE")
+
+    elif TOON == True and solzen < 40:
+        
+        raise ValueError("INVALID SOLAR ANGLE: solzen outside valid range for Toon solver - ue AD mode or solzen >= 40.")
     
-    # elif np.sum(layer_type) < 1 and ADD_DOUBLE==True:
+    elif np.sum(layer_type) < 1 and ADD_DOUBLE==True:
+        # just warn user but let program continue - in some cases 
+        # AD method preferable (stable over complete range of SZA)
+        print("\nWARNING:")
+        print("There are no solid ice layers included - you might prefer the faster matrix inversion method.")
+        print("Toggle TOON=True and ADD_DOUBLE=False to use it.\n")
 
-    #     raise Warning("There are no ice layers in the model - use Toon et al tridiagonal matrix solver")
+    elif np.sum(layer_type) > 0 and TOON == True:
 
-    # elif np.sum(layer_type) > 0 and TOON == True:
+        raise ValueError("There are ice layers in the model - please use the adding-doubling solver")
 
-    #     raise Warning("There are ice layers in the model - please use the adding-doubling solver")
+    if np.sum(mss_cnc_snw_alg) != 0:
+        # remind user that snow algae optical properties have not yet been empirically validated
+        print("WARNING: you are using snow algae as an impurity in the model.")
+        print("the optical properties for these algae are theoretical.") 
+        print("They were constructed from literature values for pigmentation, refractive indices and cell size")
+        print("They have not yet been validated empirically.")
 
     #######################################
     # IF NO INPUT ERRORS --> FUNCTION CALLS
     #######################################
 
-    elif Mie == True:
-
+    if Mie == True:
+        
         [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] =\
         snicar8d_mie(dir_base, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
         rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
@@ -249,7 +263,7 @@ for x in [0]:
     #### PLOT ALBEDO ######
     plt.plot(wvl, albedo)
 
-plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.3,1.5),
+plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.35,2.5),
 plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
 
 if save_figs:
