@@ -17,10 +17,20 @@ included in the ice/snow column, the ADDING-DOUBLING solver must be used
 
 Author: Joseph Cook, October 2020
 
+
+TODO: add new laps according to 480-band optical property files
+
+TODO: extend GO model to 200 nm (requires recalculating algal optical properties)
+
+TODO: create new algal optical properties that extend to 200nm and use full phenol spectrum
+
 ######################################################################
 ######################################################################
 
 """
+
+
+
 from snicar8d_mie import snicar8d_mie
 from snicar8d_GO import snicar8d_GO
 import matplotlib.pyplot as plt
@@ -62,11 +72,11 @@ ADD_DOUBLE = True # toggle adding-doubling solver
 ## 3. RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-DIRECT   = 0        # 1= Direct-beam incident flux, 0= Diffuse incident flux
+DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 70      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
-
+solzen   = 67      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+rf_ice = 0        # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
 
 #############################################
 ## 4. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
@@ -79,12 +89,12 @@ solzen   = 70      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 
     # use user-specified value (between 0 and 1)
     # only activated when sno_shp > 1 (i.e. nonspherical)
 
-dz = [0.001, 0.1, 1, 1, 10] # thickness of each vertical layer (unit = m)
+dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 layer_type = [0,0,1,1,1]
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [600, 700, 883, 883, 883] # density of each layer (unit = kg m-3)
-rds_snw = [2000,2000,2000,2000,2000] # effective grain radius of snow/bubbly ice
+rho_snw = [600, 600, 600, 894, 894] # density of each layer (unit = kg m-3)
+rds_snw = [550,550,550,550,550] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
 snw_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
 shp_fctr = [0,0,0,0,0] # shape factor (ratio of aspherical grain radii to that of equal-volume sphere)
@@ -118,10 +128,6 @@ algae2_r = 2 # algae radius
 algae2_l = 10 # algae length
 glacier_algae2 = str(wrkdir2+stb1+str(algae2_r)+'_'+str(algae2_l)+stb2) # create filename string
 
-# CHOOSE SNOW ALGAE DIAMETER
-snw_algae_r = 1 # snow algae diameter
-snw_alg = str(wrkdir2+snw_stb1+str(snw_algae_r)+stb2) # create filename string
-
 # SET UP IMPURITY MIXING RATIOS
 # PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
 
@@ -134,15 +140,13 @@ for x in [0]:
     mss_cnc_dust3 = [0,0,0,0,0]    # global average dust 3
     mss_cnc_dust4 = [0,0,0,0,0]    # global average dust 4
     mss_cnc_ash1 = [0,0,0,0,0]    # volcanic ash species 1
-    mss_cnc_GRISdust1 = [0,0,0,0,0]    # GRIS dust 1 (Cook et al. 2019 "mean")
-    mss_cnc_GRISdust2 = [0,0,0,0,0]    # GRIS dust 2 (Cook et al. 2019 HIGH)
-    mss_cnc_GRISdust3 = [0,0,0,0,0]    # GRIS dust 3 (Cook et al. 2019 LOW)
-    mss_cnc_GRISdustP1 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: low hematite)
-    mss_cnc_GRISdustP2 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
-    mss_cnc_GRISdustP3 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
+    mss_cnc_Skiles_dust1 = [0,0,0,0,0]    # GRIS dust 1 (Cook et al. 2019 "mean")
+    mss_cnc_Skiles_dust2 = [0,0,0,0,0]    # GRIS dust 2 (Cook et al. 2019 HIGH)
+    mss_cnc_Skiles_dust3 = [0,0,0,0,0]    # GRIS dust 3 (Cook et al. 2019 LOW)
+    mss_cnc_Skiles_dust4 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: low hematite)
+    mss_cnc_Skiles_dust5 = [0,0,0,0,0]  # GRIS dust 1 (Polashenki2015: median hematite)
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis)
-    mss_cnc_glacier_algae1 = [0,0,0,0,0]    # glacier algae type1
-    mss_cnc_glacier_algae2 = [0,0,0,0,0]    # glacier algae type2 
+    mss_cnc_glacier_algae = [0,0,0,0,0]    # glacier algae type1
 
 
     ##########################################################################
@@ -151,22 +155,21 @@ for x in [0]:
 
     # SET FILE NAMES CONTAINING OPTICAL PARAMETERS FOR ALL IMPURITIES:
 
-    FILE_soot1  = 'mie_sot_ChC90_dns_1317_2.nc'
-    FILE_soot2  = 'miecot_slfsot_ChC90_dns_1317_2.nc'
-    FILE_dust1  = 'aer_dst_bln_20060904_01.nc'
-    FILE_dust2  = 'aer_dst_bln_20060904_02.nc'
-    FILE_dust3  = 'aer_dst_bln_20060904_03.nc'
-    FILE_dust4  = 'aer_dst_bln_20060904_04.nc'
-    FILE_ash1  = 'volc_ash_mtsthelens_20081011.nc'
-    FILE_GRISdust1 = 'dust_greenland_Cook_CENTRAL_20190911.nc'
-    FILE_GRISdust2 = 'dust_greenland_Cook_HIGH_20190911.nc'
-    FILE_GRISdust3 = 'dust_greenland_Cook_LOW_20190911.nc'
-    FILE_GRISdustP1 = 'dust_greenland_L_20150308.nc'
-    FILE_GRISdustP2 = 'dust_greenland_C_20150308.nc'
-    FILE_GRISdustP3 = 'dust_greenland_H_20150308.nc'
-    FILE_snw_alg  = snw_alg # snow algae (c nivalis)
-    FILE_glacier_algae1 = glacier_algae1 # Glacier algae
-    FILE_glacier_algae2 = glacier_algae2 # Glacier algae
+    FILE_soot1  = '/480band/lap/mie_sot_ChC90_dns_1317.nc'
+    FILE_soot2  = '/480band/lap/miecot_slfsot_ChC90_dns_1317.nc'
+    FILE_dust1  = '/480band/lap/dust_balkanski_central_size1.nc'
+    FILE_dust2  = '/480band/lap/dust_balkanski_central_size2.nc'
+    FILE_dust3  = '/480band/lap/dust_balkanski_central_size3.nc'
+    FILE_dust4  = '/480band/lap/dust_balkanski_central_size4.nc'
+    FILE_ash1  = '/480band/lap/volc_ash_eyja_central_size1.nc'
+    FILE_Skiles_dust1 = '/480band/lap/dust_skiles_size1.nc'
+    FILE_Skiles_dust2 = '/480band/lap/dust_skiles_size2.nc'
+    FILE_Skiles_dust3 = '/480band/lap/dust_skiles_size3.nc'
+    FILE_Skiles_dust4 = '/480band/lap/dust_skiles_size4.nc'
+    FILE_Skiles_dust5 = '/480band/lap/dust_skiles_size5.nc'
+    FILE_snw_alg  = '/home/joe/Code/BioSNICAR_GO_PY/Data/Mie_files/480band/lap/snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
+    FILE_glacier_algae = '/home/joe/Code/BioSNICAR_GO_PY/Data/Mie_files/480band/lap/Glacier_Algae480.nc'
+
 
     #########################################################
     # Error catching: invalid combinations of input variables
@@ -209,13 +212,13 @@ for x in [0]:
     if Mie == True:
         
         [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] =\
-        snicar8d_mie(dir_base, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
+        snicar8d_mie(dir_base, rf_ice, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
         rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
-        mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1,\
-        mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3,\
-        mss_cnc_snw_alg, mss_cnc_glacier_algae1, mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1,\
-        FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3,\
-        FILE_GRISdustP1, FILE_GRISdustP2,FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
+        mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
+        mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
+        mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1, FILE_soot2, FILE_dust1,\
+        FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_Skiles_dust1, FILE_Skiles_dust2, FILE_Skiles_dust3,\
+        FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_snw_alg, FILE_glacier_algae)
 
     elif GeometricOptics == True:
 
@@ -263,7 +266,7 @@ for x in [0]:
     #### PLOT ALBEDO ######
     plt.plot(wvl, albedo)
 
-plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.35,2.5),
+plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.2,1.8),
 plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
 
 if save_figs:

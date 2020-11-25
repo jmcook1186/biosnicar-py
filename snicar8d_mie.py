@@ -1,12 +1,10 @@
-def snicar8d_mie(dir_base, DIRECT, layer_type, APRX_TYP, DELTA, solzen,
-TOON, ADD_DOUBLE, R_sfc, dz, rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar,
-mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2, 
-mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, 
-mss_cnc_GRISdust2, mss_cnc_GRISdust3, mss_cnc_GRISdustP1, 
-mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, mss_cnc_snw_alg, mss_cnc_glacier_algae1, 
-mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, 
-FILE_ash1, FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2, 
-FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
+def snicar8d_mie(dir_base, rf_ice, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
+        rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
+        mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
+        mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
+        mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1, FILE_soot2, FILE_dust1,\
+        FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_Skiles_dust1, FILE_Skiles_dust2, FILE_Skiles_dust3,\
+        FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_snw_alg, FILE_glacier_algae):
 
 
     """
@@ -39,7 +37,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     dir_mie_files = "Data/Mie_files/"
 
     # retrieve wavelength from arbitrary choice of netcdf file
-    temp = xr.open_dataset(str(dir_base+dir_mie_files+"ice_wrn_0500.nc"))
+    temp = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/ice_Wrn84/ice_Wrn84_0500.nc"))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
@@ -58,26 +56,17 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
 
     if DIRECT:
 
-        with open(str(dir_base + dir_mie_files + "mlw_sfc_flx_frc_clr.txt")) as file:
-            for line in file:
-                line = float(line.rstrip("\n"))
-                flx_slr.append(line)
-        
-        flx_slr = np.array(flx_slr)
+        Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+        flx_slr = Incoming_file['flx_dwn_sfc'].values
         flx_slr[flx_slr<=0]=1e-30
         Fs = flx_slr / (mu_not * np.pi)
-
         Fd = np.zeros(nbr_wvl)
 
     else:
 
-        with open(str(dir_base + dir_mie_files + "mlw_sfc_flx_frc_cld.txt")) as file:
-            
-            for line in file:
-                line = float(line.rstrip("\n"))
-                flx_slr.append(line)
+        Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+        flx_slr = Incoming_file['flx_dwn_sfc'].values
         
-        flx_slr = np.array(flx_slr)
         flx_slr[flx_slr<=0]=1e-30
 
         Fd = [flx_slr[i]/mu_not*np.pi for i in range(nbr_wvl)]
@@ -87,10 +76,19 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     # Read in ice optical properties
     # set string stubs for reading in ice optical files
 
-    fl_stb1 = "ice_wrn_"
+    if rf_ice == 0:
+
+        fl_stb1 = '480band/ice_Wrn84/ice_Wrn84_'
+        print("Using Warren 84 refractive index")
+    elif rf_ice == 1:
+        fl_stb1 = '480band/ice_Wrn08/ice_Wrn08_'
+        print("Using Warren 08 refractive index")
+    elif rf_ice == 2:
+        fl_stb1 = '480band/ice_Pic16/ice_Pic16_'
+        print("Using Picard 16 refractive index")
+
     fl_stb2 = ".nc"
-    fn_ice = dir_base + "Data/Refractive_Index_Ice_Warren_1984.csv"
-    fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+
 
     # set up empty arrays
     SSA_snw = np.empty([nbr_lyr, nbr_wvl])
@@ -114,14 +112,19 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
             # read in single scattering albedo, MAC and g for ice crystals in each layer,
             # optional with coated liquid water spheres
             if rwater[i] > rds_snw[i]:
-                
-                res = miecoated_driver(rice=rds_snw[i], rwater=rwater[i], fn_ice=fn_ice, fn_water=fn_water, wvl=wvl)
-                SSA_snw[i, :] = res["ssa"]
-                g_snw[i, :] = res["asymmetry"]
 
-                with xr.open_dataset(FILE_ice) as temp:
-                    ext_cff_mss = temp['ext_cff_mss'].values
-                    MAC_snw[i, :] = ext_cff_mss
+                # water coating code currently disabled
+                raise ValueError("SORRY, water coatings are not yet functional until the code has been updated to deal with wl's down to 200 nm")               
+                #    fn_ice = dir_base + "/Data/rfidx_ice.nc"
+
+                #    fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+                #     res = miecoated_driver(rice=rds_snw[i], rwater=rwater[i], fn_ice=fn_ice, fn_water=fn_water, wvl=wvl)
+                #     SSA_snw[i, :] = res["ssa"]
+                #     g_snw[i, :] = res["asymmetry"]
+
+                #     with xr.open_dataset(FILE_ice) as temp:
+                #         ext_cff_mss = temp['ext_cff_mss'].values
+                #         MAC_snw[i, :] = ext_cff_mss
             else:
 
                 with xr.open_dataset(FILE_ice) as temp:
@@ -256,26 +259,30 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
                         g_snw[i,:] = g_snw_F07 * g_Cg_intp # Eq.6, He et al. (2017)
                         g_snw[i,371:470] = g_snw[i,370] # assume same values for 4-5 um band, with very small biases (<3%)
                     
-                    
+                    g_snw[g_snw < 0] = 0.01
                     g_snw[g_snw > 0.99] = 0.99 # avoid unreasonable values (so far only occur in large-size spheroid cases)
 
 
         else: # else correspondng to if layer_type == 1
             
-            rd = rds_snw[i]
-
+            rd = "{}".format(rds_snw[i])
+            rd = rd.rjust(4,"0")
             refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
-            refidx_re = refidx_file['re_Wrn84'].values[10:] # start at 300 nm for now
-            refidx_im = refidx_file['im_Wrn84'].values[10:] # start at 300 nm for now
+            refidx_re = refidx_file['re_Wrn08'].values # start at 300 nm for now
+            refidx_im = refidx_file['im_Wrn08'].values # start at 300 nm for now
+
+
 
             FILE_ice = '/home/joe/Code/BioSNICAR_GO_PY/Data/bubbly_ice_files/bbl_{}.nc'.format(rd)
             file = xr.open_dataset(FILE_ice)
-            sca_cff_vlm = file['sca_cff_vlm'].values[10:] # scattering cross section unit per volume of bubble
-            g_snw[i,:] = file['asm_prm'].values[10:]
+            sca_cff_vlm = file['sca_cff_vlm'].values # scattering cross section unit per volume of bubble
+            g_snw[i,:] = file['asm_prm'].values
             abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6))/917
             vlm_frac_air = (917 - rho_snw[i]) / 917
             MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) + abs_cff_mss_ice
             SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) / MAC_snw[i,:]
+
+
     
     ###############################################################
     ##############################################################
@@ -288,72 +295,65 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     FILE_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust3))
     FILE_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust4))
     FILE_ash1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash1))
-    FILE_GRISdust1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GRISdust1))
-    FILE_GRISdust2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GRISdust2))
-    FILE_GRISdust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GRISdust3))
-    FILE_GRISdustP1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GRISdustP1))
-    FILE_GRISdustP2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GRISdustP2))
-    FILE_GRISdustP3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GRISdustP3))
+    FILE_Skiles_dust1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust1))
+    FILE_Skiles_dust2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust2))
+    FILE_Skiles_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust3))
+    FILE_Skiles_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust4))
+    FILE_Skiles_dust5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust5))
     FILE_snw_alg = xr.open_dataset(FILE_snw_alg)
-    FILE_glacier_algae1 = xr.open_dataset(FILE_glacier_algae1)
-    FILE_glacier_algae2 = xr.open_dataset(FILE_glacier_algae2)
+    FILE_glacier_algae = xr.open_dataset(FILE_glacier_algae)
 
     # read in aerosol optical properties
     SSAaer = np.zeros([nbr_aer,nbr_wvl])
-    SSAaer[0,:] = FILE_soot1['ss_alb'].values[10:]
-    SSAaer[1,:] = FILE_soot2['ss_alb'].values[10:]
+    SSAaer[0,:] = FILE_soot1['ss_alb'].values
+    SSAaer[1,:] = FILE_soot2['ss_alb'].values
     SSAaer[2,:] = FILE_dust1['ss_alb'].values
     SSAaer[3,:] = FILE_dust2['ss_alb'].values
     SSAaer[4,:] = FILE_dust3['ss_alb'].values
     SSAaer[5,:] = FILE_dust4['ss_alb'].values
     SSAaer[6,:] = FILE_ash1['ss_alb'].values
-    SSAaer[7,:] = FILE_GRISdust1['ss_alb'].values
-    SSAaer[8,:] = FILE_GRISdust2['ss_alb'].values
-    SSAaer[9,:] = FILE_GRISdust3['ss_alb'].values
-    SSAaer[10,:] = FILE_GRISdustP1['ss_alb'].values
-    SSAaer[11,:] = FILE_GRISdustP2['ss_alb'].values
-    SSAaer[12,:] = FILE_GRISdustP3['ss_alb'].values
-    SSAaer[13,:] = FILE_snw_alg['ss_alb'].values
-    SSAaer[14,:] = FILE_glacier_algae1['ss_alb'].values
-    SSAaer[15,:] = FILE_glacier_algae2['ss_alb'].values
+    SSAaer[7,:] = FILE_Skiles_dust1['ss_alb'].values
+    SSAaer[8,:] = FILE_Skiles_dust2['ss_alb'].values
+    SSAaer[9,:] = FILE_Skiles_dust3['ss_alb'].values
+    SSAaer[10,:] = FILE_Skiles_dust4['ss_alb'].values
+    SSAaer[11,:] = FILE_Skiles_dust5['ss_alb'].values
+    SSAaer[12,:] = FILE_snw_alg['ss_alb'].values
+    SSAaer[13,:] = FILE_glacier_algae['ss_alb'].values
 
     MACaer = np.zeros([nbr_aer, nbr_wvl])
 
-    MACaer[0,:] = FILE_soot1['ext_cff_mss'].values[10:]
-    MACaer[1,:] = FILE_soot2['ext_cff_mss'].values[10:]
+    MACaer[0,:] = FILE_soot1['ext_cff_mss'].values
+    MACaer[1,:] = FILE_soot2['ext_cff_mss'].values
     MACaer[2,:] = FILE_dust1['ext_cff_mss'].values
     MACaer[3,:] = FILE_dust2['ext_cff_mss'].values
     MACaer[4,:] = FILE_dust3['ext_cff_mss'].values
     MACaer[5,:] = FILE_dust4['ext_cff_mss'].values
     MACaer[6,:] = FILE_ash1['ext_cff_mss'].values
-    MACaer[7,:] = FILE_GRISdust1['ext_cff_mss'].values
-    MACaer[8,:] = FILE_GRISdust2['ext_cff_mss'].values
-    MACaer[9,:] = FILE_GRISdust3['ext_cff_mss'].values
-    MACaer[10,:] = FILE_GRISdustP1['ext_cff_mss'].values
-    MACaer[11,:] = FILE_GRISdustP2['ext_cff_mss'].values
-    MACaer[12,:] = FILE_GRISdustP3['ext_cff_mss'].values
-    MACaer[13,:] = FILE_snw_alg['ext_cff_mss'].values
-    MACaer[14,:] = FILE_glacier_algae1['ext_cff_mss'].values
-    MACaer[15,:] = FILE_glacier_algae2['ext_cff_mss'].values
+    MACaer[7,:] = FILE_Skiles_dust1['ext_cff_mss'].values
+    MACaer[8,:] = FILE_Skiles_dust2['ext_cff_mss'].values
+    MACaer[9,:] = FILE_Skiles_dust3['ext_cff_mss'].values
+    MACaer[10,:] = FILE_Skiles_dust4['ext_cff_mss'].values
+    MACaer[11,:] = FILE_Skiles_dust5['ext_cff_mss'].values
+    MACaer[12,:] = FILE_snw_alg['ext_cff_mss'].values
+    MACaer[13,:] = FILE_glacier_algae['ext_cff_mss'].values
 
     Gaer = np.zeros([nbr_aer,nbr_wvl])
 
-    Gaer[0,:] = FILE_soot1['asm_prm'].values[10:]
-    Gaer[1,:] = FILE_soot2['asm_prm'].values[10:]
+    Gaer[0,:] = FILE_soot1['asm_prm'].values
+    Gaer[1,:] = FILE_soot2['asm_prm'].values
     Gaer[2,:] = FILE_dust1['asm_prm'].values
     Gaer[3,:] = FILE_dust2['asm_prm'].values
     Gaer[4,:] = FILE_dust3['asm_prm'].values
     Gaer[5,:] = FILE_dust4['asm_prm'].values
     Gaer[6,:] = FILE_ash1['asm_prm'].values
-    Gaer[7,:] = FILE_GRISdust1['asm_prm'].values
-    Gaer[8,:] = FILE_GRISdust2['asm_prm'].values
-    Gaer[9,:] = FILE_GRISdust3['asm_prm'].values
-    Gaer[10,:] = FILE_GRISdustP1['asm_prm'].values
-    Gaer[11,:] = FILE_GRISdustP2['asm_prm'].values
-    Gaer[12,:] = FILE_GRISdustP3['asm_prm'].values
-    Gaer[13,:] = FILE_snw_alg['asm_prm'].values
-    Gaer[14,:] = FILE_glacier_algae1['asm_prm'].values
-    Gaer[15,:] = FILE_glacier_algae2['asm_prm'].values
+    Gaer[7,:] = FILE_Skiles_dust1['asm_prm'].values
+    Gaer[8,:] = FILE_Skiles_dust2['asm_prm'].values
+    Gaer[9,:] = FILE_Skiles_dust3['asm_prm'].values
+    Gaer[10,:] = FILE_Skiles_dust4['asm_prm'].values
+    Gaer[11,:] = FILE_Skiles_dust5['asm_prm'].values
+    Gaer[12,:] = FILE_snw_alg['asm_prm'].values
+    Gaer[13,:] = FILE_glacier_algae['asm_prm'].values
+
 
 
     # load mass concentrations per layer into numpy array (one row per layer, one column per umpurity)
@@ -367,15 +367,13 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     MSSaer[0:nbr_lyr,4] = mss_cnc_dust3
     MSSaer[0:nbr_lyr,5] = mss_cnc_dust4
     MSSaer[0:nbr_lyr,6] = mss_cnc_ash1
-    MSSaer[0:nbr_lyr,7] = mss_cnc_GRISdust1
-    MSSaer[0:nbr_lyr,8] = mss_cnc_GRISdust2
-    MSSaer[0:nbr_lyr,9] = mss_cnc_GRISdust3
-    MSSaer[0:nbr_lyr,10] = mss_cnc_GRISdustP1
-    MSSaer[0:nbr_lyr,11] = mss_cnc_GRISdustP2
-    MSSaer[0:nbr_lyr,12] = mss_cnc_GRISdustP3
-    MSSaer[0:nbr_lyr,13] = mss_cnc_snw_alg
-    MSSaer[0:nbr_lyr,14] = mss_cnc_glacier_algae1
-    MSSaer[0:nbr_lyr,15] = mss_cnc_glacier_algae2
+    MSSaer[0:nbr_lyr,7] = mss_cnc_Skiles_dust1
+    MSSaer[0:nbr_lyr,8] = mss_cnc_Skiles_dust2
+    MSSaer[0:nbr_lyr,9] = mss_cnc_Skiles_dust3
+    MSSaer[0:nbr_lyr,10] = mss_cnc_Skiles_dust4
+    MSSaer[0:nbr_lyr,11] = mss_cnc_Skiles_dust5
+    MSSaer[0:nbr_lyr,12] = mss_cnc_snw_alg
+    MSSaer[0:nbr_lyr,13] = mss_cnc_glacier_algae
 
     MSSaer = MSSaer*1e-9
 
@@ -411,6 +409,7 @@ FILE_GRISdustP3, FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2):
     # for each layer, the layer mass (L) is density * layer thickness
     # for each layer the optical depth is the layer mass * the mass extinction coefficient
     # first for the ice in each layer
+    
     for i in range(nbr_lyr):
 
         L_snw[i] = rho_snw[i] * dz[i]

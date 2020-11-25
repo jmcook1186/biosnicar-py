@@ -32,8 +32,8 @@ def adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr
     gauspt = [0.9894009, 0.9445750, 0.8656312, 0.7554044, 0.6178762, 0.4580168, 0.2816036, 0.0950125]  # gaussian angles (radians)     
     gauswt = [0.0271525, 0.0622535, 0.0951585, 0.1246290, 0.1495960, 0.1691565, 0.1826034, 0.1894506] # gaussian weights
 
-    vis_max_idx = 40   # index of maximum visible wavelength (0.7 um)
-    nir_max_idx = 470 # index of max nir wavelength (5 um)
+    vis_max_idx = 50   # index of maximum visible wavelength (0.7 um)
+    nir_max_idx = 480 # index of max nir wavelength (5 um)
 
     # empty arrays
     trndir = np.zeros(shape=[nbr_wvl,nbr_lyr+1])
@@ -91,8 +91,8 @@ def adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr
 
             # open refractive index file and grab real and imaginary parts
             refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
-            refidx_re = refidx_file['re_Wrn84'].values[10:] # start at 300 nm for now
-            refidx_im = refidx_file['im_Wrn84'].values[10:] # start at 300 nm for now
+            refidx_re = refidx_file['re_Wrn84'].values # start at 300 nm for now
+            refidx_im = refidx_file['im_Wrn84'].values # start at 300 nm for now
             refindx = refidx_re[wl]+refidx_im[wl]  # combine real and imaginary parts into one var
 
             #    ! compute next layer Delta-eddington solution only if total transmission
