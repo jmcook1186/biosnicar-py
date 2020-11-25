@@ -1,4 +1,4 @@
-def snicar8d_mie(dir_base, rf_ice, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
+def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
         rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
         mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
         mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
@@ -53,10 +53,28 @@ def snicar8d_mie(dir_base, rf_ice, DIRECT, layer_type, APRX_TYP, DELTA, solzen, 
     print("\ncosine of solar zenith = ", mu_not)
     
     flx_slr = []
-
+    print("incoming = ", incoming_i)
+    
     if DIRECT:
 
-        Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+        if incoming_i == 0:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_clr.nc"))
+        elif incoming_i == 1:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mls_clr.nc"))
+        elif incoming_i == 2:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_saw_clr.nc"))
+        elif incoming_i == 3:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_sas_clr.nc"))
+        elif incoming_i == 4:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_smm_clr.nc"))
+        elif incoming_i == 5:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_hmn_clr.nc"))  
+        elif incoming_i == 6:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_toa_clr.nc"))
+
+        else:
+            raise ValueError ("Invalid choice of atmospheric profile")
+        
         flx_slr = Incoming_file['flx_dwn_sfc'].values
         flx_slr[flx_slr<=0]=1e-30
         Fs = flx_slr / (mu_not * np.pi)
@@ -64,7 +82,24 @@ def snicar8d_mie(dir_base, rf_ice, DIRECT, layer_type, APRX_TYP, DELTA, solzen, 
 
     else:
 
-        Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+        if incoming_i == 0:
+                Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+        elif incoming_i == 1:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mls_cld.nc"))
+        elif incoming_i == 2:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_saw_cld.nc"))
+        elif incoming_i == 3:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_sas_cld.nc"))
+        elif incoming_i == 4:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_smm_cld.nc"))
+        elif incoming_i == 5:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_hmn_cld.nc"))   
+        elif incoming_i == 6:
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_toa_cld.nc"))
+
+        else:
+            raise ValueError ("Invalid choice of atmospheric profile")     
+
         flx_slr = Incoming_file['flx_dwn_sfc'].values
         
         flx_slr[flx_slr<=0]=1e-30

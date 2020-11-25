@@ -75,8 +75,21 @@ ADD_DOUBLE = True # toggle adding-doubling solver
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 67      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+solzen   = 80      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
 rf_ice = 0        # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
+
+# CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
+#    0 = mid-latitude winter
+#    1 = mid-latitude summer
+#    2 = sub-Arctic winter
+#    3 = sub-Arctic summer
+#    4 = Summit,Greenland (sub-Arctic summer, surface pressure of 796hPa)
+#    5 = High Mountain (summer, surface pressure of 556 hPa)
+#    6 = Top-of-atmosphere
+# NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
+# and cloudy-sky spectral fluxes are loaded when direct_beam=0
+incoming_i = 5
+
 
 #############################################
 ## 4. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
@@ -93,8 +106,8 @@ dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 layer_type = [0,0,1,1,1]
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [600, 600, 600, 894, 894] # density of each layer (unit = kg m-3)
-rds_snw = [550,550,550,550,550] # effective grain radius of snow/bubbly ice
+rho_snw = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
+rds_snw = [1500,1500,550,550,550] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
 snw_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
 shp_fctr = [0,0,0,0,0] # shape factor (ratio of aspherical grain radii to that of equal-volume sphere)
@@ -212,7 +225,7 @@ for x in [0]:
     if Mie == True:
         
         [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] =\
-        snicar8d_mie(dir_base, rf_ice, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
+        snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
         rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
         mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
         mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
