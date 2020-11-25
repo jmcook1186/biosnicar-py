@@ -335,8 +335,8 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
     FILE_Skiles_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust3))
     FILE_Skiles_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust4))
     FILE_Skiles_dust5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust5))
-    FILE_snw_alg = xr.open_dataset(FILE_snw_alg)
-    FILE_glacier_algae = xr.open_dataset(FILE_glacier_algae)
+    FILE_snw_alg = xr.open_dataset(str(dir_base + dir_mie_files+FILE_snw_alg))
+    FILE_glacier_algae = xr.open_dataset(str(dir_base + dir_mie_files+FILE_glacier_algae))
 
     # read in aerosol optical properties
     SSAaer = np.zeros([nbr_aer,nbr_wvl])
@@ -357,8 +357,8 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
 
     MACaer = np.zeros([nbr_aer, nbr_wvl])
 
-    MACaer[0,:] = FILE_soot1['ext_cff_mss'].values
-    MACaer[1,:] = FILE_soot2['ext_cff_mss'].values
+    MACaer[0,:] = FILE_soot1['ext_cff_mss'].values 
+    MACaer[1,:] = FILE_soot2['ext_cff_mss_ncl'].values # normalised to mass of carbon, not carbon plus coating
     MACaer[2,:] = FILE_dust1['ext_cff_mss'].values
     MACaer[3,:] = FILE_dust2['ext_cff_mss'].values
     MACaer[4,:] = FILE_dust3['ext_cff_mss'].values

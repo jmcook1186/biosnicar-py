@@ -180,8 +180,8 @@ for x in [0]:
     FILE_Skiles_dust3 = '/480band/lap/dust_skiles_size3.nc'
     FILE_Skiles_dust4 = '/480band/lap/dust_skiles_size4.nc'
     FILE_Skiles_dust5 = '/480band/lap/dust_skiles_size5.nc'
-    FILE_snw_alg  = '/home/joe/Code/BioSNICAR_GO_PY/Data/Mie_files/480band/lap/snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
-    FILE_glacier_algae = '/home/joe/Code/BioSNICAR_GO_PY/Data/Mie_files/480band/lap/Glacier_Algae480.nc'
+    FILE_snw_alg  = '/480band/lap/snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
+    FILE_glacier_algae = '/480band/lap/Glacier_Algae480.nc'
 
 
     #########################################################
