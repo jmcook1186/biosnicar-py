@@ -23,16 +23,14 @@ TODO: add new laps according to 480-band optical property files
 TODO: extend GO model to 200 nm (requires recalculating algal optical properties)
 
 TODO: create new algal optical properties that extend to 200nm and use full phenol spectrum
+(requires generating new optical property files)
 
 ######################################################################
 ######################################################################
 
 """
 
-
-
-from snicar8d_mie import snicar8d_mie
-from snicar8d_GO import snicar8d_GO
+from SNICAR_feeder import snicar_feeder
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -60,12 +58,12 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 # choose GeometricOptics
 #####################################################################
 
-Mie = True
-GeometricOptics = False
+MIE = False
+GO = True
 
 # If Mie = True, select solver (only Toon available for GO mode).
-TOON = False # toggle Toon et al tridiagonal matrix solver
-ADD_DOUBLE = True # toggle adding-doubling solver
+TOON = True # toggle Toon et al tridiagonal matrix solver
+ADD_DOUBLE = False # toggle adding-doubling solver
 
 
 ######################################
@@ -88,7 +86,7 @@ rf_ice = 0        # define source of ice refractive index data. 0 = Warren 1984,
 #    6 = Top-of-atmosphere
 # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
-incoming_i = 5
+incoming_i = 0
 
 
 #############################################
@@ -98,13 +96,14 @@ incoming_i = 5
 # grain shapes are only active in Mie scattering mode - GO assumes hexagonal columns.
 # snw_shp can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3= koch snowflake
 # shp_fctr = ratio of nonspherical grain effective radii to that of equal-volume sphere
+    
     # 0=use recommended default value (He et al. 2017);
     # use user-specified value (between 0 and 1)
     # only activated when sno_shp > 1 (i.e. nonspherical)
 
 dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
-layer_type = [0,0,1,1,1]
+layer_type = [0,0,0,0,0]
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 rho_snw = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
 rds_snw = [1500,1500,550,550,550] # effective grain radius of snow/bubbly ice
@@ -114,9 +113,8 @@ shp_fctr = [0,0,0,0,0] # shape factor (ratio of aspherical grain radii to that o
 snw_ar = [0,0,0,0,0] # aspect ratio (ratio of width to length)
 
 # if using GeometricOptics, set side_length and depth
-side_length = [30000,30000,30000,30000,30000] 
-depth = [30000,30000,30000,30000,30000]
-
+side_length = [10000,10000,10000,10000,10000] 
+depth = [20000,20000,20000,20000,20000]
 
 #######################################
 ## 5) SET LAP CHARACTERISTICS
@@ -181,14 +179,14 @@ for x in [0]:
     FILE_Skiles_dust4 = '/480band/lap/dust_skiles_size4.nc'
     FILE_Skiles_dust5 = '/480band/lap/dust_skiles_size5.nc'
     FILE_snw_alg  = '/480band/lap/snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
-    FILE_glacier_algae = '/480band/lap/Glacier_Algae480.nc'
+    FILE_glacier_algae = '/480band/lap/Glacier_Algae_480.nc'
 
 
     #########################################################
     # Error catching: invalid combinations of input variables
     #########################################################
 
-    if Mie == True and GeometricOptics == True:
+    if MIE == True and GO == True:
 
         raise ValueError("ERROR: BOTH MIE AND GO MODES SELECTED: PLEASE CHOOSE ONE")
 
@@ -222,32 +220,18 @@ for x in [0]:
     # IF NO INPUT ERRORS --> FUNCTION CALLS
     #######################################
 
-    if Mie == True:
         
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] =\
-        snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
-        rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
-        mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
-        mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
-        mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1, FILE_soot2, FILE_dust1,\
-        FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_Skiles_dust1, FILE_Skiles_dust2, FILE_Skiles_dust3,\
-        FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_snw_alg, FILE_glacier_algae)
+    [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] =\
+    snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
+    rho_snw, rds_snw, side_length, depth, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
+    mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
+    mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
+    mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1, FILE_soot2, FILE_dust1,\
+    FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_Skiles_dust1, FILE_Skiles_dust2, FILE_Skiles_dust3,\
+    FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_snw_alg, FILE_glacier_algae)
 
-    elif GeometricOptics == True:
 
-        [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] = \
-        snicar8d_GO(dir_base, DIRECT, APRX_TYP, DELTA, solzen, R_sfc, dz, \
-        rho_snw, side_length, depth, nbr_lyr, nbr_aer, mss_cnc_soot1, mss_cnc_soot2, mss_cnc_dust1, mss_cnc_dust2,\
-        mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_GRISdust1, mss_cnc_GRISdust2, mss_cnc_GRISdust3,\
-        mss_cnc_GRISdustP1, mss_cnc_GRISdustP2, mss_cnc_GRISdustP3, mss_cnc_snw_alg, mss_cnc_glacier_algae1,\
-        mss_cnc_glacier_algae2, FILE_soot1, FILE_soot2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1,\
-        FILE_GRISdust1, FILE_GRISdust2, FILE_GRISdust3, FILE_GRISdustP1, FILE_GRISdustP2, FILE_GRISdustP3,\
-        FILE_snw_alg, FILE_glacier_algae1, FILE_glacier_algae2)
-
-    else:
-        
-        print("NEITHER MIE NOR GO MODE SELECTED: PLEASE CHOOSE ONE")
-    
+   
     ########################
     # PLOTTING AND PRINTING
     ########################
@@ -274,13 +258,15 @@ for x in [0]:
 
     if print_BBA:
 
-        print('BROADBAND ALBEDO = ', BBA)
+        print('\nBROADBAND ALBEDO = ', BBA)
 
     #### PLOT ALBEDO ######
     plt.plot(wvl, albedo)
 
 plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.2,1.8),
 plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
+
+print(len(albedo))
 
 if save_figs:
     plt.savefig(str(savepath+"spectral_albedo.png"))

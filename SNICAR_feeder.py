@@ -1,5 +1,5 @@
-def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
-        rho_snw, rds_snw, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
+def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
+        rho_snw, rds_snw, side_length, depth, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
         mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
         mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
         mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1, FILE_soot2, FILE_dust1,\
@@ -35,6 +35,7 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
 
     # set working directory (location of netcdf library)
     dir_mie_files = "Data/Mie_files/"
+    dir_GO_files = 'Data/GO_files/'
 
     # retrieve wavelength from arbitrary choice of netcdf file
     temp = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/ice_Wrn84/ice_Wrn84_0500.nc"))
@@ -53,24 +54,30 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
     print("\ncosine of solar zenith = ", mu_not)
     
     flx_slr = []
-    print("incoming = ", incoming_i)
     
     if DIRECT:
 
         if incoming_i == 0:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_clr.nc"))
+            print("atmospheric profile = mid-lat winter")
         elif incoming_i == 1:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mls_clr.nc"))
+            print("atmospheric profile = mid-lat summer")
         elif incoming_i == 2:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_saw_clr.nc"))
+            print("atmospheric profile = sub-Arctic winter")
         elif incoming_i == 3:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_sas_clr.nc"))
+            print("atmospheric profile = sub-Arctic summer")
         elif incoming_i == 4:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_smm_clr.nc"))
+            print("atmospheric profile = Summit Station")
         elif incoming_i == 5:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_hmn_clr.nc"))  
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_hmn_clr.nc"))
+            print("atmospheric profile = High Mountain")  
         elif incoming_i == 6:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_toa_clr.nc"))
+            print("atmospheric profile = top-of-atmosphere")
 
         else:
             raise ValueError ("Invalid choice of atmospheric profile")
@@ -112,7 +119,6 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
     # set string stubs for reading in ice optical files
 
     if rf_ice == 0:
-
         fl_stb1 = '480band/ice_Wrn84/ice_Wrn84_'
         print("Using Warren 84 refractive index")
     elif rf_ice == 1:
@@ -140,9 +146,20 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
                 raise ValueError("ERROR: ICE GRAIN RADIUS SET TO ZERO")
 
             else:
-                s1 = "{}".format(str(rds_snw[i]))
-                s1 = s1.rjust(4,'0')
-                FILE_ice = str(dir_base+dir_mie_files+fl_stb1+s1+fl_stb2)
+
+                if MIE:
+                    s1 = "{}".format(str(rds_snw[i]))
+                    s1 = s1.rjust(4,'0')
+                    FILE_ice = str(dir_base + dir_mie_files + fl_stb1 + s1 + fl_stb2)
+                
+                elif GO:
+
+                    s1 = "{}".format(str(side_length[i]))
+                    s1 = s1.rjust(4,'0')
+                    s2 = "{}".format(str(depth[i]))
+                    FILE_ice = str(dir_base + dir_GO_files + fl_stb1 + s1 + "_" + s2 + fl_stb2)
+                    print("\nLayer: {}".format(i))
+                    print("Using geometric optics mode: hex column with side length = {}, length = {}".format(s1,s2))
 
             # read in single scattering albedo, MAC and g for ice crystals in each layer,
             # optional with coated liquid water spheres
@@ -305,8 +322,6 @@ def snicar8d_mie(dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DEL
             refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
             refidx_re = refidx_file['re_Wrn08'].values # start at 300 nm for now
             refidx_im = refidx_file['im_Wrn08'].values # start at 300 nm for now
-
-
 
             FILE_ice = '/home/joe/Code/BioSNICAR_GO_PY/Data/bubbly_ice_files/bbl_{}.nc'.format(rd)
             file = xr.open_dataset(FILE_ice)
