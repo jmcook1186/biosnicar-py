@@ -1,4 +1,4 @@
-def adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl,\
+def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl,\
      R_sfc, wvl, Fs, Fd, L_snw, flx_slr, DIRECT, rds_snw):
     
 
@@ -91,8 +91,21 @@ def adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr
 
             # open refractive index file and grab real and imaginary parts
             refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
-            refidx_re = refidx_file['re_Wrn84'].values # start at 300 nm for now
-            refidx_im = refidx_file['im_Wrn84'].values # start at 300 nm for now
+
+            if rf_ice == 0:
+
+                refidx_re = refidx_file['re_Wrn84'].values
+                refidx_im = refidx_file['im_Wrn84'].values 
+
+            elif rf_ice == 1:
+                refidx_re = refidx_file['re_Wrn08'].values
+                refidx_im = refidx_file['im_Wrn08'].values 
+
+            elif rf_ice == 2:
+                refidx_re = refidx_file['re_Pic16'].values
+                refidx_im = refidx_file['im_Pic16'].values 
+
+
             refindx = refidx_re[wl]+refidx_im[wl]  # combine real and imaginary parts into one var
 
             #    ! compute next layer Delta-eddington solution only if total transmission

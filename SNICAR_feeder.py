@@ -320,8 +320,19 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
             rd = "{}".format(rds_snw[i])
             rd = rd.rjust(4,"0")
             refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
-            refidx_re = refidx_file['re_Wrn08'].values # start at 300 nm for now
-            refidx_im = refidx_file['im_Wrn08'].values # start at 300 nm for now
+           
+            if rf_ice == 0:
+    
+                refidx_re = refidx_file['re_Wrn84'].values
+                refidx_im = refidx_file['im_Wrn84'].values 
+
+            elif rf_ice == 1:
+                refidx_re = refidx_file['re_Wrn08'].values
+                refidx_im = refidx_file['im_Wrn08'].values 
+
+            elif rf_ice == 2:
+                refidx_re = refidx_file['re_Pic16'].values
+                refidx_im = refidx_file['im_Pic16'].values 
 
             FILE_ice = '/home/joe/Code/BioSNICAR_GO_PY/Data/bubbly_ice_files/bbl_{}.nc'.format(rd)
             file = xr.open_dataset(FILE_ice)
@@ -502,7 +513,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
     if ADD_DOUBLE:
 
         wvl, flx_dwn_spc, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt = \
-            adding_doubling_solver(APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,\
+            adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,\
             L_snw, flx_slr, DIRECT, rds_snw)
 
 
