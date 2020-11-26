@@ -1,10 +1,17 @@
-def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz,\
-        rho_snw, rds_snw, side_length, depth, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar, mss_cnc_soot1, mss_cnc_soot2,\
-        mss_cnc_dust1, mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_Skiles_dust1,\
-        mss_cnc_Skiles_dust2, mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5,\
-        mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1, FILE_soot2, FILE_dust1,\
-        FILE_dust2, FILE_dust3, FILE_dust4, FILE_ash1, FILE_Skiles_dust1, FILE_Skiles_dust2, FILE_Skiles_dust3,\
-        FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_snw_alg, FILE_glacier_algae):
+def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
+    APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_snw, rds_snw,\
+    side_length, depth, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar,\
+    mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
+    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_ash2,\
+    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
+    mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
+    mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
+    mss_cnc_GreenlandCentral5, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
+    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4,\
+    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
+    FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
+    FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
+    FILE_snw_alg, FILE_glacier_algae):
 
 
     """
@@ -167,6 +174,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
 
                 # water coating code currently disabled
                 raise ValueError("SORRY, water coatings are not yet functional until the code has been updated to deal with wl's down to 200 nm")               
+                
                 #    fn_ice = dir_base + "/Data/rfidx_ice.nc"
 
                 #    fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
@@ -177,6 +185,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
                 #     with xr.open_dataset(FILE_ice) as temp:
                 #         ext_cff_mss = temp['ext_cff_mss'].values
                 #         MAC_snw[i, :] = ext_cff_mss
+
             else:
 
                 with xr.open_dataset(FILE_ice) as temp:
@@ -351,16 +360,27 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
     # open netcdf files
     FILE_soot1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot1))
     FILE_soot2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot2))
+    FILE_brwnC1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_brwnC1))
+    FILE_brwnC2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_brwnC2))
     FILE_dust1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust1))
     FILE_dust2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust2))
     FILE_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust3))
     FILE_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust4))
     FILE_ash1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash1))
+    FILE_ash2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash2))
+    FILE_ash3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash3))
+    FILE_ash4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash4))
+    FILE_ash5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash5))
     FILE_Skiles_dust1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust1))
     FILE_Skiles_dust2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust2))
     FILE_Skiles_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust3))
     FILE_Skiles_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust4))
     FILE_Skiles_dust5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust5))
+    FILE_GreenlandCentral1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral1))
+    FILE_GreenlandCentral2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral2))
+    FILE_GreenlandCentral3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral3))
+    FILE_GreenlandCentral4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral4))
+    FILE_GreenlandCentral5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral5))
     FILE_snw_alg = xr.open_dataset(str(dir_base + dir_mie_files+FILE_snw_alg))
     FILE_glacier_algae = xr.open_dataset(str(dir_base + dir_mie_files+FILE_glacier_algae))
 
@@ -368,53 +388,85 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
     SSAaer = np.zeros([nbr_aer,nbr_wvl])
     SSAaer[0,:] = FILE_soot1['ss_alb'].values
     SSAaer[1,:] = FILE_soot2['ss_alb'].values
-    SSAaer[2,:] = FILE_dust1['ss_alb'].values
-    SSAaer[3,:] = FILE_dust2['ss_alb'].values
-    SSAaer[4,:] = FILE_dust3['ss_alb'].values
-    SSAaer[5,:] = FILE_dust4['ss_alb'].values
-    SSAaer[6,:] = FILE_ash1['ss_alb'].values
-    SSAaer[7,:] = FILE_Skiles_dust1['ss_alb'].values
-    SSAaer[8,:] = FILE_Skiles_dust2['ss_alb'].values
-    SSAaer[9,:] = FILE_Skiles_dust3['ss_alb'].values
-    SSAaer[10,:] = FILE_Skiles_dust4['ss_alb'].values
-    SSAaer[11,:] = FILE_Skiles_dust5['ss_alb'].values
-    SSAaer[12,:] = FILE_snw_alg['ss_alb'].values
-    SSAaer[13,:] = FILE_glacier_algae['ss_alb'].values
+    SSAaer[2,:] = FILE_brwnC1['ss_alb'].values
+    SSAaer[3,:] = FILE_brwnC2['ss_alb'].values
+    SSAaer[4,:] = FILE_dust1['ss_alb'].values
+    SSAaer[5,:] = FILE_dust2['ss_alb'].values
+    SSAaer[6,:] = FILE_dust3['ss_alb'].values
+    SSAaer[7,:] = FILE_dust4['ss_alb'].values
+    SSAaer[8,:] = FILE_ash1['ss_alb'].values
+    SSAaer[9,:] = FILE_ash2['ss_alb'].values
+    SSAaer[10,:] = FILE_ash3['ss_alb'].values
+    SSAaer[11,:] = FILE_ash4['ss_alb'].values
+    SSAaer[12,:] = FILE_ash5['ss_alb'].values
+    SSAaer[13,:] = FILE_Skiles_dust1['ss_alb'].values
+    SSAaer[14,:] = FILE_Skiles_dust2['ss_alb'].values
+    SSAaer[15,:] = FILE_Skiles_dust3['ss_alb'].values
+    SSAaer[16,:] = FILE_Skiles_dust4['ss_alb'].values
+    SSAaer[17,:] = FILE_Skiles_dust5['ss_alb'].values
+    SSAaer[18,:] = FILE_GreenlandCentral1['ss_alb'].values
+    SSAaer[19,:] = FILE_GreenlandCentral2['ss_alb'].values
+    SSAaer[20,:] = FILE_GreenlandCentral3['ss_alb'].values
+    SSAaer[21,:] = FILE_GreenlandCentral4['ss_alb'].values
+    SSAaer[22,:] = FILE_GreenlandCentral5['ss_alb'].values
+    SSAaer[23,:] = FILE_snw_alg['ss_alb'].values
+    SSAaer[24,:] = FILE_glacier_algae['ss_alb'].values
 
     MACaer = np.zeros([nbr_aer, nbr_wvl])
 
     MACaer[0,:] = FILE_soot1['ext_cff_mss'].values 
     MACaer[1,:] = FILE_soot2['ext_cff_mss_ncl'].values # normalised to mass of carbon, not carbon plus coating
-    MACaer[2,:] = FILE_dust1['ext_cff_mss'].values
-    MACaer[3,:] = FILE_dust2['ext_cff_mss'].values
-    MACaer[4,:] = FILE_dust3['ext_cff_mss'].values
-    MACaer[5,:] = FILE_dust4['ext_cff_mss'].values
-    MACaer[6,:] = FILE_ash1['ext_cff_mss'].values
-    MACaer[7,:] = FILE_Skiles_dust1['ext_cff_mss'].values
-    MACaer[8,:] = FILE_Skiles_dust2['ext_cff_mss'].values
-    MACaer[9,:] = FILE_Skiles_dust3['ext_cff_mss'].values
-    MACaer[10,:] = FILE_Skiles_dust4['ext_cff_mss'].values
-    MACaer[11,:] = FILE_Skiles_dust5['ext_cff_mss'].values
-    MACaer[12,:] = FILE_snw_alg['ext_cff_mss'].values
-    MACaer[13,:] = FILE_glacier_algae['ext_cff_mss'].values
+    MACaer[2,:] = FILE_brwnC1['ext_cff_mss'].values
+    MACaer[3,:] = FILE_brwnC2['ext_cff_mss_ncl'].values
+    MACaer[4,:] = FILE_dust1['ext_cff_mss'].values
+    MACaer[5,:] = FILE_dust2['ext_cff_mss'].values
+    MACaer[6,:] = FILE_dust3['ext_cff_mss'].values
+    MACaer[7,:] = FILE_dust4['ext_cff_mss'].values
+    MACaer[8,:] = FILE_ash1['ext_cff_mss'].values
+    MACaer[9,:] = FILE_ash2['ext_cff_mss'].values
+    MACaer[10,:] = FILE_ash3['ext_cff_mss'].values
+    MACaer[11,:] = FILE_ash4['ext_cff_mss'].values
+    MACaer[12,:] = FILE_ash5['ext_cff_mss'].values
+    MACaer[13,:] = FILE_Skiles_dust1['ext_cff_mss'].values
+    MACaer[14,:] = FILE_Skiles_dust2['ext_cff_mss'].values
+    MACaer[15,:] = FILE_Skiles_dust3['ext_cff_mss'].values
+    MACaer[16,:] = FILE_Skiles_dust4['ext_cff_mss'].values
+    MACaer[17,:] = FILE_Skiles_dust5['ext_cff_mss'].values
+    MACaer[18,:] = FILE_GreenlandCentral1['ext_cff_mss'].values
+    MACaer[19,:] = FILE_GreenlandCentral2['ext_cff_mss'].values
+    MACaer[20,:] = FILE_GreenlandCentral3['ext_cff_mss'].values
+    MACaer[21,:] = FILE_GreenlandCentral4['ext_cff_mss'].values
+    MACaer[22,:] = FILE_GreenlandCentral5['ext_cff_mss'].values
+    MACaer[23,:] = FILE_snw_alg['ext_cff_mss'].values
+    MACaer[24,:] = FILE_glacier_algae['ext_cff_mss'].values
 
     Gaer = np.zeros([nbr_aer,nbr_wvl])
 
     Gaer[0,:] = FILE_soot1['asm_prm'].values
     Gaer[1,:] = FILE_soot2['asm_prm'].values
-    Gaer[2,:] = FILE_dust1['asm_prm'].values
-    Gaer[3,:] = FILE_dust2['asm_prm'].values
-    Gaer[4,:] = FILE_dust3['asm_prm'].values
-    Gaer[5,:] = FILE_dust4['asm_prm'].values
-    Gaer[6,:] = FILE_ash1['asm_prm'].values
-    Gaer[7,:] = FILE_Skiles_dust1['asm_prm'].values
-    Gaer[8,:] = FILE_Skiles_dust2['asm_prm'].values
-    Gaer[9,:] = FILE_Skiles_dust3['asm_prm'].values
-    Gaer[10,:] = FILE_Skiles_dust4['asm_prm'].values
-    Gaer[11,:] = FILE_Skiles_dust5['asm_prm'].values
-    Gaer[12,:] = FILE_snw_alg['asm_prm'].values
-    Gaer[13,:] = FILE_glacier_algae['asm_prm'].values
-
+    Gaer[2,:] = FILE_brwnC1['asm_prm'].values
+    Gaer[3,:] = FILE_brwnC2['asm_prm'].values
+    Gaer[4,:] = FILE_dust1['asm_prm'].values
+    Gaer[5,:] = FILE_dust2['asm_prm'].values
+    Gaer[6,:] = FILE_dust3['asm_prm'].values
+    Gaer[7,:] = FILE_dust4['asm_prm'].values
+    Gaer[8,:] = FILE_ash1['asm_prm'].values
+    Gaer[9,:] = FILE_ash2['asm_prm'].values
+    Gaer[10,:] = FILE_ash3['asm_prm'].values
+    Gaer[11,:] = FILE_ash4['asm_prm'].values
+    Gaer[12,:] = FILE_ash5['asm_prm'].values
+    Gaer[13,:] = FILE_Skiles_dust1['asm_prm'].values
+    Gaer[14,:] = FILE_Skiles_dust2['asm_prm'].values
+    Gaer[15,:] = FILE_Skiles_dust3['asm_prm'].values
+    Gaer[16,:] = FILE_Skiles_dust4['asm_prm'].values
+    Gaer[17,:] = FILE_Skiles_dust5['asm_prm'].values
+    Gaer[18,:] = FILE_GreenlandCentral1['asm_prm'].values
+    Gaer[19,:] = FILE_GreenlandCentral2['asm_prm'].values
+    Gaer[20,:] = FILE_GreenlandCentral3['asm_prm'].values
+    Gaer[21,:] = FILE_GreenlandCentral4['asm_prm'].values
+    Gaer[22,:] = FILE_GreenlandCentral5['asm_prm'].values
+    Gaer[23,:] = FILE_snw_alg['asm_prm'].values
+    Gaer[24,:] = FILE_glacier_algae['asm_prm'].values
 
 
     # load mass concentrations per layer into numpy array (one row per layer, one column per umpurity)
@@ -423,18 +475,29 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type, APR
     MSSaer = np.zeros([nbr_lyr, nbr_aer])
     MSSaer[0:nbr_lyr,0] = mss_cnc_soot1
     MSSaer[0:nbr_lyr,1] = mss_cnc_soot2
-    MSSaer[0:nbr_lyr,2] = mss_cnc_dust1
-    MSSaer[0:nbr_lyr,3] = mss_cnc_dust2
-    MSSaer[0:nbr_lyr,4] = mss_cnc_dust3
-    MSSaer[0:nbr_lyr,5] = mss_cnc_dust4
-    MSSaer[0:nbr_lyr,6] = mss_cnc_ash1
-    MSSaer[0:nbr_lyr,7] = mss_cnc_Skiles_dust1
-    MSSaer[0:nbr_lyr,8] = mss_cnc_Skiles_dust2
-    MSSaer[0:nbr_lyr,9] = mss_cnc_Skiles_dust3
-    MSSaer[0:nbr_lyr,10] = mss_cnc_Skiles_dust4
-    MSSaer[0:nbr_lyr,11] = mss_cnc_Skiles_dust5
-    MSSaer[0:nbr_lyr,12] = mss_cnc_snw_alg
-    MSSaer[0:nbr_lyr,13] = mss_cnc_glacier_algae
+    MSSaer[0:nbr_lyr,2] = mss_cnc_brwnC1
+    MSSaer[0:nbr_lyr,3] = mss_cnc_brwnC2
+    MSSaer[0:nbr_lyr,4] = mss_cnc_dust1
+    MSSaer[0:nbr_lyr,5] = mss_cnc_dust2
+    MSSaer[0:nbr_lyr,6] = mss_cnc_dust3
+    MSSaer[0:nbr_lyr,7] = mss_cnc_dust4
+    MSSaer[0:nbr_lyr,8] = mss_cnc_ash1
+    MSSaer[0:nbr_lyr,9] = mss_cnc_ash2
+    MSSaer[0:nbr_lyr,10] = mss_cnc_ash3
+    MSSaer[0:nbr_lyr,11] = mss_cnc_ash4
+    MSSaer[0:nbr_lyr,12] = mss_cnc_ash5
+    MSSaer[0:nbr_lyr,13] = mss_cnc_Skiles_dust1
+    MSSaer[0:nbr_lyr,14] = mss_cnc_Skiles_dust2
+    MSSaer[0:nbr_lyr,15] = mss_cnc_Skiles_dust3
+    MSSaer[0:nbr_lyr,16] = mss_cnc_Skiles_dust4
+    MSSaer[0:nbr_lyr,17] = mss_cnc_Skiles_dust5
+    MSSaer[0:nbr_lyr,18] = mss_cnc_GreenlandCentral1
+    MSSaer[0:nbr_lyr,19] = mss_cnc_GreenlandCentral2
+    MSSaer[0:nbr_lyr,20] = mss_cnc_GreenlandCentral3
+    MSSaer[0:nbr_lyr,21] = mss_cnc_GreenlandCentral4
+    MSSaer[0:nbr_lyr,22] = mss_cnc_GreenlandCentral5
+    MSSaer[0:nbr_lyr,23] = mss_cnc_snw_alg
+    MSSaer[0:nbr_lyr,24] = mss_cnc_glacier_algae
 
     MSSaer = MSSaer*1e-9
 
