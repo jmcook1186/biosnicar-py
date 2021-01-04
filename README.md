@@ -31,19 +31,16 @@ The new glacier algal optical properties account for intracellular protein attac
 Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
 
 ### 4) Addition of aspherical grains
-Adjustments to the single scattering optical properties of the ice grains resulting from variations in
-grain shape have been added to the model when run in Mie mode - running in GO mode assumes hexagonal
-columnar grains. These adjustments are from He et al. (2016) and enable the modelling of spheroids,
-hexagonal plates and Koch snowflakes.
+Adjustments to the single scattering optical properties of the ice grains resulting from variations in grain shape have been added to the model when run in Mie mode - running in GO mode assumes hexagonal columnar grains. These adjustments are from He et al. (2016) and enable the modelling of spheroids, hexagonal plates and Koch snowflakes.
 
 ### 5) Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
-A second option for the treatment of multiple layers was added in October 2020. The user can now opt to
-include solid ice layers with fresnel reflections at their surfaces and solve the radiative transfer
-using the adding-doubling method as an alternative to the Toon et al (1989) matrix inversion method that was
-previously used that cannot include fresnel reflection and refraction. The A-D solver is pretty much a direct 
-translation of the Matlab code written by Chloe Whicker (UMich) who in turn built on work by Dang et al. (2019). 
-The solid ice layers can be positioned anywhere in the vertical profile, meaning unweathered ice beneath an 
-increasingly porous weathered crust can now be realistically simulated.
+A second option for the treatment of multiple layers was added in October 2020. The user can now opt to include solid ice layers with fresnel reflections at their surfaces and solve the radiative transfer using the adding-doubling method as an alternative to the Toon et al (1989) matrix inversion method that was previously used that cannot include fresnel reflection and refraction. The A-D solver is pretty much a direct translation of the Matlab code written by Chloe Whicker (UMich) who in turn built on work by Dang et al. (2019). The solid ice layers can be positioned anywhere in the vertical profile, meaning unweathered ice beneath an increasingly porous weathered crust can now be realistically simulated.
+
+### 6) November 2020: removed separate scripts for GO and Mie modes and synthesised into single SNICAR_feeder script, extended model to 200nm and enabled GO ice crytals in AD mode
+Model now runs across 480 wavelengths between 200 - 5000 nm in all configurations, including GO.
+The model now works using a single call to a snicar feeder script where the various radiative transfer properties (tau, SSA, g etc) are calculated and then passed to one of the two solvers.
+
+
 
 
 # Model Structure
