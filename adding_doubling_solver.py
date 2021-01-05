@@ -26,7 +26,7 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
 
     epsilon = 1e-5      # to deal with singularity
     exp_min = 1e-5      # exp(-500)  # minimum number that is not zero - zero will raise error
-    trmin   = 1e-4      # minimum transmissivity
+    trmin   = 1e-5      # minimum transmissivity
     puny    = 1e-10     # not sure how should we define this
 
     gauspt = [0.9894009, 0.9445750, 0.8656312, 0.7554044, 0.6178762, 0.4580168, 0.2816036, 0.0950125]  # gaussian angles (radians)     
@@ -75,11 +75,11 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
 
     else:
 
-        lyrfrsnl = nbr_lyr+100
-        # raise error if there are no solid ice layers - in this case use the Toon solver instead!
-        # raise ValueError ("there are no ice layers in this model configuration\
-        #      - suggest adding a solid ice layer or using Toon method")
+        lyrfrsnl = 999999999
 
+        # raise error if there are no solid ice layers - in this case use the Toon solver instead!
+        print("There are no ice layers in this model configuration\
+             - suggest adding a solid ice layer or using faster Toon method")
 
     # proceed down one layer at a time: if the total transmission to
     # the interface just above a given layer is less than trmin, then no
@@ -108,21 +108,23 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
 
             refindx = refidx_re[wl]+refidx_im[wl]  # combine real and imaginary parts into one var
 
-            #    ! compute next layer Delta-eddington solution only if total transmission
-            #    ! of radiation to the interface just above the layer exceeds trmin.
+            #  compute next layer Delta-eddington solution only if total transmission
+            #  of radiation to the interface just above the layer exceeds trmin.
             
-            if trntdr[wl,lyr] > trmin:
-                
-                #    ! initialize current layer properties to zero  only if total
-                #    ! transmission to the top interface of the current layer exceeds the
-                #    ! minimum, will these values be computed below:
+            if trntdr[wl,lyr] > trmin: # condition: only run computation if sufficient
+                #flux received from above
                 
                 mu0 = mu_not  # cosine of beam angle is equal to incident beam
                 
                 # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
+                # (i.e. this is Snell's Law for refraction at interface between media)
+                # mu0n = -1 represents light travelling vertically upwards and mu0n = +1 
+                # represents light travellign vertically downwards
+                
                 mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx))) 
                                
-                # condition: if current layer is above fresnel layer
+                # condition: if current layer is above fresnel layer or the 
+                # top layer is a Fresnel layer
                 if lyr < lyrfrsnl or lyrfrsnl==0:
                     
                     mu0n = mu0 
@@ -132,7 +134,8 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                     mu0n = mu0n 
 
                 # calculation over layers with penetrating radiation
-                # includes optical thickness, single scattering albedo, asymmetry parameter and total flux
+                # includes optical thickness, single scattering albedo, 
+                # asymmetry parameter and total flux
                 tautot = tau0[wl,lyr] 
                 wtot   = SSA0[wl,lyr] 
                 gtot   = g0[wl,lyr] 
@@ -140,14 +143,14 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                 
                 # coefficient for delta eddington solution for all layers 
                 # Eq. 50: Briegleb and Light 2007
-                ts   = (1-wtot * ftot) * tautot # layer delta-scaled extinction optical depth
-                ws   = ((1-ftot) * wtot) / (1-wtot * ftot) # layer delta-scaled single scattering albedo
-                gs   = gtot/(1+gtot)  #(gtot-ftot)./(1-ftot) # layer delta-scaled asymmetry parameter
+                ts   = (1-(wtot * ftot)) * tautot # layer delta-scaled extinction optical depth
+                ws   = ((1-ftot) * wtot) / (1-(wtot * ftot)) # layer delta-scaled single scattering albedo
+                gs   = (gtot-ftot)/(1-ftot) # layer delta-scaled asymmetry parameter
                 lm   = np.sqrt(3 * (1-ws) * (1-ws * gs)) # lambda
                 ue   = 1.5 * (1-ws * gs) / lm # u equation, term in diffuse reflectivity and transmissivity
                 
                 extins = max(exp_min, np.exp(-lm * ts)) # extinction, MAX function lyr keeps from getting an error if the exp(-lm*ts) is < 1e-5
-                ne     = (ue+1)**2 / extins - (ue-1)**2 * extins# N equation, term in diffuse reflectivity and transmissivity
+                ne = (ue+1)**2 / extins - (ue-1)**2 * extins # N equation, term in diffuse reflectivity and transmissivity
                 
                  # ! first calculation of rdif, tdif using Delta-Eddington formulas
                  # Eq.: Briegleb 1992  alpha and gamma for direct radiation
@@ -155,14 +158,18 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                 rdif_a[lyr] = (ue**2-1) * (1/extins - extins)/ne # R BAR = layer reflectivity to DIFFUSE radiation
                 tdif_a[lyr] = 4*ue/ne # T BAR layer transmissivity to DIFFUSE radiation
                 
-                 # evaluate rdir,tdir for direct beam
+                 # evaluate rdir, tdir for direct beam
                 trnlay[lyr] = max([exp_min, np.exp(-ts/mu0n)]) # transmission from TOA to interface
                 
                  #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
-                alp = (0.75 * ws * mu0n) * (1 + gs * (1-ws)) / (1 - lm**2 * mu0n**2 + epsilon)   #alp = alpha(ws,mu0n,gs,lm)
-                gam = (0.5 * ws) * (1 + 3 * gs * mu0n**2 * (1-ws)) / (1-lm**2 * mu0n**2 + epsilon)     #gam = gamma(ws,mu0n,gs,lm)
+                alp = (0.75 * ws * mu0n) * ((1 + gs * (1-ws)) / (1 - lm**2 * mu0n**2 + epsilon))   #alp = alpha(ws,mu0n,gs,lm)
+                gam = (0.5 * ws) * ((1 + 3 * gs * mu0n**2 * (1-ws)) / (1-lm**2 * mu0n**2 + epsilon))     #gam = gamma(ws,mu0n,gs,lm)
+                
+                # apg = alpha plus gamma
+                # amg = alpha minus gamma
                 apg = alp + gam 
                 amg = alp - gam 
+
                 rdir[lyr] = apg*rdif_a[lyr] +  amg*(tdif_a[lyr]*trnlay[lyr] - 1)     #layer reflectivity to DIRECT radiation
                 tdir[lyr] = apg*tdif_a[lyr] + (amg* rdif_a[lyr]-apg+1)*trnlay[lyr]   #layer transmissivity to DIRECT radiation
                 
@@ -171,8 +178,8 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                  # biased low and can even be negative)  use ngmax angles and gaussian
                  # integration for most accuracy:
                 
-                R1 = rdif_a[lyr]   #! use R1 as temporary
-                T1 = tdif_a[lyr]   #! use T1 as temporary
+                R1 = rdif_a[lyr]   # use R1 as temporary var
+                T1 = tdif_a[lyr]   # use T1 as temporary var
                 swt = 0 
                 smr = 0 
                 smt = 0 
@@ -180,10 +187,10 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                  # loop through the gaussian angles for the AD integral
                 for ng in np.arange(0,len(gauspt),1):     #gaussian angles (radians)
                     
-                    mu  = gauspt[ng]         #solar zenith angles
-                    gwt = gauswt[ng]         #gaussian weight
+                    mu  = gauspt[ng]         # solar zenith angles
+                    gwt = gauswt[ng]         # gaussian weight
                     swt = swt + mu*gwt       # sum of weights
-                    trn = max([exp_min, np.exp(-ts/mu)])   #transmission
+                    trn = max([exp_min, np.exp(-ts/mu)])   # transmission
                     
                     alp = (0.75*ws*mu) * (1 + gs * (1-ws)) / (1 - lm**2 * mu**2 + epsilon)   #alp = alpha(ws,mu0n,gs,lm)
                     gam = (0.5 * ws) * (1 + 3 * gs * mu**2 * (1-ws)) / (1-lm**2 * mu**2 + epsilon)  #gam = gamma(ws,mu0n,gs,lm)
@@ -199,11 +206,10 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                 rdif_a[lyr] = smr/swt 
                 tdif_a[lyr] = smt/swt 
                 
-                 #! homogeneous layer
+                #! homogeneous layer
                 rdif_b[lyr] = rdif_a[lyr] 
                 tdif_b[lyr] = tdif_a[lyr] 
                 
-
                 ###################################################
                 # Fresnel layer
                 ##############################################################
@@ -215,7 +221,7 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                     #! the plane containing incident, reflected and refracted rays.
                     
                     #! Eq. 22  Briegleb & Light 2007
-                    # inputs to equation 21 below 
+                    # inputs to equation 21 (i.e. Fresnel formulae for R and T)
                     R1 = (mu0 - refindx * mu0n) / (mu0 + refindx * mu0n)    #reflection amplitude factor for perpendicular polarization
                     R2 = (refindx*mu0 - mu0n) / (refindx * mu0 + mu0n)    #reflection amplitude factor for parallel polarization
                     T1 = 2 * mu0 / (mu0 + refindx * mu0n)                   #transmission amplitude factor for perpendicular polarization
@@ -226,24 +232,26 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                     Rf_dir_a = 0.5 * (R1 * R1 + R2 * R2) 
                     Tf_dir_a = 0.5 * (T1 * T1 + T2 * T2) * refindx * mu0n / mu0 
                     
-                    #      ! precalculated diffuse reflectivities and transmissivities
-                    #      ! for incident radiation above and below fresnel layer, using
-                    #      ! the direct albedos and accounting for complete internal
-                    #      ! reflection from below  precalculated because high order
-                    #      ! number of gaussian points (~256) is required for convergence:
+                    # precalculated diffuse reflectivities and transmissivities
+                    # for incident radiation above and below fresnel layer, using
+                    # the direct albedos and accounting for complete internal
+                    # reflection from below. Precalculated because high order
+                    # number of gaussian points (~256) is required for convergence:
                     
-                    #! Eq. 25  Brigleb and light 2007
-                    #! above
-                    Rf_dif_a = 0.063             #reflection from diffuse unpolarized radiation
-                    Tf_dif_a = 1 - Rf_dif_a     #transmission from diffuse unpolarized radiation
-                    #! below
+                    # Eq. 25  Brigleb and light 2007
+                    # diffuse reflection of flux arriving from above
+                    
+                    Rf_dif_a = 0.063             # reflection from diffuse unpolarized radiation
+                    Tf_dif_a = 1 - Rf_dif_a     #t ransmission from diffuse unpolarized radiation
+                    
+                    # diffuse reflection of flux arriving from below
                     Rf_dif_b = 0.455 
                     Tf_dif_b = 1 - Rf_dif_b 
                     
                     ######################################################################
-                    #! the lyr = lyrfrsnl layer properties are updated to combined
-                    #! the fresnel (refractive) layer, always taken to be above
-                    #! the present layer lyr (i.e. be the top interface):
+                    # the lyr = lyrfrsnl layer properties are updated to combine
+                    # the fresnel (refractive) layer, always taken to be above
+                    # the present layer lyr (i.e. be the top interface):
                     
                     rintfc   = 1 / (1-Rf_dif_b*rdif_a[lyr])  # denom interface scattering
                     
@@ -263,8 +271,12 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
                     # Eq. B10  Briegleb & Light 2007
                     rdif_b[lyr] = rdif_b[lyr] + tdif_b[lyr] * Rf_dif_b * rintfc * tdif_a[lyr] 
                     
-                    tdif_a[lyr] = tdif_a[lyr] * rintfc * Tf_dif_a   # T BAR layer transmissivity to DIFFUSE radiation (above), Eq. B9  Briegleb & Light 2007
-                    tdif_b[lyr] = tdif_b[lyr] * rintfc * Tf_dif_b   # Eq. B10  Briegleb & Light 2007
+                    # T BAR layer transmissivity to DIFFUSE radiation (above),
+                    # Eq. B9  Briegleb & Light 2007
+                    tdif_a[lyr] = tdif_a[lyr] * rintfc * Tf_dif_a   
+
+                    # Eq. B10  Briegleb & Light 2007
+                    tdif_b[lyr] = tdif_b[lyr] * rintfc * Tf_dif_b   
                     
                     #! update trnlay to include fresnel transmission
                     trnlay[lyr] = Tf_dir_a*trnlay[lyr] 
@@ -298,15 +310,19 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
             trndir[wl,lyr+1] = trndir[wl,lyr]*trnlay[lyr]  # solar beam transmission from top
             # trnlay = exp(-ts/mu_not) = direct solar beam transmission
 
-            refkm1 = 1/(1 - rdndif[wl,lyr]*rdif_a[lyr])  #interface multiple scattering for lyr-1
+            # interface multiple scattering for lyr-1
+            refkm1 = 1/(1 - rdndif[wl,lyr]*rdif_a[lyr])  
             
-            tdrrdir = trndir[wl,lyr]*rdir[lyr]            #direct tran times layer direct ref
+            # direct tran times layer direct ref
+            tdrrdir = trndir[wl,lyr]*rdir[lyr]            
             
-            tdndif = trntdr[wl,lyr] - trndir[wl,lyr]     #total down diffuse = tot tran - direct tran
+            # total down diffuse = tot tran - direct tran
+            tdndif = trntdr[wl,lyr] - trndir[wl,lyr]     
             
-            trntdr[wl,lyr+1] = trndir[wl,lyr]*tdir[lyr] + (tdndif + tdrrdir*rdndif[wl,lyr])*refkm1*tdif_a[lyr]  #total transmission to direct beam for layers above
+            # total transmission to direct beam for layers above
+            trntdr[wl,lyr+1] = trndir[wl,lyr]*tdir[lyr] + (tdndif + tdrrdir*rdndif[wl,lyr])*refkm1*tdif_a[lyr] 
             
-            #Eq. B4  Briegleb and Light 2007
+            # Eq. B4  Briegleb and Light 2007
             rdndif[wl,lyr+1] = rdif_b[lyr] + (tdif_b[lyr]*rdndif[wl,lyr]*refkm1*tdif_a[lyr])    #reflectivity to diffuse radiation for layers above
             trndif[wl,lyr+1] = trndif[wl,lyr]*refkm1*tdif_a[lyr]   #diffuse transmission to diffuse beam for layers above
         
@@ -328,19 +344,20 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
         rupdir[wl,nbr_lyr] = R_sfc[wl]    # reflectivity to direct radiation for layers below
         rupdif[wl,nbr_lyr] = R_sfc[wl]    # reflectivity to diffuse radiation for layers below
 
-        
-        for lyr in np.arange(nbr_lyr-1,-1,-1):  # starts at the bottom and works its way up to the top layer
 
+        for lyr in np.arange(nbr_lyr-1,-1,-1):  # starts at the bottom and works its way up to the top layer
+            
             #Eq. B5  Briegleb and Light 2007
             #! interface scattering
             refkp1 = 1/( 1 - rdif_b[lyr]*rupdif[wl,lyr+1]) 
             
-            #   ! dir from top layer plus exp tran ref from lower layer, interface
-            #   ! scattered and tran thru top layer from below, plus diff tran ref
-            #   ! from lower layer with interface scattering tran thru top from below
+            # dir from top layer plus exp tran ref from lower layer, interface
+            # scattered and tran thru top layer from below, plus diff tran ref
+            # from lower layer with interface scattering tran thru top from below
             rupdir[wl,lyr] = rdir[lyr] + (trnlay[lyr] * rupdir[wl,lyr+1] + (tdir[lyr]-trnlay[lyr])* rupdif[wl,lyr+1])*refkp1*tdif_b[lyr] 
-            #   ! dif from top layer from above, plus dif tran upwards reflected and
-            #   ! interface scattered which tran top from below
+            
+            # dif from top layer from above, plus dif tran upwards reflected and
+            # interface scattered which tran top from below
             rupdif[wl,lyr] = rdif_a[lyr] + tdif_a[lyr]*rupdif[wl,lyr+1]*refkp1*tdif_b[lyr] 
 
     
@@ -351,27 +368,31 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
         for lyr in np.arange(0,nbr_lyr+1,1):
             
             # Eq. 52  Briegleb and Light 2007
-            #! interface scattering
+            # interface scattering
             refk = 1/(1 - rdndif[wl,lyr]*rupdif[wl,lyr]) 
-            #     ! dir tran ref from below times interface scattering, plus diff
-            #     ! tran and ref from below times interface scattering
+            
+            # dir tran ref from below times interface scattering, plus diff
+            # tran and ref from below times interface scattering
             fdirup[wl,lyr] = (trndir[wl,lyr]*rupdir[wl,lyr] + (trntdr[wl,lyr]-trndir[wl,lyr]) * rupdif[wl,lyr])*refk 
-            #     ! dir tran plus total diff trans times interface scattering plus
-            #     ! dir tran with up dir ref and down dif ref times interface scattering
+            
+            # dir tran plus total diff trans times interface scattering plus
+            # dir tran with up dir ref and down dif ref times interface scattering
             fdirdn[wl,lyr] = trndir[wl,lyr] + (trntdr[wl,lyr]- trndir[wl,lyr] + trndir[wl,lyr] * rupdir[wl,lyr] * rdndif[wl,lyr])*refk 
-            #     ! diffuse tran ref from below times interface scattering
+            
+            # diffuse tran ref from below times interface scattering
             fdifup[wl,lyr] = trndif[wl,lyr]*rupdif[wl,lyr]*refk 
-            #     ! diffuse tran times interface scattering
+            
+            # diffuse tran times interface scattering
             fdifdn[wl,lyr] = trndif[wl,lyr]*refk 
-            #
-            #     ! dfdir = fdirdn - fdirup
+            
+            # dfdir = fdirdn - fdirup
             dfdir[wl,lyr] = trndir[wl,lyr] + (trntdr[wl,lyr]-trndir[wl,lyr]) * (1 - rupdif[wl,lyr]) * refk - trndir[wl,lyr]*rupdir[wl,lyr]\
                 * (1 - rdndif[wl,lyr]) * refk 
             
             if dfdir[wl,lyr] < puny:
             
                 dfdir[wl,lyr] = 0  #!echmod necessary?
-                #! dfdif = fdifdn - fdifup
+                # dfdif = fdifdn - fdifup
             
             dfdif[wl,lyr] = trndif[wl,lyr] * (1 - rupdif[wl,lyr]) * refk 
             
@@ -392,9 +413,10 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
     F_net = F_up - F_dwn 
 
     # Absorbed flux in each layer
+    #F_abs[:,0:nbr_lyr] = F_net[:,1:]-F_net[:,0:-1]
+    F_abs[:,:] = F_net[:,1:]-F_net[:,0:-1]
 
-    F_abs[:,0:nbr_lyr] = F_net[:,1:]-F_net[:,0:-1]
-    
+    # albedo
     acal  = F_up[:,0]/F_dwn[:,0] 
 
     # Upward flux at upper model boundary
@@ -416,7 +438,6 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
     F_abs_btm = np.sum(F_btm_net,axis=0) 
     F_abs_vis_btm = np.sum(F_btm_net[0:vis_max_idx],axis=0) 
     F_abs_nir_btm = np.sum(F_btm_net[vis_max_idx:nir_max_idx+1],axis=0) 
-
 
     # Radiative heating rate:
     heat_rt = F_abs_slr/(L_snw*2117)    #[K/s] 2117 = specific heat ice (J kg-1 K-1)
@@ -449,6 +470,7 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
         print('error in albedo calculation')
 
     albedo = acal 
+
 
     # Spectrally-integrated solar, visible, and NIR albedos:
     alb_bb = np.sum(flx_slr*albedo)/np.sum(flx_slr) 

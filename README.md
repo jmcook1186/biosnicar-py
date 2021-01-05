@@ -19,7 +19,7 @@ This functionality, combined with the geometric optics option for the ice matrix
 
 ## Recent Additions
 
-In 2020 there have been several additions to the BioSNICAR model that have not yet been documented in any publication paper. These include:
+There have been several additions to the BioSNICAR model that have not yet been documented in any publication paper. These include:
 
 ### 1) Refactor of bio-optical model
 The bio-optical model was refactored into a much more useable format. Hard coded variables were moved into the function call, the two bio-optical components (the mixing model and mie/go code) ware now controlled from a single driver script, and file paths were all synchronised.
@@ -30,16 +30,18 @@ The new glacier algal optical properties account for intracellular protein attac
 ### 3) Addition of liquid water films
 Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
 
-### 4) Addition of aspherical grains
+### 4) October 2020: Addition of aspherical grains
 Adjustments to the single scattering optical properties of the ice grains resulting from variations in grain shape have been added to the model when run in Mie mode - running in GO mode assumes hexagonal columnar grains. These adjustments are from He et al. (2016) and enable the modelling of spheroids, hexagonal plates and Koch snowflakes.
 
-### 5) Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
+### 5) November 2020: Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
 A second option for the treatment of multiple layers was added in October 2020. The user can now opt to include solid ice layers with fresnel reflections at their surfaces and solve the radiative transfer using the adding-doubling method as an alternative to the Toon et al (1989) matrix inversion method that was previously used that cannot include fresnel reflection and refraction. The A-D solver is pretty much a direct translation of the Matlab code written by Chloe Whicker (UMich) who in turn built on work by Dang et al. (2019). The solid ice layers can be positioned anywhere in the vertical profile, meaning unweathered ice beneath an increasingly porous weathered crust can now be realistically simulated.
 
 ### 6) November 2020: removed separate scripts for GO and Mie modes and synthesised into single SNICAR_feeder script, extended model to 200nm and enabled GO ice crytals in AD mode
 Model now runs across 480 wavelengths between 200 - 5000 nm in all configurations, including GO.
 The model now works using a single call to a snicar feeder script where the various radiative transfer properties (tau, SSA, g etc) are calculated and then passed to one of the two solvers.
 
+### 7) January 2021: added testing scripts for comparing new code against matlab benchmarks. Extend spectral range of all model modes to 200nm
+Reorganised directory structure to gather all testing scripts and data into the folder "Unit_Tests". Using Whicker/Flanner's Matlab code as benchmark for testing Python code.
 
 
 
@@ -178,160 +180,15 @@ BioOptical_model.py and Algae_GO.py are used to generate new optical properties 
 
 # Unit Testing
 
-Unit testing has been carried out by running the newly translated model and comparing the predicted albedo with that predicted by the Matlab version for identical variable values. The Matlab verson of SNICAR is itself benchmarked against the original FORTRAN version that is implemented in CLM and thoroughly tested. The unit testing undertaken here is archived in the foldr wdir/Unit_Tests/. To run the tests, simply run the snicar_mie_tests.py script. The script holds all variable values constant at a set of defaults defined in-script, apart from a single test variable. The test variable is given a set of values to iterate through. For each test case, the identical case was run using the Matlab version and the output stored in an external csv file. For each test condition, the code simply tests whether the Python and Matlab implementation predicts the same value per unit wavelength. The test is passed if all the predicted values agree within 0.0001. There are separate scripts for testing the Mie and Geometrical Optics implementations.
+Unit testing has been carried out by running the newly translated model and comparing the predicted albedo with that predicted by the Matlab version for identical variable values. The Matlab verson of SNICAR is itself benchmarked against the original FORTRAN version that is implemented in CLM and thoroughly tested. The unit testing undertaken here is archived in the foldr /Unit_Tests/. 
 
-This Python code was developed and run in Python 3.6.8 64-bit downloaded as part of Anaconda 4.7.11 and run on a Linux (Ubuntu 16.04 LTS) OS using VS Code 1.39.2 (and also repeated in PyCharm 2019.2.3). These are the only conditions under which the code has been tested. Under those conditions the unit tests return the following:
+The testing scripts "snicar_mie_tests.py" and "snicar_GO_tests.py" were written to tst the original translations of the BioSNICAR_GO code from Matlab to Python. They showed agreement under all test configurations to within 1e-4, taken as confirmation that the translations were successful. These scripts and the associated Matlab benchmark data are provided here for archiving purposes but were made obselete by further development of the software after start of 2020.
 
-```
+The script AD_tests.py are relevant to the most recent iteration of the software and specifically tests the new adding-doubling code against benchmark data from Whicker/Flanner's Matlab implementation. These tests conformed agreement between the new Python code and the benchmarks to within 1e-5. The figure below shows a selection of model runs with the new python code represented by x's and the benchmar data represented as solid lines.
 
-************ UNIT TESTS ***************
-***************  MIE ******************
-*****************************************
 
-All tests run with default variable values apart from single 
-test variable
+<img src="./Assets/Unit_test_plot.jpg" width=500>
 
-Values benchmarked against Matlab version, tests pass if Matlab 
-and Python versions are equal to within 
-1e-4
-
-************************
-
-APPRX = 1 TEST PASSED WITH TOLERANCE 1e-4
-APPRX = 2 TEST PASSED WITH TOLERANCE 1e-4
-APPRX = 3 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-NB DIRECT TESTS RUN WITH APRX = 2 DUE TO KNOWN BUG WITH EDDINGTON + DIFFUSE
-
-DIRECT = 0 TEST PASSED WITH TOLERANCE 1e-4
-DIRECT = 1 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-DELTA = 0 TEST PASSED WITH TOLERANCE 1e-4
-DELTA = 1 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-COSZEN = 0.3 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.35 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.4 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.45 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.5 TEST PASSED WITH TOLERANCE 1e-4
-
- **************************************************
-
-DZ = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #3 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #4 TEST PASSED WITH TOLERANCE 1e-4
-
- **************************************************
-
-R_sfc = 0.2 TEST PASSED WITH TOLERANCE 1e-4
-R_sfc = 0.4 TEST PASSED WITH TOLERANCE 1e-4
-R_sfc = 0.6 TEST PASSED WITH TOLERANCE 1e-4
-
- **************************************************
-
-RDS = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-RDS = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-RDS = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-RDS = ARRAY #3 TEST PASSED WITH TOLERANCE 1e-4
-RDS = ARRAY #4 TEST FAILED WITH TOLERANCE 1e-4
-
- **************************************************
-
-RHO = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #3 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #4 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-```
-
-```
-************ UNIT TESTS ***************
-********* Geometric Optics ************
-*****************************************
-
-All tests run with default variable values apart from single 
-test variable
-
-Values benchmarked against Matlab version, tests pass if Matlab 
-and Python versions are equal to within 
-1e-4
-
-************************
-
-NB DIRECT TESTS RUN WITH APRX = 2 DUE TO KNOWN BUG WITH EDDINGTON + DIFFUSE
-
-DIRECT = 0 TEST PASSED WITH TOLERANCE 1e-4
-DIRECT = 1 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-APPRX = 1 TEST PASSED WITH TOLERANCE 1e-4
-APPRX = 2 TEST PASSED WITH TOLERANCE 1e-4
-APPRX = 3 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-DELTA = 0 TEST PASSED WITH TOLERANCE 1e-4
-DELTA = 1 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-COSZEN = 0.3 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.35 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.4 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.45 TEST PASSED WITH TOLERANCE 1e-4
-COSZEN = 0.5 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-DZ = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #3 TEST PASSED WITH TOLERANCE 1e-4
-DZ = ARRAY #4 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-R_sfc = 0.2 TEST PASSED WITH TOLERANCE 1e-4
-R_sfc = 0.4 TEST PASSED WITH TOLERANCE 1e-4
-R_sfc = 0.6 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-SIDE LENGTH = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-SIDE LENGTH = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-SIDE LENGTH = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-SIDE LENGTH = ARRAY #3 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-DEPTH = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-DEPTH = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-DEPTH = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-RHO = ARRAY #0 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #1 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #2 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #3 TEST PASSED WITH TOLERANCE 1e-4
-RHO = ARRAY #4 TEST PASSED WITH TOLERANCE 1e-4
-
-**************************************************
-
-```
-
-It would be sensible to check that the same results are obtained on a new local machine before using BioSNICAR_GO in earnest.
 
 # Permissions
 

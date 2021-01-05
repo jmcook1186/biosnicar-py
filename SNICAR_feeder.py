@@ -97,7 +97,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     else:
 
         if incoming_i == 0:
-                Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
         elif incoming_i == 1:
             Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mls_cld.nc"))
         elif incoming_i == 2:
@@ -158,7 +158,9 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                     s1 = "{}".format(str(rds_snw[i]))
                     s1 = s1.rjust(4,'0')
                     FILE_ice = str(dir_base + dir_mie_files + fl_stb1 + s1 + fl_stb2)
-                
+                    print("\nLayer: {}".format(i))
+                    print("Using Mie mode: spheres with radius = {}".format(s1))
+
                 elif GO:
 
                     s1 = "{}".format(str(side_length[i]))
@@ -331,7 +333,6 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
             refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
            
             if rf_ice == 0:
-    
                 refidx_re = refidx_file['re_Wrn84'].values
                 refidx_im = refidx_file['im_Wrn84'].values 
 
@@ -555,16 +556,17 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     for i in range(nbr_lyr):
         
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
-        SSA[i,:] = (1/tau[i,:]) * (SSA_sum[i,:] + SSA_snw[i,:] * tau_snw[i,:])
+        SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + SSA_snw[i,:] * tau_snw[i,:])
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
 
     # just in case any unrealistic values arise (none detected so far)
-    SSA[SSA<=0]=0.001
-    SSA[SSA>=1]=0.999
-    g[g<=0]-0.001
-    g[g>=1]=0.999
+    SSA[SSA<=0]=0.00000001
+    SSA[SSA>=1]=0.99999999
+    g[g<=0]=0.00001
+    g[g>=1]=0.99999
 
-    # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; ADD_DOUBLE = ADDING-DOUBLING METHOD)
+    # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
+    # ADD_DOUBLE = ADDING-DOUBLING METHOD)
    
     if TOON: 
 
