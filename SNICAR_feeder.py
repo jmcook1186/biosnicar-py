@@ -1,17 +1,18 @@
 def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
-    APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_snw, rds_snw,\
-    side_length, depth, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar,\
+    APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_layers, grain_rds,\
+    side_length, depth, rwater, nbr_lyr, nbr_aer, grain_shp, shp_fctr, grain_ar,\
     mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
-    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_ash2,\
+    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
     mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
     mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
     mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
-    mss_cnc_GreenlandCentral5, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
-    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4,\
+    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
+    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
+    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
     FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
     FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
     FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
-    FILE_snw_alg, FILE_glacier_algae):
+    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H, FILE_snw_alg, FILE_glacier_algae):
 
 
     """
@@ -39,13 +40,20 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     from IceOptical_Model.mie_coated_water_spheres import miecoated_driver
     from Toon_RT_solver import toon_solver
     from adding_doubling_solver import adding_doubling_solver
-
-    # set working directory (location of netcdf library)
-    dir_mie_files = "Data/Mie_files/"
-    dir_GO_files = 'Data/GO_files/'
+    import random
+    import os
+    
+    # working directories 
+    dir_mie_ice_files = str(dir_base + 'Data/Mie_files/480band/') # directory with folders ice_Pic16, ice_Wrn08 and ice_Wrn84 with optical properties calculated with Mie theory
+    dir_go_ice_files = str(dir_base + 'Data/GO_files/480band/') # idem for ice OPs calculated with Geometric optics
+    dir_mie_lap_files = str(dir_base + 'Data/Mie_files/480band/lap/') # directory with folders ice_Pic16, ice_Wrn08 and ice_Wrn84 with optical properties calculated with Mie theory
+    dir_go_lap_files = str(dir_base + 'Data/GO_files/480band/lap/') # idem for OPs calculated with Geometric optics
+    dir_bubbly_ice = str(dir_base + 'Data/bubbly_ice_files/')
+    dir_fsds = str(dir_base + 'Data/Mie_files/480band/fsds/')
+    dir_RI_ice = str(dir_base + 'Data/') 
 
     # retrieve wavelength from arbitrary choice of netcdf file
-    temp = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/ice_Wrn84/ice_Wrn84_0500.nc"))
+    temp = xr.open_dataset(str(dir_mie_lap_files+random.choice(os.listdir(dir_mie_lap_files))))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
@@ -65,25 +73,25 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     if DIRECT:
 
         if incoming_i == 0:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_clr.nc"))
             print("atmospheric profile = mid-lat winter")
         elif incoming_i == 1:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mls_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mls_clr.nc"))
             print("atmospheric profile = mid-lat summer")
         elif incoming_i == 2:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_saw_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_saw_clr.nc"))
             print("atmospheric profile = sub-Arctic winter")
         elif incoming_i == 3:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_sas_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_sas_clr.nc"))
             print("atmospheric profile = sub-Arctic summer")
         elif incoming_i == 4:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_smm_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_smm_clr.nc"))
             print("atmospheric profile = Summit Station")
         elif incoming_i == 5:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_hmn_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_hmn_clr.nc"))
             print("atmospheric profile = High Mountain")  
         elif incoming_i == 6:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_toa_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_toa_clr.nc"))
             print("atmospheric profile = top-of-atmosphere")
 
         else:
@@ -97,19 +105,19 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     else:
 
         if incoming_i == 0:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mlw_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_cld.nc"))
         elif incoming_i == 1:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_mls_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mls_cld.nc"))
         elif incoming_i == 2:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_saw_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_saw_cld.nc"))
         elif incoming_i == 3:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_sas_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_sas_cld.nc"))
         elif incoming_i == 4:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_smm_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_smm_cld.nc"))
         elif incoming_i == 5:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_hmn_cld.nc"))   
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_hmn_cld.nc"))   
         elif incoming_i == 6:
-            Incoming_file = xr.open_dataset(str(dir_base+dir_mie_files+"/480band/fsds/swnb_480bnd_toa_cld.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_toa_cld.nc"))
 
         else:
             raise ValueError ("Invalid choice of atmospheric profile")     
@@ -126,17 +134,14 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     # set string stubs for reading in ice optical files
 
     if rf_ice == 0:
-        fl_stb1 = '480band/ice_Wrn84/ice_Wrn84_'
+        dir_OP = 'ice_Wrn84/ice_Wrn84'
         print("Using Warren 84 refractive index")
     elif rf_ice == 1:
-        fl_stb1 = '480band/ice_Wrn08/ice_Wrn08_'
+        dir_OP = 'ice_Wrn08/ice_Wrn08'
         print("Using Warren 08 refractive index")
     elif rf_ice == 2:
-        fl_stb1 = '480band/ice_Pic16/ice_Pic16_'
+        dir_OP = 'ice_Pic16/ice_Pic16'
         print("Using Picard 16 refractive index")
-
-    fl_stb2 = ".nc"
-
 
     # set up empty arrays
     SSA_snw = np.empty([nbr_lyr, nbr_wvl])
@@ -148,31 +153,25 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
         if layer_type[i] == 0: # (granular layer)
 
-            if rds_snw[i] ==0:
+            if grain_rds[i] == 0:
 
                 raise ValueError("ERROR: ICE GRAIN RADIUS SET TO ZERO")
 
             else:
 
                 if MIE:
-                    s1 = "{}".format(str(rds_snw[i]))
-                    s1 = s1.rjust(4,'0')
-                    FILE_ice = str(dir_base + dir_mie_files + fl_stb1 + s1 + fl_stb2)
+                    FILE_ice = str(dir_mie_ice_files + dir_OP + '_{}.nc'.format(str(grain_rds[i]).rjust(4,'0')))
                     print("\nLayer: {}".format(i))
-                    print("Using Mie mode: spheres with radius = {}".format(s1))
+                    print("Using Mie mode: spheres with radius = {}".format(str(grain_rds[i]).rjust(4,'0')))
 
                 elif GO:
-
-                    s1 = "{}".format(str(side_length[i]))
-                    s1 = s1.rjust(4,'0')
-                    s2 = "{}".format(str(depth[i]))
-                    FILE_ice = str(dir_base + dir_GO_files + fl_stb1 + s1 + "_" + s2 + fl_stb2)
+                    FILE_ice = str(dir_go_ice_files + dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
                     print("\nLayer: {}".format(i))
-                    print("Using geometric optics mode: hex column with side length = {}, length = {}".format(s1,s2))
+                    print("Using geometric optics mode: hex column with side length = {}, length = {}".format(str(side_length[i]).rjust(4,'0'),str(depth[i])))
 
             # read in single scattering albedo, MAC and g for ice crystals in each layer,
             # optional with coated liquid water spheres
-            if rwater[i] > rds_snw[i]:
+            if rwater[i] > grain_rds[i]:
 
                 # water coating code currently disabled
                 raise ValueError("SORRY, water coatings are not yet functional until the code has been updated to deal with wl's down to 200 nm")               
@@ -231,14 +230,14 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                 
                 if layer_type[i] == 0:
                     
-                    if snw_shp[i] == 0: # snow
+                    if grain_shp[i] == 0: # snow
 
                         pass # if layer type is for spheres, no changes required
 
                     
-                    elif snw_shp[i] == 1: # 1 = spheroid, He et al. (2017) parameterization
+                    elif grain_shp[i] == 1: # 1 = spheroid, He et al. (2017) parameterization
                         
-                        diam_ice = 2.0 * rds_snw[i] # effective snow grain diameter
+                        diam_ice = 2.0 * grain_rds[i] # effective snow grain diameter
                         
                         if shp_fctr[i] == 0:
 
@@ -249,21 +248,21 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                             fs_sphd = shp_fctr[i] # if shp_factor not 0, then use user-defined value
                         
                         
-                        if snw_ar[i] == 0:
+                        if grain_ar[i] == 0:
 
                             AR_tmp = 0.5 # default aspect ratio for spheroid; He et al. (2017), Table 1
                         
                         else:
 
-                            AR_tmp = snw_ar[i]
+                            AR_tmp = grain_ar[i]
                         
                         g_snw_Cg_tmp = g_b0 * (fs_sphd/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
                         gg_snw_F07_tmp = g_F07_c0 + g_F07_c1 * AR_tmp + g_F07_c2 * AR_tmp**2 # Eqn. 3.1 in Fu (2007)
 
 
-                    elif snw_shp[i] == 2: # 3=hexagonal plate, He et al. 2017 parameterization
+                    elif grain_shp[i] == 2: # 3=hexagonal plate, He et al. 2017 parameterization
 
-                        diam_ice = 2.0 * rds_snw[i] # effective snow grain diameter
+                        diam_ice = 2.0 * grain_rds[i] # effective snow grain diameter
                         
                         if shp_fctr[i] == 0:
                             
@@ -274,21 +273,21 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                             fs_hex0 = shp_fctr[i]
                         
 
-                        if snw_ar[i] == 0:
+                        if grain_ar[i] == 0:
 
                             AR_tmp = 2.5 # default aspect ratio for hexagonal plate; He et al. (2017), Table 1
                         
                         else:
                         
-                            AR_tmp = snw_ar[i]
+                            AR_tmp = grain_ar[i]
                                 
                         g_snw_Cg_tmp = g_b0 * (fs_hex0/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
                         gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2   # Eqn. 3.3 in Fu (2007)
                         
 
-                    elif snw_shp[i] == 3: # 4=koch snowflake, He et al. (2017) parameterization
+                    elif grain_shp[i] == 3: # 4=koch snowflake, He et al. (2017) parameterization
 
-                        diam_ice = 2.0 * rds_snw[i] / 0.544 # effective snow grain diameter
+                        diam_ice = 2.0 * grain_rds[i] / 0.544 # effective snow grain diameter
                         
                         if shp_fctr[i] == 0:
                         
@@ -299,19 +298,19 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                             fs_koch = shp_fctr[i]
                         
 
-                        if snw_ar[i] == 0:
+                        if grain_ar[i] == 0:
 
                             AR_tmp = 2.5 # default aspect ratio for koch snowflake; He et al. (2017), Table 1
                         
                         else:
 
-                            AR_tmp = snw_ar[i]
+                            AR_tmp = grain_ar[i]
                         
                         g_snw_Cg_tmp = g_b0 * (fs_koch/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
                         gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2  # Eqn. 3.3 in Fu (2007)
                         
                     
-                    if snw_shp[i] > 0:
+                    if grain_shp[i] > 0:
 
                         from scipy.interpolate import pchip
                         # 6 wavelength bands for g_snw to be interpolated into 480-bands of SNICAR
@@ -328,9 +327,9 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
         else: # else correspondng to if layer_type == 1
             
-            rd = "{}".format(rds_snw[i])
+            rd = "{}".format(grain_rds[i])
             rd = rd.rjust(4,"0")
-            refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
+            refidx_file = xr.open_dataset(dir_RI_ice+'rfidx_ice.nc')
            
             if rf_ice == 0:
                 refidx_re = refidx_file['re_Wrn84'].values
@@ -344,164 +343,55 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                 refidx_re = refidx_file['re_Pic16'].values
                 refidx_im = refidx_file['im_Pic16'].values 
 
-            FILE_ice = '/home/joe/Code/BioSNICAR_GO_PY/Data/bubbly_ice_files/bbl_{}.nc'.format(rd)
+            FILE_ice = str(dir_bubbly_ice + 'bbl_{}.nc').format(rd)
             file = xr.open_dataset(FILE_ice)
             sca_cff_vlm = file['sca_cff_vlm'].values # scattering cross section unit per volume of bubble
             g_snw[i,:] = file['asm_prm'].values
             abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6))/917
-            vlm_frac_air = (917 - rho_snw[i]) / 917
+            vlm_frac_air = (917 - rho_layers[i]) / 917
             MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) + abs_cff_mss_ice
             SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) / MAC_snw[i,:]
 
 
     
     ###############################################################
-    ##############################################################
+    ###############################################################
+    
+    # Load optical properties SSA, MAC and g (one row per impurity, one column per wvalengths)
+    # Load mass concentrations MSS per layer (one row per layer, one column per umpurity)
+    
+    files = [FILE_soot1,\
+    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
+    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
+    FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
+    FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
+    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H,\
+    FILE_snw_alg, FILE_glacier_algae]
+        
+    mass_concentrations = [mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
+    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
+    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
+    mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
+    mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
+    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
+    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae]
 
-    # open netcdf files
-    FILE_soot1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot1))
-    FILE_soot2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_soot2))
-    FILE_brwnC1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_brwnC1))
-    FILE_brwnC2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_brwnC2))
-    FILE_dust1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust1))
-    FILE_dust2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust2))
-    FILE_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust3))
-    FILE_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_dust4))
-    FILE_ash1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash1))
-    FILE_ash2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash2))
-    FILE_ash3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash3))
-    FILE_ash4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash4))
-    FILE_ash5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_ash5))
-    FILE_Skiles_dust1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust1))
-    FILE_Skiles_dust2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust2))
-    FILE_Skiles_dust3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust3))
-    FILE_Skiles_dust4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust4))
-    FILE_Skiles_dust5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_Skiles_dust5))
-    FILE_GreenlandCentral1 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral1))
-    FILE_GreenlandCentral2 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral2))
-    FILE_GreenlandCentral3 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral3))
-    FILE_GreenlandCentral4 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral4))
-    FILE_GreenlandCentral5 = xr.open_dataset(str(dir_base + dir_mie_files+ FILE_GreenlandCentral5))
-    FILE_snw_alg = xr.open_dataset(str(dir_base + dir_mie_files+FILE_snw_alg))
-    FILE_glacier_algae = xr.open_dataset(str(dir_base + dir_mie_files+FILE_glacier_algae))
-
-    # read in aerosol optical properties
     SSAaer = np.zeros([nbr_aer,nbr_wvl])
-    SSAaer[0,:] = FILE_soot1['ss_alb'].values
-    SSAaer[1,:] = FILE_soot2['ss_alb'].values
-    SSAaer[2,:] = FILE_brwnC1['ss_alb'].values
-    SSAaer[3,:] = FILE_brwnC2['ss_alb'].values
-    SSAaer[4,:] = FILE_dust1['ss_alb'].values
-    SSAaer[5,:] = FILE_dust2['ss_alb'].values
-    SSAaer[6,:] = FILE_dust3['ss_alb'].values
-    SSAaer[7,:] = FILE_dust4['ss_alb'].values
-    SSAaer[8,:] = FILE_ash1['ss_alb'].values
-    SSAaer[9,:] = FILE_ash2['ss_alb'].values
-    SSAaer[10,:] = FILE_ash3['ss_alb'].values
-    SSAaer[11,:] = FILE_ash4['ss_alb'].values
-    SSAaer[12,:] = FILE_ash5['ss_alb'].values
-    SSAaer[13,:] = FILE_Skiles_dust1['ss_alb'].values
-    SSAaer[14,:] = FILE_Skiles_dust2['ss_alb'].values
-    SSAaer[15,:] = FILE_Skiles_dust3['ss_alb'].values
-    SSAaer[16,:] = FILE_Skiles_dust4['ss_alb'].values
-    SSAaer[17,:] = FILE_Skiles_dust5['ss_alb'].values
-    SSAaer[18,:] = FILE_GreenlandCentral1['ss_alb'].values
-    SSAaer[19,:] = FILE_GreenlandCentral2['ss_alb'].values
-    SSAaer[20,:] = FILE_GreenlandCentral3['ss_alb'].values
-    SSAaer[21,:] = FILE_GreenlandCentral4['ss_alb'].values
-    SSAaer[22,:] = FILE_GreenlandCentral5['ss_alb'].values
-    SSAaer[23,:] = FILE_snw_alg['ss_alb'].values
-    SSAaer[24,:] = FILE_glacier_algae['ss_alb'].values
-
     MACaer = np.zeros([nbr_aer, nbr_wvl])
-
-    MACaer[0,:] = FILE_soot1['ext_cff_mss'].values 
-    MACaer[1,:] = FILE_soot2['ext_cff_mss_ncl'].values # normalised to mass of carbon, not carbon plus coating
-    MACaer[2,:] = FILE_brwnC1['ext_cff_mss'].values
-    MACaer[3,:] = FILE_brwnC2['ext_cff_mss_ncl'].values
-    MACaer[4,:] = FILE_dust1['ext_cff_mss'].values
-    MACaer[5,:] = FILE_dust2['ext_cff_mss'].values
-    MACaer[6,:] = FILE_dust3['ext_cff_mss'].values
-    MACaer[7,:] = FILE_dust4['ext_cff_mss'].values
-    MACaer[8,:] = FILE_ash1['ext_cff_mss'].values
-    MACaer[9,:] = FILE_ash2['ext_cff_mss'].values
-    MACaer[10,:] = FILE_ash3['ext_cff_mss'].values
-    MACaer[11,:] = FILE_ash4['ext_cff_mss'].values
-    MACaer[12,:] = FILE_ash5['ext_cff_mss'].values
-    MACaer[13,:] = FILE_Skiles_dust1['ext_cff_mss'].values
-    MACaer[14,:] = FILE_Skiles_dust2['ext_cff_mss'].values
-    MACaer[15,:] = FILE_Skiles_dust3['ext_cff_mss'].values
-    MACaer[16,:] = FILE_Skiles_dust4['ext_cff_mss'].values
-    MACaer[17,:] = FILE_Skiles_dust5['ext_cff_mss'].values
-    MACaer[18,:] = FILE_GreenlandCentral1['ext_cff_mss'].values
-    MACaer[19,:] = FILE_GreenlandCentral2['ext_cff_mss'].values
-    MACaer[20,:] = FILE_GreenlandCentral3['ext_cff_mss'].values
-    MACaer[21,:] = FILE_GreenlandCentral4['ext_cff_mss'].values
-    MACaer[22,:] = FILE_GreenlandCentral5['ext_cff_mss'].values
-    MACaer[23,:] = FILE_snw_alg['ext_cff_mss'].values
-    MACaer[24,:] = FILE_glacier_algae['ext_cff_mss'].values
-
     Gaer = np.zeros([nbr_aer,nbr_wvl])
-
-    Gaer[0,:] = FILE_soot1['asm_prm'].values
-    Gaer[1,:] = FILE_soot2['asm_prm'].values
-    Gaer[2,:] = FILE_brwnC1['asm_prm'].values
-    Gaer[3,:] = FILE_brwnC2['asm_prm'].values
-    Gaer[4,:] = FILE_dust1['asm_prm'].values
-    Gaer[5,:] = FILE_dust2['asm_prm'].values
-    Gaer[6,:] = FILE_dust3['asm_prm'].values
-    Gaer[7,:] = FILE_dust4['asm_prm'].values
-    Gaer[8,:] = FILE_ash1['asm_prm'].values
-    Gaer[9,:] = FILE_ash2['asm_prm'].values
-    Gaer[10,:] = FILE_ash3['asm_prm'].values
-    Gaer[11,:] = FILE_ash4['asm_prm'].values
-    Gaer[12,:] = FILE_ash5['asm_prm'].values
-    Gaer[13,:] = FILE_Skiles_dust1['asm_prm'].values
-    Gaer[14,:] = FILE_Skiles_dust2['asm_prm'].values
-    Gaer[15,:] = FILE_Skiles_dust3['asm_prm'].values
-    Gaer[16,:] = FILE_Skiles_dust4['asm_prm'].values
-    Gaer[17,:] = FILE_Skiles_dust5['asm_prm'].values
-    Gaer[18,:] = FILE_GreenlandCentral1['asm_prm'].values
-    Gaer[19,:] = FILE_GreenlandCentral2['asm_prm'].values
-    Gaer[20,:] = FILE_GreenlandCentral3['asm_prm'].values
-    Gaer[21,:] = FILE_GreenlandCentral4['asm_prm'].values
-    Gaer[22,:] = FILE_GreenlandCentral5['asm_prm'].values
-    Gaer[23,:] = FILE_snw_alg['asm_prm'].values
-    Gaer[24,:] = FILE_glacier_algae['asm_prm'].values
-
-
-    # load mass concentrations per layer into numpy array (one row per layer, one column per umpurity)
-    # and convert to kg/kg unit
-
     MSSaer = np.zeros([nbr_lyr, nbr_aer])
-    MSSaer[0:nbr_lyr,0] = mss_cnc_soot1
-    MSSaer[0:nbr_lyr,1] = mss_cnc_soot2
-    MSSaer[0:nbr_lyr,2] = mss_cnc_brwnC1
-    MSSaer[0:nbr_lyr,3] = mss_cnc_brwnC2
-    MSSaer[0:nbr_lyr,4] = mss_cnc_dust1
-    MSSaer[0:nbr_lyr,5] = mss_cnc_dust2
-    MSSaer[0:nbr_lyr,6] = mss_cnc_dust3
-    MSSaer[0:nbr_lyr,7] = mss_cnc_dust4
-    MSSaer[0:nbr_lyr,8] = mss_cnc_ash1
-    MSSaer[0:nbr_lyr,9] = mss_cnc_ash2
-    MSSaer[0:nbr_lyr,10] = mss_cnc_ash3
-    MSSaer[0:nbr_lyr,11] = mss_cnc_ash4
-    MSSaer[0:nbr_lyr,12] = mss_cnc_ash5
-    MSSaer[0:nbr_lyr,13] = mss_cnc_Skiles_dust1
-    MSSaer[0:nbr_lyr,14] = mss_cnc_Skiles_dust2
-    MSSaer[0:nbr_lyr,15] = mss_cnc_Skiles_dust3
-    MSSaer[0:nbr_lyr,16] = mss_cnc_Skiles_dust4
-    MSSaer[0:nbr_lyr,17] = mss_cnc_Skiles_dust5
-    MSSaer[0:nbr_lyr,18] = mss_cnc_GreenlandCentral1
-    MSSaer[0:nbr_lyr,19] = mss_cnc_GreenlandCentral2
-    MSSaer[0:nbr_lyr,20] = mss_cnc_GreenlandCentral3
-    MSSaer[0:nbr_lyr,21] = mss_cnc_GreenlandCentral4
-    MSSaer[0:nbr_lyr,22] = mss_cnc_GreenlandCentral5
-    MSSaer[0:nbr_lyr,23] = mss_cnc_snw_alg
-    MSSaer[0:nbr_lyr,24] = mss_cnc_glacier_algae
-
-    MSSaer = MSSaer*1e-9
-
+    
+    for aer in range(nbr_aer):
+        impurity_properties = xr.open_dataset(str(dir_mie_lap_files + files[aer]))
+        Gaer[aer,:] = impurity_properties['asm_prm'].values
+        SSAaer[aer,:] = impurity_properties['ss_alb'].values
+        MSSaer[0:nbr_lyr,aer] = mass_concentrations[aer]
+        if files[aer] == FILE_brwnC2 or files[aer] == FILE_soot2: #coated particles: use ext_cff_mss_ncl 
+            MACaer[aer,:] = impurity_properties['ext_cff_mss_ncl'].values
+        else:
+            MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
+        
+    MSSaer = MSSaer*1e-9 # mass concentrations converted to kg/kg unit
 
     #####################################
     # Begin solving Radiative Transfer
@@ -537,7 +427,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     
     for i in range(nbr_lyr):
 
-        L_snw[i] = rho_snw[i] * dz[i]
+        L_snw[i] = rho_layers[i] * dz[i]
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
 
     # then for the LAPs in each layer
@@ -579,7 +469,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
         wvl, flx_dwn_spc, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt = \
             adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,\
-            L_snw, flx_slr, DIRECT, rds_snw)
+            L_snw, flx_slr, DIRECT, dir_base)
 
 
     return wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt
