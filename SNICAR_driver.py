@@ -35,17 +35,20 @@ from SNICAR_feeder import snicar_feeder
 import matplotlib.pyplot as plt
 import numpy as np
 
-# set dir_base to the location of the BioSNICAR_GO_PY folder
-
-dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
-
 ##############################
-# 1) Choose plot/print options
-###############################
+## 1) Set working directories
+##############################
+
+# set dir_base to the location of the BioSNICAR_GO_PY folder
+dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
+
+################################
+## 2) Choose plot/print options
+################################
 
 
 show_figs = True # toggle to display spectral albedo figure
-save_figs = True # toggle to save spectral albedo figure to file
+save_figs = False # toggle to save spectral albedo figure to file
 savepath = dir_base # base path for saving figures
 print_BBA = True # toggle to print broadband albedo to terminal
 print_band_ratios = False # toggle to print various band ratios to terminal
@@ -53,29 +56,14 @@ smooth = True # apply optional smoothing function (Savitzky-Golay filter)
 window_size = 11 # if applying smoothing filter, define window size
 poly_order = 3 # if applying smoothing filter, define order of polynomial
 
-##################################################################
-# 2) CHOOSE METHOD FOR DETERMINING OPTICAL PROPERTIES OF ICE GRAINS
-# for small spheres choose Mie, for hexagonal plates or columns of any size
-# choose GeometricOptics
-#####################################################################
-
-MIE = True
-GO = False
-
-# If Mie = True, select solver (only Toon available for GO mode).
-TOON = False # toggle Toon et al tridiagonal matrix solver
-ADD_DOUBLE = True # toggle adding-doubling solver
-
-
-######################################
-## 3. RADIATIVE TRANSFER CONFIGURATION
+#######################################
+## 3) RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 20      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
-rf_ice = 2        # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
+solzen   = 57      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -89,31 +77,50 @@ rf_ice = 2        # define source of ice refractive index data. 0 = Warren 1984,
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
 incoming_i = 0
 
+###############################################################
+## 4) SET UP ICE/SNOW LAYERS
+# For granular layers only, choose TOON
+# For granular layers + Fresnel layers below, choose ADD_DOUBLE
+###############################################################
 
-#############################################
-## 4. SET PHYSICAL PROPERTIES OF THE ICE/SNOW
-#############################################
-
-# grain shapes are only active in Mie scattering mode - GO assumes hexagonal columns.
-# snw_shp can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3= koch snowflake
-# shp_fctr = ratio of nonspherical grain effective radii to that of equal-volume sphere
-    
-    # 0=use recommended default value (He et al. 2017);
-    # use user-specified value (between 0 and 1)
-    # only activated when sno_shp > 1 (i.e. nonspherical)
+TOON = True # toggle Toon et al tridiagonal matrix solver
+ADD_DOUBLE = False # toggle adding-doubling solver
 
 dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
-layer_type = [0,0,1,1,1]
+layer_type = [0,0,0,0,0] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+rho_layers = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
-rds_snw = [1500,1500,550,550,550] # effective grain radius of snow/bubbly ice
-rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
-snw_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
-shp_fctr = [0,0,0,0,0] # shape factor (ratio of aspherical grain radii to that of equal-volume sphere)
-snw_ar = [0,0,0,0,0] # aspect ratio (ratio of width to length)
 
-# if using GeometricOptics, set side_length and depth
+###############################################################################
+## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
+# For hexagonal plates or columns of any size choose GeometricOptics
+# For sphere, spheroids, koch snowflake with optional water coating choose Mie
+###############################################################################
+
+MIE = True
+GO = False
+
+rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
+
+
+########## Mie mode ########## 
+grain_rds = [1500,1500,550,550,550] # effective grain radius of snow/bubbly ice
+rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
+
+# Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake
+grain_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
+
+# Shape factor = ratio of nonspherical grain effective radii to that of equal-volume sphere
+### only activated when sno_shp > 1 (i.e. nonspherical)
+### 0=use recommended default value (He et al. 2017)
+### use user-specified value (between 0 and 1)
+shp_fctr = [0,0,0,0,0] 
+
+# Aspect ratio (ratio of width to length)
+grain_ar = [0,0,0,0,0] 
+
+########## GeometricOptics mode ##########
 side_length = [10000,10000,10000,10000,10000] 
 depth = [20000,20000,20000,20000,20000]
 
@@ -121,29 +128,54 @@ depth = [20000,20000,20000,20000,20000]
 ## 5) SET LAP CHARACTERISTICS
 #######################################
 
-nbr_aer = 25 # Define total number of different LAPs/aerosols in model
+# Define total number of different LAPs/aerosols in model
+nbr_aer = 29
 
-# set filename stubs
-stb1 = 'RealPhenol_algae_geom_' # %name stub 1
-stb2 = '.nc'  # file extension
-wrkdir2 = str(dir_base + '/Data/Algal_Optical_Props/') # working directory
-snw_stb1 = 'snw_alg_' # name stub for snow algae
+# Set names of files containing the optical properties of these LAPs:
+FILE_soot1  = 'mie_sot_ChC90_dns_1317.nc'
+FILE_soot2  = 'miecot_slfsot_ChC90_dns_1317.nc'
+FILE_brwnC1 = 'brC_Kirch_BCsd.nc'
+FILE_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc'
+FILE_dust1  = 'dust_balkanski_central_size1.nc'
+FILE_dust2  = 'dust_balkanski_central_size2.nc'
+FILE_dust3  = 'dust_balkanski_central_size3.nc'
+FILE_dust4  = 'dust_balkanski_central_size4.nc'
+FILE_dust5 = 'dust_balkanski_central_size5.nc'
+FILE_ash1  = 'volc_ash_eyja_central_size1.nc'
+FILE_ash2 = 'volc_ash_eyja_central_size2.nc'
+FILE_ash3 = 'volc_ash_eyja_central_size3.nc'
+FILE_ash4 = 'volc_ash_eyja_central_size4.nc'
+FILE_ash5 = 'volc_ash_eyja_central_size5.nc'
+FILE_Skiles_dust1 = 'dust_skiles_size1.nc'
+FILE_Skiles_dust2 = 'dust_skiles_size2.nc'
+FILE_Skiles_dust3 = 'dust_skiles_size3.nc'
+FILE_Skiles_dust4 = 'dust_skiles_size4.nc'
+FILE_Skiles_dust5 = 'dust_skiles_size5.nc'
+FILE_GreenlandCentral1 = 'dust_greenland_central_size1.nc'
+FILE_GreenlandCentral2 = 'dust_greenland_central_size2.nc'
+FILE_GreenlandCentral3 = 'dust_greenland_central_size3.nc'
+FILE_GreenlandCentral4 = 'dust_greenland_central_size4.nc'
+FILE_GreenlandCentral5  = 'dust_greenland_central_size5.nc'
+FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc'
+FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc'
+FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc'
+FILE_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
+FILE_glacier_algae = 'Glacier_Algae_480.nc'
 
-# CHOOSE DIMENSIONS OF GLACIER ALGAE 1
-algae_r = 6 # algae radius
-algae_l = 60 # algae length
-#glacier_algae1 = str(wrkdir2+stb1+str(algae_r)+'_'+str(algae_l)+stb2) # create filename string
-glacier_algae1 = str(wrkdir2+'RealPhenol_algae_geom_{}_{}.nc'.format(algae_r,algae_l))
+# Add more glacier algae (not functional in current code)
+# (optical properties generated with GO), not included in the current model
+# algae1_r = 6 # algae radius
+# algae1_l = 60 # algae length
+# FILE_glacier_algae1 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae1_r,algae1_l))
+# algae2_r = 2 # algae radius
+# algae2_l = 10 # algae length
+# FILE_glacier_algae2 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae2_r,algae2_l))
 
-# CHOOSE DIMENSIONS OF GLACIER ALGAE 2
-algae2_r = 2 # algae radius
-algae2_l = 10 # algae length
-glacier_algae2 = str(wrkdir2+stb1+str(algae2_r)+'_'+str(algae2_l)+stb2) # create filename string
 
-# SET UP IMPURITY MIXING RATIOS
-# PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
+# Indicate mass mixing ratios scenarios for each impurity (units: ng(species)/g(ice), or ppb)
+# The script will loop over the different mixing scenarios
 
-for x in [100000]:
+for x in [300000]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon (Bohren and Huffman, 1983)
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon (Bohren and Huffman, 1983)
@@ -169,46 +201,21 @@ for x in [100000]:
     mss_cnc_GreenlandCentral3 = [0,0,0,0,0] # Greenland Central dust size 3 (Polashenski et al 2015)
     mss_cnc_GreenlandCentral4 = [0,0,0,0,0] # Greenland Central dust size 4 (Polashenski et al 2015)
     mss_cnc_GreenlandCentral5 = [0,0,0,0,0] # Greenland Central dust size 5 (Polashenski et al 2015)
+    mss_cnc_Cook_Greenland_dust_L = [0,0,0,0,0] # GRIS dust (Cook et al. 2019 "LOW")
+    mss_cnc_Cook_Greenland_dust_C = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "mean")
+    mss_cnc_Cook_Greenland_dust_H = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "HIGH")
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
     mss_cnc_glacier_algae = [0,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
 
-
+    
     ##########################################################################
     ################## CALL FUNCTIONS AND PLOT OUTPUTS #######################
     ##########################################################################
 
-    # SET FILE NAMES CONTAINING OPTICAL PARAMETERS FOR ALL IMPURITIES:
 
-    FILE_soot1  = '/480band/lap/mie_sot_ChC90_dns_1317.nc'
-    FILE_soot2  = '/480band/lap/miecot_slfsot_ChC90_dns_1317.nc'
-    FILE_brwnC1 = '/480band/lap/brC_Kirch_BCsd.nc'
-    FILE_brwnC2 = '/480band/lap/brC_Kirch_BCsd_slfcot.nc'
-    FILE_dust1  = '/480band/lap/dust_balkanski_central_size1.nc'
-    FILE_dust2  = '/480band/lap/dust_balkanski_central_size2.nc'
-    FILE_dust3  = '/480band/lap/dust_balkanski_central_size3.nc'
-    FILE_dust4  = '/480band/lap/dust_balkanski_central_size4.nc'
-    FILE_ash1  = '/480band/lap/volc_ash_eyja_central_size1.nc'
-    FILE_ash2 = '/480band/lap/volc_ash_eyja_central_size2.nc'
-    FILE_ash3 = '/480band/lap/volc_ash_eyja_central_size3.nc'
-    FILE_ash4 = '/480band/lap/volc_ash_eyja_central_size4.nc'
-    FILE_ash5 = '/480band/lap/volc_ash_eyja_central_size5.nc'
-    FILE_Skiles_dust1 = '/480band/lap/dust_skiles_size1.nc'
-    FILE_Skiles_dust2 = '/480band/lap/dust_skiles_size2.nc'
-    FILE_Skiles_dust3 = '/480band/lap/dust_skiles_size3.nc'
-    FILE_Skiles_dust4 = '/480band/lap/dust_skiles_size4.nc'
-    FILE_Skiles_dust5 = '/480band/lap/dust_skiles_size5.nc'
-    FILE_GreenlandCentral1 = '/480band/lap/dust_greenland_central_size1.nc'
-    FILE_GreenlandCentral2 = '/480band/lap/dust_greenland_central_size2.nc'
-    FILE_GreenlandCentral3 = '/480band/lap/dust_greenland_central_size3.nc'
-    FILE_GreenlandCentral4 = '/480band/lap/dust_greenland_central_size4.nc'
-    FILE_GreenlandCentral5  = '/480band/lap/dust_greenland_central_size5.nc'
-    FILE_snw_alg  = '/480band/lap/snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
-    FILE_glacier_algae = '/480band/lap/Glacier_Algae_480.nc'
-
-
-    #########################################################
-    # Error catching: invalid combinations of input variables
-    #########################################################
+    ###########################################################
+    ## Error catching: invalid combinations of input variables
+    ###########################################################
 
     if MIE == True and GO == True:
 
@@ -240,31 +247,33 @@ for x in [100000]:
         print("They were constructed from literature values for pigmentation, refractive indices and cell size")
         print("They have not yet been validated empirically.")
 
-    #######################################
-    # IF NO INPUT ERRORS --> FUNCTION CALLS
-    #######################################
+    #########################################
+    ## IF NO INPUT ERRORS --> FUNCTION CALLS
+    #########################################
 
-        
+
     [wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt] =\
-    snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
-    APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_snw, rds_snw,\
-    side_length, depth, rwater, nbr_lyr, nbr_aer, snw_shp, shp_fctr, snw_ar,\
+    snicar_feeder(MIE, GO, dir_base,\
+    rf_ice, incoming_i, DIRECT, layer_type,\
+    APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_layers, grain_rds,\
+    side_length, depth, rwater, nbr_lyr, nbr_aer, grain_shp, shp_fctr, grain_ar,\
     mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
-    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_ash1, mss_cnc_ash2,\
+    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
     mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
     mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
     mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
-    mss_cnc_GreenlandCentral5, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
-    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4,\
+    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
+    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
+    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
     FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
     FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
     FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
-    FILE_snw_alg, FILE_glacier_algae)
+    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H, FILE_snw_alg, FILE_glacier_algae)
 
    
-    ########################
-    # PLOTTING AND PRINTING
-    ########################
+    #########################
+    ## PLOTTING AND PRINTING
+    #########################
 
     if smooth:
         from scipy.signal import savgol_filter
