@@ -26,6 +26,12 @@ TODO: Update README
 TODO: create new algal optical properties that extend to 200nm and use full phenol spectrum
 (requires generating new optical property files)
 
+TODO: Remove GO option and replace with new grain shape option for large hexaginal columns
+
+TODO: Move all paths into driver script
+
+TODO: Add option to save config details to text file
+
 ######################################################################
 ######################################################################
 
@@ -62,7 +68,7 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 MIE = True
 GO = False
 
-# If Mie = True, select solver (only Toon available for GO mode).
+# select solver.
 TOON = False # toggle Toon et al tridiagonal matrix solver
 ADD_DOUBLE = True # toggle adding-doubling solver
 
@@ -74,7 +80,7 @@ ADD_DOUBLE = True # toggle adding-doubling solver
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 20      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+solzen   = 40      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
 rf_ice = 2        # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
@@ -102,12 +108,12 @@ incoming_i = 0
     # use user-specified value (between 0 and 1)
     # only activated when sno_shp > 1 (i.e. nonspherical)
 
-dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
+dz = [0.01, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
-layer_type = [0,0,1,1,1]
-R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
-rho_snw = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
-rds_snw = [1500,1500,550,550,550] # effective grain radius of snow/bubbly ice
+layer_type = [1,1,1,1,1] # 0 = snow, 1 = ice
+R_sfc = 0.15 # reflectance of underlying surface - set across all wavelengths
+rho_snw = [916.9999, 916.9999, 916.99, 916.99, 916.99] # density of each layer (unit = kg m-3)
+rds_snw = [500,500,500,500,500] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
 snw_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
 shp_fctr = [0,0,0,0,0] # shape factor (ratio of aspherical grain radii to that of equal-volume sphere)
@@ -143,12 +149,12 @@ glacier_algae2 = str(wrkdir2+stb1+str(algae2_r)+'_'+str(algae2_l)+stb2) # create
 # SET UP IMPURITY MIXING RATIOS
 # PARTICLE MASS MIXING RATIOS (units: ng(species)/g(ice), or ppb)
 
-for x in [100000]:
+for x in [5000]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon (Bohren and Huffman, 1983)
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon (Bohren and Huffman, 1983)
     mss_cnc_brwnC1 = [0,0,0,0,0]   # uncoated brown carbon (Kirchstetter et al. (2004).)
-    mss_cnc_brwnC2 = [0,0,0,0,0]   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
+    mss_cnc_brwnC2 = [x,0,0,0,0]   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
     mss_cnc_dust1 = [0,0,0,0,0]    # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
     mss_cnc_dust2 = [0,0,0,0,0]    # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
     mss_cnc_dust3 = [0,0,0,0,0]    # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
