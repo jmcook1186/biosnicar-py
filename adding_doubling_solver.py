@@ -1,5 +1,5 @@
 def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl,\
-     R_sfc, wvl, Fs, Fd, L_snw, flx_slr, DIRECT, rds_snw):
+     R_sfc, wvl, Fs, Fd, L_snw, flx_slr, DIRECT, dir_base):
     
 
     """
@@ -12,9 +12,12 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
     are included.
 
     """
-
+    
     import numpy as np
     import xarray as xr
+    
+    #directory
+    dir_RI_ice = str(dir_base + 'Data/') 
 
     #######################################
     ## DEFINE CONSTANTS AND SET UP ARRAYS
@@ -90,7 +93,7 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
         for lyr in np.arange(0,nbr_lyr,1):   # loop through layers
 
             # open refractive index file and grab real and imaginary parts
-            refidx_file = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc')
+            refidx_file = xr.open_dataset(dir_RI_ice+'rfidx_ice.nc')
 
             if rf_ice == 0:
 
