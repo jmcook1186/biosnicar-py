@@ -146,6 +146,7 @@ FILE_ash2 = 'volc_ash_eyja_central_size2.nc'
 FILE_ash3 = 'volc_ash_eyja_central_size3.nc'
 FILE_ash4 = 'volc_ash_eyja_central_size4.nc'
 FILE_ash5 = 'volc_ash_eyja_central_size5.nc'
+FILE_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc'
 FILE_Skiles_dust1 = 'dust_skiles_size1.nc'
 FILE_Skiles_dust2 = 'dust_skiles_size2.nc'
 FILE_Skiles_dust3 = 'dust_skiles_size3.nc'
@@ -191,6 +192,7 @@ for x in [300000]:
     mss_cnc_ash3 = [0,0,0,0,0]    # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
     mss_cnc_ash4 = [0,0,0,0,0]    # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
     mss_cnc_ash5 = [0,0,0,0,0]    # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
+    mss_cnc_ash_st_helens = [0,0,0,0,0]   # ashes from Mount Saint Helen's
     mss_cnc_Skiles_dust1 = [0,0,0,0,0]    # Colorado dust size 1 (Skiles et al 2017)
     mss_cnc_Skiles_dust2 = [0,0,0,0,0]    # Colorado dust size 2 (Skiles et al 2017)
     mss_cnc_Skiles_dust3 = [0,0,0,0,0]    # Colorado dust size 3 (Skiles et al 2017)
@@ -259,13 +261,13 @@ for x in [300000]:
     side_length, depth, rwater, nbr_lyr, nbr_aer, grain_shp, shp_fctr, grain_ar,\
     mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
     mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
-    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
+    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_ash_st_helens, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
     mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
     mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
     mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
     mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
     FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
-    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
+    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_ash_st_helens, FILE_Skiles_dust1, FILE_Skiles_dust2,\
     FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
     FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
     FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H, FILE_snw_alg, FILE_glacier_algae)
