@@ -3,13 +3,13 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     side_length, depth, rwater, nbr_lyr, nbr_aer, grain_shp, shp_fctr, grain_ar,\
     mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
     mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
-    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
+    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_ash_st_helens, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
     mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
     mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
     mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
     mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
     FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
-    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
+    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_ash_st_helens, FILE_Skiles_dust1, FILE_Skiles_dust2,\
     FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
     FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
     FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H, FILE_snw_alg, FILE_glacier_algae):
@@ -51,8 +51,25 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     dir_bubbly_ice = str(dir_base + 'Data/bubbly_ice_files/')
     dir_fsds = str(dir_base + 'Data/Mie_files/480band/fsds/')
     dir_RI_ice = str(dir_base + 'Data/') 
+    
+    # load impurity files and mass concentrations
+    files = [FILE_soot1,\
+    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
+    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_ash_st_helens, FILE_Skiles_dust1, FILE_Skiles_dust2,\
+    FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
+    FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
+    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H,\
+    FILE_snw_alg, FILE_glacier_algae]
+        
+    mass_concentrations = [mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
+    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
+    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_ash_st_helens, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
+    mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
+    mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
+    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
+    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae]
 
-    # retrieve wavelength from arbitrary choice of netcdf file
+    # retrieve wavelength from random choice of netcdf file
     temp = xr.open_dataset(str(dir_mie_lap_files+random.choice(os.listdir(dir_mie_lap_files))))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
@@ -62,7 +79,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     R_sfc = [R_sfc for _ in range(nbr_wvl)]
     R_sfc = np.array(R_sfc)
 
-    # Incoming Irradiance
+    # load incoming irradiance
     # calc cosine of solar zenith (radians)
     mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
     
@@ -130,8 +147,9 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
         Fs = np.zeros(nbr_wvl)
 
 
+    ###################################################
     # Read in ice optical properties
-    # set string stubs for reading in ice optical files
+    ###################################################
 
     if rf_ice == 0:
         dir_OP = 'ice_Wrn84/ice_Wrn84'
@@ -354,27 +372,12 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
 
     
-    ###############################################################
-    ###############################################################
+    ###################################################
+    # Read in impurity optical properties
+    ###################################################
     
     # Load optical properties SSA, MAC and g (one row per impurity, one column per wvalengths)
     # Load mass concentrations MSS per layer (one row per layer, one column per umpurity)
-    
-    files = [FILE_soot1,\
-    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
-    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_Skiles_dust1, FILE_Skiles_dust2,\
-    FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
-    FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
-    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H,\
-    FILE_snw_alg, FILE_glacier_algae]
-        
-    mass_concentrations = [mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
-    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
-    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
-    mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
-    mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
-    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
-    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae]
 
     SSAaer = np.zeros([nbr_aer,nbr_wvl])
     MACaer = np.zeros([nbr_aer, nbr_wvl])
