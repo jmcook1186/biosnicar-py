@@ -1,4 +1,4 @@
-def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
+def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_layers, grain_rds,\
     side_length, depth, rwater, nbr_lyr, nbr_aer, grain_shp, shp_fctr, grain_ar,\
     mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
@@ -47,7 +47,6 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     dir_mie_ice_files = str(dir_base + 'Data/Mie_files/480band/') # directory with folders ice_Pic16, ice_Wrn08 and ice_Wrn84 with optical properties calculated with Mie theory
     dir_go_ice_files = str(dir_base + 'Data/GO_files/480band/') # idem for ice OPs calculated with Geometric optics
     dir_mie_lap_files = str(dir_base + 'Data/Mie_files/480band/lap/') # directory with folders ice_Pic16, ice_Wrn08 and ice_Wrn84 with optical properties calculated with Mie theory
-    dir_go_lap_files = str(dir_base + 'Data/GO_files/480band/lap/') # idem for OPs calculated with Geometric optics
     dir_bubbly_ice = str(dir_base + 'Data/bubbly_ice_files/')
     dir_fsds = str(dir_base + 'Data/Mie_files/480band/fsds/')
     dir_RI_ice = str(dir_base + 'Data/') 
@@ -151,16 +150,6 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     # Read in ice optical properties
     ###################################################
 
-    if rf_ice == 0:
-        dir_OP = 'ice_Wrn84/ice_Wrn84'
-        print("Using Warren 84 refractive index")
-    elif rf_ice == 1:
-        dir_OP = 'ice_Wrn08/ice_Wrn08'
-        print("Using Warren 08 refractive index")
-    elif rf_ice == 2:
-        dir_OP = 'ice_Pic16/ice_Pic16'
-        print("Using Picard 16 refractive index")
-
     # set up empty arrays
     SSA_snw = np.empty([nbr_lyr, nbr_wvl])
     MAC_snw = np.empty([nbr_lyr, nbr_wvl])
@@ -176,29 +165,56 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                 raise ValueError("ERROR: ICE GRAIN RADIUS SET TO ZERO")
 
             else:
+                
+                if grain_shp[i] == 4: # if large hexaginal prisms (geometric optics calcs)
+                    print("Using hexagonal column with side length = {}, length = {}".format(str(side_length[i]).rjust(4,'0'),str(depth[i])))
+                  
+                    if rf_ice ==0:
+                        dir_OP = str(dir_go_ice_files+'ice_Wrn84/ice_Wrn84_')
+                        print("Using Warren 84 refractive index")
+                    elif rf_ice == 1:
+                        dir_OP = str(dir_go_ice_files+'ice_Wrn08/ice_Wrn08_')
+                        print("Using Warren 08 refractive index")
+                    elif rf_ice == 2:
+                        dir_OP = str(dir_go_ice_files+'ice_Pic16/ice_Pic16_')
+                        print("Using Picard 16 refractive index")           
 
-                if MIE:
+                    FILE_ice = str(dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
+                    print("\nLayer: {}".format(i))
+    
+
+
+
+                elif grain_shp[i] < 4:
+
+                    if rf_ice == 0:
+                        dir_OP = 'ice_Wrn84/ice_Wrn84'
+                        print("Using Warren 84 refractive index")
+                    elif rf_ice == 1:
+                        dir_OP = 'ice_Wrn08/ice_Wrn08'
+                        print("Using Warren 08 refractive index")
+                    elif rf_ice == 2:
+                        dir_OP = 'ice_Pic16/ice_Pic16'
+                        print("Using Picard 16 refractive index")
+
                     FILE_ice = str(dir_mie_ice_files + dir_OP + '_{}.nc'.format(str(grain_rds[i]).rjust(4,'0')))
                     print("\nLayer: {}".format(i))
                     print("Using Mie mode: spheres with radius = {}".format(str(grain_rds[i]).rjust(4,'0')))
 
-                elif GO:
-                    FILE_ice = str(dir_go_ice_files + dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
-                    print("\nLayer: {}".format(i))
-                    print("Using geometric optics mode: hex column with side length = {}, length = {}".format(str(side_length[i]).rjust(4,'0'),str(depth[i])))
-
             # read in single scattering albedo, MAC and g for ice crystals in each layer,
-            # optional with coated liquid water spheres
+            # optional with coated liquid water spheres (only available for spherical grains)
             if rwater[i] > grain_rds[i]:
 
-                # water coating code
+                if grain_shp[i] != 0:
+                    raise ValueError("Water coating can only be applied to spherical grains")
 
-                fn_ice = dir_base + "/Data/rfidx_ice.nc"
-
-                fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
-                res = miecoated_driver(rice=grain_rds[i], rwater=rwater[i], fn_ice=fn_ice, rf_ice=rf_ice, fn_water=fn_water, wvl=wvl)
-                SSA_snw[i, :] = res["ssa"]
-                g_snw[i, :] = res["asymmetry"]
+                else:
+                    # water coating calculations (coated spheres)
+                    fn_ice = dir_base + "/Data/rfidx_ice.nc"
+                    fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+                    res = miecoated_driver(rice=grain_rds[i], rwater=rwater[i], fn_ice=fn_ice, rf_ice=rf_ice, fn_water=fn_water, wvl=wvl)
+                    SSA_snw[i, :] = res["ssa"]
+                    g_snw[i, :] = res["asymmetry"]
 
                 with xr.open_dataset(FILE_ice) as temp:
                     ext_cff_mss = temp['ext_cff_mss'].values
@@ -327,7 +343,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                         gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2  # Eqn. 3.3 in Fu (2007)
                         
                     
-                    if grain_shp[i] > 0:
+                    if (grain_shp[i] > 0)& (grain_shp[i] < 4):
 
                         from scipy.interpolate import pchip
                         # 6 wavelength bands for g_snw to be interpolated into 480-bands of SNICAR
@@ -369,7 +385,6 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
             MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) + abs_cff_mss_ice
             SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) / MAC_snw[i,:]
 
-
     
     ###################################################
     # Read in impurity optical properties
@@ -394,6 +409,7 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
         
     MSSaer = MSSaer*1e-9 # mass concentrations converted to kg/kg unit
+
 
     #####################################
     # Begin solving Radiative Transfer
