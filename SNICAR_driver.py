@@ -17,22 +17,7 @@ included in the ice/snow column, the ADDING-DOUBLING solver must be used
 
 Author: Joseph Cook, October 2020
 
-
-TODO: add new laps according to 480-band optical property files (currently just one glacier alga
-with dims 4 x 40)
-
-TODO: Update README
-
-TODO: create new algal optical properties that extend to 200nm and use full phenol spectrum
-(requires generating new optical property files)
-
-TODO: Remove GO option and replace with new grain shape option for large hexaginal columns
-
-TODO: Move all paths into driver script
-
-TODO: Add option to save config details to text file
-
-######################################################################
+######################
 ######################################################################
 
 """
@@ -46,7 +31,7 @@ import numpy as np
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
+dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
 
 ################################
 ## 2) Choose plot/print options
@@ -69,7 +54,7 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 57      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+solzen   = 40      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -89,12 +74,12 @@ incoming_i = 0
 # For granular layers + Fresnel layers below, choose ADD_DOUBLE
 ###############################################################
 
-TOON = True # toggle Toon et al tridiagonal matrix solver
-ADD_DOUBLE = False # toggle adding-doubling solver
+TOON = False # toggle Toon et al tridiagonal matrix solver
+ADD_DOUBLE = True # toggle adding-doubling solver
 
 dz = [0.01, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
-layer_type = [0,0,0,0,0] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+layer_type = [0,0,1,1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
 rho_layers = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 
@@ -111,7 +96,7 @@ rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984, 1 = Wa
 
 
 ########## Mie mode ########## 
-grain_rds = [1500,1500,550,550,550] # effective grain radius of snow/bubbly ice
+grain_rds = [500,10000,550,550,550] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
 
 # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake
@@ -135,7 +120,7 @@ depth = [20000,20000,20000,20000,20000]
 #######################################
 
 # Define total number of different LAPs/aerosols in model
-nbr_aer = 29
+nbr_aer = 30
 
 # Set names of files containing the optical properties of these LAPs:
 FILE_soot1  = 'mie_sot_ChC90_dns_1317.nc'
@@ -182,12 +167,12 @@ FILE_glacier_algae = 'Glacier_Algae_480.nc'
 # Indicate mass mixing ratios scenarios for each impurity (units: ng(species)/g(ice), or ppb)
 # The script will loop over the different mixing scenarios
 
-for x in [300000]:
+for x in [0]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon (Bohren and Huffman, 1983)
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon (Bohren and Huffman, 1983)
     mss_cnc_brwnC1 = [0,0,0,0,0]   # uncoated brown carbon (Kirchstetter et al. (2004).)
-    mss_cnc_brwnC2 = [x,0,0,0,0]   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
+    mss_cnc_brwnC2 = [0,0,0,0,0]   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
     mss_cnc_dust1 = [0,0,0,0,0]    # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
     mss_cnc_dust2 = [0,0,0,0,0]    # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
     mss_cnc_dust3 = [0,0,0,0,0]    # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
@@ -213,7 +198,7 @@ for x in [300000]:
     mss_cnc_Cook_Greenland_dust_C = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "mean")
     mss_cnc_Cook_Greenland_dust_H = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "HIGH")
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-    mss_cnc_glacier_algae = [0,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
+    mss_cnc_glacier_algae = [75000,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
 
     
     ##########################################################################

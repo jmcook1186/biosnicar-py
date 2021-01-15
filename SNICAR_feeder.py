@@ -191,19 +191,18 @@ def snicar_feeder(MIE, GO, dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
             # optional with coated liquid water spheres
             if rwater[i] > grain_rds[i]:
 
-                # water coating code currently disabled
-                raise ValueError("SORRY, water coatings are not yet functional until the code has been updated to deal with wl's down to 200 nm")               
-                
-                #    fn_ice = dir_base + "/Data/rfidx_ice.nc"
+                # water coating code
 
-                #    fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
-                #     res = miecoated_driver(rice=rds_snw[i], rwater=rwater[i], fn_ice=fn_ice, fn_water=fn_water, wvl=wvl)
-                #     SSA_snw[i, :] = res["ssa"]
-                #     g_snw[i, :] = res["asymmetry"]
+                fn_ice = dir_base + "/Data/rfidx_ice.nc"
 
-                #     with xr.open_dataset(FILE_ice) as temp:
-                #         ext_cff_mss = temp['ext_cff_mss'].values
-                #         MAC_snw[i, :] = ext_cff_mss
+                fn_water = dir_base + "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+                res = miecoated_driver(rice=grain_rds[i], rwater=rwater[i], fn_ice=fn_ice, rf_ice=rf_ice, fn_water=fn_water, wvl=wvl)
+                SSA_snw[i, :] = res["ssa"]
+                g_snw[i, :] = res["asymmetry"]
+
+                with xr.open_dataset(FILE_ice) as temp:
+                    ext_cff_mss = temp['ext_cff_mss'].values
+                    MAC_snw[i, :] = ext_cff_mss
 
             else:
 
