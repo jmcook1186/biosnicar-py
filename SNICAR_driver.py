@@ -31,7 +31,7 @@ import numpy as np
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
+dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
 
 ################################
 ## 2) Choose plot/print options
@@ -51,10 +51,10 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 ## 3) RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
+DIRECT   = 1       # 1= Direct-beam incident flux, 0= Diffuse incident flux
 APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 40      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+solzen   = 55      # if DIRECT give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -66,7 +66,7 @@ solzen   = 40      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 
 #    6 = Top-of-atmosphere
 # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
-incoming_i = 0
+incoming_i = 6
 
 ###############################################################
 ## 4) SET UP ICE/SNOW LAYERS
@@ -79,7 +79,7 @@ ADD_DOUBLE = True # toggle adding-doubling solver
 
 dz = [0.01, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
-layer_type = [0,0,1,1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+layer_type = [0,0,0,1,0] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
 rho_layers = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 
@@ -91,12 +91,14 @@ R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 
 rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
 
-########## Mie mode ########## 
-grain_rds = [10000,10000,550,550,550] # effective grain radius of snow/bubbly ice
-rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
-
-# Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake
+# Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
+# For 0,1,2,3:
 grain_shp =[4,4,0,0,0] # grain shape(He et al. 2016, 2017)
+grain_rds = [10000,10000,550,550,550] # effective grain radius of snow/bubbly ice
+rwater = [0, 0, 0, 0, 0] # radius of optional liquid water coating
+# For 4:
+side_length = [10000,10000,10000,10000,10000] 
+depth = [10000,10000,20000,20000,20000]
 
 # Shape factor = ratio of nonspherical grain effective radii to that of equal-volume sphere
 ### only activated when sno_shp > 1 (i.e. nonspherical)
@@ -107,9 +109,6 @@ shp_fctr = [0,0,0,0,0]
 # Aspect ratio (ratio of width to length)
 grain_ar = [0,0,0,0,0] 
 
-########## GeometricOptics mode ##########
-side_length = [10000,10000,10000,10000,10000] 
-depth = [10000,10000,20000,20000,20000]
 
 #######################################
 ## 5) SET LAP CHARACTERISTICS
@@ -232,6 +231,10 @@ for x in [0]:
         print("They were constructed from literature values for pigmentation, refractive indices and cell size")
         print("They have not yet been validated empirically.")
 
+    if solzen>89:
+        solzen=89
+        print("Surface irradiance profiles exist for a solar zenith angle < 90 degrees. Solzen set to 89.")
+        
     #########################################
     ## IF NO INPUT ERRORS --> FUNCTION CALLS
     #########################################
