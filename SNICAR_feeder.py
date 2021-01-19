@@ -87,24 +87,27 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     flx_slr = []
     
     if DIRECT:
+        
+        
+        coszen = str('SZA'+str(solzen).rjust(2,'0'))
 
         if incoming_i == 0:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_clr_"+coszen+".nc")) 
             print("atmospheric profile = mid-lat winter")
         elif incoming_i == 1:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mls_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mls_clr_"+coszen+".nc"))
             print("atmospheric profile = mid-lat summer")
         elif incoming_i == 2:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_saw_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_saw_clr_"+coszen+".nc"))
             print("atmospheric profile = sub-Arctic winter")
         elif incoming_i == 3:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_sas_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_sas_clr_"+coszen+".nc"))
             print("atmospheric profile = sub-Arctic summer")
         elif incoming_i == 4:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_smm_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_smm_clr_"+coszen+".nc"))
             print("atmospheric profile = Summit Station")
         elif incoming_i == 5:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_hmn_clr.nc"))
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_hmn_clr_"+coszen+".nc"))
             print("atmospheric profile = High Mountain")  
         elif incoming_i == 6:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_toa_clr.nc"))
@@ -113,7 +116,7 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
         else:
             raise ValueError ("Invalid choice of atmospheric profile")
         
-        flx_slr = Incoming_file['flx_dwn_sfc'].values
+        flx_slr = Incoming_file['flx_dwn_sfc'].values #flx_dwn_sfc is the spectral irradiance in W m-2 and is pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
         flx_slr[flx_slr<=0]=1e-30
         Fs = flx_slr / (mu_not * np.pi)
         Fd = np.zeros(nbr_wvl)
@@ -182,7 +185,6 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
                     FILE_ice = str(dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
                     print("\nLayer: {}".format(i))
     
-
 
 
                 elif grain_shp[i] < 4:
