@@ -80,7 +80,7 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
     # load incoming irradiance
     # calc cosine of solar zenith (radians)
-    mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
+    mu_not = np.round((np.cos(solzen * (np.pi / 180))),2) # convert radians if required
     
     print("\ncosine of solar zenith = ", mu_not)
     
@@ -181,8 +181,6 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
                     FILE_ice = str(dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
                     print("\nLayer: {}".format(i))
-    
-
 
 
                 elif grain_shp[i] < 4:

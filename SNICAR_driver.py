@@ -50,11 +50,16 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 #######################################
 ## 3) RADIATIVE TRANSFER CONFIGURATION
 #######################################
-
-DIRECT   = 1        # 1= Direct-beam incident flux, 0= Diffuse incident flux
-APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
-DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-solzen   = 40      # if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+# DIRECT: 1= Direct-beam incident flux, 0= Diffuse incident flux
+# APRX_TYP: type of two stream approximation to use. 
+#       Options are: 1= Eddington, 2= Quadrature, 3= Hemispheric Mean 
+#       (APRX_TYP only relevant for TOON. ADD-DOUBLE uses dEdd 2 stream apprx)
+# 1= Apply Delta approximation, 0= No delta
+# if DIRECT give solar zenith angle (degrees from 0 = nadir, 90 = horizon)
+DIRECT   = 1        
+APRX_TYP = 1        
+DELTA    = 1        
+solzen   = 50      
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -77,7 +82,7 @@ incoming_i = 0
 TOON = False # toggle Toon et al tridiagonal matrix solver
 ADD_DOUBLE = True # toggle adding-doubling solver
 
-dz = [0.01, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
+dz = [0.01, 0.005, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
 layer_type = [0,0,1,1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
 rho_layers = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
@@ -92,7 +97,7 @@ R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
 
 ########## Mie mode ########## 
-grain_rds = [10000,10000,550,550,550] # effective grain radius of snow/bubbly ice
+grain_rds = [1000,20000,550,550,550] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # if  using Mie calculations, add radius of optional liquid water coating
 
 # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake
@@ -163,7 +168,7 @@ FILE_glacier_algae = 'Glacier_Algae_480.nc'
 # Indicate mass mixing ratios scenarios for each impurity (units: ng(species)/g(ice), or ppb)
 # The script will loop over the different mixing scenarios
 
-for x in [0]:
+for x in [1000, 5000, 10000, 20000, 30000, 40000, 50000, 75000, 100000]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon (Bohren and Huffman, 1983)
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon (Bohren and Huffman, 1983)
@@ -194,7 +199,7 @@ for x in [0]:
     mss_cnc_Cook_Greenland_dust_C = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "mean")
     mss_cnc_Cook_Greenland_dust_H = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "HIGH")
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-    mss_cnc_glacier_algae = [75000,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
+    mss_cnc_glacier_algae = [x,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
 
     
     ##########################################################################
