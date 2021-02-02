@@ -31,7 +31,7 @@ import numpy as np
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
+dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
 
 ################################
 ## 2) Choose plot/print options
@@ -71,7 +71,7 @@ solzen   = 50
 #    6 = Top-of-atmosphere
 # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
-incoming_i = 6
+incoming_i = 4
 
 ###############################################################
 ## 4) SET UP ICE/SNOW LAYERS
@@ -82,10 +82,10 @@ incoming_i = 6
 TOON = False # toggle Toon et al tridiagonal matrix solver
 ADD_DOUBLE = True # toggle adding-doubling solver
 
-dz = [0.01, 0.005, 1, 1, 10] # thickness of each vertical layer (unit = m)
+dz = [0.001, 0.01, 1, 1, 10] # thickness of each vertical layer (unit = m)
 nbr_lyr = len(dz)  # number of snow layers
-layer_type = [0,0,0,1,0] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
-rho_layers = [600, 600, 894, 894, 894] # density of each layer (unit = kg m-3)
+layer_type = [0,1,1,1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+rho_layers = [800, 894, 894, 894, 894] # density of each layer (unit = kg m-3)
 R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 
 ###############################################################################
@@ -97,11 +97,11 @@ R_sfc = 0.15 # reflectance of undrlying surface - set across all wavelengths
 rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
 
 # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake
-grain_shp =[4,4,0,0,0] # grain shape(He et al. 2016, 2017)
-grain_rds = [10000,10000,550,550,550] # effective grain radius of snow/bubbly ice
+grain_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
+grain_rds = [5000,550,550,550,550] # effective grain radius of snow/bubbly ice
 rwater = [0, 0, 0, 0, 0] # radius of optional liquid water coating
 # For 4:
-side_length = [10000,10000,10000,10000,10000] 
+side_length = [2000,2000,10000,10000,10000] 
 depth = [10000,10000,20000,20000,20000]
 
 # Shape factor = ratio of nonspherical grain effective radii to that of equal-volume sphere
@@ -166,7 +166,7 @@ FILE_glacier_algae = 'Glacier_Algae_480.nc'
 # Indicate mass mixing ratios scenarios for each impurity (units: ng(species)/g(ice), or ppb)
 # The script will loop over the different mixing scenarios
 
-for x in [1000, 5000, 10000, 20000, 30000, 40000, 50000, 75000, 100000]:
+for x in [0]:
     
     mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon (Bohren and Huffman, 1983)
     mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon (Bohren and Huffman, 1983)
@@ -197,7 +197,7 @@ for x in [1000, 5000, 10000, 20000, 30000, 40000, 50000, 75000, 100000]:
     mss_cnc_Cook_Greenland_dust_C = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "mean")
     mss_cnc_Cook_Greenland_dust_H = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "HIGH")
     mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-    mss_cnc_glacier_algae = [x,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
+    mss_cnc_glacier_algae = [0,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
 
     
     ##########################################################################
@@ -274,11 +274,11 @@ for x in [1000, 5000, 10000, 20000, 30000, 40000, 50000, 75000, 100000]:
 
     if print_band_ratios:
 
-        I2DBA = albedo[40]/albedo[36]
-        I3DBA = (albedo[36] - albedo[40]) / albedo[45]
-        NDCI = ((albedo[40]-albedo[38])-(albedo[45]-albedo[38]))*((albedo[40]-albedo[38])/(albedo[45]-albedo[38]))
-        MCI = (albedo[40]-albedo[36])/(albedo[40]+albedo[36])
-        II = np.log(albedo[26])/np.log(albedo[56])
+        I2DBA = albedo[51]/albedo[46]
+        I3DBA = (albedo[46] - albedo[50]) / albedo[55]
+        NDCI = ((albedo[50]-albedo[48])-(albedo[55]-albedo[48]))*((albedo[50]-albedo[48])/(albedo[55]-albedo[48]))
+        MCI = (albedo[50]-albedo[46])/(albedo[50]+albedo[46])
+        II = np.log(albedo[36])/np.log(albedo[66])
 
         print("\nINDEX VALUES")
         print("2DBA Index: ",I2DBA)
