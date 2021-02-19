@@ -281,11 +281,11 @@ for x in [0]:
 
     if print_band_ratios:
 
-        I2DBA = albedo[40]/albedo[36]
-        I3DBA = (albedo[36] - albedo[40]) / albedo[45]
-        NDCI = ((albedo[40]-albedo[38])-(albedo[45]-albedo[38]))*((albedo[40]-albedo[38])/(albedo[45]-albedo[38]))
-        MCI = (albedo[40]-albedo[36])/(albedo[40]+albedo[36])
-        II = np.log(albedo[26])/np.log(albedo[56])
+        I2DBA = albedo[51]/albedo[46]
+        I3DBA = (albedo[46] - albedo[50]) / albedo[55]
+        NDCI = ((albedo[50]-albedo[48])-(albedo[55]-albedo[48]))*((albedo[50]-albedo[48])/(albedo[55]-albedo[48]))
+        MCI = (albedo[50]-albedo[46])/(albedo[50]+albedo[46])
+        II = np.log(albedo[36])/np.log(albedo[66])
 
         print("\nINDEX VALUES")
         print("2DBA Index: ",I2DBA)
