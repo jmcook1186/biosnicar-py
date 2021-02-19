@@ -8,8 +8,8 @@ def toon_solver(inputs):
     wvl=inputs.wvl
     nbr_lyr=inputs.nbr_lyr
     R_sfc=inputs.R_sfc
-    Fs=inputs.Fd
-    Fd=inputs.Fs
+    Fs=inputs.Fs
+    Fd=inputs.Fd
     mu_not=inputs.mu_not
     L_snw=inputs.L_snw
     flx_slr=inputs.flx_slr
