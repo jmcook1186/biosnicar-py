@@ -1,5 +1,4 @@
-def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl,\
-     R_sfc, wvl, Fs, Fd, L_snw, flx_slr, DIRECT, dir_base):
+def adding_doubling_solver(inputs):
     
 
     """
@@ -16,13 +15,31 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
     import numpy as np
     import xarray as xr
     
+    #load variables from input table
+    tau=inputs.tau
+    SSA=inputs.SSA
+    g=inputs.g
+    nbr_wvl=inputs.nbr_wvl
+    wvl=inputs.wvl
+    nbr_lyr=inputs.nbr_lyr
+    layer_type=inputs.layer_type
+    rf_ice=inputs.rf_ice
+    R_sfc=inputs.R_sfc
+    Fs=inputs.Fs
+    Fd=inputs.Fd
+    mu_not=inputs.mu_not
+    L_snw=inputs.L_snw
+    flx_slr=inputs.flx_slr
+    dir_base=inputs.dir_base
+    DIRECT=inputs.DIRECT
+    
     #directory
     dir_RI_ice = str(dir_base + 'Data/') 
 
     #######################################
     ## DEFINE CONSTANTS AND SET UP ARRAYS
     #######################################
-
+    
     tau0    = tau.T   # read and transpose tau
     g0      = g.T  # read and transpose g
     SSA0  = SSA.T  # read and transpose SSA
@@ -476,6 +493,7 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
 
 
     # Spectrally-integrated solar, visible, and NIR albedos:
+        
     alb_bb = np.sum(flx_slr*albedo)/np.sum(flx_slr) 
 
     alb_vis = np.sum(flx_slr[0:vis_max_idx] * albedo[0:vis_max_idx]) / np.sum(flx_slr[0:vis_max_idx]) 
@@ -504,4 +522,4 @@ def adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_
     # abs_ground_nir  = F_abs_nir_btm       # near-IR absorption by underlying substrate [W/m2]
 
 
-    return wvl, flx_dwn_spc, albedo, alb_slr, alb_vis, alb_nir, abs_snw_slr, heat_rt
+    return wvl, albedo, alb_bb, alb_vis, alb_nir, abs_snw_slr, heat_rt
