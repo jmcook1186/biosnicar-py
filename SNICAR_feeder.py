@@ -1,18 +1,4 @@
-def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
-    APRX_TYP, DELTA, solzen, TOON, ADD_DOUBLE, R_sfc, dz, rho_layers, grain_rds,\
-    side_length, depth, rwater, nbr_lyr, nbr_aer, grain_shp, shp_fctr, grain_ar,\
-    mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
-    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
-    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_ash_st_helens, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
-    mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
-    mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
-    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
-    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae, FILE_soot1,\
-    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
-    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_ash_st_helens, FILE_Skiles_dust1, FILE_Skiles_dust2,\
-    FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
-    FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
-    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H, FILE_snw_alg, FILE_glacier_algae):
+def snicar_feeder(inputs):
 
 
     """
@@ -42,7 +28,48 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     from adding_doubling_solver import adding_doubling_solver
     import random
     import os
+    import collections as c
     
+    # load variables from input table
+    dir_base=inputs.dir_base
+    TOON=inputs.TOON
+    ADD_DOUBLE=inputs.ADD_DOUBLE
+    nbr_lyr = inputs.nbr_lyr
+    nbr_aer = inputs.nbr_aer
+    layer_type = inputs.layer_type
+    DIRECT=inputs.DIRECT
+    incoming_i=inputs.incoming_i
+    solzen=inputs.solzen
+    grain_rds=inputs.grain_rds
+    grain_shp=inputs.grain_shp
+    shp_fctr=inputs.shp_fctr
+    grain_ar=inputs.grain_ar
+    side_length=inputs.side_length
+    depth=inputs.depth
+    rf_ice=inputs.rf_ice
+    rwater=inputs.rwater
+    rho_layers=inputs.rho_layers
+    dz=inputs.dz
+    FILE_brwnC2=inputs.FILE_brwnC2
+    FILE_soot2=inputs.FILE_soot2
+    
+    
+    files = [inputs.FILE_soot1,\
+    inputs.FILE_soot2, inputs.FILE_brwnC1, inputs.FILE_brwnC2, inputs.FILE_dust1, inputs.FILE_dust2, inputs.FILE_dust3, inputs.FILE_dust4, inputs.FILE_dust5,\
+    inputs.FILE_ash1, inputs.FILE_ash2, inputs.FILE_ash3, inputs.FILE_ash4, inputs.FILE_ash5, inputs.FILE_ash_st_helens, inputs.FILE_Skiles_dust1, inputs.FILE_Skiles_dust2,\
+    inputs.FILE_Skiles_dust3, inputs.FILE_Skiles_dust4, inputs.FILE_Skiles_dust5, inputs.FILE_GreenlandCentral1,\
+    inputs.FILE_GreenlandCentral2, inputs.FILE_GreenlandCentral3, inputs.FILE_GreenlandCentral4, inputs.FILE_GreenlandCentral5,\
+    inputs.FILE_Cook_Greenland_dust_L, inputs.FILE_Cook_Greenland_dust_C, inputs.FILE_Cook_Greenland_dust_H,\
+    inputs.FILE_snw_alg, inputs.FILE_glacier_algae]
+        
+    mass_concentrations = [inputs.mss_cnc_soot1, inputs.mss_cnc_soot2, inputs.mss_cnc_brwnC1, inputs.mss_cnc_brwnC2, inputs.mss_cnc_dust1,\
+    inputs.mss_cnc_dust2, inputs.mss_cnc_dust3, inputs.mss_cnc_dust4, inputs.mss_cnc_dust5, inputs.mss_cnc_ash1, inputs.mss_cnc_ash2,\
+    inputs.mss_cnc_ash3, inputs.mss_cnc_ash4, inputs.mss_cnc_ash5, inputs.mss_cnc_ash_st_helens, inputs.mss_cnc_Skiles_dust1, inputs.mss_cnc_Skiles_dust2,\
+    inputs.mss_cnc_Skiles_dust3, inputs.mss_cnc_Skiles_dust4, inputs.mss_cnc_Skiles_dust5, inputs.mss_cnc_GreenlandCentral1,\
+    inputs.mss_cnc_GreenlandCentral2, inputs.mss_cnc_GreenlandCentral3, inputs.mss_cnc_GreenlandCentral4,\
+    inputs.mss_cnc_GreenlandCentral5, inputs.mss_cnc_Cook_Greenland_dust_L, inputs.mss_cnc_Cook_Greenland_dust_C,\
+    inputs.mss_cnc_Cook_Greenland_dust_H, inputs.mss_cnc_snw_alg, inputs.mss_cnc_glacier_algae]
+        
     # working directories 
     dir_mie_ice_files = str(dir_base + 'Data/Mie_files/480band/') # directory with folders ice_Pic16, ice_Wrn08 and ice_Wrn84 with optical properties calculated with Mie theory
     dir_go_ice_files = str(dir_base + 'Data/GO_files/480band/') # idem for ice OPs calculated with Geometric optics
@@ -50,37 +77,19 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
     dir_bubbly_ice = str(dir_base + 'Data/bubbly_ice_files/')
     dir_fsds = str(dir_base + 'Data/Mie_files/480band/fsds/')
     dir_RI_ice = str(dir_base + 'Data/') 
-    
-    # load impurity files and mass concentrations
-    files = [FILE_soot1,\
-    FILE_soot2, FILE_brwnC1, FILE_brwnC2, FILE_dust1, FILE_dust2, FILE_dust3, FILE_dust4, FILE_dust5,\
-    FILE_ash1, FILE_ash2, FILE_ash3, FILE_ash4, FILE_ash5, FILE_ash_st_helens, FILE_Skiles_dust1, FILE_Skiles_dust2,\
-    FILE_Skiles_dust3, FILE_Skiles_dust4, FILE_Skiles_dust5, FILE_GreenlandCentral1,\
-    FILE_GreenlandCentral2, FILE_GreenlandCentral3, FILE_GreenlandCentral4, FILE_GreenlandCentral5,\
-    FILE_Cook_Greenland_dust_L, FILE_Cook_Greenland_dust_C, FILE_Cook_Greenland_dust_H,\
-    FILE_snw_alg, FILE_glacier_algae]
-        
-    mass_concentrations = [mss_cnc_soot1, mss_cnc_soot2, mss_cnc_brwnC1, mss_cnc_brwnC2, mss_cnc_dust1,\
-    mss_cnc_dust2, mss_cnc_dust3, mss_cnc_dust4, mss_cnc_dust5, mss_cnc_ash1, mss_cnc_ash2,\
-    mss_cnc_ash3, mss_cnc_ash4, mss_cnc_ash5, mss_cnc_ash_st_helens, mss_cnc_Skiles_dust1, mss_cnc_Skiles_dust2,\
-    mss_cnc_Skiles_dust3, mss_cnc_Skiles_dust4, mss_cnc_Skiles_dust5, mss_cnc_GreenlandCentral1,\
-    mss_cnc_GreenlandCentral2, mss_cnc_GreenlandCentral3, mss_cnc_GreenlandCentral4,\
-    mss_cnc_GreenlandCentral5, mss_cnc_Cook_Greenland_dust_L, mss_cnc_Cook_Greenland_dust_C,\
-    mss_cnc_Cook_Greenland_dust_H, mss_cnc_snw_alg, mss_cnc_glacier_algae]
 
-    # retrieve wavelength from random choice of netcdf file
+    # retrieve nbr wvl, aer, layers and layer types 
     temp = xr.open_dataset(str(dir_mie_lap_files+random.choice(os.listdir(dir_mie_lap_files))))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
-
-    # set reflectance of underlying surface
-    R_sfc = [R_sfc for _ in range(nbr_wvl)]
-    R_sfc = np.array(R_sfc)
+    inputs.nbr_wvl = nbr_wvl
+    inputs.wvl = wvl
 
     # load incoming irradiance
     # calc cosine of solar zenith (radians)
     mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
+    inputs.mu_not = mu_not
     
     print("\ncosine of solar zenith = ", mu_not)
     
@@ -118,8 +127,9 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
         
         flx_slr = Incoming_file['flx_dwn_sfc'].values #flx_dwn_sfc is the spectral irradiance in W m-2 and is pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
         flx_slr[flx_slr<=0]=1e-30
-        Fs = flx_slr / (mu_not * np.pi)
-        Fd = np.zeros(nbr_wvl)
+        inputs.flx_slr=flx_slr
+        inputs.Fs = flx_slr / (mu_not * np.pi)
+        inputs.Fd = np.zeros(nbr_wvl)
 
     else:
 
@@ -145,14 +155,13 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
         
         flx_slr[flx_slr<=0]=1e-30
 
-        Fd = [flx_slr[i]/mu_not*np.pi for i in range(nbr_wvl)]
-        Fs = np.zeros(nbr_wvl)
+        inputs.Fd = [flx_slr[i]/mu_not*np.pi for i in range(nbr_wvl)]
+        inputs.Fs = np.zeros(nbr_wvl)
 
 
     ###################################################
     # Read in ice optical properties
     ###################################################
-
     # set up empty arrays
     SSA_snw = np.empty([nbr_lyr, nbr_wvl])
     MAC_snw = np.empty([nbr_lyr, nbr_wvl])
@@ -468,7 +477,11 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
         SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + SSA_snw[i,:] * tau_snw[i,:])
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
-
+        
+    inputs.tau=tau
+    inputs.SSA=SSA
+    inputs.g=g
+    inputs.L_snw=L_snw
     # just in case any unrealistic values arise (none detected so far)
     SSA[SSA<=0]=0.00000001
     SSA[SSA>=1]=0.99999999
@@ -477,19 +490,22 @@ def snicar_feeder(dir_base, rf_ice, incoming_i, DIRECT, layer_type,\
 
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
+    
+    outputs = c.namedtuple('outputs',['wvl', 'albedo', 'BBA', 'BBAVIS', 'BBANIR', 'abls_slr', 'heat_rt'])
+
    
     if TOON: 
-
-        wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_vis_tot, heat_rt = \
-            toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,\
-            L_snw, flx_slr)
+        
+        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = toon_solver(inputs)
 
 
     if ADD_DOUBLE:
 
-        wvl, flx_dwn_spc, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt = \
-            adding_doubling_solver(rf_ice, APRX_TYP, DELTA, layer_type, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,\
-            L_snw, flx_slr, DIRECT, dir_base)
+        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = adding_doubling_solver(inputs)
+
+    return outputs
 
 
-    return wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt
+
+
+
