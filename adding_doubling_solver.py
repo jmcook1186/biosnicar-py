@@ -25,8 +25,8 @@ def adding_doubling_solver(inputs):
     layer_type=inputs.layer_type
     rf_ice=inputs.rf_ice
     R_sfc=inputs.R_sfc
-    Fs=inputs.Fd
-    Fd=inputs.Fs
+    Fs=inputs.Fs
+    Fd=inputs.Fd
     mu_not=inputs.mu_not
     L_snw=inputs.L_snw
     flx_slr=inputs.flx_slr
