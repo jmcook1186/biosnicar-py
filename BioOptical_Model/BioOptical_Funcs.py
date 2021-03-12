@@ -87,7 +87,7 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
     if calc_MAC or calc_k: # choose this option to calculate MAC and/or k theoretically
         
         # set wavelengths
-        WL = np.arange(300,5000,10) # in nanometers
+        WL = np.arange(200,5000,10) # in nanometers
         WLmeters = [i*1e-9 for i in (WL)] # in meters
 
         # open in-vivo absorption coefficients (m2/mg) for each algal pigment
@@ -127,7 +127,7 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
         # 5) Phenol (there are multiple files for the phenol available in
         # the repository representing different measurement conditions.
         # Recommend using "inVivoPhenolMAC.csv as default")
-        with open(str(wdir+'Data/inVivoPhenolMAC.csv'))as f:
+        with open(str(wdir+'Data/PhenolMAC_200nm.csv'))as f:
             reader = csv.reader(f,delimiter=',')
             for row in reader:
                 for cell in row:
@@ -166,10 +166,11 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
 
         # extend pigment data down to 300 nm by padding with the value at 350nm and
         # small but non-zero value from 750 - 5000 nm (avoid divide by zero errors)    
-        Ea1 = [Ea1[0] for _ in range(50)] + Ea1
-        Ea2 = [Ea2[0] for _ in range(50)] + Ea2
-        Ea3 = [Ea3[0] for _ in range(50)] + Ea3
-        Ea4 = [Ea4[0] for _ in range(50)] + Ea4
+        Ea1 = [Ea1[0] for _ in range(150)] + Ea1
+        Ea2 = [Ea2[0] for _ in range(150)] + Ea2
+        Ea3 = [Ea3[0] for _ in range(150)] + Ea3
+        Ea4 = [Ea4[0] for _ in range(150)] + Ea4
+        Ea5 = [Ea5[0] for _ in range(50)] + Ea5
         
         for i in np.arange(751,5000,1):
             Ea1.append(0)
@@ -194,11 +195,11 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
 
         # copy water RI over zeros at non-absorbing wavelengths so that 
         # cells look like water at non-absorbing wavelengths
-        Ea1n[44:-1] = WatRIn[44:-1]
-        Ea2n[44:-1] = WatRIn[44:-1]
-        Ea3n[44:-1] = WatRIn[44:-1]
-        Ea4n[44:-1] = WatRIn[44:-1]
-        Ea5n[44:-1] = WatRIn[44:-1]
+        Ea1n[54:-1] = WatRIn[54:-1]
+        Ea2n[54:-1] = WatRIn[54:-1]
+        Ea3n[54:-1] = WatRIn[54:-1]
+        Ea4n[54:-1] = WatRIn[54:-1]
+        Ea5n[54:-1] = WatRIn[54:-1]
 
 
     ################
@@ -230,6 +231,7 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
         EW3m = [a * ppro_w for a in Ea3n]
         EW4m = [a * psyn_w for a in Ea4n]
         EW5m = [a * purp_w for a in Ea5n]
+
 
         EWWm = [sum(x) for x in zip(EW1m,EW2m,EW3m,EW4m,EW5m)] # Sum all pigments (m2)
         MAC = [(i/cell_dm_weight)*1e12 for i in EWWm] # normalise from units of cells to units of mass (x 1e12 to get m2/kg)
@@ -268,6 +270,7 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
             EW4 = [a  * 1e6 * psyn_frac for a in Ea4n]
             EW5 = [a  * 1e6 * purp_frac for a in Ea5n]
             EWW = [sum(x) for x in zip(EW1,EW2,EW3,EW4,EW5)] # Sum all pigments
+
 
         # Calculate imaginary refractive index (k)
         # according to user choice of Pottier (2005) method or Cook (2017) method
@@ -335,7 +338,7 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
         plt.plot(WL, Ea5n, label='Purpurogallin')
         plt.xlabel('Wavelengths nm')
         plt.ylabel('In vivo mass absorption coefficient (m2/mg)')
-        plt.xlim(300, 750)
+        plt.xlim(200, 750)
 
         plt.legend(loc='best')
 
@@ -352,7 +355,7 @@ def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply
 
 def preprocess_RI(RealsPath,ImagsPath,MACPath):
     """
-    Function for preprocessing inpout data to geometrical optics calculations
+    Function for preprocessing input data to geometrical optics calculations
 
     parameters:
     RealsPath: path to real part of RI
@@ -366,7 +369,7 @@ def preprocess_RI(RealsPath,ImagsPath,MACPath):
 
     """
     # load input files for real RI, imaginary RI, mass absorption coefficient. Set wavelength array.
-    wavelengths = np.arange(0.305, 5, 0.01)  # 300 - 5000 nm in 10 nm steps
+    wavelengths = np.arange(0.205, 5, 0.01)  # 200 - 5000 nm in 10 nm steps
     reals = pd.read_csv(RealsPath, header=None)
     reals = np.array(reals)
     imags = pd.read_csv(ImagsPath, header=None)
@@ -653,7 +656,7 @@ def calc_optical_params_MIE(basePath, cell_radius, cell_density, reals, imags, w
         plt.plot(wavelengths,qqabs,'b',label='absorption cross section')
         plt.plot(wavelengths,qqsca,'g',label='scattering cross section')
         plt.plot(wavelengths,qqext,'r', label= 'extinction cross section')
-        plt.xlim(0.3,2.5)
+        plt.xlim(0.2,2.5)
         
         plt.ylabel(r"Cross Section ($\mu$m$^2$)")
         plt.xlabel('Wavelength (nm)')

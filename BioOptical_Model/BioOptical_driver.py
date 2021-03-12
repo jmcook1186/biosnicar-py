@@ -120,25 +120,25 @@ as assumed in the conventional geometric optics approximation.
 ##################
 
 from BioOptical_Funcs import bio_optical, preprocess_RI, calc_optical_params_GO, calc_optical_params_MIE, net_cdf_updater
+import numpy as np
+import pandas as pd
 
 basePath = '/home/joe/Code/BioSNICAR_GO_PY/' # save path for full spectrum version
 RealsPath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Cell_InVivoPhenol_Real.csv'
 ImagsPath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Cell_InVivoPhenol_KK.csv'
 MACPath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Cell_InVivoPhenol_MAC.csv'
 NetCDFpath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Algal_Optical_Props/'
-cell_radius = 6 # radius of cell in microns (radius of cross section if using GO)
-cell_length = 60 # length of cell in microns (radius of sphere if using Mie)
+cell_radius = 8 # radius of cell in microns (radius of cross section if using GO)
+cell_length = 50 # length of cell in microns (radius of sphere if using Mie)
 cell_density = 1400 #density of cell - default to 1400 kg/m3
 
 MIE = True
 GO = False
 
 
-
 #####################
 # FUNCTION CALLS
 #####################
-
 
 # 1) bio-optical()
 k_list, real_list, MAC, data = bio_optical(
@@ -152,22 +152,22 @@ k_list, real_list, MAC, data = bio_optical(
         Pottier = False,
         Cook = True,
         cell_dm_weight= 1.808,
-        chla = 0.000000004,
-        chlb = 7.008E-10,
-        ppro = 6.056E-09,
+        chla = 4E-9,
+        chlb = 7.1E-10,
+        ppro = 6.6E-09,
         psyn = 0,
-        purp = 4.32E-08,
+        purp = 4.3E-08,
         Xw = 0.8, 
         density= 1400, 
         nm = 1.4, 
         smooth = True,
         smoothStart = 40,
-        smoothStop = 100,
-        window_size = 17,
+        smoothStop = 300,
+        window_size = 35,
         poly_order = 3,
-        savefiles = False,
+        savefiles = True,
         savepath = basePath,
-        savefilename = f"Cell_InVivoPhenol_",
+        savefilename = f"Cell_InVivoPhenol_{cell_radius}_{cell_length}_",
         plot_optical_props = False,
         plot_pigment_MACs = False,
         saveplots = False)
@@ -182,14 +182,14 @@ reals, imags, MAC, wavelengths = preprocess_RI(
 if GO:
 
     Assy_list, SSA_list, absXS_list, depth, r, \
-        Chi_abs_list, Reff, X_list = calc_optical_params(
+        Chi_abs_list, Reff, X_list = calc_optical_params_GO(
             basePath, 
             cell_radius, 
             cell_length, 
             reals, 
             imags, 
             wavelengths, 
-            plots=False, 
+            plots=True, 
             report_dims=True)
 
 elif MIE:
@@ -217,8 +217,8 @@ net_cdf_updater(
 
 # example loop for interating GO code over many cell dimensions:
 
-# for r in np.arange(1,7,1):
-#    for depth in np.arange(1,41,1):
+# for r in np.arange(1,10,2):
+#    for depth in np.arange(1,80,5):
 #            reals, imags, MAC, wavelengths = preprocess_RI()
 #            Assy_list,SSA_list,absXS_list,MAC_list,depth,r,Chi_abs_list,Reff,X_list = calc_optical_params(r,depth,reals,imags,wavelengths,plots=False,
 #            report_dims = True)
