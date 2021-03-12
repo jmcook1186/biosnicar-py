@@ -177,6 +177,7 @@ def compare_spectra(tolerance, path, solzen, test, plot_spectra):
     print("NUMBER OF PASSES = ", passes, " ({}%)".format(percent_passes))
     print("NUMBER OF FAILS = ", fails, "  ({}%)".format(percent_fails))
     
+<<<<<<< HEAD
     return errors
 
 compare_spectra(tolerance = 0.1, solzen = 67,\
@@ -218,3 +219,7 @@ compare_spectra(tolerance = 0.1, solzen = 67,\
 
 #     return REFspectrum, REFwvl
 
+=======
+
+    return errors
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870

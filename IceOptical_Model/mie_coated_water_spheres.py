@@ -7,6 +7,7 @@ from miepython import mie
 from scipy.special import jv, yv
 from scipy.interpolate import interp1d
 from tqdm import tqdm
+import xarray as xr
 
 
 def fill_nans_scipy1(padata, pkind='nearest'):
@@ -162,7 +163,7 @@ def miecoated(m1, m2, x, y):
         return qext, qsca, qabs, qb, asy, qratio
 
 
-def miecoated_driver(rice, rwater, fn_ice, fn_water, wvl):
+def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     """Driver for miecoated, originally written by Christian Matzler (see Matzler, 2002). The driver convolves the
        efficiency factors with the particle dimensions to return the cross sections for extinction, scattering and
        absorption plus the asymmetry parameter, q ratio and single scattering albedo.
@@ -205,18 +206,22 @@ def miecoated_driver(rice, rwater, fn_ice, fn_water, wvl):
     TotalMass = IceMass + WatMass
 
     # read in refractive indices of ice and liquid water
-    ref_index_ice = pd.read_csv(fn_ice)
-    wvl_ice = np.zeros(ref_index_ice.shape[0])
-    n_ice = np.zeros(ref_index_ice.shape[0])
-    k_ice = np.zeros(ref_index_ice.shape[0])
+    
+    temp = xr.open_dataset(fn_ice)
+    ref_index_ice = np.zeros(shape=(2,len(wvl)))
+    wvl_ice = temp['wvl'].values
 
-    for ii in range(ref_index_ice.shape[0]):
-        wvl_ice[ii] = ref_index_ice.at[ii, 'Wavelength, µm']
-        n_ice[ii] = ref_index_ice.at[ii, 'n']
-        k_ice[ii] = ref_index_ice.at[ii, 'k']
+    if rf_ice == 0:
+        n_ice = temp['re_Wrn84'].values
+        k_ice = temp['im_Wrn84'].values
 
-    n_ice_interp = np.interp(x=wvl, xp=wvl_ice, fp=n_ice)
-    k_ice_interp = np.interp(x=wvl, xp=wvl_ice, fp=k_ice)
+    if rf_ice == 1:
+        n_ice = temp['re_Wrn08'].values
+        k_ice = temp['im_Wrn08'].values
+
+    if rf_ice == 2:
+        n_ice = temp['re_Pic16'].values
+        k_ice = temp['im_Pic16'].values
 
     ref_index_water = pd.read_csv(fn_water)
     wvl_water = np.zeros(ref_index_water.shape[0])
@@ -244,7 +249,7 @@ def miecoated_driver(rice, rwater, fn_ice, fn_water, wvl):
         x = 2 * np.pi * rice / (wvl[ii])
         y = 2 * np.pi * rwater / (wvl[ii])
 
-        m1 = n_ice_interp[ii] + k_ice_interp[ii] * 1j
+        m1 = n_ice[ii] + k_ice[ii] * 1j
         m2 = n_water_interp[ii] + k_water_interp[ii] * 1j
 
         # call Miecoated and return efficiencies

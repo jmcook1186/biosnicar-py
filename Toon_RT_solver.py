@@ -1,4 +1,24 @@
+<<<<<<< HEAD
 def toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, wvl, Fs, Fd,L_snw, flx_slr):
+=======
+def toon_solver(inputs):
+    
+    #load variables from input table
+    tau=inputs.tau
+    SSA=inputs.SSA
+    g=inputs.g
+    nbr_wvl=inputs.nbr_wvl
+    wvl=inputs.wvl
+    nbr_lyr=inputs.nbr_lyr
+    R_sfc=inputs.R_sfc
+    Fs=inputs.Fs
+    Fd=inputs.Fd
+    mu_not=inputs.mu_not
+    L_snw=inputs.L_snw
+    flx_slr=inputs.flx_slr
+    DELTA=inputs.DELTA
+    APRX_TYP=inputs.APRX_TYP
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870
 
     import numpy as np
 
@@ -42,7 +62,10 @@ def toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, w
     # # optical depth of all overlying layers
 
     tau_clm = np.zeros([nbr_lyr,nbr_wvl])
+<<<<<<< HEAD
     
+=======
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870
     for i in np.arange(1,nbr_lyr,1):
         #start loop from 2nd layer, i.e. index = 1
         tau_clm[i,:] = tau_clm[i-1,:]+tau_star[i-1,:]
@@ -77,7 +100,11 @@ def toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, w
         gamma4 = 1-gamma3
         mu_one = 0.5
 
+<<<<<<< HEAD
     elif APRX_TYP==2:
+=======
+    elif APRX_TYP == 2:
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870
         #apply quadrature approximation
         gamma1 = np.sqrt(3)*(2-(SSA_star*(1+g_star)))/2
         gamma2 = SSA_star * np.sqrt(3)*(1-g_star)/2
@@ -85,7 +112,11 @@ def toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, w
         gamma4 = 1-gamma3
         mu_one = 1/np.sqrt(3)
 
+<<<<<<< HEAD
     elif APRX_TYP==3:
+=======
+    elif APRX_TYP == 3:
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870
         #apply hemispheric mean approximation
         gamma1 = 2 - (SSA_star*(1+g_star))
         gamma2 = SSA_star*(1-g_star)
@@ -275,6 +306,11 @@ def toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, w
     # = energy absorbed by underlying surface
     F_btm_net[0,:] = -F_net[nbr_lyr-1,:]
 
+<<<<<<< HEAD
+=======
+    specular_reflection = False
+
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870
     
     # Hemispheric wavelength-dependent albedo
     albedo = F_top_pls/ ((mu_not * np.pi * Fs)+ Fd)
@@ -347,6 +383,11 @@ def toon_solver(APRX_TYP, DELTA, tau, g, SSA, mu_not, nbr_lyr, nbr_wvl, R_sfc, w
     abs_vis_tot = sum(flx_slr[0:vis_max_idx]*(1 - albedo[0:vis_max_idx]))
     abs_nir_tot = sum(flx_slr[vis_max_idx:nir_max_idx]*(1 - albedo[vis_max_idx:nir_max_idx]))
 
+<<<<<<< HEAD
 
 
     return wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, abs_vis_tot, heat_rt, F_down
+=======
+    return wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt
+
+>>>>>>> 1b400194f944d904b0c5b975f72c9c4f62d6d870
