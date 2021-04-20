@@ -384,7 +384,7 @@ def calc_optical_params_GO(savepath, r, depth, reals, imags, wavelengths, plots=
 
     """
     Function calculates single scattering optical properties using geometric optics approximation of van Diederhovn (2014)
-    assuming a hexagonal cylindrical shape.
+    assuming a circular-based cylindrical shape.
 
     params:
     savepath: path for saving plots

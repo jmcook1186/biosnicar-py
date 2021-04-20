@@ -362,5 +362,6 @@ def toon_solver(inputs):
     abs_vis_tot = sum(flx_slr[0:vis_max_idx]*(1 - albedo[0:vis_max_idx]))
     abs_nir_tot = sum(flx_slr[vis_max_idx:nir_max_idx]*(1 - albedo[vis_max_idx:nir_max_idx]))
 
+
     return wvl, albedo, BBA, BBAVIS, BBANIR, abs_slr, heat_rt
 

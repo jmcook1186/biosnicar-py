@@ -62,11 +62,11 @@ savepath = inputs.dir_base # base path for saving figures
 ## 3) Choose plot/print options
 ################################
 
-show_figs = True # toggle to display spectral albedo figure
-save_figs = False # toggle to save spectral albedo figure to file
+show_figs = False # toggle to display spectral albedo figure
+save_figs = True # toggle to save spectral albedo figure to file
 print_BBA = True # toggle to print broadband albedo to terminal
 print_band_ratios = False # toggle to print various band ratios to terminal
-smooth = True # apply optional smoothing function (Savitzky-Golay filter)
+smooth = False # apply optional smoothing function (Savitzky-Golay filter)
 window_size = 9 # if applying smoothing filter, define window size
 poly_order = 3 # if applying smoothing filter, define order of polynomial
 
@@ -77,7 +77,7 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 inputs.DIRECT   = 1       # 1= Direct-beam incident flux, 0= Diffuse incident flux
 inputs.APRX_TYP = 1        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 inputs.DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-inputs.solzen   = 55      # if DIRECT give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
+inputs.solzen   = 45      # if DIRECT give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -100,12 +100,13 @@ inputs.incoming_i = 4
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
 inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
-inputs.dz = [0.01, 0.005, 0.005, 0.005, 0.005] # thickness of each vertical layer (unit = m)
+inputs.dz = [0.001, 0.029] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [1,1,1,1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
-inputs.rho_layers = [600, 600, 600, 600, 600] # density of each layer (unit = kg m-3) 
+inputs.layer_type = [1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+inputs.rho_layers = [900, 900] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
-inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
+#inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
+inputs.R_sfc = np.genfromtxt('./Data/rain_polished_ice_spectrum.csv', delimiter = 'csv') # import underlying ice from file
 
 ###############################################################################
 ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -117,21 +118,22 @@ inputs.rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984,
 
 # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
 # For 0,1,2,3:
-inputs.grain_shp =[0,0,0,0,0] # grain shape(He et al. 2016, 2017)
-inputs.grain_rds = [600,600,600,550,550] # effective grain radius of snow/bubbly ice
-inputs.rwater = [0, 0, 0, 0, 0] # radius of optional liquid water coating
+inputs.grain_shp =[0,0] # grain shape(He et al. 2016, 2017)
+inputs.grain_rds = [900,900] # effective grain radius of snow/bubbly ice (becomes bubble rds when layer_type==1)
+inputs.rwater = [0, 0] # radius of optional liquid water coating
+
 # For 4:
-inputs.side_length = [10000,10000,10000,10000,10000] 
-inputs.depth = [10000,10000,20000,20000,20000]
+inputs.side_length = [10000,10000] 
+inputs.depth = [10000,10000]
 
 # Shape factor = ratio of nonspherical grain effective radii to that of equal-volume sphere
 ### only activated when sno_shp > 1 (i.e. nonspherical)
 ### 0=use recommended default value (He et al. 2017)
 ### use user-specified value (between 0 and 1)
-inputs.shp_fctr = [0,0,0,0,0] 
+inputs.shp_fctr = [0,0] 
 
 # Aspect ratio (ratio of width to length)
-inputs.grain_ar = [0,0,0,0,0] 
+inputs.grain_ar = [0,0] 
 
 #######################################
 ## 5) SET LAP CHARACTERISTICS
@@ -187,36 +189,36 @@ inputs.FILE_glacier_algae = 'Glacier_Algae_480.nc'
 
 for x in [0]:
     
-    inputs.mss_cnc_soot1 = [0,0,0,0,0]    # uncoated black carbon (Bohren and Huffman, 1983)
-    inputs.mss_cnc_soot2 = [0,0,0,0,0]    # coated black carbon (Bohren and Huffman, 1983)
-    inputs.mss_cnc_brwnC1 = [0,0,0,0,0]   # uncoated brown carbon (Kirchstetter et al. (2004).)
-    inputs.mss_cnc_brwnC2 = [0,0,0,0,0]   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-    inputs.mss_cnc_dust1 = [0,0,0,0,0]    # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
-    inputs.mss_cnc_dust2 = [0,0,0,0,0]    # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
-    inputs.mss_cnc_dust3 = [0,0,0,0,0]    # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
-    inputs.mss_cnc_dust4 = [0,0,0,0,0]    # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-    inputs.mss_cnc_dust5 = [0,0,0,0,0]    # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
-    inputs.mss_cnc_ash1 = [0,0,0,0,0]    # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
-    inputs.mss_cnc_ash2 = [0,0,0,0,0]    # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
-    inputs.mss_cnc_ash3 = [0,0,0,0,0]    # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
-    inputs.mss_cnc_ash4 = [0,0,0,0,0]    # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
-    inputs.mss_cnc_ash5 = [0,0,0,0,0]    # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
-    inputs.mss_cnc_ash_st_helens = [0,0,0,0,0]   # ashes from Mount Saint Helen's
-    inputs.mss_cnc_Skiles_dust1 = [0,0,0,0,0]    # Colorado dust size 1 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust2 = [0,0,0,0,0]    # Colorado dust size 2 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust3 = [0,0,0,0,0]    # Colorado dust size 3 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust4 = [0,0,0,0,0]  # Colorado dust size 4 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust5 = [0,0,0,0,0]  # Colorado dust size 5 (Skiles et al 2017)
-    inputs.mss_cnc_GreenlandCentral1 = [0,0,0,0,0] # Greenland Central dust size 1 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral2 = [0,0,0,0,0] # Greenland Central dust size 2 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral3 = [0,0,0,0,0] # Greenland Central dust size 3 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral4 = [0,0,0,0,0] # Greenland Central dust size 4 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral5 = [0,0,0,0,0] # Greenland Central dust size 5 (Polashenski et al 2015)
-    inputs.mss_cnc_Cook_Greenland_dust_L = [0,0,0,0,0] # GRIS dust (Cook et al. 2019 "LOW")
-    inputs.mss_cnc_Cook_Greenland_dust_C = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "mean")
-    inputs.mss_cnc_Cook_Greenland_dust_H = [0,0,0,0,0] # GRIS dust 1 (Cook et al. 2019 "HIGH")
-    inputs.mss_cnc_snw_alg = [0,0,0,0,0]    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-    inputs.mss_cnc_glacier_algae = [0,0,0,0,0]    # glacier algae type1 (Cook et al. 2020)
+    inputs.mss_cnc_soot1 = [0]*len(inputs.dz)    # uncoated black carbon (Bohren and Huffman, 1983)
+    inputs.mss_cnc_soot2 = [0]*len(inputs.dz)    # coated black carbon (Bohren and Huffman, 1983)
+    inputs.mss_cnc_brwnC1 = [0]*len(inputs.dz)   # uncoated brown carbon (Kirchstetter et al. (2004).)
+    inputs.mss_cnc_brwnC2 = [0]*len(inputs.dz)   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
+    inputs.mss_cnc_dust1 = [0]*len(inputs.dz)    # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
+    inputs.mss_cnc_dust2 = [0]*len(inputs.dz)    # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
+    inputs.mss_cnc_dust3 = [0]*len(inputs.dz)    # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
+    inputs.mss_cnc_dust4 = [0]*len(inputs.dz)    # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
+    inputs.mss_cnc_dust5 = [0]*len(inputs.dz)    # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
+    inputs.mss_cnc_ash1 = [0]*len(inputs.dz)    # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
+    inputs.mss_cnc_ash2 = [0]*len(inputs.dz)    # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
+    inputs.mss_cnc_ash3 = [0]*len(inputs.dz)    # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
+    inputs.mss_cnc_ash4 = [0]*len(inputs.dz)    # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
+    inputs.mss_cnc_ash5 = [0]*len(inputs.dz)    # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
+    inputs.mss_cnc_ash_st_helens = [0]*len(inputs.dz)   # ashes from Mount Saint Helen's
+    inputs.mss_cnc_Skiles_dust1 = [0]*len(inputs.dz)   # Colorado dust size 1 (Skiles et al 2017)
+    inputs.mss_cnc_Skiles_dust2 = [0]*len(inputs.dz)    # Colorado dust size 2 (Skiles et al 2017)
+    inputs.mss_cnc_Skiles_dust3 = [0]*len(inputs.dz)    # Colorado dust size 3 (Skiles et al 2017)
+    inputs.mss_cnc_Skiles_dust4 = [0]*len(inputs.dz)  # Colorado dust size 4 (Skiles et al 2017)
+    inputs.mss_cnc_Skiles_dust5 = [0]*len(inputs.dz)  # Colorado dust size 5 (Skiles et al 2017)
+    inputs.mss_cnc_GreenlandCentral1 = [0]*len(inputs.dz) # Greenland Central dust size 1 (Polashenski et al 2015)
+    inputs.mss_cnc_GreenlandCentral2 = [0]*len(inputs.dz) # Greenland Central dust size 2 (Polashenski et al 2015)
+    inputs.mss_cnc_GreenlandCentral3 = [0]*len(inputs.dz) # Greenland Central dust size 3 (Polashenski et al 2015)
+    inputs.mss_cnc_GreenlandCentral4 = [0]*len(inputs.dz) # Greenland Central dust size 4 (Polashenski et al 2015)
+    inputs.mss_cnc_GreenlandCentral5 = [0]*len(inputs.dz) # Greenland Central dust size 5 (Polashenski et al 2015)
+    inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz) # GRIS dust (Cook et al. 2019 "LOW")
+    inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) # GRIS dust 1 (Cook et al. 2019 "mean")
+    inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) # GRIS dust 1 (Cook et al. 2019 "HIGH")
+    inputs.mss_cnc_snw_alg = [0]*len(inputs.dz)    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
+    inputs.mss_cnc_glacier_algae = [0]*len(inputs.dz)    # glacier algae type1 (Cook et al. 2020)
 
     
     ##########################################################################
@@ -297,12 +299,13 @@ for x in [0]:
 
         print('\nBROADBAND ALBEDO = ', BBA)
 
+
+    plt.plot(wvl, albedo)
+    plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.2,1.8),
+    plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
+
     if show_figs:
-        plt.plot(wvl, albedo)
-        plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.2,1.8),
-        plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
         plt.show()
     
     if save_figs:
         plt.savefig(str(savepath+"spectral_albedo.png"))
-        plt.show()
