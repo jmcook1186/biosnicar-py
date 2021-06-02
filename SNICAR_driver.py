@@ -187,7 +187,7 @@ inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc'
 inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc'
 inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc'
 inputs.FILE_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
-inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40_480band.nc'
+inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc'
 
 
 # Indicate mass mixing ratios scenarios for each impurity (units: ng(species)/g(ice), or ppb)
@@ -224,7 +224,7 @@ inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz) # GRIS dust (Cook et a
 inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) # GRIS dust 1 (Cook et al. 2019 "mean")
 inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) # GRIS dust 1 (Cook et al. 2019 "HIGH")
 inputs.mss_cnc_snw_alg = [0]*len(inputs.dz)    # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-inputs.mss_cnc_glacier_algae = [15000,0]    # glacier algae IN CELLS/ML (Cook et al. 2020)
+inputs.mss_cnc_glacier_algae = [30000,0]    # glacier algae in cells/ml or ppb depending on GA_units (Cook et al. 2020)
 
 
 ##########################################################################
