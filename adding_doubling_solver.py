@@ -1,3 +1,6 @@
+from logging import critical
+
+
 def adding_doubling_solver(inputs):
     
 
@@ -87,7 +90,8 @@ def adding_doubling_solver(inputs):
     rdndif[:,0] =  0 
 
     # if there are non zeros in layer type, grab the index of the first fresnel layer
-
+    # if there are non-zeros in layer type, load in the precalculated diffuse fresnel reflection
+    # (precalculated as large no. of gaussian points required for convergence)
     if np.sum(layer_type) > 0:
 
         lyrfrsnl = layer_type.index(1)
@@ -104,6 +108,8 @@ def adding_doubling_solver(inputs):
     # proceed down one layer at a time: if the total transmission to
     # the interface just above a given layer is less than trmin, then no
     # Delta-Eddington computation for that layer is done.
+    
+    Fresnel_Diffuse_File = xr.open_dataset(dir_RI_ice+'FL_reflection_diffuse.nc')
 
     for wl in np.arange(0,nbr_wvl,1): # loop through wavelengths
         
@@ -116,17 +122,27 @@ def adding_doubling_solver(inputs):
 
                 refidx_re = refidx_file['re_Wrn84'].values
                 refidx_im = refidx_file['im_Wrn84'].values 
+                FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Wrn84'].values
+                FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Wrn84'].values
 
             elif rf_ice == 1:
                 refidx_re = refidx_file['re_Wrn08'].values
                 refidx_im = refidx_file['im_Wrn08'].values 
+                FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Wrn08'].values
+                FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Wrn08'].values
 
             elif rf_ice == 2:
                 refidx_re = refidx_file['re_Pic16'].values
-                refidx_im = refidx_file['im_Pic16'].values 
+                refidx_im = refidx_file['im_Pic16'].values
+                FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Pic16'].values
+                FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Pic16'].values 
 
 
             refindx = refidx_re[wl]+refidx_im[wl]  # combine real and imaginary parts into one var
+            
+            temp1 = refidx_re[wl]**2 - refidx_im[wl]**2 + np.sin(np.arccos(mu_not))**2
+            temp2 = refidx_re[wl]**2 - refidx_im[wl]**2 - np.sin(np.arccos(mu_not))**2
+            n_real = (np.sqrt(2)/2) * (temp1 + (temp2**2 + 4*refidx_re[wl]**2*refidx_im[wl]**2)**0.5)**0.5
 
             #  compute next layer Delta-eddington solution only if total transmission
             #  of radiation to the interface just above the layer exceeds trmin.
@@ -136,13 +152,15 @@ def adding_doubling_solver(inputs):
                 
                 mu0 = mu_not  # cosine of beam angle is equal to incident beam
                 
+                # ice-adjusted real refractive index
+                nr = n_real
                 # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
                 # (i.e. this is Snell's Law for refraction at interface between media)
                 # mu0n = -1 represents light travelling vertically upwards and mu0n = +1 
                 # represents light travellign vertically downwards
                 
-                mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx))) 
-                               
+                #mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx)))  (original, before update for diffuse Fresnel reflection)
+                mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0))/nr))   # this version accounts for diffuse fresnel reflection            
                 # condition: if current layer is above fresnel layer or the 
                 # top layer is a Fresnel layer
                 if lyr < lyrfrsnl or lyrfrsnl==0:
@@ -236,21 +254,32 @@ def adding_doubling_solver(inputs):
                 
                 if lyr == lyrfrsnl:
                     
-                    #! compute fresnel reflection and transmission amplitudes
-                    #! for two polarizations: 1=perpendicular and 2=parallel to
-                    #! the plane containing incident, reflected and refracted rays.
+                    refindx = np.complex(refidx_re[wl],refidx_im[wl])
+                    critical_angle = np.arcsin(refindx)
+
+
+                    if np.arccos(mu_not) < critical_angle:
+                        # in this case, no total internal reflection
+
+                        #! compute fresnel reflection and transmission amplitudes
+                        #! for two polarizations: 1=perpendicular and 2=parallel to
+                        #! the plane containing incident, reflected and refracted rays.
+                        
+                        #! Eq. 22  Briegleb & Light 2007
+                        # inputs to equation 21 (i.e. Fresnel formulae for R and T)
+                        R1 = (mu0-nr*mu0n) / (mu0 + nr*mu0n)    #reflection amplitude factor for perpendicular polarization
+                        R2 = (nr*mu0 - mu0n) / (nr*mu0 + mu0n)    #reflection amplitude factor for parallel polarization
+                        T1 = 2*mu0 / (mu0 + nr*mu0n)                   #transmission amplitude factor for perpendicular polarization
+                        T2 = 2 * mu0 / (nr * mu0 + mu0n)                   #transmission amplitude factor for parallel polarization
+                        
+                        #! unpolarized light for direct beam
+                        #! Eq. 21  Brigleb and light 2007
+                        Rf_dir_a = 0.5 * (R1**2 + R2**2) 
+                        Tf_dir_a = 0.5 * (T1**2 + T2**2) * nr * mu0n / mu0 
                     
-                    #! Eq. 22  Briegleb & Light 2007
-                    # inputs to equation 21 (i.e. Fresnel formulae for R and T)
-                    R1 = (mu0 - refindx * mu0n) / (mu0 + refindx * mu0n)    #reflection amplitude factor for perpendicular polarization
-                    R2 = (refindx*mu0 - mu0n) / (refindx * mu0 + mu0n)    #reflection amplitude factor for parallel polarization
-                    T1 = 2 * mu0 / (mu0 + refindx * mu0n)                   #transmission amplitude factor for perpendicular polarization
-                    T2 = 2 * mu0 / (refindx * mu0 + mu0n)                   #transmission amplitude factor for parallel polarization
-                    
-                    #! unpolarized light for direct beam
-                    #! Eq. 21  Brigleb and light 2007
-                    Rf_dir_a = 0.5 * (R1 * R1 + R2 * R2) 
-                    Tf_dir_a = 0.5 * (T1 * T1 + T2 * T2) * refindx * mu0n / mu0 
+                    else: # in this case, total internal reflection occurs
+                        Tf_dir_a = 0
+                        Rf_dir_a = 1
                     
                     # precalculated diffuse reflectivities and transmissivities
                     # for incident radiation above and below fresnel layer, using
@@ -261,11 +290,11 @@ def adding_doubling_solver(inputs):
                     # Eq. 25  Brigleb and light 2007
                     # diffuse reflection of flux arriving from above
                     
-                    Rf_dif_a = 0.063             # reflection from diffuse unpolarized radiation
+                    Rf_dif_a = FL_r_dif_a[wl]             # reflection from diffuse unpolarized radiation
                     Tf_dif_a = 1 - Rf_dif_a     #t ransmission from diffuse unpolarized radiation
                     
                     # diffuse reflection of flux arriving from below
-                    Rf_dif_b = 0.455 
+                    Rf_dif_b = FL_r_dif_b[wl] 
                     Tf_dif_b = 1 - Rf_dif_b 
                     
                     ######################################################################
@@ -522,4 +551,4 @@ def adding_doubling_solver(inputs):
     # abs_ground_nir  = F_abs_nir_btm       # near-IR absorption by underlying substrate [W/m2]
 
 
-    return wvl, albedo, alb_bb, alb_vis, alb_nir, abs_snw_slr, heat_rt
+    return wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt

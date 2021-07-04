@@ -52,6 +52,8 @@ def snicar_feeder(inputs):
     dz=inputs.dz
     FILE_brwnC2=inputs.FILE_brwnC2
     FILE_soot2=inputs.FILE_soot2
+    GA_units = inputs.GA_units
+    Cfactor = inputs.Cfactor
     
     
     files = [inputs.FILE_soot1,\
@@ -418,9 +420,30 @@ def snicar_feeder(inputs):
             MACaer[aer,:] = impurity_properties['ext_cff_mss_ncl'].values
         else:
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
-        
-    MSSaer = MSSaer*1e-9 # mass concentrations converted to kg/kg unit
 
+
+    if GA_units == 1:
+        # GA_units ==1 means algae MAC provided in m2/cell
+        # this requires conversion into units consistent with other LAPs
+        # we assume pigment is the only absorbing material in cell
+        # from cell concn we can therefore calculate kg/kg of pigment mix
+        
+        # MAC in m2/cells/mL: 
+        # x 1000 = m2/cells/L
+        # / 0.917 = cells/kg  
+        # now when mutiplied by n cells, unit is m2/kg
+        MACaer[-1,:] = MACaer[-1,:]*1e3/0.917   
+        MSSaer[:,:-2] = MSSaer[:,:-2]*1e-9 # skip algae in ng/kg -> kg/kg conversion
+
+
+    else:  
+
+        MSSaer = MSSaer*1e-9 # all mass concentrations converted to kg/kg unit
+
+    # if the user has provided a C factor, use it to concentrate algae in upper layer
+    if isinstance(Cfactor,(int, float)) and (Cfactor > 0):
+        MSSaer[0,-1] = MSSaer[0,-1]*Cfactor
+        
 
     #####################################
     # Begin solving Radiative Transfer
@@ -458,6 +481,8 @@ def snicar_feeder(inputs):
 
         L_snw[i] = rho_layers[i] * dz[i]
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
+
+
 
     # then for the LAPs in each layer
     for i in range(nbr_lyr):
