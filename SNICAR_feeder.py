@@ -488,8 +488,8 @@ def snicar_feeder(inputs):
     for i in range(nbr_lyr):
         for j in range(nbr_aer):
 
-            L_aer[i, j, :] = L_snw[i] * MSSaer[i, j]
-            tau_aer[i, j, :] = L_aer[i, j, :] * MACaer[j, :]
+            L_aer[i, j, :] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
+            tau_aer[i, j, :] = L_aer[i, j, :] * MACaer[j, :] # cells m-2 * m2 cells-1
 
             tau_sum = tau_sum + tau_aer[i, j, :]
             SSA_sum = SSA_sum + (tau_aer[i, j, :] * SSAaer[j, :])

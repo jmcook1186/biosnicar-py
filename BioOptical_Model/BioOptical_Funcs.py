@@ -19,12 +19,13 @@ from math import exp
 from miepython import mie
 
 
+######################################### INPUT PARAMETERS ######################################
 
-def bio_optical(wdir = '/home/joe/Code/BioSNICAR_GO_PY/', load_MAC = True, apply_packaging_correction=True, calc_MAC = False, calc_k = True, pig_mass = True,
-                pig_frac = False, Pottier = False, Cook = True, cell_dm_weight = 0.82, chla = 0.01, chlb = 0.00066,
-                ppro = 0.01, psyn = 0, purp = 0.068, Xw = 0.8, density= 1400, nm = 1.4, smooth = True, smoothStart = 44,
-                smoothStop = 100, window_size = 25, poly_order = 3, savefiles = False, savepath = "path", savefilename = "name", 
-                plot_optical_props = True, plot_pigment_MACs = True, saveplots = True):
+def bio_optical(wdir, load_MAC, apply_packaging_correction, calc_MAC, calc_k, pig_mass,
+                pig_frac, Pottier, Cook, cell_dm_weight, chla, chlb,
+                ppro, psyn, purp, Xw, density, nm, smooth, smoothStart,
+                smoothStop, window_size, poly_order, savefiles, savepath, savefilename, 
+                plot_optical_props, plot_pigment_MACs, saveplots):
 
 
     ##########

@@ -128,12 +128,9 @@ RealsPath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Cell_InVivoPhenol_Real.csv'
 ImagsPath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Cell_InVivoPhenol_KK.csv'
 MACPath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Cell_InVivoPhenol_MAC.csv'
 NetCDFpath = '/home/joe/Code/BioSNICAR_GO_PY/Data/Algal_Optical_Props/'
-cell_radius = 8 # radius of cell in microns (radius of cross section if using GO)
-cell_length = 50 # length of cell in microns (radius of sphere if using Mie)
-cell_density = 1400 #density of cell - default to 1400 kg/m3
+savepath=basePath
 
-MIE = True
-GO = False
+
 
 
 #####################
@@ -141,42 +138,15 @@ GO = False
 #####################
 
 # 1) bio-optical()
-k_list, real_list, MAC, data = bio_optical(
-        wdir = basePath,
-        load_MAC= False,
-        apply_packaging_correction=False,
-        calc_MAC = True,
-        calc_k = True,
-        pig_mass = True,
-        pig_frac = False,
-        Pottier = False,
-        Cook = True,
-        cell_dm_weight= 1.808,
-        chla = 4E-9,
-        chlb = 7.1E-10,
-        ppro = 6.6E-09,
-        psyn = 0,
-        purp = 4.3E-08,
-        Xw = 0.8, 
-        density= 1400, 
-        nm = 1.4, 
-        smooth = True,
-        smoothStart = 40,
-        smoothStop = 300,
-        window_size = 35,
-        poly_order = 3,
-        savefiles = True,
-        savepath = basePath,
-        savefilename = f"Cell_InVivoPhenol_{cell_radius}_{cell_length}_",
-        plot_optical_props = False,
-        plot_pigment_MACs = False,
-        saveplots = False)
+k_list, real_list, MAC, data = bio_optical(basePath,load_MAC,\
+        apply_packaging_correction, calc_MAC,calc_k,pig_mass,pig_frac,Pottier,Cook,\
+        cell_dm_weight,chla,chlb,ppro,psyn, purp,Xw, cell_density, nm, smooth,\
+        smoothStart,smoothStop,window_size,poly_order,savefiles,savepath,\
+        savefilename = f"Cell_InVivoPhenol_{cell_radius}_{cell_length}_",\
+        plot_optical_props,plot_pigment_MACs,saveplots)
 
 # 2) preprocess_RI()
-reals, imags, MAC, wavelengths = preprocess_RI(
-    RealsPath,
-    ImagsPath,
-    MACPath)
+reals, imags, MAC, wavelengths = preprocess_RI(RealsPath,ImagsPath,MACPath)
 
 # 3) calc_optical_params_GO() or calc_optical_params_MIE()
 if GO:
