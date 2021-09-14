@@ -29,6 +29,7 @@ def snicar_feeder(inputs):
     import random
     import os
     import collections as c
+    import pandas as pd
     
     # load variables from input table
     dir_base=inputs.dir_base
@@ -52,8 +53,8 @@ def snicar_feeder(inputs):
     dz=inputs.dz
     FILE_brwnC2=inputs.FILE_brwnC2
     FILE_soot2=inputs.FILE_soot2
-    GA_units = inputs.GA_units
     Cfactor = inputs.Cfactor
+    cdom_layer = inputs.cdom_layer
     
     
     files = [inputs.FILE_soot1,\
@@ -71,7 +72,7 @@ def snicar_feeder(inputs):
     inputs.mss_cnc_GreenlandCentral2, inputs.mss_cnc_GreenlandCentral3, inputs.mss_cnc_GreenlandCentral4,\
     inputs.mss_cnc_GreenlandCentral5, inputs.mss_cnc_Cook_Greenland_dust_L, inputs.mss_cnc_Cook_Greenland_dust_C,\
     inputs.mss_cnc_Cook_Greenland_dust_H, inputs.mss_cnc_snw_alg, inputs.mss_cnc_glacier_algae]
-        
+
     # working directories 
     dir_mie_ice_files = str(dir_base + 'Data/Mie_files/480band/') # directory with folders ice_Pic16, ice_Wrn08 and ice_Wrn84 with optical properties calculated with Mie theory
     dir_go_ice_files = str(dir_base + 'Data/GO_files/480band/') # idem for ice OPs calculated with Geometric optics
@@ -81,7 +82,7 @@ def snicar_feeder(inputs):
     dir_RI_ice = str(dir_base + 'Data/') 
 
     # retrieve nbr wvl, aer, layers and layer types 
-    temp = xr.open_dataset(str(dir_mie_lap_files+random.choice(os.listdir(dir_mie_lap_files))))
+    temp = xr.open_dataset(str(dir_mie_lap_files+'dust_greenland_Cook_LOW_20190911.nc'))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
@@ -387,8 +388,13 @@ def snicar_feeder(inputs):
 
             elif rf_ice == 2:
                 refidx_re = refidx_file['re_Pic16'].values
-                refidx_im = refidx_file['im_Pic16'].values 
-
+                refidx_im = refidx_file['im_Pic16'].values
+                
+                
+            if cdom_layer[i]:
+                cdom_refidx_im = np.array(pd.read_csv(dir_RI_ice+'k_cdom_240_750.csv')).flatten()
+                cdom_refidx_im_rescaled = cdom_refidx_im[::10]
+                refidx_im[3:54] = np.fmax(refidx_im[3:54],cdom_refidx_im_rescaled)
             FILE_ice = str(dir_bubbly_ice + 'bbl_{}.nc').format(rd)
             file = xr.open_dataset(FILE_ice)
             sca_cff_vlm = file['sca_cff_vlm'].values # scattering cross section unit per volume of bubble
@@ -415,30 +421,20 @@ def snicar_feeder(inputs):
         impurity_properties = xr.open_dataset(str(dir_mie_lap_files + files[aer]))
         Gaer[aer,:] = impurity_properties['asm_prm'].values
         SSAaer[aer,:] = impurity_properties['ss_alb'].values
-        MSSaer[0:nbr_lyr,aer] = mass_concentrations[aer]
         if files[aer] == FILE_brwnC2 or files[aer] == FILE_soot2: #coated particles: use ext_cff_mss_ncl 
             MACaer[aer,:] = impurity_properties['ext_cff_mss_ncl'].values
         else:
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
-
-
-    if GA_units == 1:
-        # GA_units ==1 means algae MAC provided in m2/cell
-        # this requires conversion into units consistent with other LAPs
-        # we assume pigment is the only absorbing material in cell
-        # from cell concn we can therefore calculate kg/kg of pigment mix
-        
-        # MAC in m2/cells/mL: 
-        # x 1000 = m2/cells/L
-        # / 0.917 = cells/kg  
-        # now when mutiplied by n cells, unit is m2/kg
-        MACaer[-1,:] = MACaer[-1,:]*1e3/0.917   
-        MSSaer[:,:-2] = MSSaer[:,:-2]*1e-9 # skip algae in ng/kg -> kg/kg conversion
-
-
-    else:  
-
-        MSSaer = MSSaer*1e-9 # all mass concentrations converted to kg/kg unit
+        if ((files[aer] == inputs.FILE_glacier_algae and inputs.GA_units == 1) 
+            or (files[aer] == inputs.FILE_snw_alg and inputs.SA_units == 1)):
+            # algae conc provided in cells/mL, coeff in m2/cell
+            # thus concentration needs to be in cells/kg ice
+            # ie divided by kg/mL ice = 0.917*10**(-3)
+            MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+        else: 
+            # conversion to kg/kg ice from ng/g
+            MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
+            
 
     # if the user has provided a C factor, use it to concentrate algae in upper layer
     if isinstance(Cfactor,(int, float)) and (Cfactor > 0):
