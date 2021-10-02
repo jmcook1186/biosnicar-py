@@ -159,8 +159,8 @@ ACS_calculated = False
 biovolume = False
 density = 1160*10**(-18)
 xw = 0.8
-cell_volume = 4/3*pi()*(10**3)#1500
-k_water = np.loadtxt(dir_base + 'Data/pigments_trials/k_ice_480.csv')
+cell_volume = 1500
+k_water = np.loadtxt(dir_base + 'Data/pigments/k_ice_480.csv')
 packaging_correction = False
 pigment_dir =  dir_base + 'Data/pigments/'
 pigments_data = {str(pigment_dir + 'alloxanthin.csv'): 0.0,
@@ -186,7 +186,7 @@ smoothStart = 44
 smoothStop = 100
 
 ######## if ACS is loaded from a file:
-ACS_file = '/Users/au660413/Desktop/ACS_SA.csv'
+ACS_file = '../.csv'
 
 ######## Chose method for calculation of optical properties
 GO = False
@@ -215,7 +215,7 @@ figname_OPs = 'figname'
 ######## Saving OPs in netcdf
 netcdf_save = True
 savepath_netcdf = dir_base + 'Data/Mie_files/480band/lap/'
-filename_netcdf = 'SA_LC'
+filename_netcdf = ''
 information = ''
 
 #%%
