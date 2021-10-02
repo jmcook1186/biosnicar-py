@@ -421,26 +421,37 @@ def snicar_feeder(inputs):
         impurity_properties = xr.open_dataset(str(dir_mie_lap_files + files[aer]))
         Gaer[aer,:] = impurity_properties['asm_prm'].values
         SSAaer[aer,:] = impurity_properties['ss_alb'].values
-        if files[aer] == FILE_brwnC2 or files[aer] == FILE_soot2: #coated particles: use ext_cff_mss_ncl 
+        if files[aer] == FILE_brwnC2 or files[aer] == FILE_soot2: #coated particles: use ext_cff_mss_ncl for MAC
             MACaer[aer,:] = impurity_properties['ext_cff_mss_ncl'].values
         else:
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
-        if ((files[aer] == inputs.FILE_glacier_algae and inputs.GA_units == 1) 
-            or (files[aer] == inputs.FILE_snw_alg and inputs.SA_units == 1)):
-            # algae conc provided in cells/mL, coeff in m2/cell
-            # thus concentration needs to be in cells/kg ice
-            # ie divided by kg/mL ice = 0.917*10**(-3)
-            MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+        if files[aer] == inputs.FILE_glacier_algae:
+            # if GA_units == 1, GA concentration provided in cells/mL 
+            # MSSaer should be in cells/kg 
+            # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3) 
+            if inputs.GA_units == 1:
+                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+            else:
+                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
+        elif files[aer] == inputs.FILE_snw_alg:
+            # if SA_units == 1, SA concentration provided in cells/mL 
+            # but MSSaer should be in cells/kg
+            # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3)
+            if inputs.SA_units == 1:
+                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+            else:
+                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
         else: 
             # conversion to kg/kg ice from ng/g
             MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
-            
-
-    # if the user has provided a C factor, use it to concentrate algae in upper layer
-    if isinstance(Cfactor,(int, float)) and (Cfactor > 0):
-        MSSaer[0,-1] = MSSaer[0,-1]*Cfactor
         
-
+        # if Cfactor provided, then MSSaer multiplied by Cfactor
+        if (files[aer] == inputs.FILE_glacier_algae and isinstance(inputs.Cfactor_GA,(int, float)) and (inputs.Cfactor_GA > 0)): 
+            MSSaer[0:nbr_lyr,aer] = inputs.Cfactor_GA*MSSaer[0:nbr_lyr,aer]
+        if (files[aer] == inputs.FILE_snw_alg and isinstance(inputs.Cfactor_SA,(int, float)) and (inputs.Cfactor_SA > 0)): 
+            MSSaer[0:nbr_lyr,aer] = inputs.Cfactor_SA*MSSaer[0:nbr_lyr,aer]
+        
+        
     #####################################
     # Begin solving Radiative Transfer
     #####################################
@@ -486,7 +497,6 @@ def snicar_feeder(inputs):
 
             L_aer[i, j, :] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
             tau_aer[i, j, :] = L_aer[i, j, :] * MACaer[j, :] # cells m-2 * m2 cells-1
-
             tau_sum = tau_sum + tau_aer[i, j, :]
             SSA_sum = SSA_sum + (tau_aer[i, j, :] * SSAaer[j, :])
             g_sum = g_sum + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])

@@ -15,10 +15,11 @@ Model workflow
 
     1. bioptical_calculations() : Calculation of absorption cross section (ACS)
         in m2/cell or m2/um3 and refractive index (n,k; unitless) in the
-        spectral range of interest
+        spectral range of interest, both at 1nm and 10nm resolution
+        (used in BioSNICAR)
     2. ssp_calculations() : Calculation of single scattering properties
         (g, ssa; unitless) using Mie or geometric optics theory in the
-        spectral range of interest
+        spectral range of interest at the resolution of BioSNICAR (10nm)
     3. save_netcdf() : Storage of the data and associated metadata in a netcdf
         file directly usable in BioSNICAR
 
@@ -112,8 +113,9 @@ Inputs of the different functions
 ######################################################################################
 Outputs of the different functions
 ######################################################################################
-    1. numpy arrays for wvl, n, k and CAC in the spectral range 200-5000µm at
-        1 and 10nm resolution for a given cell;
+    1. numpy arrays for wvl, n, k and CAC in the spectral range 200-5000µm w/
+        both 1nm resolution and 10nm (=BioSNICAR) resolution (xxx_rescaled)
+        for a given cell;
         dataframe combining variables at BioSNICAR (10nm) resolution;
         dataframe with individual pigment absorption coefficients
     2. numpy arrays with ssa and g for a single cell in the spectral
@@ -157,7 +159,7 @@ ACS_calculated = False
 biovolume = False
 density = 1160*10**(-18)
 xw = 0.8
-cell_volume = 1500
+cell_volume = 4/3*pi()*(10**3)#1500
 k_water = np.loadtxt(dir_base + 'Data/pigments_trials/k_ice_480.csv')
 packaging_correction = False
 pigment_dir =  dir_base + 'Data/pigments/'
@@ -184,7 +186,7 @@ smoothStart = 44
 smoothStop = 100
 
 ######## if ACS is loaded from a file:
-ACS_file = dir_base + 'Data/ACS_SA_Halbach2021.csv'
+ACS_file = '/Users/au660413/Desktop/ACS_SA.csv'
 
 ######## Chose method for calculation of optical properties
 GO = False
@@ -192,7 +194,7 @@ Mie = True
 
 ######## Algae properties for calculations of optical properties
 n_algae = 1.4 * np.ones(np.size(wvl)) 
-r = 25
+r = 20
 L = 15
 
 ####### Directories and printing/saving options for calculated k, ACS
@@ -213,7 +215,7 @@ figname_OPs = 'figname'
 ######## Saving OPs in netcdf
 netcdf_save = True
 savepath_netcdf = dir_base + 'Data/Mie_files/480band/lap/'
-filename_netcdf = 'SA_Halbach2021'
+filename_netcdf = 'SA_LC'
 information = ''
 
 #%%

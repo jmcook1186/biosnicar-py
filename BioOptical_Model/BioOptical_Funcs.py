@@ -73,6 +73,7 @@ def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw,
     ## ACS, k storage and rescaling
     ###############################
     
+    # rescaling variables to BioSNICAR resolution (10nm)
     wvl_rescaled_BioSNICAR = wvl[::10]
     ACS_rescaled_BioSNICAR = ACS[::10]
     k_rescaled_BioSNICAR = k[::10]

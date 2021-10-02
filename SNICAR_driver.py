@@ -104,11 +104,11 @@ inputs.incoming_i = 4
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
 inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
-inputs.dz = [0.001,0.02] # thickness of each vertical layer (unit = m)
+inputs.dz = [0.001, 0.08] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
 inputs.layer_type = [0,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
-inputs.cdom_layer = [0,0] # Only functional if layer type == 1
-inputs.rho_layers = [700,700] # density of each layer (unit = kg m-3) 
+inputs.cdom_layer = [0,0] # Only functional if layer type == 1, based on CDOM data from Halbach et al. 2021 (in prep)
+inputs.rho_layers = [650,740] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
 inputs.R_sfc = np.genfromtxt(inputs.dir_base+'/Data/rain_polished_ice_spectrum.csv', delimiter = 'csv') # import underlying ice from file
@@ -124,11 +124,11 @@ inputs.rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984,
 # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
 # For 0,1,2,3:
 inputs.grain_shp =[0,0] # grain shape(He et al. 2016, 2017)
-inputs.grain_rds = [700,700] # effective grain radius of snow/bubbly ice (becomes bubble rds when layer_type==1)
+inputs.grain_rds = [1300,1300] # effective grain radius of snow/bubbly ice (becomes bubble rds when layer_type==1)
 inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
-inputs.side_length = [700,700] 
+inputs.side_length = [800,800] 
 inputs.depth = [10000,10000]
 
 # Shape factor = ratio of nonspherical grain effective radii to that of equal-volume sphere
@@ -150,13 +150,14 @@ inputs.nbr_aer = 30
 # define units for algae absorption cross section input file
 # 0 = m2/kg
 # 1 = m2/cell
-inputs.GA_units = 1 # glacier algae
-inputs.SA_units = 1 # snow algae
+inputs.GA_units = 0 # glacier algae
+inputs.SA_units = 0 # snow algae
 
 # determine C_factor (can be None or a number)
 # this is the concentrating factor that accounts for
 # resolution difference in field samples and model layers
-inputs.Cfactor = 10
+inputs.Cfactor_GA = 1
+inputs.Cfactor_SA = 1
 
 # Set names of files containing the optical properties of these LAPs:
 inputs.FILE_soot1  = 'mie_sot_ChC90_dns_1317.nc' # uncoated black carbon (Bohren and Huffman, 1983)
@@ -187,8 +188,8 @@ inputs.FILE_GreenlandCentral5  = 'dust_greenland_central_size5.nc' # Greenland C
 inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS dust (Cook et al. 2019 "LOW")
 inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean")
 inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH")
-inputs.FILE_snw_alg  = 'SA_Halbach2021.nc' # 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc' # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-inputs.FILE_glacier_algae = 'GA_Halbach2021.nc' #'Cook2020_glacier_algae_4_40.nc' # glacier algae in cells/ml or ppb depending on GA_units (Cook et al. 2020)
+inputs.FILE_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc' # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
+inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc' # glacier algae in cells/ml or ppb depending on GA_units (Cook et al. 2020)
 
 
 # Indicate mass mixing ratios scenarios for each impurity (units: ng(species)/g(ice), or ppb)
@@ -316,5 +317,6 @@ if show_figs:
 
 if save_figs:
     plt.savefig(str(savepath+"spectral_albedo.png"))
-    
 
+
+                                                   
