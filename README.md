@@ -20,7 +20,7 @@ There have been several additions to the BioSNICAR model that have not yet been 
 The bio-optical model was refactored into a much more useable format. Hard coded variables were moved into the function call, the two bio-optical components (the mixing model and mie/go code) ware now controlled from a single driver script, and file paths were all synchronised.
 
 ### 2) Update of glacier algae optical properties
-The new glacier algal optical properties accounts for intracellular protein attachment and packaging of pigments into specific regions of the cell rather than assuming uniform distribution through the cell using a linear correction.
+The new glacier algal optical properties account for intracellular protein attachment and packaging of pigments into specific regions of the cell rather than assuming uniform distribution through the cell using a linear correction.
  
 ### 3) Addition of liquid water films
 Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
