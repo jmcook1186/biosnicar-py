@@ -18,14 +18,17 @@ There have been several additions to the BioSNICAR model that have not yet been 
 
 ### 1) Refactor of bio-optical model
 The bio-optical model was refactored into a much more useable format. Hard coded variables were moved into the function call, the two bio-optical components (the mixing model and mie/go code) ware now controlled from a single driver script, and file paths were all synchronised.
+
+### 2) Update of glacier algae optical properties
+The new glacier algal optical properties accounts for intracellular protein attachment and packaging of pigments into specific regions of the cell rather than assuming uniform distribution through the cell using a linear correction.
  
-### 2) Addition of liquid water films
+### 3) Addition of liquid water films
 Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
 
-### 3) October 2020: Addition of aspherical grains
+### 4) October 2020: Addition of aspherical grains
 Adjustments to the single scattering optical properties of the ice grains resulting from variations in grain shape have been added to the model when run in Mie mode - running in GO mode assumes hexagonal columnar grains. These adjustments are from He et al. (2016) and enable the modelling of spheroids, hexagonal plates and Koch snowflakes.
 
-### 4) November 2020: Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
+### 5) November 2020: Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
 A second option for the treatment of multiple layers was added in October 2020. The user can now opt to include solid ice layers with fresnel reflections at their surfaces and solve the radiative transfer using the adding-doubling method as an alternative to the Toon et al (1989) matrix inversion method that was previously used that cannot include fresnel reflection and refraction. The A-D solver is pretty much a direct translation of the Matlab code written by Chloe Whicker (UMich) who in turn built on work by Dang et al. (2019). The solid ice layers can be positioned anywhere in the vertical profile, meaning unweathered ice beneath an increasingly porous weathered crust can now be realistically simulated.
 
 ### 6) November 2020: removed separate scripts for GO and Mie modes and synthesised into single SNICAR_feeder script, extended model to 200nm and enabled GO ice crytals in AD mode
@@ -35,10 +38,10 @@ The model now works using a single call to a snicar feeder script where the vari
 ### 7) January 2021: added testing scripts for comparing new code against matlab benchmarks. Extend spectral range of all model modes to 200nm
 Reorganised directory structure to gather all testing scripts and data into the folder "Unit_Tests". Using Whicker/Flanner's Matlab code as benchmark for testing Python code.
 
-### 9) September 2021: Bio-optical model renewed, new units
+### 8) September 2021: Bio-optical model renewed, new units
 The bio-optical model was updated into a much simpler and user-friendly format that can be run from a short driver script. In addition, the user now has the option to generate or input the algae ACS in m2/cell or m2/um3 from the pigment profiles. This allows to reduce the uncertainty on the final ACS, as cell numbers and biovolumes are empirically determined, in contrary to single cell mass.
 
-### 10) October 2021: CDOM layers and algae concentrations in cells/mL
+### 9) October 2021: CDOM layers and algae concentrations in cells/mL
 The main driver now includes the possibility to indicate algae concentrations in cells/mL through the "GA/SA_units" variable, which is the standard unit for algae quantification from environmental samples. In this mode, the ACS needs to be indicated in m2/cell. Experimental CDOM layers have also been added based on coefficients from Halbach et al. 2021 (in prep), so that the impact of CDOM can be represented in each layer of the snow/ice column. 
 
 
