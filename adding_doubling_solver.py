@@ -95,7 +95,7 @@ def adding_doubling_solver(inputs):
     if np.sum(layer_type) > 0:
 
         lyrfrsnl = layer_type.index(1)
-        print("\nFirst Fresnel bounday is in layer ", lyrfrsnl)
+        print("\nFirst Fresnel boundary is in layer ", lyrfrsnl)
 
     else:
 
