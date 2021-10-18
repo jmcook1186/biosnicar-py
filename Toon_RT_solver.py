@@ -336,7 +336,7 @@ def toon_solver(inputs):
 
     if energy_error > 1e-10:
         energy_conservation_error = np.sum(abs(energy_sum))
-        print(f"CONSERVATION OF ENERGY ERROR OF {energy_conservation_error}")
+        raise ValueError(f"CONSERVATION OF ENERGY ERROR OF {energy_conservation_error}")
 
     ######################################
     # Re-alias results for outputting

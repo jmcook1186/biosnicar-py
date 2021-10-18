@@ -53,9 +53,10 @@ def snicar_feeder(inputs):
     dz=inputs.dz
     FILE_brwnC2=inputs.FILE_brwnC2
     FILE_soot2=inputs.FILE_soot2
-    Cfactor = inputs.Cfactor
+    Cfactor_SA = inputs.Cfactor_SA
+    Cfactor_GA = inputs.Cfactor_GA
     cdom_layer = inputs.cdom_layer
-    
+    verbosity = inputs.verbosity
     
     files = [inputs.FILE_soot1,\
     inputs.FILE_soot2, inputs.FILE_brwnC1, inputs.FILE_brwnC2, inputs.FILE_dust1, inputs.FILE_dust2, inputs.FILE_dust3, inputs.FILE_dust4, inputs.FILE_dust5,\
@@ -94,7 +95,8 @@ def snicar_feeder(inputs):
     mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
     inputs.mu_not = mu_not
     
-    print("\ncosine of solar zenith = ", mu_not)
+    if verbosity ==1:
+        print("\ncosine of solar zenith = ", mu_not)
     
     flx_slr = []
     
@@ -104,26 +106,32 @@ def snicar_feeder(inputs):
         coszen = str('SZA'+str(solzen).rjust(2,'0'))
 
         if incoming_i == 0:
-            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_clr_"+coszen+".nc")) 
-            print("atmospheric profile = mid-lat winter")
+            Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_clr_"+coszen+".nc"))
+            if verbosity ==1: 
+                print("atmospheric profile = mid-lat winter")
         elif incoming_i == 1:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mls_clr_"+coszen+".nc"))
-            print("atmospheric profile = mid-lat summer")
+            if verbosity ==1:
+                print("atmospheric profile = mid-lat summer")
         elif incoming_i == 2:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_saw_clr_"+coszen+".nc"))
             print("atmospheric profile = sub-Arctic winter")
         elif incoming_i == 3:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_sas_clr_"+coszen+".nc"))
-            print("atmospheric profile = sub-Arctic summer")
+            if verbosity ==1:
+                print("atmospheric profile = sub-Arctic summer")
         elif incoming_i == 4:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_smm_clr_"+coszen+".nc"))
-            print("atmospheric profile = Summit Station")
+            if verbosity ==1:
+                print("atmospheric profile = Summit Station")
         elif incoming_i == 5:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_hmn_clr_"+coszen+".nc"))
-            print("atmospheric profile = High Mountain")  
+            if verbosity ==1:
+                print("atmospheric profile = High Mountain")  
         elif incoming_i == 6:
             Incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_toa_clr.nc"))
-            print("atmospheric profile = top-of-atmosphere")
+            if verbosity ==1:
+                print("atmospheric profile = top-of-atmosphere")
 
         else:
             raise ValueError ("Invalid choice of atmospheric profile")
@@ -182,20 +190,26 @@ def snicar_feeder(inputs):
             else:
                 
                 if grain_shp[i] == 4: # if large hexaginal prisms (geometric optics calcs)
-                    print("Using hexagonal column with side length = {}, length = {}".format(str(side_length[i]).rjust(4,'0'),str(depth[i])))
+    
+                    if verbosity ==1:
+                        print("Using hexagonal column with side length = {}, length = {}".format(str(side_length[i]).rjust(4,'0'),str(depth[i])))
                   
                     if rf_ice ==0:
                         dir_OP = str(dir_go_ice_files+'ice_Wrn84/ice_Wrn84_')
-                        print("Using Warren 84 refractive index")
+                        if verbosity ==1:    
+                            print("Using Warren 84 refractive index")
                     elif rf_ice == 1:
                         dir_OP = str(dir_go_ice_files+'ice_Wrn08/ice_Wrn08_')
-                        print("Using Warren 08 refractive index")
+                        if verbosity ==1:
+                            print("Using Warren 08 refractive index")
                     elif rf_ice == 2:
                         dir_OP = str(dir_go_ice_files+'ice_Pic16/ice_Pic16_')
-                        print("Using Picard 16 refractive index")           
+                        if verbosity ==1:
+                            print("Using Picard 16 refractive index")           
 
                     FILE_ice = str(dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
-                    print("\nLayer: {}".format(i))
+                    if verbosity ==1:
+                        print("\nLayer: {}".format(i))
     
 
 
@@ -203,17 +217,21 @@ def snicar_feeder(inputs):
 
                     if rf_ice == 0:
                         dir_OP = 'ice_Wrn84/ice_Wrn84'
-                        print("Using Warren 84 refractive index")
+                        if verbosity ==1:
+                            print("Using Warren 84 refractive index")
                     elif rf_ice == 1:
                         dir_OP = 'ice_Wrn08/ice_Wrn08'
-                        print("Using Warren 08 refractive index")
+                        if verbosity ==1:
+                            print("Using Warren 08 refractive index")
                     elif rf_ice == 2:
                         dir_OP = 'ice_Pic16/ice_Pic16'
-                        print("Using Picard 16 refractive index")
+                        if verbosity ==1:
+                            print("Using Picard 16 refractive index")
 
                     FILE_ice = str(dir_mie_ice_files + dir_OP + '_{}.nc'.format(str(grain_rds[i]).rjust(4,'0')))
-                    print("\nLayer: {}".format(i))
-                    print("Using Mie mode: spheres with radius = {}".format(str(grain_rds[i]).rjust(4,'0')))
+                    if verbosity ==1:
+                        print("\nLayer: {}".format(i))
+                        print("Using Mie mode: spheres with radius = {}".format(str(grain_rds[i]).rjust(4,'0')))
 
             # read in single scattering albedo, MAC and g for ice crystals in each layer,
             # optional with coated liquid water spheres (only available for spherical grains)
@@ -446,10 +464,10 @@ def snicar_feeder(inputs):
             MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
         
         # if Cfactor provided, then MSSaer multiplied by Cfactor
-        if (files[aer] == inputs.FILE_glacier_algae and isinstance(inputs.Cfactor_GA,(int, float)) and (inputs.Cfactor_GA > 0)): 
-            MSSaer[0:nbr_lyr,aer] = inputs.Cfactor_GA*MSSaer[0:nbr_lyr,aer]
-        if (files[aer] == inputs.FILE_snw_alg and isinstance(inputs.Cfactor_SA,(int, float)) and (inputs.Cfactor_SA > 0)): 
-            MSSaer[0:nbr_lyr,aer] = inputs.Cfactor_SA*MSSaer[0:nbr_lyr,aer]
+        if (files[aer] == inputs.FILE_glacier_algae and isinstance(Cfactor_GA,(int, float)) and (Cfactor_GA > 0)): 
+            MSSaer[0:nbr_lyr,aer] = Cfactor_GA*MSSaer[0:nbr_lyr,aer]
+        if (files[aer] == inputs.FILE_snw_alg and isinstance(Cfactor_SA,(int, float)) and (Cfactor_SA > 0)): 
+            MSSaer[0:nbr_lyr,aer] = Cfactor_SA*MSSaer[0:nbr_lyr,aer]
         
         
     #####################################

@@ -35,6 +35,7 @@ def adding_doubling_solver(inputs):
     flx_slr=inputs.flx_slr
     dir_base=inputs.dir_base
     DIRECT=inputs.DIRECT
+    verbosity = inputs.verbosity
     
     #directory
     dir_RI_ice = str(dir_base + 'Data/') 
@@ -95,14 +96,15 @@ def adding_doubling_solver(inputs):
     if np.sum(layer_type) > 0:
 
         lyrfrsnl = layer_type.index(1)
-        print("\nFirst Fresnel boundary is in layer ", lyrfrsnl)
+        if verbosity ==1:
+            print("\nFirst Fresnel boundary is in layer ", lyrfrsnl)
 
     else:
 
         lyrfrsnl = 999999999
 
         # raise error if there are no solid ice layers - in this case use the Toon solver instead!
-        print("There are no ice layers in this model configuration\
+        raise ValueError("There are no ice layers in this model configuration\
              - suggest adding a solid ice layer or using faster Toon method")
 
     # proceed down one layer at a time: if the total transmission to
@@ -500,7 +502,7 @@ def adding_doubling_solver(inputs):
 
     if energy_conservation_error > 1e-10:
 
-        print('energy conservation error: {}'.format(energy_conservation_error))
+        raise ValueError('energy conservation error: {}'.format(energy_conservation_error))
 
     # Hemispheric wavelength-dependent albedo:
     if DIRECT ==1: 
@@ -516,7 +518,7 @@ def adding_doubling_solver(inputs):
     
     if adif > 1e-10:
         
-        print('error in albedo calculation')
+        raise ValueError('error in albedo calculation')
 
     albedo = acal 
 
