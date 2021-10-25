@@ -35,11 +35,11 @@ import collections as c
 ## 1) Initialize inputs of the model
 ######################################
 
-inputs = c.namedtuple('inputs',['dir_base',\
-    'rf_ice', 'incoming_i', 'DIRECT', 'layer_type', 'cdom_layer'\
+inputs = c.namedtuple('inputs',['dir_base', 'verbosity', \
+    'rf_ice', 'incoming_i', 'DIRECT', 'layer_type', 'cdom_layer',\
     'APRX_TYP', 'DELTA', 'solzen', 'TOON', 'ADD_DOUBLE', 'R_sfc', 'dz', 'rho_layers', 'grain_rds',\
-    'side_length', 'depth', 'rwater', 'nbr_lyr', 'nbr_aer', 'grain_shp', 'shp_fctr', 'grain_ar', 'GA_units',\
-    'Cfactor','mss_cnc_soot1', 'mss_cnc_soot2', 'mss_cnc_brwnC1', 'mss_cnc_brwnC2', 'mss_cnc_dust1',\
+    'side_length', 'depth', 'rwater', 'nbr_lyr', 'nbr_aer', 'grain_shp', 'shp_fctr', 'grain_ar', 'GA_units', 'SA_units',\
+    'Cfactor_GA','Cfactor_SA','mss_cnc_soot1', 'mss_cnc_soot2', 'mss_cnc_brwnC1', 'mss_cnc_brwnC2', 'mss_cnc_dust1',\
     'mss_cnc_dust2', 'mss_cnc_dust3', 'mss_cnc_dust4', 'mss_cnc_dust5', 'mss_cnc_ash1', 'mss_cnc_ash2',\
     'mss_cnc_ash3', 'mss_cnc_ash4', 'mss_cnc_ash5', 'mss_cnc_ash_st_helens', 'mss_cnc_Skiles_dust1', 'mss_cnc_Skiles_dust2',\
     'mss_cnc_Skiles_dust3', 'mss_cnc_Skiles_dust4', 'mss_cnc_Skiles_dust5', 'mss_cnc_GreenlandCentral1',\
@@ -59,18 +59,21 @@ inputs = c.namedtuple('inputs',['dir_base',\
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-inputs.dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
+inputs.dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
 savepath = inputs.dir_base # base path for saving figures
+write_config_to_textfile = False # toggle to save config to file
+inputs.verbosity = 0 # 1 to print real-time updates
+
 
 ################################
 ## 3) Choose plot/print options
 ################################
 
-show_figs = False # toggle to display spectral albedo figure
+show_figs = True # toggle to display spectral albedo figure
 save_figs = False # toggle to save spectral albedo figure to file
 print_BBA = True # toggle to print broadband albedo to terminal
 print_band_ratios = False # toggle to print various band ratios to terminal
-smooth = True # apply optional smoothing function (Savitzky-Golay filter)
+smooth = False # apply optional smoothing function (Savitzky-Golay filter)
 window_size = 9 # if applying smoothing filter, define window size
 poly_order = 3 # if applying smoothing filter, define order of polynomial
 
@@ -104,11 +107,11 @@ inputs.incoming_i = 4
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
 inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
-inputs.dz = [0.001, 0.08] # thickness of each vertical layer (unit = m)
+inputs.dz = [0.001, 0.6] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [0,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+inputs.layer_type = [1,1] # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
 inputs.cdom_layer = [0,0] # Only functional if layer type == 1, based on CDOM data from Halbach et al. 2021 (in prep)
-inputs.rho_layers = [650,740] # density of each layer (unit = kg m-3) 
+inputs.rho_layers = [650,650] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
 inputs.R_sfc = np.genfromtxt(inputs.dir_base+'/Data/rain_polished_ice_spectrum.csv', delimiter = 'csv') # import underlying ice from file
@@ -124,7 +127,7 @@ inputs.rf_ice = 2 # define source of ice refractive index data. 0 = Warren 1984,
 # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
 # For 0,1,2,3:
 inputs.grain_shp =[0,0] # grain shape(He et al. 2016, 2017)
-inputs.grain_rds = [1300,1300] # effective grain radius of snow/bubbly ice (becomes bubble rds when layer_type==1)
+inputs.grain_rds = [2000,2000] # effective grain radius of snow/bubbly ice (becomes bubble rds when layer_type==1)
 inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
@@ -148,16 +151,16 @@ inputs.grain_ar = [0,0]
 inputs.nbr_aer = 30
 
 # define units for algae absorption cross section input file
-# 0 = m2/kg
-# 1 = m2/cell
+# 0 = m2/kg for MAC, ppb for mss_cnc (this is default)
+# 1 = m2/cell for MAC, cell/mL for mss_cnc
 inputs.GA_units = 0 # glacier algae
 inputs.SA_units = 0 # snow algae
 
 # determine C_factor (can be None or a number)
 # this is the concentrating factor that accounts for
 # resolution difference in field samples and model layers
-inputs.Cfactor_GA = 1
-inputs.Cfactor_SA = 1
+inputs.Cfactor_GA = 10
+inputs.Cfactor_SA = 10
 
 # Set names of files containing the optical properties of these LAPs:
 inputs.FILE_soot1  = 'mie_sot_ChC90_dns_1317.nc' # uncoated black carbon (Bohren and Huffman, 1983)
@@ -226,8 +229,18 @@ inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz)
 inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) 
 inputs.mss_cnc_snw_alg = [0,0]    
-inputs.mss_cnc_glacier_algae = [0,0]   
+inputs.mss_cnc_glacier_algae = [40000,0]   
 
+if write_config_to_textfile:
+    omitted_fields = ['tau', 'g', 'SSA', 'mu_not', 'nbr_wvl', 'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr']
+
+    with open('./model_config.txt', 'w') as f:
+        for i in inputs._fields:
+            if i not in omitted_fields:
+                f.write(i)
+                f.write(':  ')
+                f.write(str(getattr(inputs,str(i))))
+                f.write('\n')
 
 ##########################################################################
 ################## CALL FUNCTIONS AND PLOT OUTPUTS #######################
@@ -237,6 +250,14 @@ inputs.mss_cnc_glacier_algae = [0,0]
 ###########################################################
 ## Error catching: invalid combinations of input variables
 ###########################################################
+
+if inputs.GA_units ==1 or inputs.SA_units ==1:
+    
+    print("\n****** WARNING ******\n you are expressing at least one of your algal concentrations in cells/mL")
+    print("This requires your MAC file to be in units of m2/cell")
+    print("This is not yet available in this version (will be in next release")
+    print("If you have provided your own MAC file")
+    print("please ignore this message. If not, please toggle SA_units and GA_units to 0")
 
 if inputs.TOON == True and inputs.ADD_DOUBLE == True:
 
@@ -249,7 +270,7 @@ elif inputs.TOON == True and inputs.solzen < 40:
 elif np.sum(inputs.layer_type) < 1 and inputs.ADD_DOUBLE==True:
     # just warn user but let program continue - in some cases 
     # AD method preferable (stable over complete range of SZA)
-    print("\nWARNING:")
+    print("\n****** WARNING ******\n")
     print("There are no solid ice layers included - you might prefer the faster matrix inversion method.")
     print("Toggle TOON=True and ADD_DOUBLE=False to use it.\n")
 
@@ -259,10 +280,10 @@ elif np.sum(inputs.layer_type) > 0 and inputs.TOON == True:
 
 if np.sum(inputs.mss_cnc_snw_alg) != 0:
     # remind user that snow algae optical properties have not yet been empirically validated
-    print("WARNING: you are using snow algae as an impurity in the model.")
+    print("\n****** WARNING ******\n you are using snow algae as an impurity in the model.")
     print("the optical properties for these algae are theoretical.") 
     print("They were constructed from literature values for pigmentation, refractive indices and cell size")
-    print("They have not yet been validated empirically.")
+    print("They have not yet been validated empirically.\n\n")
 
 if inputs.solzen>89:
     inputs.solzen=89
