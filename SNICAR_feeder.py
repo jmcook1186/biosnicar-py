@@ -26,10 +26,9 @@ def snicar_feeder(inputs):
     from IceOptical_Model.mie_coated_water_spheres import miecoated_driver
     from Toon_RT_solver import toon_solver
     from adding_doubling_solver import adding_doubling_solver
-    import random
-    import os
     import collections as c
     import pandas as pd
+    from scipy.interpolate import pchip
     
     # load variables from input table
     dir_base=inputs.dir_base
@@ -92,7 +91,7 @@ def snicar_feeder(inputs):
 
     # load incoming irradiance
     # calc cosine of solar zenith (radians)
-    mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
+    mu_not = np.cos(solzen * (np.pi / 180))      # convert radians if required
     inputs.mu_not = mu_not
     
     if verbosity ==1:
@@ -101,7 +100,6 @@ def snicar_feeder(inputs):
     flx_slr = []
     
     if DIRECT:
-        
         
         coszen = str('SZA'+str(solzen).rjust(2,'0'))
 
@@ -136,7 +134,9 @@ def snicar_feeder(inputs):
         else:
             raise ValueError ("Invalid choice of atmospheric profile")
         
-        flx_slr = Incoming_file['flx_dwn_sfc'].values #flx_dwn_sfc is the spectral irradiance in W m-2 and is pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
+        # flx_dwn_sfc is the spectral irradiance in W m-2 and is 
+        # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
+        flx_slr = Incoming_file['flx_dwn_sfc'].values 
         flx_slr[flx_slr<=0]=1e-30
         inputs.flx_slr=flx_slr
         inputs.Fs = flx_slr / (mu_not * np.pi)
@@ -178,11 +178,51 @@ def snicar_feeder(inputs):
     MAC_snw = np.empty([nbr_lyr, nbr_wvl])
     g_snw = np.empty([nbr_lyr, nbr_wvl])
     abs_cff_mss_ice = np.empty([nbr_wvl])
+    
+    #load refractive index of bubbly ice + directory for granular OPs
+    refidx_file = xr.open_dataset(dir_RI_ice+'rfidx_ice.nc')
+    Fresnel_Diffuse_File = xr.open_dataset(dir_RI_ice+'FL_reflection_diffuse.nc')
+    if rf_ice == 0:
+        dir_OP = 'ice_Wrn84/ice_Wrn84_'
+        if verbosity ==1:    
+            print("Using Warren 84 refractive index")
+        refidx_re = refidx_file['re_Wrn84'].values
+        refidx_im = refidx_file['im_Wrn84'].values 
+        FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Wrn84'].values
+        FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Wrn84'].values
 
+    elif rf_ice == 1:
+        dir_OP = 'ice_Wrn08/ice_Wrn08_'
+        if verbosity ==1:
+            print("Using Warren 08 refractive index")
+        refidx_re = refidx_file['re_Wrn08'].values
+        refidx_im = refidx_file['im_Wrn08'].values
+        FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Wrn08'].values
+        FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Wrn08'].values
+
+    elif rf_ice == 2:
+        dir_OP = 'ice_Pic16/ice_Pic16_'
+        if verbosity ==1:
+            print("Using Picard 16 refractive index")
+        refidx_re = refidx_file['re_Pic16'].values
+        refidx_im = refidx_file['im_Pic16'].values
+        FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Pic16'].values
+        FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Pic16'].values
+        
+    inputs.refidx_re=refidx_re
+    inputs.refidx_im=refidx_im
+    inputs.FL_r_dif_a=FL_r_dif_a
+    inputs.FL_r_dif_b=FL_r_dif_b
+      
+        
+    # calculations of ice OPs in each layer
     for i in np.arange(0,nbr_lyr,1):
+                
+        if verbosity ==1:
+                        print("\nLayer: {}".format(i))
 
         if layer_type[i] == 0: # (granular layer)
-
+            # load ice file from directory depending on grain shape and size
             if grain_rds[i] == 0:
 
                 raise ValueError("ERROR: ICE GRAIN RADIUS SET TO ZERO")
@@ -190,51 +230,18 @@ def snicar_feeder(inputs):
             else:
                 
                 if grain_shp[i] == 4: # if large hexaginal prisms (geometric optics calcs)
-    
+                    FILE_ice = str(dir_go_ice_files + dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
                     if verbosity ==1:
                         print("Using hexagonal column with side length = {}, length = {}".format(str(side_length[i]).rjust(4,'0'),str(depth[i])))
                   
-                    if rf_ice ==0:
-                        dir_OP = str(dir_go_ice_files+'ice_Wrn84/ice_Wrn84_')
-                        if verbosity ==1:    
-                            print("Using Warren 84 refractive index")
-                    elif rf_ice == 1:
-                        dir_OP = str(dir_go_ice_files+'ice_Wrn08/ice_Wrn08_')
-                        if verbosity ==1:
-                            print("Using Warren 08 refractive index")
-                    elif rf_ice == 2:
-                        dir_OP = str(dir_go_ice_files+'ice_Pic16/ice_Pic16_')
-                        if verbosity ==1:
-                            print("Using Picard 16 refractive index")           
-
-                    FILE_ice = str(dir_OP + '{}_{}.nc'.format(str(side_length[i]).rjust(4,'0'), str(depth[i])))
-                    if verbosity ==1:
-                        print("\nLayer: {}".format(i))
-    
-
-
                 elif grain_shp[i] < 4:
-
-                    if rf_ice == 0:
-                        dir_OP = 'ice_Wrn84/ice_Wrn84'
-                        if verbosity ==1:
-                            print("Using Warren 84 refractive index")
-                    elif rf_ice == 1:
-                        dir_OP = 'ice_Wrn08/ice_Wrn08'
-                        if verbosity ==1:
-                            print("Using Warren 08 refractive index")
-                    elif rf_ice == 2:
-                        dir_OP = 'ice_Pic16/ice_Pic16'
-                        if verbosity ==1:
-                            print("Using Picard 16 refractive index")
-
-                    FILE_ice = str(dir_mie_ice_files + dir_OP + '_{}.nc'.format(str(grain_rds[i]).rjust(4,'0')))
+                    FILE_ice = str(dir_mie_ice_files + dir_OP + '{}.nc'.format(str(grain_rds[i]).rjust(4,'0')))
                     if verbosity ==1:
-                        print("\nLayer: {}".format(i))
                         print("Using Mie mode: spheres with radius = {}".format(str(grain_rds[i]).rjust(4,'0')))
 
             # read in single scattering albedo, MAC and g for ice crystals in each layer,
             # optional with coated liquid water spheres (only available for spherical grains)
+            
             if rwater[i] > grain_rds[i]:
 
                 if grain_shp[i] != 0:
@@ -251,107 +258,41 @@ def snicar_feeder(inputs):
                 with xr.open_dataset(FILE_ice) as temp:
                     ext_cff_mss = temp['ext_cff_mss'].values
                     MAC_snw[i, :] = ext_cff_mss
-
+                    
             else:
 
                 with xr.open_dataset(FILE_ice) as temp:
-                    
+                
                     SSA = temp['ss_alb'].values
                     SSA_snw[i,:] = SSA
-
                     ext_cff_mss = temp['ext_cff_mss'].values
                     MAC_snw[i,:] = ext_cff_mss
-
                     asm_prm = temp['asm_prm'].values
-                    g_snw[i,:] = asm_prm
+                    g_snw[i,:] = asm_prm                         
+
+                    # Correction on g for aspherical ice particles from He et al. (2017)
+                    # Applies only when grain_shp!=0
+                    # g_snw asymmetry factor parameterization coefficients (6 bands) from
+                    # Table 3 & Eqs. 6-7 in He et al. (2017)
+                    # assume same values for 4-5 um band, which leads to very small biases (<3%)
+                    if (grain_shp[i] > 0) & (grain_shp[i] < 4):
+                    
+                        g_wvl = np.array([0.25,0.70,1.41,1.90,2.50,3.50,4.00,5.00]) # wavelength (um) division point
+                        g_wvl_center = np.array(g_wvl[1:8])/2 + np.array(g_wvl[0:7])/2  # center point for wavelength band
+                        g_b0 = np.array([9.76029E-01,9.67798E-01,1.00111E+00,1.00224E+00,9.64295E-01,9.97475E-01,9.97475E-01])
+                        g_b1 = np.array([5.21042E-01,4.96181E-01,1.83711E-01,1.37082E-01,5.50598E-02,8.48743E-02,8.48743E-02])
+                        g_b2 = np.array([-2.66792E-04,1.14088E-03,2.37011E-04,-2.35905E-04,8.40449E-04,-4.71484E-04,-4.71484E-04])
+                        
+                        # Tables 1 & 2 and Eqs. 3.1-3.4 from Fu, 2007
+                        g_F07_c2 = np.array([1.349959e-1,1.115697e-1,9.853958e-2,5.557793e-2,-1.233493e-1,0.0,0.0])
+                        g_F07_c1 = np.array([-3.987320e-1,-3.723287e-1,-3.924784e-1,-3.259404e-1,4.429054e-2,-1.726586e-1,-1.726586e-1])
+                        g_F07_c0 = np.array([7.938904e-1,8.030084e-1,8.513932e-1,8.692241e-1,7.085850e-1,6.412701e-1,6.412701e-1])
+                        g_F07_p2 = np.array([3.165543e-3,2.014810e-3,1.780838e-3,6.987734e-4,-1.882932e-2,-2.277872e-2,-2.277872e-2])
+                        g_F07_p1 = np.array([1.140557e-1,1.143152e-1,1.143814e-1,1.071238e-1,1.353873e-1,1.914431e-1,1.914431e-1])
+                        g_F07_p0 = np.array([5.292852e-1,5.425909e-1,5.601598e-1,6.023407e-1,6.473899e-1,4.634944e-1,4.634944e-1])
+                        fs_hex = 0.788 # shape factor for hexagonal plate (reference)
+                    
         
-
-            ###############################################################
-            ## NEW GRAIN SHAPE ROUTINE
-            ################################################################
-
-            # Constants for aspherical ice particles
-            # g_snw asymmetry factor parameterization coefficients (6 bands) from
-            # Table 3 & Eqs. 6-7 in He et al. (2017)
-            # assume same values for 4-5 um band, which leads to very small biases (<3%)
-            
-            g_wvl = np.array([0.25,0.70,1.41,1.90,2.50,3.50,4.00,5.00]) # wavelength (um) division point
-            g_wvl_center = np.array(g_wvl[1:8])/2 + np.array(g_wvl[0:7])/2  # center point for wavelength band
-            g_b0 = np.array([9.76029E-01,9.67798E-01,1.00111E+00,1.00224E+00,9.64295E-01,9.97475E-01,9.97475E-01])
-            g_b1 = np.array([5.21042E-01,4.96181E-01,1.83711E-01,1.37082E-01,5.50598E-02,8.48743E-02,8.48743E-02])
-            g_b2 = np.array([-2.66792E-04,1.14088E-03,2.37011E-04,-2.35905E-04,8.40449E-04,-4.71484E-04,-4.71484E-04])
-            
-            # Tables 1 & 2 and Eqs. 3.1-3.4 from Fu, 2007
-            g_F07_c2 = np.array([1.349959e-1,1.115697e-1,9.853958e-2,5.557793e-2,-1.233493e-1,0.0,0.0])
-            g_F07_c1 = np.array([-3.987320e-1,-3.723287e-1,-3.924784e-1,-3.259404e-1,4.429054e-2,-1.726586e-1,-1.726586e-1])
-            g_F07_c0 = np.array([7.938904e-1,8.030084e-1,8.513932e-1,8.692241e-1,7.085850e-1,6.412701e-1,6.412701e-1])
-            g_F07_p2 = np.array([3.165543e-3,2.014810e-3,1.780838e-3,6.987734e-4,-1.882932e-2,-2.277872e-2,-2.277872e-2])
-            g_F07_p1 = np.array([1.140557e-1,1.143152e-1,1.143814e-1,1.071238e-1,1.353873e-1,1.914431e-1,1.914431e-1])
-            g_F07_p0 = np.array([5.292852e-1,5.425909e-1,5.601598e-1,6.023407e-1,6.473899e-1,4.634944e-1,4.634944e-1])
-            fs_hex = 0.788 # shape factor for hexagonal plate (reference)
-            
-
-            for i in np.arange(0,nbr_lyr,1):
-                
-                if layer_type[i] == 0:
-                    
-                    if grain_shp[i] == 0: # snow
-
-                        pass # if layer type is for spheres, no changes required
-
-                    
-                    elif grain_shp[i] == 1: # 1 = spheroid, He et al. (2017) parameterization
-                        
-                        diam_ice = 2.0 * grain_rds[i] # effective snow grain diameter
-                        
-                        if shp_fctr[i] == 0:
-
-                            fs_sphd = 0.929 # default shape factor for spheroid; He et al. (2017), Table 1
-                        
-                        else:
-                            
-                            fs_sphd = shp_fctr[i] # if shp_factor not 0, then use user-defined value
-                        
-                        
-                        if grain_ar[i] == 0:
-
-                            AR_tmp = 0.5 # default aspect ratio for spheroid; He et al. (2017), Table 1
-                        
-                        else:
-
-                            AR_tmp = grain_ar[i]
-                        
-                        g_snw_Cg_tmp = g_b0 * (fs_sphd/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
-                        gg_snw_F07_tmp = g_F07_c0 + g_F07_c1 * AR_tmp + g_F07_c2 * AR_tmp**2 # Eqn. 3.1 in Fu (2007)
-
-
-                    elif grain_shp[i] == 2: # 3=hexagonal plate, He et al. 2017 parameterization
-
-                        diam_ice = 2.0 * grain_rds[i] # effective snow grain diameter
-                        
-                        if shp_fctr[i] == 0:
-                            
-                            fs_hex0 = 0.788 # default shape factor for hexagonal plates; He et al. (2017), Table 1
-                        
-                        else:
-
-                            fs_hex0 = shp_fctr[i]
-                        
-
-                        if grain_ar[i] == 0:
-
-                            AR_tmp = 2.5 # default aspect ratio for hexagonal plate; He et al. (2017), Table 1
-                        
-                        else:
-                        
-                            AR_tmp = grain_ar[i]
-                                
-                        g_snw_Cg_tmp = g_b0 * (fs_hex0/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
-                        gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2   # Eqn. 3.3 in Fu (2007)
-                        
-
-                    elif grain_shp[i] == 3: # 4=koch snowflake, He et al. (2017) parameterization
-
                         diam_ice = 2.0 * grain_rds[i] / 0.544 # effective snow grain diameter
                         
                         if shp_fctr[i] == 0:
@@ -362,65 +303,124 @@ def snicar_feeder(inputs):
                             
                             fs_koch = shp_fctr[i]
                         
-
+        
                         if grain_ar[i] == 0:
-
+        
                             AR_tmp = 2.5 # default aspect ratio for koch snowflake; He et al. (2017), Table 1
                         
                         else:
-
+        
                             AR_tmp = grain_ar[i]
                         
                         g_snw_Cg_tmp = g_b0 * (fs_koch/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
-                        gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2  # Eqn. 3.3 in Fu (2007)
+                        gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2  # Eqn. 3.3 in Fu (2007)                        
                         
-                    
-                    if (grain_shp[i] > 0)& (grain_shp[i] < 4):
-
-                        from scipy.interpolate import pchip
+                        if grain_shp[i] == 1: # 1 = spheroid, He et al. (2017) parameterization
+                        
+                            diam_ice = 2.0 * grain_rds[i] # effective snow grain diameter
+                        
+                            if shp_fctr[i] == 0:
+            
+                                fs_sphd = 0.929 # default shape factor for spheroid; He et al. (2017), Table 1
+                            
+                            else:
+                                
+                                fs_sphd = shp_fctr[i] # if shp_factor not 0, then use user-defined value
+                        
+                        
+                            if grain_ar[i] == 0:
+            
+                                AR_tmp = 0.5 # default aspect ratio for spheroid; He et al. (2017), Table 1
+                            
+                            else:
+            
+                                AR_tmp = grain_ar[i]
+                            
+                            g_snw_Cg_tmp = g_b0 * (fs_sphd/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
+                            gg_snw_F07_tmp = g_F07_c0 + g_F07_c1 * AR_tmp + g_F07_c2 * AR_tmp**2 # Eqn. 3.1 in Fu (2007)
+        
+        
+                        if grain_shp[i] == 2: # 3=hexagonal plate, He et al. 2017 parameterization
+        
+                            diam_ice = 2.0 * grain_rds[i] # effective snow grain diameter
+                            
+                            if shp_fctr[i] == 0:
+                                
+                                fs_hex0 = 0.788 # default shape factor for hexagonal plates; He et al. (2017), Table 1
+                            
+                            else:
+            
+                                fs_hex0 = shp_fctr[i]
+                            
+            
+                            if grain_ar[i] == 0:
+            
+                                AR_tmp = 2.5 # default aspect ratio for hexagonal plate; He et al. (2017), Table 1
+                            
+                            else:
+                            
+                                AR_tmp = grain_ar[i]
+                                    
+                            g_snw_Cg_tmp = g_b0 * (fs_hex0/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
+                            gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2   # Eqn. 3.3 in Fu (2007)
+                            
+        
+                        if grain_shp[i] == 3: # 4=koch snowflake, He et al. (2017) parameterization
+                        
+                            diam_ice = 2.0 * grain_rds[i] / 0.544 # effective snow grain diameter
+                            
+                            if shp_fctr[i] == 0:
+                            
+                                fs_koch = 0.712 # default shape factor for koch snowflake; He et al. (2017), Table 1
+                            
+                            else:
+                                
+                                fs_koch = shp_fctr[i]
+                            
+    
+                            if grain_ar[i] == 0:
+    
+                                AR_tmp = 2.5 # default aspect ratio for koch snowflake; He et al. (2017), Table 1
+                            
+                            else:
+    
+                                AR_tmp = grain_ar[i]
+                            
+                            g_snw_Cg_tmp = g_b0 * (fs_koch/fs_hex)**g_b1 * diam_ice**g_b2 # Eq.7, He et al. (2017)
+                            gg_snw_F07_tmp = g_F07_p0 + g_F07_p1 * np.log(AR_tmp) + g_F07_p2 * (np.log(AR_tmp))**2  # Eqn. 3.3 in Fu (2007)
+                        
+        
                         # 6 wavelength bands for g_snw to be interpolated into 480-bands of SNICAR
                         # shape-preserving piecewise interpolation into 480-bands
                         g_Cg_intp = pchip(g_wvl_center,g_snw_Cg_tmp)(wvl)
                         gg_F07_intp = pchip(g_wvl_center,gg_snw_F07_tmp)(wvl)
                         g_snw_F07 = gg_F07_intp + (1.0 - gg_F07_intp) / SSA_snw[i,:] / 2 # Eq.2.2 in Fu (2007)
                         g_snw[i,:] = g_snw_F07 * g_Cg_intp # Eq.6, He et al. (2017)
-                        g_snw[i,371:470] = g_snw[i,370] # assume same values for 4-5 um band, with very small biases (<3%)
+                        g_snw[i,381:480] = g_snw[i,380] # assume same values for 4-5 um band, with very small biases (<3%)
                     
                     g_snw[g_snw < 0] = 0.01
                     g_snw[g_snw > 0.99] = 0.99 # avoid unreasonable values (so far only occur in large-size spheroid cases)
 
 
-        else: # else correspondng to if layer_type == 1
-            
-            rd = "{}".format(grain_rds[i])
-            rd = rd.rjust(4,"0")
-            refidx_file = xr.open_dataset(dir_RI_ice+'rfidx_ice.nc')
-           
-            if rf_ice == 0:
-                refidx_re = refidx_file['re_Wrn84'].values
-                refidx_im = refidx_file['im_Wrn84'].values 
-
-            elif rf_ice == 1:
-                refidx_re = refidx_file['re_Wrn08'].values
-                refidx_im = refidx_file['im_Wrn08'].values 
-
-            elif rf_ice == 2:
-                refidx_re = refidx_file['re_Pic16'].values
-                refidx_im = refidx_file['im_Pic16'].values
-                
+        else: # solid ice layer (layer_type == 1)
                 
             if cdom_layer[i]:
                 cdom_refidx_im = np.array(pd.read_csv(dir_RI_ice+'k_cdom_240_750.csv')).flatten()
-                cdom_refidx_im_rescaled = cdom_refidx_im[::10]
+                cdom_refidx_im_rescaled = cdom_refidx_im[::10] #rescale to SNICAR resolution
                 refidx_im[3:54] = np.fmax(refidx_im[3:54],cdom_refidx_im_rescaled)
+            
+            rd = "{}".format(grain_rds[i])
+            rd = rd.rjust(4,"0")
             FILE_ice = str(dir_bubbly_ice + 'bbl_{}.nc').format(rd)
             file = xr.open_dataset(FILE_ice)
             sca_cff_vlm = file['sca_cff_vlm'].values # scattering cross section unit per volume of bubble
             g_snw[i,:] = file['asm_prm'].values
             abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6))/917
             vlm_frac_air = (917 - rho_layers[i]) / 917
-            MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) + abs_cff_mss_ice
-            SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) / MAC_snw[i,:]
+            MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /rho_layers[i]) + abs_cff_mss_ice
+            SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /rho_layers[i]) / MAC_snw[i,:]
+            
+            
 
     
     ###################################################
@@ -439,18 +439,23 @@ def snicar_feeder(inputs):
         impurity_properties = xr.open_dataset(str(dir_mie_lap_files + files[aer]))
         Gaer[aer,:] = impurity_properties['asm_prm'].values
         SSAaer[aer,:] = impurity_properties['ss_alb'].values
+        
         if files[aer] == FILE_brwnC2 or files[aer] == FILE_soot2: #coated particles: use ext_cff_mss_ncl for MAC
             MACaer[aer,:] = impurity_properties['ext_cff_mss_ncl'].values
+        
         else:
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
+        
         if files[aer] == inputs.FILE_glacier_algae:
             # if GA_units == 1, GA concentration provided in cells/mL 
             # MSSaer should be in cells/kg 
             # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3) 
             if inputs.GA_units == 1:
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+        
             else:
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
+        
         elif files[aer] == inputs.FILE_snw_alg:
             # if SA_units == 1, SA concentration provided in cells/mL 
             # but MSSaer should be in cells/kg
@@ -466,6 +471,7 @@ def snicar_feeder(inputs):
         # if Cfactor provided, then MSSaer multiplied by Cfactor
         if (files[aer] == inputs.FILE_glacier_algae and isinstance(Cfactor_GA,(int, float)) and (Cfactor_GA > 0)): 
             MSSaer[0:nbr_lyr,aer] = Cfactor_GA*MSSaer[0:nbr_lyr,aer]
+        
         if (files[aer] == inputs.FILE_snw_alg and isinstance(Cfactor_SA,(int, float)) and (Cfactor_SA > 0)): 
             MSSaer[0:nbr_lyr,aer] = Cfactor_SA*MSSaer[0:nbr_lyr,aer]
         
@@ -505,26 +511,21 @@ def snicar_feeder(inputs):
     for i in range(nbr_lyr):
 
         L_snw[i] = rho_layers[i] * dz[i]
-        tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
-
-
-
-    # then for the LAPs in each layer
-    for i in range(nbr_lyr):
+        
         for j in range(nbr_aer):
-
             L_aer[i, j, :] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
             tau_aer[i, j, :] = L_aer[i, j, :] * MACaer[j, :] # cells m-2 * m2 cells-1
             tau_sum = tau_sum + tau_aer[i, j, :]
             SSA_sum = SSA_sum + (tau_aer[i, j, :] * SSAaer[j, :])
             g_sum = g_sum + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
 
-
-    # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP
+    # ice mass = snow mass - impurity mass (generally a tiny correction)
     for i in range(nbr_lyr):
-        
+        L_snw[i] =  L_snw[i] - np.sum(L_aer[:,i])
+        tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
+        # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP        
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
-        SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + SSA_snw[i,:] * tau_snw[i,:])
+        SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
         
     inputs.tau=tau
@@ -532,10 +533,10 @@ def snicar_feeder(inputs):
     inputs.g=g
     inputs.L_snw=L_snw
     # just in case any unrealistic values arise (none detected so far)
-    SSA[SSA<=0]=0.00000001
-    SSA[SSA>=1]=0.99999999
-    g[g<=0]=0.00001
-    g[g>=1]=0.99999
+    # SSA[SSA<=0]=0.00000001
+    # SSA[SSA>=1]=0.99999999
+    # g[g<=0]=0.00001
+    # g[g>=1]=0.99999
 
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
