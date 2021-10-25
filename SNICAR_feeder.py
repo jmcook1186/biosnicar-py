@@ -26,10 +26,9 @@ def snicar_feeder(inputs):
     from IceOptical_Model.mie_coated_water_spheres import miecoated_driver
     from Toon_RT_solver import toon_solver
     from adding_doubling_solver import adding_doubling_solver
-    import random
-    import os
     import collections as c
     import pandas as pd
+    import math
     
     # load variables from input table
     dir_base=inputs.dir_base
@@ -92,7 +91,8 @@ def snicar_feeder(inputs):
 
     # load incoming irradiance
     # calc cosine of solar zenith (radians)
-    mu_not = np.cos(solzen * (np.pi / 180)) # convert radians if required
+    mu_not = np.cos(math.radians(np.rint(solzen))) 
+
     inputs.mu_not = mu_not
     
     if verbosity ==1:
@@ -101,7 +101,6 @@ def snicar_feeder(inputs):
     flx_slr = []
     
     if DIRECT:
-        
         
         coszen = str('SZA'+str(solzen).rjust(2,'0'))
 
@@ -136,7 +135,9 @@ def snicar_feeder(inputs):
         else:
             raise ValueError ("Invalid choice of atmospheric profile")
         
-        flx_slr = Incoming_file['flx_dwn_sfc'].values #flx_dwn_sfc is the spectral irradiance in W m-2 and is pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
+        # flx_dwn_sfc is the spectral irradiance in W m-2 and is 
+        # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
+        flx_slr = Incoming_file['flx_frc_sfc'].values 
         flx_slr[flx_slr<=0]=1e-30
         inputs.flx_slr=flx_slr
         inputs.Fs = flx_slr / (mu_not * np.pi)
@@ -263,7 +264,7 @@ def snicar_feeder(inputs):
                     MAC_snw[i,:] = ext_cff_mss
 
                     asm_prm = temp['asm_prm'].values
-                    g_snw[i,:] = asm_prm
+                    g_snw[i,:] = asm_prm                 
         
 
             ###############################################################
@@ -384,10 +385,10 @@ def snicar_feeder(inputs):
                         gg_F07_intp = pchip(g_wvl_center,gg_snw_F07_tmp)(wvl)
                         g_snw_F07 = gg_F07_intp + (1.0 - gg_F07_intp) / SSA_snw[i,:] / 2 # Eq.2.2 in Fu (2007)
                         g_snw[i,:] = g_snw_F07 * g_Cg_intp # Eq.6, He et al. (2017)
-                        g_snw[i,371:470] = g_snw[i,370] # assume same values for 4-5 um band, with very small biases (<3%)
+                        g_snw[i,381:480] = g_snw[i,380] # assume same values for 4-5 um band, with very small biases (<3%)
                     
-                    g_snw[g_snw < 0] = 0.01
-                    g_snw[g_snw > 0.99] = 0.99 # avoid unreasonable values (so far only occur in large-size spheroid cases)
+                    g_snw[g_snw <= 0] = 0.000001
+                    g_snw[g_snw > 0.999] = 0.999 # avoid unreasonable values (so far only occur in large-size spheroid cases)
 
 
         else: # else correspondng to if layer_type == 1
@@ -413,14 +414,15 @@ def snicar_feeder(inputs):
                 cdom_refidx_im = np.array(pd.read_csv(dir_RI_ice+'k_cdom_240_750.csv')).flatten()
                 cdom_refidx_im_rescaled = cdom_refidx_im[::10]
                 refidx_im[3:54] = np.fmax(refidx_im[3:54],cdom_refidx_im_rescaled)
+            
             FILE_ice = str(dir_bubbly_ice + 'bbl_{}.nc').format(rd)
             file = xr.open_dataset(FILE_ice)
             sca_cff_vlm = file['sca_cff_vlm'].values # scattering cross section unit per volume of bubble
             g_snw[i,:] = file['asm_prm'].values
             abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6))/917
             vlm_frac_air = (917 - rho_layers[i]) / 917
-            MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) + abs_cff_mss_ice
-            SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /917) / MAC_snw[i,:]
+            MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /rho_layers[i]) + abs_cff_mss_ice
+            SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /rho_layers[i]) / MAC_snw[i,:]
 
     
     ###################################################
@@ -439,18 +441,24 @@ def snicar_feeder(inputs):
         impurity_properties = xr.open_dataset(str(dir_mie_lap_files + files[aer]))
         Gaer[aer,:] = impurity_properties['asm_prm'].values
         SSAaer[aer,:] = impurity_properties['ss_alb'].values
+        
         if files[aer] == FILE_brwnC2 or files[aer] == FILE_soot2: #coated particles: use ext_cff_mss_ncl for MAC
             MACaer[aer,:] = impurity_properties['ext_cff_mss_ncl'].values
+        
         else:
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
+        
         if files[aer] == inputs.FILE_glacier_algae:
             # if GA_units == 1, GA concentration provided in cells/mL 
             # MSSaer should be in cells/kg 
             # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3) 
             if inputs.GA_units == 1:
+                
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+        
             else:
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
+        
         elif files[aer] == inputs.FILE_snw_alg:
             # if SA_units == 1, SA concentration provided in cells/mL 
             # but MSSaer should be in cells/kg
@@ -466,6 +474,7 @@ def snicar_feeder(inputs):
         # if Cfactor provided, then MSSaer multiplied by Cfactor
         if (files[aer] == inputs.FILE_glacier_algae and isinstance(Cfactor_GA,(int, float)) and (Cfactor_GA > 0)): 
             MSSaer[0:nbr_lyr,aer] = Cfactor_GA*MSSaer[0:nbr_lyr,aer]
+        
         if (files[aer] == inputs.FILE_snw_alg and isinstance(Cfactor_SA,(int, float)) and (Cfactor_SA > 0)): 
             MSSaer[0:nbr_lyr,aer] = Cfactor_SA*MSSaer[0:nbr_lyr,aer]
         
@@ -505,37 +514,36 @@ def snicar_feeder(inputs):
     for i in range(nbr_lyr):
 
         L_snw[i] = rho_layers[i] * dz[i]
-        tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
-
-
-
-    # then for the LAPs in each layer
-    for i in range(nbr_lyr):
+        
         for j in range(nbr_aer):
-
             L_aer[i, j, :] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
             tau_aer[i, j, :] = L_aer[i, j, :] * MACaer[j, :] # cells m-2 * m2 cells-1
             tau_sum = tau_sum + tau_aer[i, j, :]
             SSA_sum = SSA_sum + (tau_aer[i, j, :] * SSAaer[j, :])
             g_sum = g_sum + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
 
-
-    # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP
+    # ice mass = snow mass - impurity mass (generally a tiny correction)
     for i in range(nbr_lyr):
+        L_snw[i] =  L_snw[i] - np.sum(L_aer[:,i])
+        tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
         
+        # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP        
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
-        SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + SSA_snw[i,:] * tau_snw[i,:])
+        SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
-        
-    inputs.tau=tau
-    inputs.SSA=SSA
-    inputs.g=g
-    inputs.L_snw=L_snw
+
+
     # just in case any unrealistic values arise (none detected so far)
     SSA[SSA<=0]=0.00000001
     SSA[SSA>=1]=0.99999999
     g[g<=0]=0.00001
     g[g>=1]=0.99999
+
+    inputs.tau=tau
+    inputs.SSA=SSA
+    inputs.g=g
+    inputs.L_snw=L_snw
+
 
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)

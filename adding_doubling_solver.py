@@ -17,7 +17,7 @@ def adding_doubling_solver(inputs):
     
     import numpy as np
     import xarray as xr
-    
+
     #load variables from input table
     tau=inputs.tau
     SSA=inputs.SSA
@@ -36,7 +36,7 @@ def adding_doubling_solver(inputs):
     dir_base=inputs.dir_base
     DIRECT=inputs.DIRECT
     verbosity = inputs.verbosity
-    
+
     #directory
     dir_RI_ice = str(dir_base + 'Data/') 
 
@@ -50,7 +50,7 @@ def adding_doubling_solver(inputs):
 
     epsilon = 1e-5      # to deal with singularity
     exp_min = 1e-5      # exp(-500)  # minimum number that is not zero - zero will raise error
-    trmin   = 1e-5      # minimum transmissivity
+    trmin   = 1e-4      # minimum transmissivity
     puny    = 1e-10     # not sure how should we define this
 
     gauspt = [0.9894009, 0.9445750, 0.8656312, 0.7554044, 0.6178762, 0.4580168, 0.2816036, 0.0950125]  # gaussian angles (radians)     
@@ -88,7 +88,12 @@ def adding_doubling_solver(inputs):
     trndir[:,0] =  1 
     trntdr[:,0] =  1 
     trndif[:,0] =  1 
-    rdndif[:,0] =  0 
+    rdndif[:,0] =  0
+    n_real = np.zeros(shape=480) 
+
+    # set the underlying ground albedo
+    rupdir[:,nbr_lyr] = R_sfc    # reflectivity to direct radiation for layers below
+    rupdif[:,nbr_lyr] = R_sfc    # reflectivity to diffuse radiation for layers below
 
     # if there are non zeros in layer type, grab the index of the first fresnel layer
     # if there are non-zeros in layer type, load in the precalculated diffuse fresnel reflection
@@ -96,27 +101,26 @@ def adding_doubling_solver(inputs):
     if np.sum(layer_type) > 0:
 
         lyrfrsnl = layer_type.index(1)
+        
         if verbosity ==1:
             print("\nFirst Fresnel boundary is in layer ", lyrfrsnl)
 
     else:
 
-        lyrfrsnl = 999999999
+        lyrfrsnl = 9999999
 
         # raise error if there are no solid ice layers - in this case use the Toon solver instead!
-        raise ValueError("There are no ice layers in this model configuration\
+        print("There are no ice layers in this model configuration\
              - suggest adding a solid ice layer or using faster Toon method")
-
-    # proceed down one layer at a time: if the total transmission to
-    # the interface just above a given layer is less than trmin, then no
-    # Delta-Eddington computation for that layer is done.
     
     Fresnel_Diffuse_File = xr.open_dataset(dir_RI_ice+'FL_reflection_diffuse.nc')
 
     for wl in np.arange(0,nbr_wvl,1): # loop through wavelengths
         
-        for lyr in np.arange(0,nbr_lyr,1):   # loop through layers
-
+        for lyr in np.arange(0,nbr_lyr,1):   # loop through layers [0,1,2,3,4]
+            # proceed down one layer at a time: if the total transmission to
+            # the interface just above a given layer is less than trmin, then no
+            # Delta-Eddington computation for that layer is done.
             # open refractive index file and grab real and imaginary parts
             refidx_file = xr.open_dataset(dir_RI_ice+'rfidx_ice.nc')
 
@@ -144,7 +148,7 @@ def adding_doubling_solver(inputs):
             
             temp1 = refidx_re[wl]**2 - refidx_im[wl]**2 + np.sin(np.arccos(mu_not))**2
             temp2 = refidx_re[wl]**2 - refidx_im[wl]**2 - np.sin(np.arccos(mu_not))**2
-            n_real = (np.sqrt(2)/2) * (temp1 + (temp2**2 + 4*refidx_re[wl]**2*refidx_im[wl]**2)**0.5)**0.5
+            n_real[wl] = (np.sqrt(2)/2) * (temp1 + (temp2**2 + 4*refidx_re[wl]**2*refidx_im[wl]**2)**0.5)**0.5
 
             #  compute next layer Delta-eddington solution only if total transmission
             #  of radiation to the interface just above the layer exceeds trmin.
@@ -155,7 +159,7 @@ def adding_doubling_solver(inputs):
                 mu0 = mu_not  # cosine of beam angle is equal to incident beam
                 
                 # ice-adjusted real refractive index
-                nr = n_real
+                nr = n_real[wl]
                 # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
                 # (i.e. this is Snell's Law for refraction at interface between media)
                 # mu0n = -1 represents light travelling vertically upwards and mu0n = +1 
@@ -163,13 +167,14 @@ def adding_doubling_solver(inputs):
                 
                 #mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx)))  (original, before update for diffuse Fresnel reflection)
                 mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0))/nr))   # this version accounts for diffuse fresnel reflection            
+                
                 # condition: if current layer is above fresnel layer or the 
                 # top layer is a Fresnel layer
                 if lyr < lyrfrsnl or lyrfrsnl==0:
                     
                     mu0n = mu0 
 
-                elif lyr >= lyrfrsnl:
+                else:
                     # within or below FL
                     mu0n = mu0n 
 
@@ -183,9 +188,9 @@ def adding_doubling_solver(inputs):
                 
                 # coefficient for delta eddington solution for all layers 
                 # Eq. 50: Briegleb and Light 2007
-                ts   = (1-(wtot * ftot)) * tautot # layer delta-scaled extinction optical depth
+                ts   = (1-wtot * ftot) * tautot # layer delta-scaled extinction optical depth
                 ws   = ((1-ftot) * wtot) / (1-(wtot * ftot)) # layer delta-scaled single scattering albedo
-                gs   = (gtot-ftot)/(1-ftot) # layer delta-scaled asymmetry parameter
+                gs   = gtot/(1+gtot) # layer delta-scaled asymmetry parameter
                 lm   = np.sqrt(3 * (1-ws) * (1-ws * gs)) # lambda
                 ue   = 1.5 * (1-ws * gs) / lm # u equation, term in diffuse reflectivity and transmissivity
                 
@@ -259,7 +264,6 @@ def adding_doubling_solver(inputs):
                     refindx = np.complex(refidx_re[wl],refidx_im[wl])
                     critical_angle = np.arcsin(refindx)
 
-
                     if np.arccos(mu_not) < critical_angle:
                         # in this case, no total internal reflection
 
@@ -271,7 +275,7 @@ def adding_doubling_solver(inputs):
                         # inputs to equation 21 (i.e. Fresnel formulae for R and T)
                         R1 = (mu0-nr*mu0n) / (mu0 + nr*mu0n)    #reflection amplitude factor for perpendicular polarization
                         R2 = (nr*mu0 - mu0n) / (nr*mu0 + mu0n)    #reflection amplitude factor for parallel polarization
-                        T1 = 2*mu0 / (mu0 + nr*mu0n)                   #transmission amplitude factor for perpendicular polarization
+                        T1 = 2 * mu0 / (mu0 + nr*mu0n)                   #transmission amplitude factor for perpendicular polarization
                         T2 = 2 * mu0 / (nr * mu0 + mu0n)                   #transmission amplitude factor for parallel polarization
                         
                         #! unpolarized light for direct beam
@@ -292,8 +296,8 @@ def adding_doubling_solver(inputs):
                     # Eq. 25  Brigleb and light 2007
                     # diffuse reflection of flux arriving from above
                     
-                    Rf_dif_a = FL_r_dif_a[wl]             # reflection from diffuse unpolarized radiation
-                    Tf_dif_a = 1 - Rf_dif_a     #t ransmission from diffuse unpolarized radiation
+                    Rf_dif_a = FL_r_dif_a[wl]   # reflection from diffuse unpolarized radiation
+                    Tf_dif_a = 1 - Rf_dif_a     # transmission from diffuse unpolarized radiation
                     
                     # diffuse reflection of flux arriving from below
                     Rf_dif_b = FL_r_dif_b[wl] 
@@ -391,13 +395,9 @@ def adding_doubling_solver(inputs):
         # !                lyr+1
         # !       ---------------------
         
-        # set the underlying ground albedo
-        rupdir[wl,nbr_lyr] = R_sfc[wl]    # reflectivity to direct radiation for layers below
-        rupdif[wl,nbr_lyr] = R_sfc[wl]    # reflectivity to diffuse radiation for layers below
+        
+        for lyr in np.arange(nbr_lyr-1,-1,-1):  #[4,3,2,1,0] # starts at the bottom and works its way up to the top layer
 
-
-        for lyr in np.arange(nbr_lyr-1,-1,-1):  # starts at the bottom and works its way up to the top layer
-            
             #Eq. B5  Briegleb and Light 2007
             #! interface scattering
             refkp1 = 1/( 1 - rdif_b[lyr]*rupdif[wl,lyr+1]) 
@@ -416,7 +416,7 @@ def adding_doubling_solver(inputs):
 
     for wl in np.arange(0,nbr_wvl,1):
         
-        for lyr in np.arange(0,nbr_lyr+1,1):
+        for lyr in np.arange(0,nbr_lyr+1,1): #[0,1,2,3,4,5]
             
             # Eq. 52  Briegleb and Light 2007
             # interface scattering
@@ -456,7 +456,7 @@ def adding_doubling_solver(inputs):
     # ----- Calculate fluxes ----
 
 
-    for n in np.arange(0,nbr_lyr+1,1):
+    for n in np.arange(0,nbr_lyr+1,1): #[0,1,2,3,4,5]
         
         F_up[:,n]  = (fdirup[:,n]*(Fs*mu_not*np.pi) + fdifup[:,n]*Fd) 
         F_dwn[:,n] = (fdirdn[:,n]*(Fs*mu_not*np.pi) + fdifdn[:,n]*Fd) 
@@ -464,11 +464,7 @@ def adding_doubling_solver(inputs):
     F_net = F_up - F_dwn 
 
     # Absorbed flux in each layer
-    #F_abs[:,0:nbr_lyr] = F_net[:,1:]-F_net[:,0:-1]
     F_abs[:,:] = F_net[:,1:]-F_net[:,0:-1]
-
-    # albedo
-    acal  = F_up[:,0]/F_dwn[:,0] 
 
     # Upward flux at upper model boundary
     F_top_pls = F_up[:,0] 
@@ -480,7 +476,7 @@ def adding_doubling_solver(inputs):
     # Spectrally-integrated absorption in each layer:
     F_abs_slr = np.sum(F_abs,axis=0) 
     
-    for i in np.arange(0,nbr_lyr,1):
+    for i in np.arange(0,nbr_lyr,1): #[0,1,2,3,4]
 
         F_abs_vis[i] = sum(F_abs[0:vis_max_idx,i]) 
         F_abs_nir[i] = sum(F_abs[vis_max_idx:nir_max_idx,i]) 
@@ -504,24 +500,7 @@ def adding_doubling_solver(inputs):
 
         raise ValueError('energy conservation error: {}'.format(energy_conservation_error))
 
-    # Hemispheric wavelength-dependent albedo:
-    if DIRECT ==1: 
-    
-        albedo = F_top_pls/((mu_not*np.pi*Fs)+Fd) 
-    
-    else:
-        albedo = rupdif[:,0] 
-
-
-    #double check if the albedo calculated are the same
-    adif = np.sum(acal - albedo) 
-    
-    if adif > 1e-10:
-        
-        raise ValueError('error in albedo calculation')
-
-    albedo = acal 
-
+    albedo = F_up[:,0]/F_dwn[:,0]
 
     # Spectrally-integrated solar, visible, and NIR albedos:
         
