@@ -42,7 +42,7 @@ Inputs of the different functions
                     (ACS generated in m2/cell)
        density =  (int - used if biovolume = True) density of wet biomass
                    (kg/µm3 - 1160*10**(-18) dflt value from green snw algae)
-       xw = (float - used if biovolume = False) water fraction of a cell
+       xw = (float - not used atm) water fraction of a cell
                     (0.7-0.8 by default)
        cell_volume = (int - used if biovolume = False) volume of an algae cell
                      reference values from Halbach et al. 2021:
@@ -133,7 +133,7 @@ In Mie mode, the optical properties are calculated using Mie scattering
 using Scott Prahl's miepython package https://github.com/scottprahl/miepython.
 """
 #%%
-from test_bioModel import bioptical_calculations, ssp_calculations, net_cdf_updater
+from BioOptical_Funcs import bioptical_calculations, ssp_calculations, net_cdf_updater
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -157,9 +157,6 @@ wvl = np.arange(0.2, 4.999, 0.001) #spectral range of interest in µm
 ######## if ACS is calculated:
 ACS_calculated = False
 biovolume = False
-density = 1160*10**(-18)
-xw = 0.8
-cell_volume = 1500
 k_water = np.loadtxt(dir_base + 'Data/pigments/k_ice_480.csv')
 packaging_correction = False
 pigment_dir =  dir_base + 'Data/pigments/'
@@ -178,6 +175,10 @@ pigments_data = {str(pigment_dir + 'alloxanthin.csv'): 0.0,
                  str(pigment_dir + 'violaxanthin.csv'): 0,
                  str(pigment_dir + 'zeaxanthin.csv'): 0,
                 }
+
+density = 1160*10**(-18)
+xw = 0.8
+
 # Optional smoothing filter for calculated k, ACS
 smooth = True
 window_size = 25
@@ -186,7 +187,9 @@ smoothStart = 44
 smoothStop = 100
 
 ######## if ACS is loaded from a file:
-ACS_file = '../.csv'
+ACS_file = '/Users/au660413/Documents/Aarhus_PhD/Halbach_2021/ACS_SA_Halbach2021.csv'
+#FIELDWORK1/SA_ACS_Chevrollier_2021.csv'
+
 
 ######## Chose method for calculation of optical properties
 GO = False
@@ -194,11 +197,13 @@ Mie = True
 
 ######## Algae properties for calculations of optical properties
 n_algae = 1.4 * np.ones(np.size(wvl)) 
-r = 20
-L = 15
+r = 12.4
+L = 15 #5 and 15 Halbach 2021.
+cell_volume = 9600# 7900 # Chevrollier et al. 2021: SA 2572, GA 1374; Halbach et al. 2021: 1178 GA, 7900 SA
+
 
 ####### Directories and printing/saving options for calculated k, ACS
-plot_n_k_ACS_cell = True
+plot_n_k_ACS_cell = False
 plot_pigment_ACSs = False
 savefiles_n_k_ACS_cell = False
 saveplots_n_k_ACS = False
@@ -213,9 +218,9 @@ savepath_OPs = dir_base
 figname_OPs = 'figname'
 
 ######## Saving OPs in netcdf
-netcdf_save = True
+netcdf_save = False
 savepath_netcdf = dir_base + 'Data/Mie_files/480band/lap/'
-filename_netcdf = ''
+filename_netcdf = 'SA_Halbach2021_oct21'
 information = ''
 
 #%%
@@ -223,8 +228,8 @@ information = ''
 ## CALCULATIONS OF ABSORPTION PROPERTIES
 ##############################################################################
 
-wvl, wvl_rescaled_BioSNICAR, k, k_rescaled_BioSNICAR, n, n_rescaled_BioSNICAR,
-ACS, ACS_rescaled_BioSNICAR, n_k_ACS_rescaled_BioSNICAR,
+wvl, wvl_rescaled_BioSNICAR, k, k_rescaled_BioSNICAR, n, n_rescaled_BioSNICAR,\
+ACS, ACS_rescaled_BioSNICAR, n_k_ACS_rescaled_BioSNICAR,\
 abs_coeff_pigm_DataFrame = bioptical_calculations(ACS_calculated, ACS_file,
                                                   biovolume, density, xw,
                                                   cell_volume, wvl,

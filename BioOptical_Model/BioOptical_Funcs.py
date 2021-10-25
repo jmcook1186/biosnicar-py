@@ -53,7 +53,7 @@ def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw,
         
         # apply packaging correction
         if packaging_correction:
-            print('not ready yet')
+            print('not ready yet') #to upload file from Chevrollier et al 
     
     else:
         ACS = (np.array(pd.read_csv(ACS_file))).flatten()
@@ -66,8 +66,8 @@ def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw,
         k = ACS * density * wvl / 4 / np.pi * 10**(12) # units: abs coeff (converted from m2/µm3 to µm2/µm3 so *10**12) * wvl (µm)
         n=n_algae
     else:         
-        k = (xw * k_water) + ((1 - xw) * (wvl/(np.pi*4)) / cell_volume * ACS * 10**(12)) # units: ACS (converted from m2/cell to µm2/cell) / volume cell (µm3) * wvl (µm)
-        n=n_algae
+        k = k_water + ((wvl/(np.pi*4)) / cell_volume * ACS * 10**(12)) # units: ACS (converted from m2/cell to µm2/cell) / volume cell (µm3) * wvl (µm)
+        n=n_algae 
     
     ###############################
     ## ACS, k storage and rescaling
