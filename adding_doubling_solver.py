@@ -1,4 +1,5 @@
 from logging import critical
+import matplotlib.pyplot as plt
 
 
 def adding_doubling_solver(inputs):
@@ -106,35 +107,25 @@ def adding_doubling_solver(inputs):
         print("There are no ice layers in this model configuration\
              - suggest adding a solid ice layer or using faster Toon method")
 
+    
+    mu0 = mu_not*np.ones(480)  # cosine of beam angle is equal to incident beam 
+    # ice-adjusted real refractive index
+    temp1 = refidx_re**2 - refidx_im**2 + np.sin(np.arccos(mu_not))**2
+    temp2 = refidx_re**2 - refidx_im**2 - np.sin(np.arccos(mu_not))**2
+    n_real = (np.sqrt(2)/2) * (temp1 + (temp2**2 + 4*refidx_re**2*refidx_im**2)**0.5)**0.5  
+    nr = n_real 
+    # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
+    # (i.e. this is Snell's Law for refraction at interface between media)
+    # mu0n = -1 represents light travelling vertically upwards and mu0n = +1 
+    # represents light travellign vertically downwards
+    #mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx)))  (original, before update for diffuse Fresnel reflection)
+    mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0))/nr))   # this version accounts for diffuse fresnel reflection 
+             
     # proceed down one layer at a time: if the total transmission to
     # the interface just above a given layer is less than trmin, then no
     # Delta-Eddington computation for that layer is done.
-    
         
     for lyr in np.arange(0,nbr_lyr,1):   # loop through layers
-    
-        temp1 = refidx_re**2 - refidx_im**2 + np.sin(np.arccos(mu_not))**2
-        temp2 = refidx_re**2 - refidx_im**2 - np.sin(np.arccos(mu_not))**2
-        n_real = (np.sqrt(2)/2) * (temp1 + (temp2**2 + 4*refidx_re**2*refidx_im**2)**0.5)**0.5
-
-        #  compute next layer Delta-eddington solution only if total transmission
-        #  of radiation to the interface just above the layer exceeds trmin.
-        #if np.min(trntdr[:,lyr]) > trmin: # condition: only run computation if sufficient
-
-        #flux received from above
-        
-        mu0 = mu_not*np.ones(480)  # cosine of beam angle is equal to incident beam
-        
-        # ice-adjusted real refractive index
-        nr = n_real
-        
-        # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
-        # (i.e. this is Snell's Law for refraction at interface between media)
-        # mu0n = -1 represents light travelling vertically upwards and mu0n = +1 
-        # represents light travellign vertically downwards
-        
-        #mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx)))  (original, before update for diffuse Fresnel reflection)
-        mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0))/nr))   # this version accounts for diffuse fresnel reflection            
         
         # condition: if current layer is above fresnel layer or the 
         # top layer is a Fresnel layer
@@ -175,7 +166,7 @@ def adding_doubling_solver(inputs):
         trnlay[:,lyr] = np.maximum(np.full((nbr_wvl,), exp_min), np.exp(-ts/mu0n)) # transmission from TOA to interface
         
          #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
-        alp = (0.75 * ws * mu0n) * ((1 + gs * (1-ws)) / (1 - lm**2 * mu0n**2 + epsilon))   #alp = alpha(ws,mu0n,gs,lm)
+        alp = (0.75 * ws * mu0n) * (1 + gs * (1-ws)) / (1 - lm**2 * mu0n**2 + epsilon)   #alp = alpha(ws,mu0n,gs,lm)
         gam = (0.5 * ws) * ((1 + 3 * gs * mu0n**2 * (1-ws)) / (1-lm**2 * mu0n**2 + epsilon))     #gam = gamma(ws,mu0n,gs,lm)
         
         # apg = alpha plus gamma

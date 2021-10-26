@@ -29,6 +29,7 @@ def snicar_feeder(inputs):
     import collections as c
     import pandas as pd
     from scipy.interpolate import pchip
+    import math
     
     # load variables from input table
     dir_base=inputs.dir_base
@@ -91,7 +92,7 @@ def snicar_feeder(inputs):
 
     # load incoming irradiance
     # calc cosine of solar zenith (radians)
-    mu_not = np.cos(solzen * (np.pi / 180))      # convert radians if required
+    mu_not = np.cos(math.radians(np.rint(solzen)))       # convert radians if required
     inputs.mu_not = mu_not
     
     if verbosity ==1:
@@ -136,7 +137,7 @@ def snicar_feeder(inputs):
         
         # flx_dwn_sfc is the spectral irradiance in W m-2 and is 
         # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
-        flx_slr = Incoming_file['flx_dwn_sfc'].values 
+        flx_slr = Incoming_file['flx_frc_sfc'].values 
         flx_slr[flx_slr<=0]=1e-30
         inputs.flx_slr=flx_slr
         inputs.Fs = flx_slr / (mu_not * np.pi)
@@ -398,7 +399,7 @@ def snicar_feeder(inputs):
                         g_snw[i,:] = g_snw_F07 * g_Cg_intp # Eq.6, He et al. (2017)
                         g_snw[i,381:480] = g_snw[i,380] # assume same values for 4-5 um band, with very small biases (<3%)
                     
-                    g_snw[g_snw < 0] = 0.01
+                    g_snw[g_snw <= 0] = 0.00001
                     g_snw[g_snw > 0.99] = 0.99 # avoid unreasonable values (so far only occur in large-size spheroid cases)
 
 
@@ -496,7 +497,7 @@ def snicar_feeder(inputs):
     tau = np.zeros([nbr_lyr, nbr_wvl])
     SSA = np.zeros([nbr_lyr, nbr_wvl])
     g = np.zeros([nbr_lyr, nbr_wvl])
-    L_aer = np.zeros([nbr_lyr, nbr_aer, nbr_wvl])
+    L_aer = np.zeros([nbr_lyr, nbr_aer])
     tau_aer = np.zeros([nbr_lyr, nbr_aer, nbr_wvl])
     tau_sum = np.zeros([nbr_lyr, nbr_wvl])
     SSA_sum = np.zeros([nbr_lyr, nbr_wvl])
@@ -513,30 +514,32 @@ def snicar_feeder(inputs):
         L_snw[i] = rho_layers[i] * dz[i]
         
         for j in range(nbr_aer):
-            L_aer[i, j, :] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
-            tau_aer[i, j, :] = L_aer[i, j, :] * MACaer[j, :] # cells m-2 * m2 cells-1
-            tau_sum = tau_sum + tau_aer[i, j, :]
-            SSA_sum = SSA_sum + (tau_aer[i, j, :] * SSAaer[j, :])
-            g_sum = g_sum + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
-
-    # ice mass = snow mass - impurity mass (generally a tiny correction)
-    for i in range(nbr_lyr):
-        L_snw[i] =  L_snw[i] - np.sum(L_aer[:,i])
+            
+            L_aer[i, j] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
+            tau_aer[i, j, :] = L_aer[i, j] * MACaer[j, :] # cells m-2 * m2 cells-1
+            tau_sum[i,:] = tau_sum[i,:] + tau_aer[i, j, :]
+            SSA_sum[i,:] = SSA_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :])
+            g_sum[i,:] = g_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
+        
+        # ice mass = snow mass - impurity mass (generally a tiny correction)
+        L_snw[i] =  L_snw[i] - np.sum(L_aer[i,:])
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
+        
         # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP        
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
         SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
-        
+    
     inputs.tau=tau
     inputs.SSA=SSA
     inputs.g=g
     inputs.L_snw=L_snw
+    
     # just in case any unrealistic values arise (none detected so far)
-    # SSA[SSA<=0]=0.00000001
-    # SSA[SSA>=1]=0.99999999
-    # g[g<=0]=0.00001
-    # g[g>=1]=0.99999
+    SSA[SSA<=0]=0.00000001
+    SSA[SSA>=1]=0.99999999
+    g[g<=0]=0.00001
+    g[g>=1]=0.99999
 
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
@@ -554,6 +557,26 @@ def snicar_feeder(inputs):
         outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = adding_doubling_solver(inputs)
 
     return outputs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
