@@ -453,9 +453,8 @@ def snicar_feeder(inputs):
             # MSSaer should be in cells/kg 
             # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3) 
             if inputs.GA_units == 1:
-                
-                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
-        
+              
+                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(917*10**(-6))
             else:
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
         
@@ -464,7 +463,7 @@ def snicar_feeder(inputs):
             # but MSSaer should be in cells/kg
             # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3)
             if inputs.SA_units == 1:
-                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
+                MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(917*10**(-6))
             else:
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])*1e-9
         else: 
@@ -477,6 +476,7 @@ def snicar_feeder(inputs):
         
         if (files[aer] == inputs.FILE_snw_alg and isinstance(Cfactor_SA,(int, float)) and (Cfactor_SA > 0)): 
             MSSaer[0:nbr_lyr,aer] = Cfactor_SA*MSSaer[0:nbr_lyr,aer]
+           
         
         
     #####################################
@@ -516,15 +516,19 @@ def snicar_feeder(inputs):
         L_snw[i] = rho_layers[i] * dz[i]
         
         for j in range(nbr_aer):
-            
             L_aer[i, j] = L_snw[i] * MSSaer[i, j] #kg ice m-2 * cells kg-1 ice = cells m-2
             tau_aer[i, j, :] = L_aer[i, j] * MACaer[j, :] # cells m-2 * m2 cells-1
             tau_sum[i,:] = tau_sum[i,:] + tau_aer[i, j, :]
             SSA_sum[i,:] = SSA_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :])
             g_sum[i,:] = g_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
+            # ice mass = snow mass - impurity mass (generally a tiny correction)
+            # if aer == algae, L_aer is in cells m-2 and should be converted 
+            # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg 
+            if (files[aer] == inputs.FILE_glacier_algae or files[aer] == inputs.FILE_snw_alg):
+                L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
+            else:
+                L_snw[i] =  L_snw[i] - L_aer[i,j]
         
-        # ice mass = snow mass - impurity mass (generally a tiny correction)
-        L_snw[i] =  L_snw[i] - np.sum(L_aer[i,:])
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
 
         # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP        
@@ -532,7 +536,6 @@ def snicar_feeder(inputs):
         SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
 
-    
     inputs.tau=tau
     inputs.SSA=SSA
     inputs.g=g
