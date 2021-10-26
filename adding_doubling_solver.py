@@ -89,6 +89,11 @@ def adding_doubling_solver(inputs):
     trndif[:,0] =  1 
     rdndif[:,0] =  0
     n_real = np.zeros(shape=480) 
+    
+    # set the underlying ground albedo
+    rupdir[:,nbr_lyr] = R_sfc    # reflectivity to direct radiation for layers below
+    rupdif[:,nbr_lyr] = R_sfc    # reflectivity to diffuse radiation for layers below
+
 
     # if there are non zeros in layer type, grab the index of the first fresnel layer
     # if there are non-zeros in layer type, load in the precalculated diffuse fresnel reflection
@@ -96,12 +101,13 @@ def adding_doubling_solver(inputs):
     if np.sum(layer_type) > 0:
 
         lyrfrsnl = layer_type.index(1)
+        
         if verbosity ==1:
             print("\nFirst Fresnel boundary is in layer ", lyrfrsnl)
 
     else:
 
-        lyrfrsnl = 999999999
+        lyrfrsnl = 9999999
 
         # raise error if there are no solid ice layers - in this case use the Toon solver instead!
         print("There are no ice layers in this model configuration\
@@ -159,6 +165,7 @@ def adding_doubling_solver(inputs):
          # ! first calculation of rdif, tdif using Delta-Eddington formulas
          # Eq.: Briegleb 1992  alpha and gamma for direct radiation
 
+
         rdif_a[:,lyr] = (ue**2-1) * (1/extins - extins)/ne # R BAR = layer reflectivity to DIFFUSE radiation
         tdif_a[:,lyr] = 4*ue/ne # T BAR layer transmissivity to DIFFUSE radiation
         
@@ -190,7 +197,7 @@ def adding_doubling_solver(inputs):
         
          # loop through the gaussian angles for the AD integral
         for ng in np.arange(0,len(gauspt),1):     #gaussian angles (radians)
-            
+
             mu  = gauspt[ng]         # solar zenith angles
             gwt = gauswt[ng]         # gaussian weight
             swt = swt + mu*gwt       # sum of weights
@@ -243,6 +250,7 @@ def adding_doubling_solver(inputs):
                     #! Eq. 21  Brigleb and light 2007
                     Rf_dir_a = 0.5 * (R1**2 + R2**2) 
                     Tf_dir_a = 0.5 * (T1**2 + T2**2) * nr[wl] * mu0n[wl] / mu0[wl]
+
                 
                 else: # in this case, total internal reflection occurs
                     Tf_dir_a = 0
@@ -290,6 +298,8 @@ def adding_doubling_solver(inputs):
                 # T BAR layer transmissivity to DIFFUSE radiation (above),
                 # Eq. B9  Briegleb & Light 2007
                 tdif_a[wl, lyr] = tdif_a[wl, lyr] * rintfc * Tf_dif_a   
+
+
 
                 # Eq. B10  Briegleb & Light 2007
                 tdif_b[wl, lyr] = tdif_b[wl, lyr] * rintfc * Tf_dif_b   
@@ -375,6 +385,7 @@ def adding_doubling_solver(inputs):
         # interface scattered which tran top from below
         rupdif[:,lyr] = rdif_a[:,lyr] + tdif_a[:,lyr]*rupdif[:,lyr+1]*refkp1*tdif_b[:,lyr] 
 
+
     
     # fluxes at interface
         
@@ -419,7 +430,7 @@ def adding_doubling_solver(inputs):
     # ----- Calculate fluxes ----
 
     for n in np.arange(0,nbr_lyr+1,1):
-        
+
         F_up[:,n]  = (fdirup[:,n]*(Fs*mu_not*np.pi) + fdifup[:,n]*Fd) 
         F_dwn[:,n] = (fdirdn[:,n]*(Fs*mu_not*np.pi) + fdifdn[:,n]*Fd) 
 
@@ -441,7 +452,7 @@ def adding_doubling_solver(inputs):
     # Spectrally-integrated absorption in each layer:
     F_abs_slr = np.sum(F_abs,axis=0) 
     
-    for i in np.arange(0,nbr_lyr,1):
+    for i in np.arange(0,nbr_lyr,1): #[0,1,2,3,4]
 
         F_abs_vis[i] = sum(F_abs[0:vis_max_idx,i]) 
         F_abs_nir[i] = sum(F_abs[vis_max_idx:nir_max_idx,i]) 
@@ -465,24 +476,7 @@ def adding_doubling_solver(inputs):
 
         raise ValueError('energy conservation error: {}'.format(energy_conservation_error))
 
-    # Hemispheric wavelength-dependent albedo:
-    # if DIRECT ==1: 
-    
-    #     albedo = F_top_pls/((mu_not*np.pi*Fs)+Fd) 
-    
-    # else:
-    #     albedo = rupdif[:,0] 
-
     albedo = F_up[:,0]/F_dwn[:,0]
-    #double check if the albedo calculated are the same
-    #adif = np.sum(acal - albedo) 
-    
-    # if adif > 1e-10:
-        
-    #     raise ValueError('error in albedo calculation')
-
-    # albedo = acal 
-
 
     # Spectrally-integrated solar, visible, and NIR albedos:
         
