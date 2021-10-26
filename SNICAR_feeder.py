@@ -269,6 +269,7 @@ def snicar_feeder(inputs):
                     ext_cff_mss = temp['ext_cff_mss'].values
                     MAC_snw[i,:] = ext_cff_mss
                     asm_prm = temp['asm_prm'].values
+
                     g_snw[i,:] = asm_prm                         
 
                     # Correction on g for aspherical ice particles from He et al. (2017)
@@ -403,6 +404,7 @@ def snicar_feeder(inputs):
                     g_snw[g_snw > 0.99] = 0.99 # avoid unreasonable values (so far only occur in large-size spheroid cases)
 
 
+
         else: # solid ice layer (layer_type == 1)
                 
             if cdom_layer[i]:
@@ -410,6 +412,7 @@ def snicar_feeder(inputs):
                 cdom_refidx_im_rescaled = cdom_refidx_im[::10] #rescale to SNICAR resolution
                 refidx_im[3:54] = np.fmax(refidx_im[3:54],cdom_refidx_im_rescaled)
             
+
             rd = "{}".format(grain_rds[i])
             rd = rd.rjust(4,"0")
             FILE_ice = str(dir_bubbly_ice + 'bbl_{}.nc').format(rd)
@@ -420,8 +423,6 @@ def snicar_feeder(inputs):
             vlm_frac_air = (917 - rho_layers[i]) / 917
             MAC_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /rho_layers[i]) + abs_cff_mss_ice
             SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air) /rho_layers[i]) / MAC_snw[i,:]
-            
-            
 
     
     ###################################################
@@ -452,6 +453,7 @@ def snicar_feeder(inputs):
             # MSSaer should be in cells/kg 
             # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3) 
             if inputs.GA_units == 1:
+                
                 MSSaer[0:nbr_lyr,aer] = np.array(mass_concentrations[aer])/(0.917*10**(-3))
         
             else:
@@ -524,11 +526,12 @@ def snicar_feeder(inputs):
         # ice mass = snow mass - impurity mass (generally a tiny correction)
         L_snw[i] =  L_snw[i] - np.sum(L_aer[i,:])
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
-        
+
         # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP        
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
         SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
+
     
     inputs.tau=tau
     inputs.SSA=SSA
@@ -540,6 +543,12 @@ def snicar_feeder(inputs):
     SSA[SSA>=1]=0.99999999
     g[g<=0]=0.00001
     g[g>=1]=0.99999
+
+    inputs.tau=tau
+    inputs.SSA=SSA
+    inputs.g=g
+    inputs.L_snw=L_snw
+
 
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
