@@ -6,21 +6,22 @@ import pandas as pd
 import collections
 
 
-def generate_snicar_params_single_layer(density, dz, alg, solzen):
+def generate_snicar_params_single_layer(layer_type, density, dz, alg, solzen, reff, bc):
     
-    rho_layers = [density,density]
-    grain_rds = [1000-density,1000-density]
-    layer_type = [1,1]
-    mss_cnc_glacier_algae = [alg,0]
-    dz = [0.001, dz]
+    rho_layers = [density]*len(dz)
+    reff =[reff]*len(dz)
+    layer_type = [layer_type]*len(dz)
+    mss_cnc_glacier_algae = [alg]*len(dz)
+    mss_cnc_soot1 = [bc]*len(dz)
 
-    params = collections.namedtuple("params","rho_layers, grain_rds, layer_type, dz, mss_cnc_glacier_algae, solzen")
-    params.grain_rds = grain_rds
+    params = collections.namedtuple("params","rho_layers, grain_rds, layer_type, dz, mss_cnc_glacier_algae, mss_cnc_soot1, solzen")
+    params.grain_rds = reff
     params.rho_layers = rho_layers
     params.layer_type = layer_type
     params.dz = dz
     params.mss_cnc_glacier_algae = mss_cnc_glacier_algae
     params.solzen = solzen
+    params.mss_cnc_soot1 = mss_cnc_soot1
 
     return params
 
@@ -64,7 +65,7 @@ def call_snicar(params):
     save_figs = False # toggle to save spectral albedo figure to file
     print_BBA = False # toggle to print broadband albedo to terminal
     print_band_ratios = False # toggle to print various band ratios to terminal
-    smooth = True # apply optional smoothing function (Savitzky-Golay filter)
+    smooth = False # apply optional smoothing function (Savitzky-Golay filter)
     window_size = 9 # if applying smoothing filter, define window size
     poly_order = 3 # if applying smoothing filter, define order of polynomial
 
@@ -103,8 +104,8 @@ def call_snicar(params):
     inputs.layer_type = params.layer_type # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
     inputs.rho_layers = params.rho_layers # density of each layer (unit = kg m-3) 
     inputs.nbr_wvl=480 
-    #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
-    inputs.R_sfc = np.genfromtxt('/home/joe/Code/BioSNICAR_GO_PY/Data/rain_polished_ice_spectrum.csv', delimiter = 'csv')
+    inputs.R_sfc = np.array([0.25 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
+    #inputs.R_sfc = np.genfromtxt('/home/joe/Code/BioSNICAR_GO_PY/Data/rain_polished_ice_spectrum.csv', delimiter = 'csv')
 
     ###############################################################################
     ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -152,7 +153,8 @@ def call_snicar(params):
     inputs.cdom_layer =[0]*len(params.dz)
 
     # Set names of files containing the optical properties of these LAPs:
-    inputs.FILE_soot1  = 'mie_sot_ChC90_dns_1317.nc'
+    #inputs.FILE_soot1  = 'mie_sot_ChC90_dns_1317.nc'
+    inputs.FILE_soot1  = 'bc_ChCB_rn40_dns1270.nc'
     inputs.FILE_soot2  = 'miecot_slfsot_ChC90_dns_1317.nc'
     inputs.FILE_brwnC1 = 'brC_Kirch_BCsd.nc'
     inputs.FILE_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc'
@@ -193,7 +195,7 @@ def call_snicar(params):
     # FILE_glacier_algae2 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae2_r,algae2_l))
 
         
-    inputs.mss_cnc_soot1 = [0]*len(params.dz)    # uncoated black carbon (Bohren and Huffman, 1983)
+    inputs.mss_cnc_soot1 = params.mss_cnc_soot1    # uncoated black carbon (Bohren and Huffman, 1983)
     inputs.mss_cnc_soot2 = [0]*len(params.dz)    # coated black carbon (Bohren and Huffman, 1983)
     inputs.mss_cnc_brwnC1 = [0]*len(params.dz)   # uncoated brown carbon (Kirchstetter et al. (2004).)
     inputs.mss_cnc_brwnC2 = [0]*len(params.dz)   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
