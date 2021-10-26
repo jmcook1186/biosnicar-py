@@ -139,30 +139,9 @@ BioSNICAR_GO_PY
 |              |
 |              |--optical properties for ice slabs
 |
-|-----UnitTests
+|----------tests
 |            |
-|            |----Snicar_mie
-|            |        |
-|            |        |----apprx_albedo.csv
-|            |        |----coszen_albedo.csv
-|            |        |----delta_albedo.csv
-|            |        |----direct_albedo.csv
-|            |        |----dz_albedo.csv
-|            |        |----R_sfc_albedo.csv
-|            |        |----rds_albedo.csv
-|            |        |----rho_albedo.csv
-|            |
-|            |
-|            |----Snicar_GO
-|                  |
-|                  |----apprx_albedo.csv
-|                  |----coszen_albedo.csv
-|                  |----delta_albedo.csv
-|                  |----direct_albedo.csv
-|                  |----dz_albedo.csv
-|                  |----R_sfc_albedo.csv
-|                  |----rds_albedo.csv
-|                  |----rho_albedo.csv
+|           coming soon
 |
 |-----Assets
 |       |
@@ -178,16 +157,9 @@ Using the BioSNICAR_GO package is straightforwards. The user should not need to 
 BioOptical_driver.py is used to generate new optical properties for algae to include in BioSNICAR_GO. There should be sufficient in-script annotations to guide this process, although it is not suggested to apply purely theoretical optical properties in real scientific use-cases without some empirical "ground-truthing" as there are few published datasets for the MAC of snow and glacier algae to verify them against. In BioSNICAR_GO the glacier algal optical properties were generated using empirically measured pigment profiles by Williamson et al (2020: PNAS) using data from the Black and Bloom project.
 
 
-# Unit Testing
+# Testing
 
-Unit testing has been carried out by running the newly translated model and comparing the predicted albedo with that predicted by the Matlab version for identical variable values. The Matlab verson of SNICAR is itself benchmarked against the original FORTRAN version that is implemented in CLM and thoroughly tested. The unit testing undertaken here is archived in the foldr /Unit_Tests/. 
-
-The testing scripts "snicar_mie_tests.py" and "snicar_GO_tests.py" were written to tst the original translations of the BioSNICAR_GO code from Matlab to Python. They showed agreement under all test configurations to within 1e-4, taken as confirmation that the translations were successful. These scripts and the associated Matlab benchmark data are provided here for archiving purposes but were made obselete by further development of the software after start of 2020.
-
-The script AD_tests.py are relevant to the most recent iteration of the software and specifically tests the new adding-doubling code against benchmark data from Whicker/Flanner's Matlab implementation. These tests conformed agreement between the new Python code and the benchmarks to within 1e-5. The figure below shows a selection of model runs with the new python code represented by x's and the benchmar data represented as solid lines.
-
-
-<img src="./Assets/Unit_test_plot.jpg" width=500>
+Updated testing info coming soon
 
 
 # Permissions
