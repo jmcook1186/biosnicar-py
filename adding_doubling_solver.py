@@ -152,7 +152,6 @@ def adding_doubling_solver(inputs):
         gs   = gtot/(1+gtot) # layer delta-scaled asymmetry parameter
         lm   = np.sqrt(3 * (1-ws) * (1-ws * gs)) # lambda
         ue   = 1.5 * (1-ws * gs) / lm # u equation, term in diffuse reflectivity and transmissivity
-        
         extins = np.maximum(np.full((nbr_wvl,), exp_min), np.exp(-lm * ts)) # extinction, MAX function lyr keeps from getting an error if the exp(-lm*ts) is < 1e-5
         ne = (ue+1)**2 / extins - (ue-1)**2 * extins # N equation, term in diffuse reflectivity and transmissivity
         

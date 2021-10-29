@@ -522,12 +522,14 @@ def snicar_feeder(inputs):
             SSA_sum[i,:] = SSA_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :])
             g_sum[i,:] = g_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
             # ice mass = snow mass - impurity mass (generally a tiny correction)
-            # if aer == algae, L_aer is in cells m-2 and should be converted 
+            # if aer == algae and L_aer is in cells m-2, should be converted 
             # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg 
-            if (files[aer] == inputs.FILE_glacier_algae or files[aer] == inputs.FILE_snw_alg):
+            if (files[aer] == inputs.FILE_glacier_algae and inputs.GA_units ==1 ):
+                L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
+            if (files[aer] == inputs.FILE_snw_alg and inputs.SA_units ==1 ):
                 L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
             else:
-                L_snw[i] =  L_snw[i] - L_aer[i,j]
+               L_snw[i] =  L_snw[i] - L_aer[i,j]
         
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
         
@@ -563,28 +565,5 @@ def snicar_feeder(inputs):
         outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = adding_doubling_solver(inputs)
 
     return outputs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
