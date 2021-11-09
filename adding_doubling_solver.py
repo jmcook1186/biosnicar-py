@@ -110,8 +110,9 @@ def adding_doubling_solver(inputs):
         lyrfrsnl = 9999999
 
         # raise error if there are no solid ice layers - in this case use the Toon solver instead!
-        print("There are no ice layers in this model configuration\
-             - suggest adding a solid ice layer or using faster Toon method")
+        if verbosity ==1:
+            print("There are no ice layers in this model configuration\
+                  - suggest adding a solid ice layer or using faster Toon method")
 
     
     mu0 = mu_not*np.ones(480)  # cosine of beam angle is equal to incident beam 
