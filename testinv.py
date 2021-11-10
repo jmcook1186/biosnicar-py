@@ -103,8 +103,11 @@ def call_SNICAR(z, density, layer_types, grain_size, sza):
     inputs.rho_layers = [density,density] # density of each layer (unit = kg m-3) 
     inputs.nbr_wvl=480 
     #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
+    under_ice=pd.read_csv('/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/underlying_ice.csv')
+    under_ice_290721=np.array(under_ice['230721_S2_SCRAPED_HCRF'])[::10]
+    under_ice_290721=np.concatenate([under_ice_290721, np.ones(264)*under_ice_290721[214]])
     inputs.R_sfc = np.genfromtxt(inputs.dir_base+'/Data/rain_polished_ice_spectrum.csv', delimiter = 'csv') # import underlying ice from file
-    
+
     ###############################################################################
     ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
     # For hexagonal plates or columns of any size choose GeometricOptics
@@ -254,12 +257,12 @@ def call_SNICAR(z, density, layer_types, grain_size, sza):
 
 densities= [300, 320, 340, 360, 380, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580,600,
             620, 640, 660, 680, 700, 720, 740, 760, 780, 800] #density of first layer
-grain_sizes = [1000,1500, 2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]#,
-               #8500, 9000,9500, 10000, 10500, 11000, 11500, 12000, 12500,13000, 13500,14000,
-               #14500, 15000,15500,16000, 16500, 17000,17500, 18000, 18500,19000,19500, 20000]
-dz =[[0.001, 0.01],[0.001, 0.015], [0.001,0.02],[0.001,0.025]]#,[0.001,0.03],[0.001,0.035], [0.001,0.04],[0.001,0.045], [0.001,0.05],[0.001,0.055],[0.001,0.06],[0.001,0.065], [0.001,0.07],[0.001,0.075],[0.001,0.08],[0.001,0.085], [0.001,0.09],[0.001,0.095], [0.001,0.1], [0.001,0.105],[0.001,0.11],[0.001,0.115],[0.001,0.120],[0.001,0.125]] 
+grain_sizes = [1000,1500, 2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000,
+               8500, 9000,9500, 10000, 10500, 11000, 11500, 12000, 12500,13000, 13500,14000,
+               14500, 15000,15500,16000, 16500, 17000,17500, 18000, 18500,19000,19500, 20000]
+dz =[[0.001, 0.01],[0.001, 0.015], [0.001,0.02],[0.001,0.025],[0.001,0.03],[0.001,0.035], [0.001,0.04],[0.001,0.045], [0.001,0.05],[0.001,0.055],[0.001,0.06],[0.001,0.065], [0.001,0.07],[0.001,0.075],[0.001,0.08],[0.001,0.085], [0.001,0.09],[0.001,0.095], [0.001,0.1], [0.001,0.105],[0.001,0.11],[0.001,0.115],[0.001,0.120],[0.001,0.125]] 
 layer_types = [[0,0]] #has to be the same length than the depths in dz
-sza=[35,40,45]
+sza=[33,40,42, 43, 44, 45, 46]
 #gen_LUT(densities, grain_sizes, dz, layer_types, sza, '/Users/au660413/Desktop/test.csv')
 paramlist = list(itertools.product(dz,densities, layer_types,grain_sizes, sza))
 
