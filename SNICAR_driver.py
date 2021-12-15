@@ -98,7 +98,7 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 inputs.DIRECT   = 1       # 1= Direct-beam incident flux, 0= Diffuse incident flux
 inputs.APRX_TYP = 1       # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 inputs.DELTA    = 1       # 1= Apply Delta approximation, 0= No delta
-inputs.solzen   = 30      # if DIRECT give solar zenith angle between 
+inputs.solzen   = 40      # if DIRECT give solar zenith angle between 
                           # 0 and 89 degrees (from 0 = nadir, 90 = horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
@@ -122,9 +122,9 @@ inputs.incoming_i = 4
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
 inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
-inputs.dz = [0.02, 0.2] # thickness of each vertical layer (unit = m)
+inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [1,1] # Fresnel layers (set all to 0 if using TOON solver)
+inputs.layer_type = [0,0] # Fresnel layers (set all to 0 if using TOON solver)
 inputs.cdom_layer = [0,0] # Only for layer type == 1, CDOM data from L Halbach
 inputs.rho_layers = [700,700] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
@@ -151,12 +151,12 @@ inputs.rf_ice = 2
 # 3 = koch snowflake, 
 # 4 = hexagonal prisms
 
-inputs.grain_shp =[0,0] # grain shape (He et al. 2016, 2017)
+inputs.grain_shp =[4,4] # grain shape (He et al. 2016, 2017)
 inputs.grain_rds = [500,500] # effective grain or bubble radius
 inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
-inputs.side_length = [800,800] 
+inputs.side_length = [10000,10000] 
 inputs.depth = [10000,10000]
 
 # Shape factor = ratio of nonspherical grain effective
@@ -214,9 +214,9 @@ inputs.FILE_GreenlandCentral2 = 'dust_greenland_central_size2.nc' # Greenland du
 inputs.FILE_GreenlandCentral3 = 'dust_greenland_central_size3.nc' # Greenland dust 3 (Polashenski et al 2015)
 inputs.FILE_GreenlandCentral4 = 'dust_greenland_central_size4.nc' # Greenland dust 4 (Polashenski et al 2015)
 inputs.FILE_GreenlandCentral5  = 'dust_greenland_central_size5.nc' # Greenlanddust 5 (Polashenski et al 2015)
-inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS dust (Cook et al. 2019 "LOW")
-inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean")
-inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH")
+inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS dust (Cook et al. 2019 "LOW") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
+inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
+inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
 inputs.FILE_snw_alg  = 'SA_Halbach2021_oct21.nc' # Snow Algae (spherical, C nivalis)
 inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc' # glacier algae in cells/ml or ppb depending on GA_units 
 
@@ -251,7 +251,7 @@ inputs.mss_cnc_GreenlandCentral2 = [0]*len(inputs.dz)
 inputs.mss_cnc_GreenlandCentral3 = [0]*len(inputs.dz) 
 inputs.mss_cnc_GreenlandCentral4 = [0]*len(inputs.dz) 
 inputs.mss_cnc_GreenlandCentral5 = [0]*len(inputs.dz) 
-inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz) 
+inputs.mss_cnc_Cook_Greenland_dust_L = [1000]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) 
 inputs.mss_cnc_snw_alg = [0,0]    
@@ -266,6 +266,12 @@ inputs.mss_cnc_glacier_algae = [0,0]
 ###########################################################
 ## Error catching: invalid combinations of input variables
 ###########################################################
+
+if (np.sum(inputs.mss_cnc_Cook_Greenland_dust_L) > 0) or\
+  (np.sum(inputs.mss_cnc_Cook_Greenland_dust_C) > 0) or\
+  (np.sum(inputs.mss_cnc_Cook_Greenland_dust_H) > 0):
+
+    raise ValueError("The Greenland Dusts are not available in this release. They will be included in the next version.")
 
 if inputs.GA_units ==1 or inputs.SA_units ==1:
     
