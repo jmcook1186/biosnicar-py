@@ -122,11 +122,11 @@ inputs.incoming_i = 4
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
 inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
-inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
+inputs.dz = [0.001, 2] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [0,0] # Fresnel layers (set all to 0 if using TOON solver)
+inputs.layer_type = [0,1] # Fresnel layers (set all to 0 if using TOON solver)
 inputs.cdom_layer = [0,0] # Only for layer type == 1, CDOM data from L Halbach
-inputs.rho_layers = [700,700] # density of each layer (unit = kg m-3) 
+inputs.rho_layers = [700,850] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 
 # reflectance of undrlying surface - set across all wavelengths
@@ -151,8 +151,8 @@ inputs.rf_ice = 2
 # 3 = koch snowflake, 
 # 4 = hexagonal prisms
 
-inputs.grain_shp =[4,4] # grain shape (He et al. 2016, 2017)
-inputs.grain_rds = [500,500] # effective grain or bubble radius
+inputs.grain_shp =[0,0] # grain shape (He et al. 2016, 2017)
+inputs.grain_rds = [5000,5000] # effective grain or bubble radius
 inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
@@ -185,7 +185,7 @@ inputs.SA_units = 1 # snow algae
 # determine C_factor (can be None or a number)
 # this is the concentrating factor that accounts for
 # resolution difference in field samples and model layers
-inputs.Cfactor_GA = 0
+inputs.Cfactor_GA = 30
 inputs.Cfactor_SA = 0
 
 # Set names of files containing the optical properties of these LAPs:
@@ -218,7 +218,7 @@ inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS
 inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
 inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
 inputs.FILE_snw_alg  = 'SA_Halbach2021_oct21.nc' # Snow Algae (spherical, C nivalis)
-inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc' # glacier algae in cells/ml or ppb depending on GA_units 
+inputs.FILE_glacier_algae = 'GA_Chevrollier2022_r4.9_L18.8.nc' # glacier algae in cells/ml or ppb depending on GA_units 
 
 # Indicate mass mixing ratios scenarios for each impurity 
 # default units are ng(species)/g(ice), or ppb
@@ -251,11 +251,11 @@ inputs.mss_cnc_GreenlandCentral2 = [0]*len(inputs.dz)
 inputs.mss_cnc_GreenlandCentral3 = [0]*len(inputs.dz) 
 inputs.mss_cnc_GreenlandCentral4 = [0]*len(inputs.dz) 
 inputs.mss_cnc_GreenlandCentral5 = [0]*len(inputs.dz) 
-inputs.mss_cnc_Cook_Greenland_dust_L = [1000]*len(inputs.dz) 
+inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) 
 inputs.mss_cnc_snw_alg = [0,0]    
-inputs.mss_cnc_glacier_algae = [0,0]   
+inputs.mss_cnc_glacier_algae = [50000,0]   
 
 
 ##########################################################################

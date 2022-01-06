@@ -6,15 +6,20 @@ import pandas as pd
 import collections
 
 
-def generate_snicar_params(layer_type, density, dz, alg, solzen, reff, bc):
+def generate_snicar_params(layer_type, density, dz, alg, solzen, reff, bc, dust1, dust5):
     
     rho_layers = [density]*len(dz)
     reff =[reff]*len(dz)
     layer_type = [layer_type]*len(dz)
     mss_cnc_glacier_algae = [alg]*len(dz)
-    mss_cnc_soot1 = [bc]*len(dz)
+    mss_cnc_soot1 = [0]*len(dz)
+    mss_cnc_soot1[0] = bc
+    mss_cnc_dust1 = [0]*len(dz)
+    mss_cnc_dust1[0] = dust1
+    mss_cnc_dust5 = [0]*len(dz)
+    mss_cnc_dust5[0] = dust5
 
-    params = collections.namedtuple("params","rho_layers, grain_rds, layer_type, dz, mss_cnc_glacier_algae, mss_cnc_soot1, solzen")
+    params = collections.namedtuple("params","rho_layers, grain_rds, layer_type, dz, mss_cnc_glacier_algae, mss_cnc_soot1, mss_cnc_dust1, mss_cnc_dust5, solzen")
     params.grain_rds = reff
     params.rho_layers = rho_layers
     params.layer_type = layer_type
@@ -22,6 +27,8 @@ def generate_snicar_params(layer_type, density, dz, alg, solzen, reff, bc):
     params.mss_cnc_glacier_algae = mss_cnc_glacier_algae
     params.solzen = solzen
     params.mss_cnc_soot1 = mss_cnc_soot1
+    params.mss_cnc_dust1 = mss_cnc_dust1
+    params.mss_cnc_dust5 = mss_cnc_dust5
 
     return params
 
@@ -199,11 +206,11 @@ def call_snicar(params):
     inputs.mss_cnc_soot2 = [0]*len(params.dz)    # coated black carbon (Bohren and Huffman, 1983)
     inputs.mss_cnc_brwnC1 = [0]*len(params.dz)   # uncoated brown carbon (Kirchstetter et al. (2004).)
     inputs.mss_cnc_brwnC2 = [0]*len(params.dz)   # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-    inputs.mss_cnc_dust1 = [0]*len(params.dz)    # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
+    inputs.mss_cnc_dust1 = params.mss_cnc_dust1    # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
     inputs.mss_cnc_dust2 = [0]*len(params.dz)    # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
     inputs.mss_cnc_dust3 = [0]*len(params.dz)    # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
     inputs.mss_cnc_dust4 = [0]*len(params.dz)    # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-    inputs.mss_cnc_dust5 = [0]*len(params.dz)    # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
+    inputs.mss_cnc_dust5 = params.mss_cnc_dust1    # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
     inputs.mss_cnc_ash1 = [0]*len(params.dz)    # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
     inputs.mss_cnc_ash2 = [0]*len(params.dz)    # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
     inputs.mss_cnc_ash3 = [0]*len(params.dz)    # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)

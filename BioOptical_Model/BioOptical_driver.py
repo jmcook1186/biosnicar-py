@@ -151,7 +151,7 @@ import seaborn as sns
 ######################################################################################
 
 ######## Set spectral range and base directory pointing to package
-dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
+dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
 wvl = np.arange(0.2, 4.999, 0.001) #spectral range of interest in µm
 
 ######## if ACS is calculated:
@@ -187,7 +187,7 @@ smoothStart = 44
 smoothStop = 100
 
 ######## if ACS is loaded from a file:
-ACS_file = '/Users/au660413/Documents/Aarhus_PhD/Halbach_2021/ACS_SA_Halbach2021.csv'
+ACS_file = '/home/joe/Code/BioSNICAR_GO_PY/Data/ACS_GA_Halbach2021.csv'
 #FIELDWORK1/SA_ACS_Chevrollier_2021.csv'
 
 
@@ -197,13 +197,13 @@ Mie = True
 
 ######## Algae properties for calculations of optical properties
 n_algae = 1.4 * np.ones(np.size(wvl)) 
-r = 12.4
+r = 5
 L = 15 #5 and 15 Halbach 2021.
-cell_volume = 9600# 7900 # Chevrollier et al. 2021: SA 2572, GA 1374; Halbach et al. 2021: 1178 GA, 7900 SA
+cell_volume = 1178# 7900 # Chevrollier et al. 2021: SA 2572, GA 1374; Halbach et al. 2021: 1178 GA, 7900 SA
 
 
 ####### Directories and printing/saving options for calculated k, ACS
-plot_n_k_ACS_cell = False
+plot_n_k_ACS_cell = True
 plot_pigment_ACSs = False
 savefiles_n_k_ACS_cell = False
 saveplots_n_k_ACS = False
@@ -218,9 +218,9 @@ savepath_OPs = dir_base
 figname_OPs = 'figname'
 
 ######## Saving OPs in netcdf
-netcdf_save = False
+netcdf_save = True
 savepath_netcdf = dir_base + 'Data/Mie_files/480band/lap/'
-filename_netcdf = 'SA_Halbach2021_oct21'
+filename_netcdf = 'GA_Halbach2021_oct21'
 information = ''
 
 #%%

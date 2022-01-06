@@ -31,18 +31,18 @@ def snicar_feeder(inputs):
     import math
     
     # load variables from input table
-    dir_base=inputs.dir_base, TOON=inputs.TOON, ADD_DOUBLE=inputs.ADD_DOUBLE,\
-    nbr_lyr = inputs.nbr_lyr, nbr_aer = inputs.nbr_aer,\
-    layer_type = inputs.layer_type, DIRECT=inputs.DIRECT,\
-    incoming_i=inputs.incoming_i, solzen=inputs.solzen,\
-    grain_rds=inputs.grain_rds, grain_shp=inputs.grain_shp,\
-    shp_fctr=inputs.shp_fctr, grain_ar=inputs.grain_ar,\
-    side_length=inputs.side_length, depth=inputs.depth,\
-    rf_ice=inputs.rf_ice, rwater=inputs.rwater,\
-    rho_layers=inputs.rho_layers, dz=inputs.dz,\
-    FILE_brwnC2=inputs.FILE_brwnC2, FILE_soot2=inputs.FILE_soot2,\
-    Cfactor_SA = inputs.Cfactor_SA, Cfactor_GA = inputs.Cfactor_GA,\
-    cdom_layer = inputs.cdom_layer, verbosity = inputs.verbosity
+    dir_base=inputs.dir_base; TOON=inputs.TOON; ADD_DOUBLE=inputs.ADD_DOUBLE
+    nbr_lyr = inputs.nbr_lyr; nbr_aer = inputs.nbr_aer
+    layer_type = inputs.layer_type; DIRECT=inputs.DIRECT
+    incoming_i=inputs.incoming_i; solzen=inputs.solzen
+    grain_rds=inputs.grain_rds; grain_shp=inputs.grain_shp
+    shp_fctr=inputs.shp_fctr; grain_ar=inputs.grain_ar
+    side_length=inputs.side_length; depth=inputs.depth
+    rf_ice=inputs.rf_ice; rwater=inputs.rwater
+    rho_layers=inputs.rho_layers; dz=inputs.dz
+    FILE_brwnC2=inputs.FILE_brwnC2; FILE_soot2=inputs.FILE_soot2
+    Cfactor_SA = inputs.Cfactor_SA; Cfactor_GA = inputs.Cfactor_GA
+    cdom_layer = inputs.cdom_layer; verbosity = inputs.verbosity
     
     files = [inputs.FILE_soot1,\
     inputs.FILE_soot2, inputs.FILE_brwnC1,\
@@ -675,25 +675,6 @@ def snicar_feeder(inputs):
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
         SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
-
-
-    ################################
-    # FOR TEDSTONE - DELETE LATER
-    L_tot = (rho_layers[0]*dz[0]) + (L_aer[0,:].sum())
-    extinc = tau[0]/L_tot
-
-    # print(wvl[10])
-    weights = []
-    flx_min = min(flx_slr[10:120])
-    flx_max = max(flx_slr[10:120])
-    for i in flx_slr[10:120]:
-        weights.append((abs(i-flx_min)/(flx_max - flx_min))*100)
-    
-    # plt.plot(weights),plt.show()
-    plt.plot(wvl[10:120],extinc[10:120]),plt.show()
-    print( sum(extinc[10:120]*weights)/sum(weights))   
-
-    ######################################
 
 
 

@@ -5,14 +5,18 @@ clear;
 
 lyr_array     = [1,2];
 density_array = [400, 500, 600, 700, 800];
-reff_array    = [200, 400, 600, 80, 1000];
+reff_array    = [200, 400, 600, 800, 1000];
 zen_array     = [30, 40, 50, 60, 70];
 bc_array      = [500, 1000, 1500, 2000];
+dust1_array = [0, 10000, 20000, 50000]
+dust5_array = [0, 10000, 20000, 50000]
 dz_array      = [[0.02,0.04,0.06, 0.08, 0.1],
     [0.04,0.06,0.08, 0.10, 0.15],
     [0.05,0.10,0.15, 0.2, 0.5],
     [0.15, 0.2, 0.25, 0.3, 0.5],
     [0.5,0.5,0.5,1,10]];
+
+
 
 
 nbr_lyr = 5;  % number of snow layers (true in all test cases)
@@ -55,7 +59,7 @@ input_args.ash_type = 1;
 input_args.mss_cnc_sot2(1:nbr_lyr)  = 0.0;    % sulfate-coated black carbon [ng/g]
 input_args.mss_cnc_brc1(1:nbr_lyr)  = 0.0;    % uncoated brown carbon [ng/g]
 input_args.mss_cnc_brc2(1:nbr_lyr)  = 0.0;    % sulfate-coated brown carbon [ng/g]
-input_args.mss_cnc_dst1(1:nbr_lyr)  = 0.0;    % dust size 1 (r=0.05-0.5um) [ug/g]
+input_args.mss_cnc_dst1(1:nbr_lyr)  = 0.0;     % dust size 1 (r=0.05-0.5um) [ug/g]
 input_args.mss_cnc_dst2(1:nbr_lyr)  = 0.0;    % dust size 2 (r=0.5-1.25um) [ug/g]
 input_args.mss_cnc_dst3(1:nbr_lyr)  = 0.0;    % dust size 3 (r=1.25-2.5um) [ug/g]
 input_args.mss_cnc_dst4(1:nbr_lyr)  = 0.0;    % dust size 4 (r=2.5-5.0um)  [ug/g]
@@ -108,40 +112,49 @@ for h = 1:length(lyr_array)
             for k=1:length(zen_array)
                 for l=1:length(bc_array)
                     for m=1:length(dz_array)
+                        for n=1:length(dust1_array)
+                            for o in 1:length(dust5_array)
                         
-                        % LAYER MEDIUM TYPE [ 1=snow, 2=ice]
-                        input_args.lyr_typ(1:nbr_lyr) = lyr_array(h);
-                        
-                        % SNOW DENSITY FOR EACH LAYER (units: kg/m3)
-                        input_args.rho_snw(1:nbr_lyr) = density_array(i);
-                        
-                        % SNOW GRAIN SIZE FOR EACH LAYER (units: microns):
-                        input_args.rds_snw(1:nbr_lyr) = reff_array(j);
-                        
-                        % COSINE OF SOLAR ZENITH ANGLE FOR DIRECT-BEAM RT
-                        input_args.coszen = cosd(zen_array(k));
-                        
-                        % uncoated black carbon [ng/g]
-                        input_args.mss_cnc_sot1(1:nbr_lyr)  = bc_array(l);
-                        
-                        % SNOW LAYER THICKNESSES [m]:
-                        input_args.dz = dz_array(m,:); % multi-layer snowpack
-                        
-                        
-                        % CALL SNICAR WITH INPUT ARGUMENTS
-                        di = snicarAD_v4(input_args);
-                        
-                        albedo_out(:,idx) = di.albedo;
-                        alb_bb_out(idx)   = di.alb_slr;
-                        
-                        idx = idx+1;
-                        
+                                % LAYER MEDIUM TYPE [ 1=snow, 2=ice]
+                                input_args.lyr_typ(1:nbr_lyr) = lyr_array(h);
+                                
+                                % SNOW DENSITY FOR EACH LAYER (units: kg/m3)
+                                input_args.rho_snw(1:nbr_lyr) = density_array(i);
+                                
+                                % SNOW GRAIN SIZE FOR EACH LAYER (units: microns):
+                                input_args.rds_snw(1:nbr_lyr) = reff_array(j);
+                                
+                                % COSINE OF SOLAR ZENITH ANGLE FOR DIRECT-BEAM RT
+                                input_args.coszen = cosd(zen_array(k));
+                                
+                                % uncoated black carbon [ng/g]
+                                input_args.mss_cnc_sot1(1:nbr_lyr)  = bc_array(l);
+                                
+                                % SNOW LAYER THICKNESSES [m]:
+                                input_args.dz = dz_array(m,:); % multi-layer snowpack
+                                
+                                % DUST 1 CONC
+                                input_args.mss_cnc_dst1(1)  = dust1_array(n)/1000; %mat version reads in ug/g    
+                                
+                                % DUST 5 CONC
+                                input_args.mss_cnc_dst5(1)  = dust1_array(n)/1000; %mat version reads in ug/g    
+                                
+                                % CALL SNICAR WITH INPUT ARGUMENTS
+                                di = snicarAD_v4(input_args);
+                                
+                                albedo_out(:,idx) = di.albedo;
+                                alb_bb_out(idx)   = di.alb_slr;
+                                
+                                idx = idx+1;
+                                
+                            end
+                        end
                     end
                 end
             end
         end
     end
-end
+emd
 
 % set last row equal to bb albedo and save as csv file:
 albedo_out(481,:) = alb_bb_out;
