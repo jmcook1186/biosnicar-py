@@ -109,8 +109,9 @@ def adding_doubling_solver(inputs):
         lyrfrsnl = 9999999
 
         # raise error if there are no solid ice layers - in this case use the Toon solver instead!
-        print("There are no ice layers in this model configuration\
-             - suggest adding a solid ice layer or using faster Toon method")
+        if verbosity ==1:
+            print("There are no ice layers in this model configuration\
+                  - suggest adding a solid ice layer or using faster Toon method")
 
     
     mu0 = mu_not*np.ones(480)  # cosine of beam angle is equal to incident beam 
@@ -157,7 +158,6 @@ def adding_doubling_solver(inputs):
         gs   = gtot/(1+gtot) # layer delta-scaled asymmetry parameter
         lm   = np.sqrt(3 * (1-ws) * (1-ws * gs)) # lambda
         ue   = 1.5 * (1-ws * gs) / lm # u equation, term in diffuse reflectivity and transmissivity
-        
         extins = np.maximum(np.full((nbr_wvl,), exp_min), np.exp(-lm * ts)) # extinction, MAX function lyr keeps from getting an error if the exp(-lm*ts) is < 1e-5
         ne = (ue+1)**2 / extins - (ue-1)**2 * extins # N equation, term in diffuse reflectivity and transmissivity
         

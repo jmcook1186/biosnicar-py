@@ -535,8 +535,7 @@ def snicar_feeder(inputs):
             SSA_snw[i,:] = ((sca_cff_vlm * vlm_frac_air)\
                 /rho_layers[i]) / MAC_snw[i,:]
 
-    
-    ###################################################
+        ###################################################
     # Read in impurity optical properties
     ###################################################
     
@@ -658,19 +657,21 @@ def snicar_feeder(inputs):
             g_sum[i,:] = g_sum[i,:] + (tau_aer[i, j, :] * SSAaer[j, :] * Gaer[j, :])
             
             # ice mass = snow mass - impurity mass (generally a tiny correction)
-            # if aer == algae, L_aer is in cells m-2 and should be converted 
+            #if aer == algae and L_aer is in cells m-2, should be converted 
             # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg 
 
-            if (files[aer] == inputs.FILE_glacier_algae or files[aer] == inputs.FILE_snw_alg):
-                
+            if (files[j] == inputs.FILE_glacier_algae and inputs.GA_units ==1 ):
+
+                L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
+
+            elif (files[j] == inputs.FILE_snw_alg and inputs.SA_units ==1 ):
+              
                 L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
             
             else:
                 
                 L_snw[i] =  L_snw[i] - L_aer[i,j]
-        
         tau_snw[i, :] = L_snw[i] * MAC_snw[i, :]
-
         # finally, for each layer calculate the effective SSA, tau and g for the snow+LAP        
         tau[i,:] = tau_sum[i,:] + tau_snw[i,:]
         SSA[i,:] = (1 / tau[i,:]) * (SSA_sum[i,:] + (SSA_snw[i,:] * tau_snw[i,:]))
@@ -698,7 +699,7 @@ def snicar_feeder(inputs):
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
     
-    outputs = c.namedtuple('outputs',['wvl', 'albedo', 'BBA', 'BBAVIS', 'BBANIR', 'abls_slr', 'heat_rt'])
+    outputs = c.namedtuple('outputs',['wvl', 'albedo', 'BBA', 'BBAVIS', 'BBANIR', 'abls_slr', 'heat_rt', 'abs_ice'])
 
    
     if TOON: 
@@ -711,28 +712,5 @@ def snicar_feeder(inputs):
         outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = adding_doubling_solver(inputs)
 
     return outputs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
