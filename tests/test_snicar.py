@@ -3,28 +3,78 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+import random
+
+"""
+To run configure these tests, update the values in conftest.py
+Then navigate to the tests folder and run
+
+`pytest`
+
+The tests will automatically run - green dots indicate tests 
+passing successfully. A plot of N random spectra pairs will
+be saved to the /tests folder.
+
+"""
+
+def test_realistic_BBA(get_matlab_data, get_python_data):
+    # are the values predicted by the model always physical (i.e. between 0-1)
+    # do the files have the right shape and size?
+
+    mat = get_matlab_data
+    py = get_python_data
+    
+    bb_py = py.loc[:,480]
+    bb_mat = mat.loc[:,480]
+
+    assert len(bb_py) == len(bb_mat)
+    assert bb_py[bb_py>1].count() ==0 and bb_py[bb_py<0].count() ==0
+    assert bb_mat[bb_mat>1].count() ==0 and bb_mat[bb_mat<0].count() ==0
+    
+
+def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance):
+    # check the BBA predicted for each run matches to within tolerance between
+    # the two models
+        mat = get_matlab_data
+        py = get_python_data
+        tol = set_tolerance
+        bb_py = py.loc[:,480]
+        bb_mat = mat.loc[:,480]
+        error = np.array(abs(bb_mat -bb_py))
+        assert  len(error[error>1e-8]) ==0
 
 
-###########################
-# SET USER DEFINE VARIABLES
-###########################
+def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_tolerance):
+    # check that for each individual wavelenght, the spectral albedo
+    # matches to within tolerance between the two models
+        mat = get_matlab_data
+        py = get_python_data
+        tol = set_tolerance
+        bb_spec = py.loc[:,:480]
+        bb_spec = mat.loc[:,:480]
+        error = np.array(abs(bb_spec -bb_spec))
+        assert  len(error[error>1e-8]) ==0
 
-dzs = [0.1, 0.15, 0.2, 0.3, 0.5, 0.6, 0.7]
-bc_conc = [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
-densities = [400, 500, 600, 700, 800, 850]
-zeniths = [30, 40, 50, 60, 70, 80]
-savepath = '/home/joe/Code/BioSNICARParameterization/'
-path_to_data = str(savepath+'snicar_data_single_layer.csv')
 
+def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spectra):
+        # grabs n spectra and plots the python and matlab versions
+        # for visual comparison
+        mat = get_matlab_data
+        py = get_python_data
+        n_spec = get_n_spectra
+        idxs = random.sample(range(0, py.shape[0]), n_spec)
 
-@pytest.mark.parametrize("density", [400, 500])
-@pytest.mark.parametrize("zen", [35, 45])
-def test_snicar(density, zen):
-    params = generate_snicar_params_single_layer(density, 1, 0, zen)             
-    albedo, BBA = call_snicar(params)
-    assert len(albedo)==480
-    assert sum(albedo)>0
-    assert BBA>0
+        wavelength = np.arange(200,5000,10)
+        py_spectra = py.iloc[0:-1,idxs]
+        mat_spectra = mat.iloc[0:-1,idxs]
 
+        plt.plot(wavelength, py_spectra) 
+        plt.plot(wavelength, mat_spectra, linestyle=None,\
+            marker='x')
+        plt.xlabel("wavelength (nm)")
+        plt.ylabel('Albedo')
+        plt.title("solid lines = Python\ncrosses = Matlab")
+        
+        plt.savefig('py_mat_comparison.png')
 
 

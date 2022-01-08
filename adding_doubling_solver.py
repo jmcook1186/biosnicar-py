@@ -94,7 +94,6 @@ def adding_doubling_solver(inputs):
     rupdir[:,nbr_lyr] = R_sfc    # reflectivity to direct radiation for layers below
     rupdif[:,nbr_lyr] = R_sfc    # reflectivity to diffuse radiation for layers below
 
-
     # if there are non zeros in layer type, grab the index of the first fresnel layer
     # if there are non-zeros in layer type, load in the precalculated diffuse fresnel reflection
     # (precalculated as large no. of gaussian points required for convergence)
@@ -366,9 +365,6 @@ def adding_doubling_solver(inputs):
     # !                lyr+1
     # !       ---------------------
     
-    # set the underlying ground albedo
-    rupdir[:,nbr_lyr] = R_sfc  # reflectivity to direct radiation for layers below
-    rupdif[:,nbr_lyr] = R_sfc  # reflectivity to diffuse radiation for layers below
 
     for lyr in np.arange(nbr_lyr-1,-1,-1):  # starts at the bottom and works its way up to the top layer
         
@@ -506,6 +502,5 @@ def adding_doubling_solver(inputs):
     # abs_ground_slr  = F_abs_btm           # total solar absorption by underlying substrate [W/m2]
     # abs_ground_vis  = F_abs_vis_btm       # visible absorption by underlying substrate [W/m2]
     # abs_ground_nir  = F_abs_nir_btm       # near-IR absorption by underlying substrate [W/m2]
-
 
     return wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt

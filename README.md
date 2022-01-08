@@ -2,8 +2,8 @@
 
 This package is a Python implementation of the BioSNICAR_GO model to represent the albedo of snow and ice with variable grain sizes and densities, either clean or with light absorbing particulates  (LAPs). It builds upon legacy FORTRAN and Matlab code developed by Flanner et al. (2007), Cook et al. (2017, 2020) and Wicker et al. (2021, in review). The model is a two stream radiative transfer model that predicts the albedo of a snow or ice multilayer column with user-defined parameters for the snow/ice background (single scattering properties, density, grain size) as well as the LAPs (single scattering properties, concentration in the ice). Two solvers are available in this new version, the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver (Wicker et al. 2021, in review), representing the ice as a medium including air bubbles and allowing the incorporation of Fresnel layers. It also includes a BioOptical model specifically designed to represent biological albedo reducers on snow and ice surfaces. This functionality, combined with the AD solver for the ice matrix makes BioSNICAR_GO applicable to bare glacier ice surfaces as well as wet and dry snowpacks - a significant step forwards from the original BiOSNICAR model published in Cook et al (2017). 
 
-# Parametrisation
-## Snow and ice background
+# Background
+## Snow and ice 
 
 The snow and ice single scattering properties can be generated from the ice refractive index (Warren 1984, Warren and Brandt 2008, Picard 2016) using Mie scattering (good for fine snow grains that can be assumed spherical, or for representing ice bubbles in an ice matrix) or geometric optics (adapted from van Diedenhoven (2014), good for wet snow and ice). This also enables different grain shapes to be used - geometric optics for hexagonal plates and columns, Mie scattering for spheres, spheroids, hexagonal plates and Koch snowflakes (after He et al. 2016, 2017). The rationale behind providing GO functionality is that geometric optics enables ice grains shaped as large hexagonal plates and columns to be simulated, whereas Mie scattering applies to small spheres. Note that running the model in Mie mode with spherical grains and omitting any biological particles is equivalent to running the original SNICAR model of Flanner et al. (2007, 2009). Since 01/05/2020 there exists an option to model the effects of liquid water coatings around ice grains using two-layer coated sphere Mie calculations (added by Niklas Bohn). This option had previously been included in the Matlab version of BioSNICAR and was deprecated for the Python translation in favour of increasing ice grain radii to simulate interstitial melt water; however, it was subsequently decided that giving the choice of method for incorporating liquid water was a better approach. Gratitude to Niklas for adding this feature.  For each layer, the density has to be indicated together with the shape, coating and size of the grains (ice or air bubbles).
 
@@ -139,34 +139,25 @@ BioSNICAR_GO_PY
 |              |
 |              |--optical properties for ice slabs
 |
-|-----UnitTests
+|----------tests
 |            |
-|            |----Snicar_mie
-|            |        |
-|            |        |----apprx_albedo.csv
-|            |        |----coszen_albedo.csv
-|            |        |----delta_albedo.csv
-|            |        |----direct_albedo.csv
-|            |        |----dz_albedo.csv
-|            |        |----R_sfc_albedo.csv
-|            |        |----rds_albedo.csv
-|            |        |----rho_albedo.csv
-|            |
-|            |
-|            |----Snicar_GO
-|                  |
-|                  |----apprx_albedo.csv
-|                  |----coszen_albedo.csv
-|                  |----delta_albedo.csv
-|                  |----direct_albedo.csv
-|                  |----dz_albedo.csv
-|                  |----R_sfc_albedo.csv
-|                  |----rds_albedo.csv
-|                  |----rho_albedo.csv
+|            IceOpticalModel (to match main repo)
+|            SNICAR feeder.py (to match main repo)
+|            adding_doubling_solver.py (to match main repo)
+|            matlab_benchmark_script.m      
+|            py_benchmark_script.py  
+|            matlab_benchmark_data.csv
+|            py_benchmark_data.csv
+|            test_snicar.py
+|            conftest.py
+|            benchmarking_funcs.py
+|            constants.txt
+|            variables.txt
 |
 |-----Assets
 |       |
 |       |--model_structure.jpg
+|       |--other images
 |
 
 ```
@@ -178,16 +169,27 @@ Using the BioSNICAR_GO package is straightforwards. The user should not need to 
 BioOptical_driver.py is used to generate new optical properties for algae to include in BioSNICAR_GO. There should be sufficient in-script annotations to guide this process, although it is not suggested to apply purely theoretical optical properties in real scientific use-cases without some empirical "ground-truthing" as there are few published datasets for the MAC of snow and glacier algae to verify them against. In BioSNICAR_GO the glacier algal optical properties were generated using empirically measured pigment profiles by Williamson et al (2020: PNAS) using data from the Black and Bloom project.
 
 
-# Unit Testing
+# Testing
 
-Unit testing has been carried out by running the newly translated model and comparing the predicted albedo with that predicted by the Matlab version for identical variable values. The Matlab verson of SNICAR is itself benchmarked against the original FORTRAN version that is implemented in CLM and thoroughly tested. The unit testing undertaken here is archived in the foldr /Unit_Tests/. 
+This repository contains a set of executable tests that anyone can run independently to verify
+the codebase against a Matlab benchmark version (published in Whicker et al 2021). To do this,
+navigate to the /tests directory. The test configuration can be updated in conftest.py. Then, simply run
 
-The testing scripts "snicar_mie_tests.py" and "snicar_GO_tests.py" were written to tst the original translations of the BioSNICAR_GO code from Matlab to Python. They showed agreement under all test configurations to within 1e-4, taken as confirmation that the translations were successful. These scripts and the associated Matlab benchmark data are provided here for archiving purposes but were made obselete by further development of the software after start of 2020.
+`$ pytest`
 
-The script AD_tests.py are relevant to the most recent iteration of the software and specifically tests the new adding-doubling code against benchmark data from Whicker/Flanner's Matlab implementation. These tests conformed agreement between the new Python code and the benchmarks to within 1e-5. The figure below shows a selection of model runs with the new python code represented by x's and the benchmar data represented as solid lines.
+This will open two datasets containing 5000 simulations replicated in the Python and Matlab
+implementations. Sucessfully passing tests are reported in the console as green dots, and
+pytest will return a summary of N tests passed and N tests failed. A figure showing
+N pairs of spectra is saved to the /tests folder for visual inspection.
 
+All tests should pass. All tests pass with the default conftest.py provided in this repository.
+This demonstrates physically realistic predictions and equivalency between the two codebases to at least 1e-8 albedo units. The great majority of the simulations match to within 1e-12.
 
-<img src="./Assets/Unit_test_plot.jpg" width=500>
+<img src="./Assets/py_mat_comparison.png" width=500>
+
+More tests can and will be added over time (please feel free to contribute tests)!
+
+The model configuration used to generate the data used to drive the automated tests can be found in the `matlab_benchmark_script.m` and `python_benchmark_script.py` files. The Python version calls functions in `py_benchmarking_funcs.py` The matlab version was run on a linux server at UMich, the Python version was run locally by the repository owner on Ubuntu 20.04. 
 
 
 # Permissions
