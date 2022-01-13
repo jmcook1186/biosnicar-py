@@ -1,4 +1,4 @@
-from funcs import generate_snicar_params_single_layer, call_snicar
+from benchmarking_funcs import generate_snicar_params, call_snicar
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -24,8 +24,8 @@ def test_realistic_BBA(get_matlab_data, get_python_data):
     mat = get_matlab_data
     py = get_python_data
     
-    bb_py = py.loc[:,480]
-    bb_mat = mat.loc[:,480]
+    bb_py = py.loc[:,481]
+    bb_mat = mat.loc[:,481]
 
     assert len(bb_py) == len(bb_mat)
     assert bb_py[bb_py>1].count() ==0 and bb_py[bb_py<0].count() ==0
@@ -38,10 +38,10 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
         mat = get_matlab_data
         py = get_python_data
         tol = set_tolerance
-        bb_py = py.loc[:,480]
-        bb_mat = mat.loc[:,480]
+        bb_py = py.loc[:,481]
+        bb_mat = mat.loc[:,481]
         error = np.array(abs(bb_mat -bb_py))
-        assert  len(error[error>1e-8]) ==0
+        assert  len(error[error>tol]) ==0
 
 
 def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_tolerance):
