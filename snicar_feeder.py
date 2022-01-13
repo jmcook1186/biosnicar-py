@@ -23,7 +23,7 @@ def snicar_feeder(inputs):
     import xarray as xr
     import matplotlib.pyplot as plt
     from IceOptical_Model.mie_coated_water_spheres import miecoated_driver
-    from Toon_RT_solver import toon_solver
+    from toon_rt_solver import toon_solver
     from adding_doubling_solver import adding_doubling_solver
     import collections as c
     import pandas as pd

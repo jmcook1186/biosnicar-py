@@ -26,7 +26,7 @@
 ######################################################################
 
 
-from SNICAR_feeder import snicar_feeder
+from snicar_feeder import snicar_feeder
 import matplotlib.pyplot as plt
 import numpy as np
 import collections as c
@@ -35,13 +35,13 @@ import collections as c
 ## 1) Initialize inputs of the model
 ######################################
 
-inputs = c.namedtuple('inputs',['dir_base', 'verbosity',\
+inputs = c.namedtuple('inputs', ['dir_base', 'verbosity',\
     'rf_ice', 'incoming_i', 'DIRECT', 'layer_type',\
     'cdom_layer', 'APRX_TYP', 'DELTA', 'solzen', \
     'TOON', 'ADD_DOUBLE', 'R_sfc', 'dz', 'rho_layers',\
-    'grain_rds','side_length', 'depth', 'rwater', 'nbr_lyr',\
+    'grain_rds', 'side_length', 'depth', 'rwater', 'nbr_lyr',\
     'nbr_aer', 'grain_shp', 'shp_fctr', 'grain_ar', 'GA_units',\
-    'SA_units', 'Cfactor_GA','Cfactor_SA','mss_cnc_soot1',\
+    'SA_units', 'Cfactor_GA', 'Cfactor_SA', 'mss_cnc_soot1',\
     'mss_cnc_soot2', 'mss_cnc_brwnC1', 'mss_cnc_brwnC2',\
     'mss_cnc_dust1', 'mss_cnc_dust2', 'mss_cnc_dust3',\
     'mss_cnc_dust4', 'mss_cnc_dust5', 'mss_cnc_ash1',\
@@ -69,7 +69,7 @@ inputs = c.namedtuple('inputs',['dir_base', 'verbosity',\
 
 
 ##############################
-## 2) Set working directory 
+## 2) Set working directory
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
@@ -86,7 +86,7 @@ inputs.verbosity = 0 # 1 to print real-time updates
 show_figs = True # toggle to display spectral albedo figure
 save_figs = False # toggle to save spectral albedo figure to file
 print_BBA = True # toggle to print broadband albedo to terminal
-print_band_ratios = False # toggle to print various band ratios to terminal
+print_band_ratios = True # toggle to print various band ratios to terminal
 smooth = False # apply optional smoothing function (Savitzky-Golay filter)
 window_size = 9 # if applying smoothing filter, define window size
 poly_order = 3 # if applying smoothing filter, define order of polynomial
@@ -95,11 +95,10 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 ## 4) RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-inputs.DIRECT   = 1       # 1= Direct-beam incident flux, 0= Diffuse incident flux
-inputs.APRX_TYP = 1       # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
-inputs.DELTA    = 1       # 1= Apply Delta approximation, 0= No delta
-inputs.solzen   = 40      # if DIRECT give solar zenith angle between 
-                          # 0 and 89 degrees (from 0 = nadir, 90 = horizon)
+inputs.DIRECT = 1      # 1= Direct-beam incident flux, 0= Diffuse incident flux
+inputs.APRX_TYP = 1    # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
+inputs.DELTA = 1       # 1= Apply Delta approximation, 0= No delta
+inputs.solzen = 40     # if DIRECT give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -122,17 +121,18 @@ inputs.incoming_i = 4
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
 inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
-inputs.dz = [0.001, 2] # thickness of each vertical layer (unit = m)
+
+inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [0,1] # Fresnel layers (set all to 0 if using TOON solver)
-inputs.cdom_layer = [0,0] # Only for layer type == 1, CDOM data from L Halbach
-inputs.rho_layers = [700,850] # density of each layer (unit = kg m-3) 
+inputs.layer_type = [1, 1] # Fresnel layers (set all to 0 if using TOON solver)
+inputs.cdom_layer = [0, 0] # Only for layer type == 1, CDOM data from L Halbach
+inputs.rho_layers = [400, 400] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 
 # reflectance of undrlying surface - set across all wavelengths
 #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) 
 inputs.R_sfc = np.genfromtxt(inputs.dir_base+'/Data/rain_polished_ice_spectrum.csv',\
-     delimiter = 'csv') # import underlying ice from file
+    delimiter = 'csv') # import underlying ice from file
 
 ###############################################################################
 ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -152,7 +152,7 @@ inputs.rf_ice = 2
 # 4 = hexagonal prisms
 
 inputs.grain_shp =[0,0] # grain shape (He et al. 2016, 2017)
-inputs.grain_rds = [5000,5000] # effective grain or bubble radius
+inputs.grain_rds = [10000,10000] # effective grain or bubble radius
 inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
@@ -255,7 +255,7 @@ inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz)
 inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) 
 inputs.mss_cnc_snw_alg = [0,0]    
-inputs.mss_cnc_glacier_algae = [50000,0]   
+inputs.mss_cnc_glacier_algae = [10000,0]   
 
 
 ##########################################################################
@@ -268,8 +268,8 @@ inputs.mss_cnc_glacier_algae = [50000,0]
 ###########################################################
 
 if (np.sum(inputs.mss_cnc_Cook_Greenland_dust_L) > 0) or\
-  (np.sum(inputs.mss_cnc_Cook_Greenland_dust_C) > 0) or\
-  (np.sum(inputs.mss_cnc_Cook_Greenland_dust_H) > 0):
+(np.sum(inputs.mss_cnc_Cook_Greenland_dust_C) > 0) or\
+(np.sum(inputs.mss_cnc_Cook_Greenland_dust_H) > 0):
 
     raise ValueError("The Greenland Dusts are not available in this release. They will be included in the next version.")
 
@@ -279,12 +279,12 @@ if inputs.GA_units ==1 or inputs.SA_units ==1:
     print("you are expressing at least one of your algal\
     concentrations in cells/mL")
     print(" *** This requires your MAC file to be in units of m2/cell***\n\
-         our default files are expressed in ppb!")
+        our default files are expressed in ppb!")
 
 if inputs.TOON == True and inputs.ADD_DOUBLE == True:
 
     raise ValueError("ERROR: BOTH SOLVERS SELECTED:\
-         PLEASE CHOOSE EITHER TOON OR ADD_DOUBLE")
+        PLEASE CHOOSE EITHER TOON OR ADD_DOUBLE")
 
 elif inputs.TOON == True and inputs.solzen < 40:
     
@@ -311,7 +311,7 @@ if np.sum(inputs.mss_cnc_snw_alg) != 0:
 if inputs.solzen>89:
     inputs.solzen=89
     print("Surface irradiance profiles exist for a solar\
-         zenith angle < 90 degrees. Solzen set to 89.")
+        zenith angle < 90 degrees. Solzen set to 89.")
     
 #########################################
 ## IF NO INPUT ERRORS --> SAVE MODEL 
@@ -320,7 +320,7 @@ if inputs.solzen>89:
 
 if write_config_to_textfile:
     omitted_fields = ['tau', 'g', 'SSA', 'mu_not', 'nbr_wvl',\
-         'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr']
+        'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr']
 
     with open('./model_config.txt', 'w') as f:
         for i in inputs._fields:
@@ -362,12 +362,15 @@ if print_band_ratios:
     print("Impurity Index: ", II)
 
 if print_BBA:
-
     print('\nBROADBAND ALBEDO = ', BBA)
 
 plt.plot(wvl, albedo)
-plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'), plt.xlim(0.3,1.6),
-plt.ylim(0,1), plt.axvline(x = 0.68,color='g',linestyle='dashed')
+
+plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'),\
+    plt.xlim(0.3,1.6),
+plt.ylim(0,1), plt.axvline(x = 0.68,color='g',\
+    linestyle='dashed')
+plt.legend(loc='best')
 
 if show_figs:
     plt.show()

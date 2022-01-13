@@ -5,7 +5,7 @@ import pandas as pd
 lyrList = [0,1]
 densList = [400, 500, 600, 700, 800]
 reffList = [200, 400, 600, 800, 1000]
-zenList = [30, 40, 50, 60, 70]
+zenList = [30, 40, 50, 60]
 bcList = [0, 1000, 2000]
 dust1List = [0, 10000, 20000, 50000]
 dust5List = [0, 10000, 20000, 50000]
@@ -17,7 +17,7 @@ dzList =[[0.02,0.04,0.06, 0.08, 0.1],
 
 ncols = len(lyrList)*len(densList)*len(reffList)*len(zenList)\
     *len(bcList)*len(dzList)*len(dust1List)*len(dust5List)
-print(ncols)
+print("ncols = ", ncols)
 specOut = np.zeros(shape=(ncols,481))
 errorList = []
 counter = 0
@@ -38,5 +38,7 @@ for layer_type in lyrList:
                                 specOut[counter,480] = BBA
                             
                                 counter+=1
+                                if counter % 100 == 0:
+                                    print(counter)
 
 np.savetxt("test_results.csv", specOut, delimiter=",")

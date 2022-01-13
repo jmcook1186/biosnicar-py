@@ -133,7 +133,7 @@ In Mie mode, the optical properties are calculated using Mie scattering
 using Scott Prahl's miepython package https://github.com/scottprahl/miepython.
 """
 #%%
-from BioOptical_Funcs import bioptical_calculations, ssp_calculations, net_cdf_updater
+from BioOptical_Model.biooptical_Funcs import bioptical_calculations, ssp_calculations, net_cdf_updater
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
