@@ -119,7 +119,7 @@ inputs.incoming_i = 4
 ###############################################################
 
 inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
-inputs.ADD_DOUBLE = True # toggle adding-doubling solver
+inputs.ADD_DOUBLE = True # toggle addintg-doubling solver
 
 
 inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
@@ -151,7 +151,7 @@ inputs.rf_ice = 2
 # 3 = koch snowflake, 
 # 4 = hexagonal prisms
 
-inputs.grain_shp =[0,0] # grain shape (He et al. 2016, 2017)
+inputs.grain_shp =[4,4] # grain shape (He et al. 2016, 2017)
 inputs.grain_rds = [10000,10000] # effective grain or bubble radius
 inputs.rwater = [0, 0] # radius of optional liquid water coating
 

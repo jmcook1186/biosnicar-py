@@ -77,7 +77,7 @@ def snicar_feeder(inputs):
 
     # working directories
     dir_mie_ice_files = str(dir_base + 'Data/OP_data/480band/Mie/')
-    dir_go_ice_files = str(dir_base + 'Data/OP_data/480band/Mie/GO') 
+    dir_go_ice_files = str(dir_base + 'Data/OP_data/480band/GO/') 
     dir_mie_lap_files = str(dir_base + 'Data/OP_data/480band/lap/')
     dir_bubbly_ice = str(dir_base + 'Data/OP_data/480band/bubbly_ice_files/')
     dir_fsds = str(dir_base + 'Data/OP_data/480band/fsds/')
