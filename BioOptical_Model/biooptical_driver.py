@@ -157,7 +157,7 @@ wvl = np.arange(0.2, 4.999, 0.001) #spectral range of interest in µm
 ######## if ACS is calculated:
 ACS_calculated = False
 biovolume = False
-k_water = np.loadtxt(dir_base + 'Data/pigments/k_ice_480.csv')
+k_water = np.loadtxt(dir_base + 'Data/OP_data/k_ice_480.csv')
 packaging_correction = False
 pigment_dir =  dir_base + 'Data/pigments/'
 pigments_data = {str(pigment_dir + 'alloxanthin.csv'): 0.0,
@@ -187,7 +187,7 @@ smoothStart = 44
 smoothStop = 100
 
 ######## if ACS is loaded from a file:
-ACS_file = '/home/joe/Code/BioSNICAR_GO_PY/Data/ACS_GA_Halbach2021.csv'
+ACS_file = 'FILEPATH'
 #FIELDWORK1/SA_ACS_Chevrollier_2021.csv'
 
 
@@ -219,8 +219,8 @@ figname_OPs = 'figname'
 
 ######## Saving OPs in netcdf
 netcdf_save = True
-savepath_netcdf = dir_base + 'Data/Mie_files/480band/lap/'
-filename_netcdf = 'GA_Halbach2021_oct21'
+savepath_netcdf = dir_base + 'Data/OP_data/480band/lap/'
+filename_netcdf = 'FILENAME'
 information = ''
 
 #%%

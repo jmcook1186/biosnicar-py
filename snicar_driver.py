@@ -124,14 +124,14 @@ inputs.ADD_DOUBLE = True # toggle adding-doubling solver
 
 inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [1, 1] # Fresnel layers (set all to 0 if using TOON solver)
+inputs.layer_type = [0, 0] # Fresnel layers (set all to 0 if using TOON solver)
 inputs.cdom_layer = [0, 0] # Only for layer type == 1, CDOM data from L Halbach
 inputs.rho_layers = [400, 400] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 
 # reflectance of undrlying surface - set across all wavelengths
 #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) 
-inputs.R_sfc = np.genfromtxt(inputs.dir_base+'/Data/rain_polished_ice_spectrum.csv',\
+inputs.R_sfc = np.genfromtxt(inputs.dir_base+'Data/OP_data/480band/rain_polished_ice_spectrum.csv',\
     delimiter = 'csv') # import underlying ice from file
 
 ###############################################################################
@@ -370,7 +370,6 @@ plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'),\
     plt.xlim(0.3,1.6),
 plt.ylim(0,1), plt.axvline(x = 0.68,color='g',\
     linestyle='dashed')
-plt.legend(loc='best')
 
 if show_figs:
     plt.show()

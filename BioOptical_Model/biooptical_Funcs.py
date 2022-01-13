@@ -167,7 +167,7 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
         for i in np.arange(0, len(wvl), 1):
             mr = n_algae[i]  # load real RI per wavelength
             mi = k_algae[i]  # load imaginary RI per wavelength
-            wl = wvl[i]  # loadd wavelength
+            wl = wvl[i]  # load wavelength
         
             # SSA parameterization
             a = [0.457593, 20.9738]  # for ar=1

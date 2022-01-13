@@ -76,12 +76,12 @@ def snicar_feeder(inputs):
     inputs.mss_cnc_snw_alg, inputs.mss_cnc_glacier_algae]
 
     # working directories
-    dir_mie_ice_files = str(dir_base + 'Data/Mie_files/480band/')
-    dir_go_ice_files = str(dir_base + 'Data/GO_files/480band/') 
-    dir_mie_lap_files = str(dir_base + 'Data/Mie_files/480band/lap/')
-    dir_bubbly_ice = str(dir_base + 'Data/bubbly_ice_files/')
-    dir_fsds = str(dir_base + 'Data/Mie_files/480band/fsds/')
-    dir_RI_ice = str(dir_base + 'Data/') 
+    dir_mie_ice_files = str(dir_base + 'Data/OP_data/480band/Mie/')
+    dir_go_ice_files = str(dir_base + 'Data/OP_data/480band/Mie/GO') 
+    dir_mie_lap_files = str(dir_base + 'Data/OP_data/480band/lap/')
+    dir_bubbly_ice = str(dir_base + 'Data/OP_data/480band/bubbly_ice_files/')
+    dir_fsds = str(dir_base + 'Data/OP_data/480band/fsds/')
+    dir_RI_ice = str(dir_base + 'Data/OP_data/480band/') 
 
     # retrieve nbr wvl, aer, layers and layer types 
     temp = xr.open_dataset(str(dir_mie_lap_files+\
