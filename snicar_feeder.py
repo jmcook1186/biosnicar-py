@@ -76,8 +76,8 @@ def snicar_feeder(inputs):
     inputs.mss_cnc_snw_alg, inputs.mss_cnc_glacier_algae]
 
     # working directories
-    dir_mie_ice_files = str(dir_base + 'Data/OP_data/480band/Mie/')
-    dir_go_ice_files = str(dir_base + 'Data/OP_data/480band/GO/') 
+    dir_spherical_ice_files = str(dir_base + 'Data/OP_data/480band/ice_spherical_grains/')
+    dir_hexagonal_ice_files = str(dir_base + 'Data/OP_data/480band/ice_hexagonal_columns/') 
     dir_mie_lap_files = str(dir_base + 'Data/OP_data/480band/lap/')
     dir_bubbly_ice = str(dir_base + 'Data/OP_data/480band/bubbly_ice_files/')
     dir_fsds = str(dir_base + 'Data/OP_data/480band/fsds/')
@@ -155,7 +155,7 @@ def snicar_feeder(inputs):
     else:
 
         if incoming_i == 0:
-            
+
             Incoming_file = xr.open_dataset(str(dir_fsds +\
                 "swnb_480bnd_mlw_cld.nc"))
         elif incoming_i == 1:
@@ -249,7 +249,7 @@ def snicar_feeder(inputs):
             else:
                 
                 if grain_shp[i] == 4: # large hex prisms (geometric optics)
-                    FILE_ice = str(dir_go_ice_files + dir_OP + '{}_{}.nc'\
+                    FILE_ice = str(dir_hexagonal_ice_files + dir_OP+'{}_{}.nc'\
                         .format(str(side_length[i]).rjust(4,'0'),\
                             str(depth[i])))
                     
@@ -259,7 +259,7 @@ def snicar_feeder(inputs):
                                 str(depth[i])))
                   
                 elif grain_shp[i] < 4:
-                    FILE_ice = str(dir_mie_ice_files + dir_OP + '{}.nc'\
+                    FILE_ice = str(dir_spherical_ice_files + dir_OP + '{}.nc'\
                         .format(str(grain_rds[i]).rjust(4,'0')))
                     
                     if verbosity ==1:
