@@ -184,6 +184,7 @@ def snicar_feeder(inputs):
         
         flx_slr[flx_slr<=0]=1e-30
 
+        inputs.flx_slr = flx_slr
         inputs.Fd = [flx_slr[i]/mu_not*np.pi for i in range(nbr_wvl)]
         inputs.Fs = np.zeros(nbr_wvl)
 
