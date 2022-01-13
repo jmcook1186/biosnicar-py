@@ -155,6 +155,7 @@ def snicar_feeder(inputs):
     else:
 
         if incoming_i == 0:
+            
             Incoming_file = xr.open_dataset(str(dir_fsds +\
                 "swnb_480bnd_mlw_cld.nc"))
         elif incoming_i == 1:
