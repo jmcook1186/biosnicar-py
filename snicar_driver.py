@@ -95,7 +95,7 @@ poly_order = 3 # if applying smoothing filter, define order of polynomial
 ## 4) RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-inputs.DIRECT = 1      # 1= Direct-beam incident flux, 0= Diffuse incident flux
+inputs.DIRECT = 0      # 1= Direct-beam incident flux, 0= Diffuse incident flux
 inputs.APRX_TYP = 1    # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
 inputs.DELTA = 1       # 1= Apply Delta approximation, 0= No delta
 inputs.solzen = 40     # if DIRECT give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)

@@ -16,3 +16,7 @@ def set_tolerance():
 @pytest.fixture
 def get_n_spectra():
     return 25
+
+@pytest.fixture
+def fuzz():
+    return True

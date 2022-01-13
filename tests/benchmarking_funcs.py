@@ -1,4 +1,4 @@
-from SNICAR_feeder import snicar_feeder
+from snicar_feeder import snicar_feeder
 import matplotlib.pyplot as plt
 import statsmodels.api as sm  
 import numpy as np
