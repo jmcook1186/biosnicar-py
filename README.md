@@ -79,7 +79,6 @@ Toon_RT_solver.py : Toon et al (1989) tridiagonal matrix solver
 adding_doubling_solver.py: adding-doubling method radiative transfer solver
 snicar_mie_tests.py: script for running unit tests against matlab version
 BioSNICAR_py.yaml: exported environment
-Files in /UnitTests/SnicarX/ are all benchmark spectral albedos for unit testing as predicted by the Matlab version of SNICAR.
 
 ## Data
 
@@ -100,8 +99,8 @@ In this repository the requisite datasets are divided into four classes, each co
 ```
 BioSNICAR_GO_PY
 |
-|----- SNICAR_driver.py
-|----- SNICAR_feeder.py
+|----- snicar_driver.py
+|----- snicar_feeder.py
 |----- Toon_RT_solver.py
 |----- adding_doubling_solver.py
 |----- snicar_mie_tests.py: script for running unit tests against matlab version
@@ -142,7 +141,7 @@ BioSNICAR_GO_PY
 |----------tests
 |            |
 |            IceOpticalModel (to match main repo)
-|            SNICAR feeder.py (to match main repo)
+|            snicar feeder.py (to match main repo)
 |            adding_doubling_solver.py (to match main repo)
 |            matlab_benchmark_script.m      
 |            py_benchmark_script.py  
@@ -164,25 +163,24 @@ BioSNICAR_GO_PY
 
 # How to use
 
-Using the BioSNICAR_GO package is straightforwards. The user should not need to engage with any scripts apart from the driver (SNICAR_driver.py). In this script, the user defines values for all relevant variables. In-script annotations provide fine detail about the nature of each variable. Running this script will then report the broadband albedo to the console and plot the spectral albedo to a new window (if running interactively in Ipython or Jupyter) or save the figure if the user toggles savefigs == True. It is strongly recommended to avoid modifying the SNICAR_feeder script.
+In top level directory:
+
+`python ./src/snicar_driver.py`
+
+
+Using the BioSNICAR_GO package is straightforwards. The user should not need to engage with any scripts apart from the driver (snicar_driver.py). In this script, the user defines values for all relevant variables. In-script annotations provide fine detail about the nature of each variable. Running this script will then report the broadband albedo to the console and plot the spectral albedo to a new window (if running interactively in Ipython or Jupyter) or save the figure if the user toggles savefigs == True. It is strongly recommended to avoid modifying the SNICAR_feeder script.
 
 BioOptical_driver.py is used to generate new optical properties for algae to include in BioSNICAR_GO. There should be sufficient in-script annotations to guide this process, although it is not suggested to apply purely theoretical optical properties in real scientific use-cases without some empirical "ground-truthing" as there are few published datasets for the MAC of snow and glacier algae to verify them against. In BioSNICAR_GO the glacier algal optical properties were generated using empirically measured pigment profiles by Williamson et al (2020: PNAS) using data from the Black and Bloom project.
 
 
 # Testing
 
-This repository contains a set of executable tests that anyone can run independently to verify
-the codebase against a Matlab benchmark version (published in Whicker et al 2021). To do this,
-navigate to the /tests directory. The test configuration can be updated in conftest.py. Then, simply run
+This repository contains a set of executable tests that anyone can run independently to verify the codebase against a Matlab benchmark version (published in Whicker et al 2021) along with a fuzzer that tests that the model runs and returns valid results across a wide parameter space. The fuzzer can be configured for speicific ranges of values by adjusting the `pytest.mark.parameterize` statements in `test_snicar.py`, or just use our recommended defaults. The fuzzer can be toggled off by setting `fuzz = 0` in `conftest.py`. Tests are organised in `/tests` but are run from the top level directory so that the model code can be more conveniently imported as modules into the test session. Therefore, to run the tests, simply navigate to the top level directory and run:
 
-`$ pytest`
+`$ pytest tests`
 
-This will open two datasets containing 5000 simulations replicated in the Python and Matlab
-implementations. Sucessfully passing tests are reported in the console as green dots, and
-pytest will return a summary of N tests passed and N tests failed. A figure showing
-N pairs of spectra is saved to the /tests folder for visual inspection.
+This will open two datasets containing 5000 simulations replicated in the Python and Matlab implementations. Sucessfully passing tests are reported in the console as green dots, and pytest will return a summary of N tests passed and N tests failed. A figure showing N pairs of spectra is saved to the /tests folder for visual inspection. Any failures will be documented in the terminal so that they can be analysed and any bugs fixed. In the downloaded version of this repo, 100% of 844 tests pass.
 
-All tests should pass. All tests pass with the default conftest.py provided in this repository.
 This demonstrates physically realistic predictions and equivalency between the two codebases to at least 1e-8 albedo units. The great majority of the simulations match to within 1e-12.
 
 <img src="./Assets/py_mat_comparison.png" width=500>
