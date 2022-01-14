@@ -1,3 +1,6 @@
+import sys
+# make sure we can import from/src
+sys.path.append("./src") 
 import matplotlib.pyplot as plt
 from snicar_feeder import snicar_feeder
 import numpy as np
@@ -16,7 +19,19 @@ The tests will automatically run - green dots indicate tests
 passing successfully. A plot of N random spectra pairs will
 be saved to the /tests folder.
 
+The fuzzer exists to run snocar with a wide range of input variables
+to check that no combinations break the code. It is quite memory intensive
+to fuzz over a very large parameter space. 10^3 runs is ok on a decent 
+spec laptop. I have divided the fuzzer into two separate functions. One
+has coverage for "config" variables that set up the radiative transfer
+e.g. direct vs diffuse, approximation type, etc. The other is more for
+conditions of the ice column, e.g. density, effective radius, LAPs.
+
+To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
+
 """
+
+
 
 def test_realistic_BBA(get_matlab_data, get_python_data):
     # are the values predicted by the model always physical (i.e. between 0-1)
@@ -84,11 +99,11 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
 # each parametrize decorator defines a range of values for
 # a specific input parameter
 @pytest.mark.parametrize(\
-    "direct", [1])
+    "direct", [0, 1])
 @pytest.mark.parametrize(\
-    "aprx_typ", [0,1])
+    "aprx_typ", [0, 1])
 @pytest.mark.parametrize(\
-    "incoming", [0, 1, 2])#, 3, 4, 5, 6])
+    "incoming", [0, 1, 2, 3, 4, 5, 6])
 @pytest.mark.parametrize(\
     "shp", [0, 1, 2, 3, 4])
 @pytest.mark.parametrize(\
@@ -131,6 +146,7 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
 #         pass
 
 #     return
+
 
 
 def set_params(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc, dust, Cfactor, solzen):

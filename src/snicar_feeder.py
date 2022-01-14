@@ -1,6 +1,5 @@
 def snicar_feeder(inputs):
     
-
     """
     This script takes the user defined inputs from the driver script and calculates te relevant
     tau (optical thickness), SSA (single scattering albedo) and g (asymmetry parameter) for each 
@@ -18,13 +17,12 @@ def snicar_feeder(inputs):
     or two_stream_solver.py.
 
     """
-
+    import sys
     import numpy as np
     import xarray as xr
-    import matplotlib.pyplot as plt
-    from IceOptical_Model.mie_coated_water_spheres import miecoated_driver
-    from toon_rt_solver import toon_solver
-    from adding_doubling_solver import adding_doubling_solver
+    import mie_coated_water_spheres as wcs
+    import toon_rt_solver as toon
+    import adding_doubling_solver as adding_doubling
     import collections as c
     import pandas as pd
     from scipy.interpolate import pchip
@@ -78,13 +76,13 @@ def snicar_feeder(inputs):
     # working directories
     dir_spherical_ice_files = str(dir_base + 'Data/OP_data/480band/ice_spherical_grains/')
     dir_hexagonal_ice_files = str(dir_base + 'Data/OP_data/480band/ice_hexagonal_columns/') 
-    dir_mie_lap_files = str(dir_base + 'Data/OP_data/480band/lap/')
+    dir_lap_files = str(dir_base + 'Data/OP_data/480band/lap/')
     dir_bubbly_ice = str(dir_base + 'Data/OP_data/480band/bubbly_ice_files/')
     dir_fsds = str(dir_base + 'Data/OP_data/480band/fsds/')
     dir_RI_ice = str(dir_base + 'Data/OP_data/480band/') 
 
     # retrieve nbr wvl, aer, layers and layer types 
-    temp = xr.open_dataset(str(dir_mie_lap_files+\
+    temp = xr.open_dataset(str(dir_lap_files+\
         'dust_greenland_Cook_LOW_20190911.nc'))
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
@@ -182,8 +180,8 @@ def snicar_feeder(inputs):
 
         flx_slr = Incoming_file['flx_frc_sfc'].values
         
-        flx_slr[flx_slr<=0]=1e-30
-
+        flx_slr[flx_slr<=0] = 1e-30
+        inputs.flx_slr=flx_slr
         inputs.Fd = [flx_slr[i]/mu_not*np.pi for i in range(nbr_wvl)]
         inputs.Fs = np.zeros(nbr_wvl)
 
@@ -277,8 +275,8 @@ def snicar_feeder(inputs):
                     # water coating calculations (coated spheres)
                     fn_ice = dir_base + "/Data/rfidx_ice.nc"
                     fn_water = dir_base +\
-                      "Data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
-                    res = miecoated_driver(rice=grain_rds[i],\
+                      "Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+                    res = wcs.miecoated_driver(rice=grain_rds[i],\
                         rwater=rwater[i], fn_ice=fn_ice,\
                             rf_ice=rf_ice, fn_water=fn_water, wvl=wvl)
                     
@@ -553,7 +551,7 @@ def snicar_feeder(inputs):
     for aer in range(nbr_aer):
         
         impurity_properties = xr.open_dataset(\
-            str(dir_mie_lap_files + files[aer]))
+            str(dir_lap_files + files[aer]))
         Gaer[aer,:] = impurity_properties['asm_prm'].values
         SSAaer[aer,:] = impurity_properties['ss_alb'].values
         
@@ -705,12 +703,12 @@ def snicar_feeder(inputs):
    
     if TOON: 
         
-        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = toon_solver(inputs)
+        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = toon.toon_solver(inputs)
 
 
     if ADD_DOUBLE:
 
-        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = adding_doubling_solver(inputs)
+        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS, outputs.BBANIR, outputs.abs_slr, outputs.heat_rt = adding_doubling.adding_doubling_solver(inputs)
 
     return outputs
 
