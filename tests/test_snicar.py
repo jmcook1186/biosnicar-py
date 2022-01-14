@@ -136,16 +136,43 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
     return
 
 
-# def test_variable_fuzzer(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc, dust, Cfactor, solzen, fuzz):
-    
-#     if fuzz:
-#         params = set_params(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc, dust, Cfactor, solzen)
-#         call_snicar(params)
 
-#     else:
-#         pass
+@pytest.mark.parametrize(\
+    "rds", [1000, 5000, 10000])
+@pytest.mark.parametrize(\
+    "rho", [400, 600, 800])
+@pytest.mark.parametrize(\
+    "solzen", [10, 40, 70])
+@pytest.mark.parametrize(\
+    "Cfactor", [0, 30])
+@pytest.mark.parametrize(\
+    "dust", [0, 50000])
+@pytest.mark.parametrize(\
+    "algae", [0, 50000])
+def test_var_fuzzer(rds, rho, solzen, Cfactor, dust, algae):
+    """
+    ensures code runs and gives valid BBA with combinations of input vals
+    """
 
-#     return
+    dz = 0.2
+    bc = 0
+    direct = 1
+    aprx_typ = 0
+    incoming = 4
+    shp = 0
+    rf = 2
+    lyr = 1
+
+    if fuzz:
+        params = set_params(direct, aprx_typ, incoming, shp, rf, rho, rds,\
+            lyr, dz, algae, bc, dust, Cfactor, solzen)
+        albedo, BBA =call_snicar(params)
+        assert (BBA > 0) and (BBA <1)
+
+    else:
+        pass
+
+    return
 
 
 

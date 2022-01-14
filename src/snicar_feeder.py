@@ -17,7 +17,7 @@ def snicar_feeder(inputs):
     or two_stream_solver.py.
 
     """
-
+    import sys
     import numpy as np
     import xarray as xr
     import mie_coated_water_spheres as wcs
