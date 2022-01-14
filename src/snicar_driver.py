@@ -126,7 +126,7 @@ inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
 inputs.layer_type = [0, 0] # Fresnel layers (set all to 0 if using TOON solver)
 inputs.cdom_layer = [0, 0] # Only for layer type == 1, CDOM data from L Halbach
-inputs.rho_layers = [400, 400] # density of each layer (unit = kg m-3) 
+inputs.rho_layers = [916, 916] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 
 # reflectance of undrlying surface - set across all wavelengths
@@ -179,7 +179,7 @@ inputs.nbr_aer = 30
 # define units for algae absorption cross section input file
 # 0 = m2/kg for MAC, ppb for mss_cnc (this is default)
 # 1 = m2/cell for MAC, cell/mL for mss_cnc
-inputs.GA_units = 1 # glacier algae
+inputs.GA_units = 0 # glacier algae
 inputs.SA_units = 1 # snow algae
 
 # determine C_factor (can be None or a number)
@@ -218,7 +218,7 @@ inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS
 inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
 inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
 inputs.FILE_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc' # Snow Algae (spherical, C nivalis)
-inputs.FILE_glacier_algae = 'GA_Chevrollier2022_r4.9_L18.8.nc' # glacier algae in cells/ml or ppb depending on GA_units 
+inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc' # glacier algae in cells/ml or ppb depending on GA_units 
 
 # Indicate mass mixing ratios scenarios for each impurity 
 # default units are ng(species)/g(ice), or ppb
