@@ -149,7 +149,7 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
     "dust", [0, 50000])
 @pytest.mark.parametrize(\
     "algae", [0, 50000])
-def test_var_fuzzer(rds, rho, solzen, Cfactor, dust, algae):
+def test_var_fuzzer(rds, rho, solzen, Cfactor, dust, algae, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     """
@@ -247,9 +247,9 @@ def call_snicar(params):
     ## 3) Choose plot/print options
     ################################
 
-    show_figs = True # toggle to display spectral albedo figure
+    show_figs = False # toggle to display spectral albedo figure
     save_figs = False # toggle to save spectral albedo figure to file
-    print_BBA = True # toggle to print broadband albedo to terminal
+    print_BBA = False # toggle to print broadband albedo to terminal
     print_band_ratios = False # toggle to print various band ratios to terminal
     smooth = False # apply optional smoothing function (Savitzky-Golay filter)
     window_size = 9 # if applying smoothing filter, define window size
