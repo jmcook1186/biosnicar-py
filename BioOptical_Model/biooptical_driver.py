@@ -45,9 +45,9 @@ Inputs of the different functions
                         (ng/cell, ng/µm3 or ng/ng)
         ACS_loaded_reconstructed = (boolean) True if the 
                             ACS is loaded as a reconstructed spectrum 
-                            from pigment absorbance (see Chevrollier et 
-                            al. 2022)
-        packaging_correction = (boolean - applied only if 
+                            from pigment absorbance (see methods in
+                            Chevrollier et al. 2022)
+        packaging_correction = (boolean - applied ONLY if 
                             ACS_loaded_reconstructed is True) if True, 
                             reconstructed ACS is corrected for pigment 
                             packaging following Chevrollier et al. 2022
@@ -156,7 +156,7 @@ import numpy as np
 ######################################################################################
 
 ######## Set base directory and constant variables
-dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
+dir_base = 'path to package'+'/BioSNICAR_GO_PY/'
 wvl = np.arange(0.200, 4.999, 0.001) #spectral range of interest in µm
 k_water = np.loadtxt(dir_base + 'Data/OP_data/k_ice_480.csv')
 
