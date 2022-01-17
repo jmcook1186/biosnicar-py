@@ -20,9 +20,9 @@ def snicar_feeder(inputs):
     import sys
     import numpy as np
     import xarray as xr
-    import src.mie_coated_water_spheres as wcs
-    import src.toon_rt_solver as toon
-    import src.adding_doubling_solver as adding_doubling
+    import mie_coated_water_spheres as wcs
+    import toon_rt_solver as toon
+    import adding_doubling_solver as adding_doubling
     import collections as c
     import pandas as pd
     from scipy.interpolate import pchip
@@ -181,7 +181,7 @@ def snicar_feeder(inputs):
         flx_slr = Incoming_file['flx_dwn_sfc'].values
         flx_slr[flx_slr<=0] = 1e-30
         inputs.flx_slr=flx_slr
-        inputs.Fs = flx_slr / (mu_not * np.pi)
+        inputs.Fd = flx_slr / (mu_not * np.pi)
         inputs.Fs = np.zeros(nbr_wvl)
 
 
