@@ -20,9 +20,9 @@ def snicar_feeder(inputs):
     import sys
     import numpy as np
     import xarray as xr
-    import mie_coated_water_spheres as wcs
-    import toon_rt_solver as toon
-    import adding_doubling_solver as adding_doubling
+    import src.mie_coated_water_spheres as wcs
+    import src.toon_rt_solver as toon
+    import src.adding_doubling_solver as adding_doubling
     import collections as c
     import pandas as pd
     from scipy.interpolate import pchip
@@ -178,11 +178,10 @@ def snicar_feeder(inputs):
         else:
             raise ValueError ("Invalid choice of atmospheric profile")     
 
-        flx_slr = Incoming_file['flx_frc_sfc'].values
-        
+        flx_slr = Incoming_file['flx_dwn_sfc'].values
         flx_slr[flx_slr<=0] = 1e-30
         inputs.flx_slr=flx_slr
-        inputs.Fd = [flx_slr[i]/mu_not*np.pi for i in range(nbr_wvl)]
+        inputs.Fs = flx_slr / (mu_not * np.pi)
         inputs.Fs = np.zeros(nbr_wvl)
 
 
@@ -566,7 +565,8 @@ def snicar_feeder(inputs):
         if files[aer] == inputs.FILE_glacier_algae:
             # if GA_units == 1, GA concentration provided in cells/mL 
             # MSSaer should be in cells/kg 
-            # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3) 
+            # thus MSSaer is divided by kg/mL ice = 917*10**(-6) 
+            # with density of ice 917 kg m3
             if inputs.GA_units == 1:
               
                 MSSaer[0:nbr_lyr,aer] = np.array(\
@@ -579,7 +579,8 @@ def snicar_feeder(inputs):
         elif files[aer] == inputs.FILE_snw_alg:
             # if SA_units == 1, SA concentration provided in cells/mL 
             # but MSSaer should be in cells/kg
-            # thus MSSaer is divided by kg/mL ice = 0.917*10**(-3)
+            # thus MSSaer is divided by kg/mL ice = 917*10**(-6)
+            # with density of ice 917 kg m3
             if inputs.SA_units == 1:
                 MSSaer[0:nbr_lyr,aer] = np.array(\
                     mass_concentrations[aer])/(917*10**(-6))
@@ -698,7 +699,7 @@ def snicar_feeder(inputs):
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD; 
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
     
-    outputs = c.namedtuple('outputs',['wvl', 'albedo', 'BBA', 'BBAVIS', 'BBANIR', 'abls_slr', 'heat_rt', 'abs_ice'])
+    outputs = c.namedtuple('outputs',['wvl', 'albedo', 'BBA', 'BBAVIS', 'BBANIR', 'abs_slr', 'heat_rt', 'abs_ice'])
 
    
     if TOON: 

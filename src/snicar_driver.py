@@ -30,6 +30,7 @@ from snicar_feeder import snicar_feeder
 import matplotlib.pyplot as plt
 import numpy as np
 import collections as c
+import seaborn as sns
 
 ######################################
 ## 1) Initialize inputs of the model
@@ -73,7 +74,7 @@ inputs = c.namedtuple('inputs', ['dir_base', 'verbosity',\
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-inputs.dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
+inputs.dir_base = '/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/'
 savepath = inputs.dir_base # base path for saving figures
 write_config_to_textfile = False # toggle to save config to file
 inputs.verbosity = 0 # 1 to print real-time updates
@@ -124,15 +125,16 @@ inputs.ADD_DOUBLE = True # toggle addintg-doubling solver
 
 inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
 inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [0, 0] # Fresnel layers (set all to 0 if using TOON solver)
+inputs.layer_type = [1, 0] # Fresnel layers (set all to 0 if using TOON solver)
 inputs.cdom_layer = [0, 0] # Only for layer type == 1, CDOM data from L Halbach
 inputs.rho_layers = [916, 916] # density of each layer (unit = kg m-3) 
 inputs.nbr_wvl=480 
 
-# reflectance of undrlying surface - set across all wavelengths
+# reflectance of underlying surface - set across all wavelengths
 #inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) 
-inputs.R_sfc = np.genfromtxt(inputs.dir_base+'Data/OP_data/480band/rain_polished_ice_spectrum.csv',\
-    delimiter = 'csv') # import underlying ice from file
+inputs.R_sfc = np.genfromtxt(inputs.dir_base+
+               'Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv',
+               delimiter = 'csv') # import underlying ice from file
 
 ###############################################################################
 ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -255,7 +257,7 @@ inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz)
 inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz) 
 inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz) 
 inputs.mss_cnc_snw_alg = [0,0]    
-inputs.mss_cnc_glacier_algae = [10000,0]   
+inputs.mss_cnc_glacier_algae = [0,0]   
 
 
 ##########################################################################
@@ -340,6 +342,8 @@ outputs = snicar_feeder(inputs)
 albedo = outputs.albedo 
 BBA = outputs.BBA 
 wvl = outputs.wvl
+SSA = 6 * (np.array([917]*len(inputs.dz)) - np.array(inputs.rho_layers)) /\
+ 917 / (np.array(inputs.rho_layers) * np.array(inputs.grain_rds) * 2 * 10**(-6))
 
 if smooth:
     from scipy.signal import savgol_filter
@@ -364,12 +368,27 @@ if print_band_ratios:
 if print_BBA:
     print('\nBROADBAND ALBEDO = ', BBA)
 
+plt.style.use('seaborn')
+sns.set_style('white')
+rc = {'figure.figsize':(8,6),
+      'axes.facecolor':'white',
+      'axes.grid' : False,
+      'grid.color': '.8',
+      'xtick.major.width':1,
+      'xtick.major.size':5,
+      'ytick.major.width':1,
+      'ytick.major.size':5,
+      'axes.linewidth': 1.25,
+      'font.size' : 20,
+      'xtick.bottom':True,
+      'ytick.left':True}
+plt.rcParams.update(rc)
 plt.plot(wvl, albedo)
-
-plt.ylabel('ALBEDO'), plt.xlabel('WAVELENGTH (microns)'),\
-    plt.xlim(0.3,1.6),
-plt.ylim(0,1), plt.axvline(x = 0.68,color='g',\
-    linestyle='dashed')
+plt.ylabel('Albedo', fontsize=18), 
+plt.xlabel('Wavelength (µm)', fontsize=18), 
+plt.xlim(0.3,2.5), plt.ylim(0,1)
+plt.xticks(fontsize=15), plt.yticks(fontsize=15),
+plt.axvline(x = 0.68,color='g',linestyle='dashed')
 
 if show_figs:
     plt.show()
