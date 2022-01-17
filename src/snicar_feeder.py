@@ -1,7 +1,7 @@
-def snicar_feeder(inputs):
+def snicar_feeder(Inputs):
 
     """
-    This script takes the user defined inputs from the driver script and
+    This script takes the user defined Inputs from the driver script and
     calculates te relevant tau (optical thickness), SSA
     (single scattering albedo) and g (asymmetry parameter) for each
     vertical layer to send to the radiative transfer solver.
@@ -30,49 +30,49 @@ def snicar_feeder(inputs):
     import math
 
     # load variables from input table
-    dir_base=inputs.dir_base; TOON=inputs.TOON; ADD_DOUBLE=inputs.ADD_DOUBLE
-    nbr_lyr = inputs.nbr_lyr; nbr_aer = inputs.nbr_aer
-    layer_type = inputs.layer_type; DIRECT=inputs.DIRECT
-    incoming_i=inputs.incoming_i; solzen=inputs.solzen
-    grain_rds=inputs.grain_rds; grain_shp=inputs.grain_shp
-    shp_fctr=inputs.shp_fctr; grain_ar=inputs.grain_ar
-    side_length=inputs.side_length; depth=inputs.depth
-    rf_ice=inputs.rf_ice; rwater=inputs.rwater
-    rho_layers=inputs.rho_layers; dz=inputs.dz
-    FILE_brwnC2=inputs.FILE_brwnC2; FILE_soot2=inputs.FILE_soot2
-    Cfactor_SA = inputs.Cfactor_SA; Cfactor_GA = inputs.Cfactor_GA
-    cdom_layer = inputs.cdom_layer; verbosity = inputs.verbosity
+    dir_base=Inputs.dir_base; TOON=Inputs.TOON; ADD_DOUBLE=Inputs.ADD_DOUBLE
+    nbr_lyr = Inputs.nbr_lyr; nbr_aer = Inputs.nbr_aer
+    layer_type = Inputs.layer_type; DIRECT=Inputs.DIRECT
+    incoming_i=Inputs.incoming_i; solzen=Inputs.solzen
+    grain_rds=Inputs.grain_rds; grain_shp=Inputs.grain_shp
+    shp_fctr=Inputs.shp_fctr; grain_ar=Inputs.grain_ar
+    side_length=Inputs.side_length; depth=Inputs.depth
+    rf_ice=Inputs.rf_ice; rwater=Inputs.rwater
+    rho_layers=Inputs.rho_layers; dz=Inputs.dz
+    FILE_brwnC2=Inputs.FILE_brwnC2; FILE_soot2=Inputs.FILE_soot2
+    Cfactor_SA = Inputs.Cfactor_SA; Cfactor_GA = Inputs.Cfactor_GA
+    cdom_layer = Inputs.cdom_layer; verbosity = Inputs.verbosity
 
-    files = [inputs.FILE_soot1,\
-    inputs.FILE_soot2, inputs.FILE_brwnC1,\
-    inputs.FILE_brwnC2, inputs.FILE_dust1,\
-    inputs.FILE_dust2, inputs.FILE_dust3,\
-    inputs.FILE_dust4, inputs.FILE_dust5,\
-    inputs.FILE_ash1, inputs.FILE_ash2,\
-    inputs.FILE_ash3, inputs.FILE_ash4,\
-    inputs.FILE_ash5, inputs.FILE_ash_st_helens,\
-    inputs.FILE_Skiles_dust1, inputs.FILE_Skiles_dust2,\
-    inputs.FILE_Skiles_dust3, inputs.FILE_Skiles_dust4,\
-    inputs.FILE_Skiles_dust5, inputs.FILE_GreenlandCentral1,\
-    inputs.FILE_GreenlandCentral2, inputs.FILE_GreenlandCentral3,\
-    inputs.FILE_GreenlandCentral4, inputs.FILE_GreenlandCentral5,\
-    inputs.FILE_Cook_Greenland_dust_L, inputs.FILE_Cook_Greenland_dust_C,\
-    inputs.FILE_Cook_Greenland_dust_H, inputs.FILE_snw_alg,\
-    inputs.FILE_glacier_algae]
+    files = [Inputs.FILE_soot1,\
+    Inputs.FILE_soot2, Inputs.FILE_brwnC1,\
+    Inputs.FILE_brwnC2, Inputs.FILE_dust1,\
+    Inputs.FILE_dust2, Inputs.FILE_dust3,\
+    Inputs.FILE_dust4, Inputs.FILE_dust5,\
+    Inputs.FILE_ash1, Inputs.FILE_ash2,\
+    Inputs.FILE_ash3, Inputs.FILE_ash4,\
+    Inputs.FILE_ash5, Inputs.FILE_ash_st_helens,\
+    Inputs.FILE_Skiles_dust1, Inputs.FILE_Skiles_dust2,\
+    Inputs.FILE_Skiles_dust3, Inputs.FILE_Skiles_dust4,\
+    Inputs.FILE_Skiles_dust5, Inputs.FILE_GreenlandCentral1,\
+    Inputs.FILE_GreenlandCentral2, Inputs.FILE_GreenlandCentral3,\
+    Inputs.FILE_GreenlandCentral4, Inputs.FILE_GreenlandCentral5,\
+    Inputs.FILE_Cook_Greenland_dust_L, Inputs.FILE_Cook_Greenland_dust_C,\
+    Inputs.FILE_Cook_Greenland_dust_H, Inputs.FILE_snw_alg,\
+    Inputs.FILE_glacier_algae]
 
-    mass_concentrations = [inputs.mss_cnc_soot1, inputs.mss_cnc_soot2,\
-    inputs.mss_cnc_brwnC1, inputs.mss_cnc_brwnC2, inputs.mss_cnc_dust1,\
-    inputs.mss_cnc_dust2, inputs.mss_cnc_dust3, inputs.mss_cnc_dust4,\
-    inputs.mss_cnc_dust5, inputs.mss_cnc_ash1, inputs.mss_cnc_ash2,\
-    inputs.mss_cnc_ash3, inputs.mss_cnc_ash4, inputs.mss_cnc_ash5,\
-    inputs.mss_cnc_ash_st_helens, inputs.mss_cnc_Skiles_dust1,\
-    inputs.mss_cnc_Skiles_dust2, inputs.mss_cnc_Skiles_dust3,\
-    inputs.mss_cnc_Skiles_dust4, inputs.mss_cnc_Skiles_dust5,\
-    inputs.mss_cnc_GreenlandCentral1, inputs.mss_cnc_GreenlandCentral2,
-    inputs.mss_cnc_GreenlandCentral3, inputs.mss_cnc_GreenlandCentral4,\
-    inputs.mss_cnc_GreenlandCentral5, inputs.mss_cnc_Cook_Greenland_dust_L,\
-    inputs.mss_cnc_Cook_Greenland_dust_C, inputs.mss_cnc_Cook_Greenland_dust_H,\
-    inputs.mss_cnc_snw_alg, inputs.mss_cnc_glacier_algae]
+    mass_concentrations = [Inputs.mss_cnc_soot1, Inputs.mss_cnc_soot2,\
+    Inputs.mss_cnc_brwnC1, Inputs.mss_cnc_brwnC2, Inputs.mss_cnc_dust1,\
+    Inputs.mss_cnc_dust2, Inputs.mss_cnc_dust3, Inputs.mss_cnc_dust4,\
+    Inputs.mss_cnc_dust5, Inputs.mss_cnc_ash1, Inputs.mss_cnc_ash2,\
+    Inputs.mss_cnc_ash3, Inputs.mss_cnc_ash4, Inputs.mss_cnc_ash5,\
+    Inputs.mss_cnc_ash_st_helens, Inputs.mss_cnc_Skiles_dust1,\
+    Inputs.mss_cnc_Skiles_dust2, Inputs.mss_cnc_Skiles_dust3,\
+    Inputs.mss_cnc_Skiles_dust4, Inputs.mss_cnc_Skiles_dust5,\
+    Inputs.mss_cnc_GreenlandCentral1, Inputs.mss_cnc_GreenlandCentral2,
+    Inputs.mss_cnc_GreenlandCentral3, Inputs.mss_cnc_GreenlandCentral4,\
+    Inputs.mss_cnc_GreenlandCentral5, Inputs.mss_cnc_Cook_Greenland_dust_L,\
+    Inputs.mss_cnc_Cook_Greenland_dust_C, Inputs.mss_cnc_Cook_Greenland_dust_H,\
+    Inputs.mss_cnc_snw_alg, Inputs.mss_cnc_glacier_algae]
 
     # working directories
     dir_spherical_ice_files = str(dir_base + 'Data/OP_data/480band/ice_spherical_grains/')
@@ -88,13 +88,13 @@ def snicar_feeder(inputs):
     wvl = np.array(temp['wvl'].values)
     wvl = wvl*1e6
     nbr_wvl = len(wvl)
-    inputs.nbr_wvl = nbr_wvl
-    inputs.wvl = wvl
+    Inputs.nbr_wvl = nbr_wvl
+    Inputs.wvl = wvl
 
     # load incoming irradiance
     # calc cosine of solar zenith (radians)
     mu_not = np.cos(math.radians(np.rint(solzen)))
-    inputs.mu_not = mu_not
+    Inputs.mu_not = mu_not
 
     if verbosity ==1:
         print("\ncosine of solar zenith = ", mu_not)
@@ -147,9 +147,9 @@ def snicar_feeder(inputs):
         # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
         flx_slr = Incoming_file['flx_dwn_sfc'].values
         flx_slr[flx_slr<=0]=1e-30
-        inputs.flx_slr=flx_slr
-        inputs.Fs = flx_slr / (mu_not * np.pi)
-        inputs.Fd = np.zeros(nbr_wvl)
+        Inputs.flx_slr=flx_slr
+        Inputs.Fs = flx_slr / (mu_not * np.pi)
+        Inputs.Fd = np.zeros(nbr_wvl)
 
     else:
 
@@ -181,9 +181,9 @@ def snicar_feeder(inputs):
 
         flx_slr = Incoming_file['flx_dwn_sfc'].values
         flx_slr[flx_slr<=0] = 1e-30
-        inputs.flx_slr=flx_slr
-        inputs.Fd = flx_slr / (mu_not * np.pi)
-        inputs.Fs = np.zeros(nbr_wvl)
+        Inputs.flx_slr=flx_slr
+        Inputs.Fd = flx_slr / (mu_not * np.pi)
+        Inputs.Fs = np.zeros(nbr_wvl)
 
 
     ###################################################
@@ -226,10 +226,10 @@ def snicar_feeder(inputs):
         FL_r_dif_a = Fresnel_Diffuse_File['R_dif_fa_ice_Pic16'].values
         FL_r_dif_b = Fresnel_Diffuse_File['R_dif_fb_ice_Pic16'].values
 
-    inputs.refidx_re=refidx_re
-    inputs.refidx_im=refidx_im
-    inputs.FL_r_dif_a=FL_r_dif_a
-    inputs.FL_r_dif_b=FL_r_dif_b
+    Inputs.refidx_re=refidx_re
+    Inputs.refidx_im=refidx_im
+    Inputs.FL_r_dif_a=FL_r_dif_a
+    Inputs.FL_r_dif_b=FL_r_dif_b
 
     # calculations of ice OPs in each layer
     for i in np.arange(0,nbr_lyr,1):
@@ -558,12 +558,12 @@ def snicar_feeder(inputs):
         else:
             MACaer[aer,:] = impurity_properties['ext_cff_mss'].values
 
-        if files[aer] == inputs.FILE_glacier_algae:
+        if files[aer] == Inputs.FILE_glacier_algae:
             # if GA_units == 1, GA concentration provided in cells/mL
             # MSSaer should be in cells/kg
             # thus MSSaer is divided by kg/mL ice = 917*10**(-6)
             # with density of ice 917 kg m3
-            if inputs.GA_units == 1:
+            if Inputs.GA_units == 1:
 
                 MSSaer[0:nbr_lyr,aer] = np.array(\
                     mass_concentrations[aer])/(917*10**(-6))
@@ -572,12 +572,12 @@ def snicar_feeder(inputs):
                 MSSaer[0:nbr_lyr,aer] = np.array(\
                     mass_concentrations[aer])*1e-9
 
-        elif files[aer] == inputs.FILE_snw_alg:
+        elif files[aer] == Inputs.FILE_snw_alg:
             # if SA_units == 1, SA concentration provided in cells/mL
             # but MSSaer should be in cells/kg
             # thus MSSaer is divided by kg/mL ice = 917*10**(-6)
             # with density of ice 917 kg m3
-            if inputs.SA_units == 1:
+            if Inputs.SA_units == 1:
                 MSSaer[0:nbr_lyr,aer] = np.array(\
                     mass_concentrations[aer])/(917*10**(-6))
 
@@ -591,11 +591,11 @@ def snicar_feeder(inputs):
                 mass_concentrations[aer])*1e-9
 
         # if Cfactor provided, then MSSaer multiplied by Cfactor
-        if (files[aer] == inputs.FILE_glacier_algae and\
+        if (files[aer] == Inputs.FILE_glacier_algae and\
              isinstance(Cfactor_GA,(int, float)) and (Cfactor_GA > 0)):
             MSSaer[0:nbr_lyr,aer] = Cfactor_GA*MSSaer[0:nbr_lyr,aer]
 
-        if (files[aer] == inputs.FILE_snw_alg and\
+        if (files[aer] == Inputs.FILE_snw_alg and\
              isinstance(Cfactor_SA,(int, float)) and (Cfactor_SA > 0)):
             MSSaer[0:nbr_lyr,aer] = Cfactor_SA*MSSaer[0:nbr_lyr,aer]
 
@@ -654,11 +654,11 @@ def snicar_feeder(inputs):
             #if aer == algae and L_aer is in cells m-2, should be converted
             # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg
 
-            if (files[j] == inputs.FILE_glacier_algae and inputs.GA_units==1):
+            if (files[j] == Inputs.FILE_glacier_algae and Inputs.GA_units==1):
 
                 L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
 
-            elif (files[j] == inputs.FILE_snw_alg and inputs.SA_units==1):
+            elif (files[j] == Inputs.FILE_snw_alg and Inputs.SA_units==1):
 
                 L_snw[i] =  L_snw[i] - L_aer[i,j]*10**(-12)
 
@@ -674,10 +674,10 @@ def snicar_feeder(inputs):
         g[i, :] = (1 / (tau[i, :] * (SSA[i, :]))) * (g_sum[i,:] \
                   + (g_snw[i, :] * SSA_snw[i, :] * tau_snw[i, :]))
 
-    inputs.tau=tau
-    inputs.SSA=SSA
-    inputs.g=g
-    inputs.L_snw=L_snw
+    Inputs.tau=tau
+    Inputs.SSA=SSA
+    Inputs.g=g
+    Inputs.L_snw=L_snw
 
     # just in case any unrealistic values arise (none detected so far)
     SSA[SSA<=0]=0.00000001
@@ -685,31 +685,31 @@ def snicar_feeder(inputs):
     g[g<=0]=0.00001
     g[g>=1]=0.99999
 
-    inputs.tau=tau
-    inputs.SSA=SSA
-    inputs.g=g
-    inputs.L_snw=L_snw
+    Inputs.tau=tau
+    Inputs.SSA=SSA
+    Inputs.g=g
+    Inputs.L_snw=L_snw
 
 
     # CALL RT SOLVER (TOON  = TOON ET AL, TRIDIAGONAL MATRIX METHOD;
     # ADD_DOUBLE = ADDING-DOUBLING METHOD)
 
-    outputs = c.namedtuple('outputs',['wvl', 'albedo', 'BBA', 'BBAVIS',\
+    Outputs = c.namedtuple('Outputs',['wvl', 'albedo', 'BBA', 'BBAVIS',\
                                       'BBANIR', 'abs_slr', 'heat_rt',\
                                       'abs_ice'])
 
 
     if TOON:
 
-        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS,\
-        outputs.BBANIR, outputs.abs_slr,\
-        outputs.heat_rt = toon.toon_solver(inputs)
+        Outputs.wvl, Outputs.albedo, Outputs.BBA, Outputs.BBAVIS,\
+        Outputs.BBANIR, Outputs.abs_slr,\
+        Outputs.heat_rt = toon.toon_solver(Inputs)
 
 
     if ADD_DOUBLE:
 
-        outputs.wvl, outputs.albedo, outputs.BBA, outputs.BBAVIS,\
-        outputs.BBANIR, outputs.abs_slr,\
-        outputs.heat_rt = adding_doubling.adding_doubling_solver(inputs)
+        Outputs.wvl, Outputs.albedo, Outputs.BBA, Outputs.BBAVIS,\
+        Outputs.BBANIR, Outputs.abs_slr,\
+        Outputs.heat_rt = adding_doubling.adding_doubling_solver(Inputs)
 
-    return outputs
+    return Outputs

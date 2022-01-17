@@ -30,10 +30,10 @@ import seaborn as sns
 from snicar_feeder import snicar_feeder
 
 ######################################
-## 1) Initialize inputs of the model
+## 1) Initialize Inputs of the model
 ######################################
 
-inputs = c.namedtuple('inputs', ['dir_base', 'verbosity',\
+Inputs = c.namedtuple('Inputs', ['dir_base', 'verbosity',\
     'rf_ice', 'incoming_i', 'DIRECT', 'layer_type',\
     'cdom_layer', 'APRX_TYP', 'DELTA', 'solzen', \
     'TOON', 'ADD_DOUBLE', 'R_sfc', 'dz', 'rho_layers',\
@@ -71,32 +71,32 @@ inputs = c.namedtuple('inputs', ['dir_base', 'verbosity',\
 ##############################
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-inputs.dir_base = 'dirbase'
-savepath = inputs.dir_base # base path for saving figures
-write_config_to_textfile = False # toggle to save config to file
-inputs.verbosity = 0 # 1 to print real-time updates
+Inputs.dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
+savepath = Inputs.dir_base # base path for saving figures
+WRITE_CONFIG_TO_TEXTFILE = False # toggle to save config to file
+Inputs.verbosity = 0 # 1 to print real-time updates
 
 
 ################################
 ## 3) Choose plot/print options
 ################################
 
-show_figs = True # toggle to display spectral albedo figure
-save_figs = False # toggle to save spectral albedo figure to file
-print_BBA = True # toggle to print broadband albedo to terminal
-print_band_ratios = True # toggle to print various band ratios to terminal
-smooth = False # apply optional smoothing function (Savitzky-Golay filter)
-window_size = 9 # if applying smoothing filter, define window size
-poly_order = 3 # if applying smoothing filter, define order of polynomial
+SHOW_FIGS = True # toggle to display spectral albedo figure
+SAVE_FIGS = False # toggle to save spectral albedo figure to file
+PRINT_BBA = True # toggle to print broadband albedo to terminal
+PRINT_BAND_RATIOS = True # toggle to print various band ratios to terminal
+SMOOTH = False # apply optional smoothing function (Savitzky-Golay filter)
+WINDOW_SIZE = 9 # if applying smoothing filter, define window size
+POLY_ORDER = 3 # if applying smooting filter, define order of polynomial
 
 #######################################
 ## 4) RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-inputs.DIRECT = 0      # 1 = Direct-beam, 0 = Diffuse flux
-inputs.APRX_TYP = 1    # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
-inputs.DELTA = 1       # 1 = Apply Delta approximation, 0 = No delta
-inputs.solzen = 40     # solar zenith angle between 0 (nadir) and 89 (horizon)
+Inputs.DIRECT = 0      # 1 = Direct-beam, 0 = Diffuse flux
+Inputs.APRX_TYP = 1    # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
+Inputs.DELTA = 1       # 1 = Apply Delta approximation, 0 = No delta
+Inputs.solzen = 40     # solar zenith angle between 0 (nadir) and 89 (horizon)
 
 # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
 #    0 = mid-latitude winter
@@ -108,7 +108,7 @@ inputs.solzen = 40     # solar zenith angle between 0 (nadir) and 89 (horizon)
 #    6 = Top-of-atmosphere
 # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
-inputs.incoming_i = 4
+Inputs.incoming_i = 4
 
 ###############################################################
 ## 4) SET UP ICE/SNOW LAYERS
@@ -116,22 +116,22 @@ inputs.incoming_i = 4
 # For granular layers + Fresnel layers, choose ADD_DOUBLE
 ###############################################################
 
-inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
-inputs.ADD_DOUBLE = True # toggle addintg-doubling solver
+Inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
+Inputs.ADD_DOUBLE = True # toggle addintg-doubling solver
 
 
-inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
-inputs.nbr_lyr = len(inputs.dz)  # number of snow layers
-inputs.layer_type = [1, 0] # Fresnel layers (set all to 0 if TOON = True)
-inputs.cdom_layer = [0, 0] # Only for layer type == 1
-inputs.rho_layers = [916, 916] # density of each layer (unit = kg m-3)
-inputs.nbr_wvl=480
+Inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
+Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
+Inputs.layer_type = [1, 0] # Fresnel layers (set all to 0 if TOON = True)
+Inputs.cdom_layer = [0, 0] # Only for layer type == 1
+Inputs.rho_layers = [916, 916] # density of each layer (unit = kg m-3)
+Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
-#inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)])
-inputs.R_sfc = np.genfromtxt(inputs.dir_base+
-               'Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv',
-               delimiter = 'csv') # import underlying ice from file
+#Inputs.R_sfc = np.array([0.1 for i in range(Inputs.nbr_wvl)])
+Inputs.R_sfc = np.genfromtxt(Inputs.dir_base+
+                             'Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv',
+                             delimiter='csv')
 
 ##############################################################################
 ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -141,7 +141,7 @@ inputs.R_sfc = np.genfromtxt(inputs.dir_base+
 
 # define source of ice refractive index data.
 # 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
-inputs.rf_ice = 2
+Inputs.rf_ice = 2
 
 # Ice grain shape can be
 # 0 = sphere,
@@ -150,104 +150,104 @@ inputs.rf_ice = 2
 # 3 = koch snowflake,
 # 4 = hexagonal prisms
 
-inputs.grain_shp =[4,4] # grain shape (He et al. 2016, 2017)
-inputs.grain_rds = [10000,10000] # effective grain or bubble radius
-inputs.rwater = [0, 0] # radius of optional liquid water coating
+Inputs.grain_shp = [4, 4] # grain shape (He et al. 2016, 2017)
+Inputs.grain_rds = [10000, 10000] # effective grain or bubble radius
+Inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
-inputs.side_length = [10000,10000]
-inputs.depth = [10000,10000]
+Inputs.side_length = [10000, 10000]
+Inputs.depth = [10000, 10000]
 
 # Shape factor = ratio of nonspherical grain effective
 # radii to that of equal-volume sphere
 # only activated when sno_shp > 1 (i.e. nonspherical)
 # 0=use recommended default value (He et al. 2017)
 # use user-specified value (between 0 and 1)
-inputs.shp_fctr = [0,0]
+Inputs.shp_fctr = [0, 0]
 
 # Aspect ratio (ratio of width to length)
-inputs.grain_ar = [0,0]
+Inputs.grain_ar = [0, 0]
 
 #######################################
 ## 5) SET LAP CHARACTERISTICS
 #######################################
 
 # Define total number of different LAPs/aerosols in model
-inputs.nbr_aer = 30
+Inputs.nbr_aer = 30
 
 # define units for algae absorption cross section input file
 # 0 = m2/kg for MAC, ppb for mss_cnc (this is default)
 # 1 = m2/cell for MAC, cell/mL for mss_cnc
-inputs.GA_units = 0 # glacier algae
-inputs.SA_units = 1 # snow algae
+Inputs.GA_units = 0 # glacier algae
+Inputs.SA_units = 1 # snow algae
 
 # determine C_factor (can be None or a number)
 # this is the concentrating factor that accounts for
 # resolution difference in field samples and model layers
-inputs.Cfactor_GA = 30
-inputs.Cfactor_SA = 0
+Inputs.Cfactor_GA = 30
+Inputs.Cfactor_SA = 0
 
 ## Set names of files containing the optical properties of these LAPs:
 # uncoated BC (Bohren and Huffman, 1983)
-inputs.FILE_soot1 ='mie_sot_ChC90_dns_1317.nc'
+Inputs.FILE_soot1 = 'mie_sot_ChC90_dns_1317.nc'
 # coated BC (Bohren and Huffman, 1983)
-inputs.FILE_soot2 = 'miecot_slfsot_ChC90_dns_1317.nc'
+Inputs.FILE_soot2 = 'miecot_slfsot_ChC90_dns_1317.nc'
 # uncoated brown carbon (Kirchstetter et al. (2004).)
-inputs.FILE_brwnC1 = 'brC_Kirch_BCsd.nc'
+Inputs.FILE_brwnC1 = 'brC_Kirch_BCsd.nc'
 # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-inputs.FILE_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc'
+Inputs.FILE_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc'
 # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
-inputs.FILE_dust1 = 'dust_balkanski_central_size1.nc'
+Inputs.FILE_dust1 = 'dust_balkanski_central_size1.nc'
 # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
-inputs.FILE_dust2 = 'dust_balkanski_central_size2.nc'
+Inputs.FILE_dust2 = 'dust_balkanski_central_size2.nc'
 # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
-inputs.FILE_dust3 = 'dust_balkanski_central_size3.nc'
+Inputs.FILE_dust3 = 'dust_balkanski_central_size3.nc'
 # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-inputs.FILE_dust4 = 'dust_balkanski_central_size4.nc'
+Inputs.FILE_dust4 = 'dust_balkanski_central_size4.nc'
 # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
-inputs.FILE_dust5 = 'dust_balkanski_central_size5.nc'
+Inputs.FILE_dust5 = 'dust_balkanski_central_size5.nc'
 # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
-inputs.FILE_ash1 = 'volc_ash_eyja_central_size1.nc'
+Inputs.FILE_ash1 = 'volc_ash_eyja_central_size1.nc'
 # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
-inputs.FILE_ash2 = 'volc_ash_eyja_central_size2.nc'
+Inputs.FILE_ash2 = 'volc_ash_eyja_central_size2.nc'
 # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
-inputs.FILE_ash3 = 'volc_ash_eyja_central_size3.nc'
+Inputs.FILE_ash3 = 'volc_ash_eyja_central_size3.nc'
 # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
-inputs.FILE_ash4 = 'volc_ash_eyja_central_size4.nc'
+Inputs.FILE_ash4 = 'volc_ash_eyja_central_size4.nc'
 # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
-inputs.FILE_ash5 = 'volc_ash_eyja_central_size5.nc'
+Inputs.FILE_ash5 = 'volc_ash_eyja_central_size5.nc'
 # ashes from Mount Saint Helen's
-inputs.FILE_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc'
+Inputs.FILE_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc'
 # Colorado dust 1 (Skiles et al 2017)
-inputs.FILE_Skiles_dust1 = 'dust_skiles_size1.nc'
+Inputs.FILE_Skiles_dust1 = 'dust_skiles_size1.nc'
 # Colorado dust 2 (Skiles et al 2017)
-inputs.FILE_Skiles_dust2 = 'dust_skiles_size2.nc'
+Inputs.FILE_Skiles_dust2 = 'dust_skiles_size2.nc'
 # Colorado dust 3 (Skiles et al 2017)
-inputs.FILE_Skiles_dust3 = 'dust_skiles_size3.nc'
+Inputs.FILE_Skiles_dust3 = 'dust_skiles_size3.nc'
 # Colorado dust 4 (Skiles et al 2017)
-inputs.FILE_Skiles_dust4 = 'dust_skiles_size4.nc'
+Inputs.FILE_Skiles_dust4 = 'dust_skiles_size4.nc'
 # Colorado dust 5 (Skiles et al 2017)
-inputs.FILE_Skiles_dust5 = 'dust_skiles_size5.nc'
+Inputs.FILE_Skiles_dust5 = 'dust_skiles_size5.nc'
 # Greenland dust 1 (Polashenski et al 2015)
-inputs.FILE_GreenlandCentral1 = 'dust_greenland_central_size1.nc'
+Inputs.FILE_GreenlandCentral1 = 'dust_greenland_central_size1.nc'
 # Greenland dust 2 (Polashenski et al 2015)
-inputs.FILE_GreenlandCentral2 = 'dust_greenland_central_size2.nc'
+Inputs.FILE_GreenlandCentral2 = 'dust_greenland_central_size2.nc'
 # Greenland dust 3 (Polashenski et al 2015)
-inputs.FILE_GreenlandCentral3 = 'dust_greenland_central_size3.nc'
+Inputs.FILE_GreenlandCentral3 = 'dust_greenland_central_size3.nc'
 # Greenland dust 4 (Polashenski et al 2015)
-inputs.FILE_GreenlandCentral4 = 'dust_greenland_central_size4.nc'
+Inputs.FILE_GreenlandCentral4 = 'dust_greenland_central_size4.nc'
 # Greenlanddust 5 (Polashenski et al 2015)
-inputs.FILE_GreenlandCentral5  = 'dust_greenland_central_size5.nc'
+Inputs.FILE_GreenlandCentral5 = 'dust_greenland_central_size5.nc'
 # Dark Zone dust 1 (Cook et al. 2019 "LOW") NOT FUNCTIONAL (COMING SOON)
-inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc'
+Inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc'
 # Dark Zone dust 2 (Cook et al. 2019 "mean") NOT FUNCTIONAL (COMING SOON)
-inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc'
+Inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc'
 # Dark Zone dust 3 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL (COMING SOON)
-inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc'
+Inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc'
 # Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-inputs.FILE_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
+Inputs.FILE_snw_alg = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
 # Glacier Algae (Cook et al. 2020)
-inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc'
+Inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc'
 
 # Indicate mass mixing ratios scenarios for each impurity
 # default units are ng(species)/g(ice), or ppb
@@ -255,36 +255,36 @@ inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc'
 # To use cells/mL for algae, set GA_units == 1.
 # The script will loop over the different mixing scenarios
 
-inputs.mss_cnc_soot1 = [0]*len(inputs.dz)
-inputs.mss_cnc_soot2 = [0]*len(inputs.dz)
-inputs.mss_cnc_brwnC1 = [0]*len(inputs.dz)
-inputs.mss_cnc_brwnC2 = [0]*len(inputs.dz)
-inputs.mss_cnc_dust1 = [0]*len(inputs.dz)
-inputs.mss_cnc_dust2 = [0]*len(inputs.dz)
-inputs.mss_cnc_dust3 = [0]*len(inputs.dz)
-inputs.mss_cnc_dust4 = [0]*len(inputs.dz)
-inputs.mss_cnc_dust5 = [0]*len(inputs.dz)
-inputs.mss_cnc_ash1 = [0]*len(inputs.dz)
-inputs.mss_cnc_ash2 = [0]*len(inputs.dz)
-inputs.mss_cnc_ash3 = [0]*len(inputs.dz)
-inputs.mss_cnc_ash4 = [0]*len(inputs.dz)
-inputs.mss_cnc_ash5 = [0]*len(inputs.dz)
-inputs.mss_cnc_ash_st_helens = [0]*len(inputs.dz)
-inputs.mss_cnc_Skiles_dust1 = [0]*len(inputs.dz)
-inputs.mss_cnc_Skiles_dust2 = [0]*len(inputs.dz)
-inputs.mss_cnc_Skiles_dust3 = [0]*len(inputs.dz)
-inputs.mss_cnc_Skiles_dust4 = [0]*len(inputs.dz)
-inputs.mss_cnc_Skiles_dust5 = [0]*len(inputs.dz)
-inputs.mss_cnc_GreenlandCentral1 = [0]*len(inputs.dz)
-inputs.mss_cnc_GreenlandCentral2 = [0]*len(inputs.dz)
-inputs.mss_cnc_GreenlandCentral3 = [0]*len(inputs.dz)
-inputs.mss_cnc_GreenlandCentral4 = [0]*len(inputs.dz)
-inputs.mss_cnc_GreenlandCentral5 = [0]*len(inputs.dz)
-inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(inputs.dz)
-inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(inputs.dz)
-inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(inputs.dz)
-inputs.mss_cnc_snw_alg = [0,0]
-inputs.mss_cnc_glacier_algae = [0,0]
+Inputs.mss_cnc_soot1 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_soot2 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_brwnC1 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_brwnC2 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_dust1 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_dust2 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_dust3 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_dust4 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_dust5 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_ash1 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_ash2 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_ash3 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_ash4 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_ash5 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_ash_st_helens = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust1 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust2 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust3 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust4 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust5 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_GreenlandCentral1 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_GreenlandCentral2 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_GreenlandCentral3 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_GreenlandCentral4 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_GreenlandCentral5 = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Cook_Greenland_dust_L = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Cook_Greenland_dust_C = [0]*len(Inputs.dz)
+Inputs.mss_cnc_Cook_Greenland_dust_H = [0]*len(Inputs.dz)
+Inputs.mss_cnc_snw_alg = [0, 0]
+Inputs.mss_cnc_glacier_algae = [0, 0]
 
 
 ##########################################################################
@@ -296,37 +296,37 @@ inputs.mss_cnc_glacier_algae = [0,0]
 ## Error catching: invalid combinations of input variables
 ###########################################################
 
-if (np.sum(inputs.mss_cnc_Cook_Greenland_dust_L) > 0) or\
-(np.sum(inputs.mss_cnc_Cook_Greenland_dust_C) > 0) or\
-(np.sum(inputs.mss_cnc_Cook_Greenland_dust_H) > 0):
+if (np.sum(Inputs.mss_cnc_Cook_Greenland_dust_L) > 0) or\
+(np.sum(Inputs.mss_cnc_Cook_Greenland_dust_C) > 0) or\
+(np.sum(Inputs.mss_cnc_Cook_Greenland_dust_H) > 0):
     raise ValueError("The Greenland Dusts are not available in this release.\
                      They will be included in the next version.")
 
-if inputs.GA_units ==1 or inputs.SA_units == 1: # pylint: disable=W0143
+if Inputs.GA_units == 1 or Inputs.SA_units == 1: # pylint: disable=W0143
     print("\n****** WARNING ******")
     print("you are expressing at least one of your algal\
     concentrations in cells/mL")
     print(" *** This requires your MAC file to be in units of m2/cell***\n\
         our default files are expressed in ppb!")
 
-if inputs.TOON and inputs.ADD_DOUBLE: # pylint: disable=W0143
+if Inputs.TOON and Inputs.ADD_DOUBLE: # pylint: disable=W0143
     raise ValueError("ERROR: BOTH SOLVERS SELECTED:\
         PLEASE CHOOSE EITHER TOON OR ADD_DOUBLE")
 
-if inputs.TOON and inputs.solzen < 40: # pylint: disable=W0143
+if Inputs.TOON and Inputs.solzen < 40: # pylint: disable=W0143
     raise ValueError("INVALID SOLZEN: outside valid range for Toon solver")
 
-if np.sum(inputs.layer_type) < 1 and inputs.ADD_DOUBLE:# pylint: disable=W0143
+if np.sum(Inputs.layer_type) < 1 and Inputs.ADD_DOUBLE:# pylint: disable=W0143
     # just warn user but let program continue - in some cases
     # AD method preferable (stable over complete range of SZA)
     print("\n****** WARNING ******\n")
     print("No solid ice layers - Toon solver is faster")
     print("Toggle TOON=True and ADD_DOUBLE=False to use it.\n")
 
-if np.sum(inputs.layer_type) > 0 and inputs.TOON:
+if np.sum(Inputs.layer_type) > 0 and Inputs.TOON:
     raise ValueError("There are ice layers - use the adding-doubling solver")
 
-if np.sum(inputs.mss_cnc_snw_alg) != 0: # pylint: disable=W0143
+if np.sum(Inputs.mss_cnc_snw_alg) != 0: # pylint: disable=W0143
     # remind user that snow algae optical properties h
     # have not yet been empirically validated
     print("\n****** WARNING ******")
@@ -334,8 +334,8 @@ if np.sum(inputs.mss_cnc_snw_alg) != 0: # pylint: disable=W0143
     print("They were constructed from literature values")
     print("They have not yet been validated empirically.\n\n")
 
-if inputs.solzen>89: # pylint: disable=W0143
-    inputs.solzen=89
+if Inputs.solzen > 89: # pylint: disable=W0143
+    Inputs.solzen = 89
     print("Surface irradiance profiles exist for a solar\
         zenith angle < 90 degrees. Solzen set to 89.")
 
@@ -344,38 +344,38 @@ if inputs.solzen>89: # pylint: disable=W0143
 # CONFIG  AND CALL SNICAR
 #########################################
 
-if write_config_to_textfile:
+if WRITE_CONFIG_TO_TEXTFILE:
     omitted_fields = ['tau', 'g', 'SSA', 'mu_not', 'nbr_wvl',\
         'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr']
 
     with open('./model_config.txt', 'w') as f:
-        for i in inputs._fields:
+        for i in Inputs._fields:
             if i not in omitted_fields:
                 f.write(i)
                 f.write(':  ')
-                f.write(str(getattr(inputs,str(i))))
+                f.write(str(getattr(Inputs, str(i))))
                 f.write('\n')
 
 
-outputs = snicar_feeder(inputs)
+Outputs = snicar_feeder(Inputs)
 
 
 #########################
 ## PLOTTING AND PRINTING
 #########################
-albedo = outputs.albedo
-BBA = outputs.BBA
-wvl = outputs.wvl
-SSA = 6 * (np.array([917]*len(inputs.dz)) - np.array(inputs.rho_layers))\
-    / 917 / (np.array(inputs.rho_layers) * np.array(inputs.grain_rds)\
+albedo = Outputs.albedo
+BBA = Outputs.BBA
+wvl = Outputs.wvl
+SSA = 6 * (np.array([917]*len(Inputs.dz)) - np.array(Inputs.rho_layers))\
+    / 917 / (np.array(Inputs.rho_layers) * np.array(Inputs.grain_rds)\
     * 2 * 10**(-6))
 
-if smooth:
+if SMOOTH:
     from scipy.signal import savgol_filter
-    yhat = savgol_filter(albedo, window_size, poly_order)
+    yhat = savgol_filter(albedo, WINDOW_SIZE, POLY_ORDER)
     albedo = yhat
 
-if print_band_ratios:
+if PRINT_BAND_RATIOS:
     I2DBA = albedo[51]/albedo[46]
     I3DBA = (albedo[46] - albedo[50]) / albedo[55]
     NDCI = ((albedo[50]-albedo[48])-(albedo[55]-albedo[48]))*\
@@ -384,18 +384,18 @@ if print_band_ratios:
     II = np.log(albedo[36])/np.log(albedo[66])
 
     print("\nINDEX VALUES")
-    print("2DBA Index: ",I2DBA)
+    print("2DBA Index: ", I2DBA)
     print("3DBA index: ", I3DBA)
     print("NDCI index: ", NDCI)
     print("MCI index: ", MCI)
     print("Impurity Index: ", II)
 
-if print_BBA:
+if PRINT_BBA:
     print('\nBROADBAND ALBEDO = ', BBA)
 
 plt.style.use('seaborn')
 sns.set_style('white')
-rc = {'figure.figsize':(8,6),
+rc = {'figure.figsize':(8, 6),
       'axes.facecolor':'white',
       'axes.grid' : False,
       'grid.color': '.8',
@@ -408,13 +408,13 @@ rc = {'figure.figsize':(8,6),
       'xtick.bottom':True,
       'ytick.left':True}
 plt.rcParams.update(rc)
-plt.plot(wvl, albedo),plt.ylabel('Albedo', fontsize=18),\
-plt.xlabel('Wavelength (µm)', fontsize=18),plt.xlim(0.3,2.5), plt.ylim(0,1),\
+plt.plot(wvl, albedo), plt.ylabel('Albedo', fontsize=18),\
+plt.xlabel('Wavelength (µm)', fontsize=18), plt.xlim(0.3, 2.5), plt.ylim(0, 1),\
 plt.xticks(fontsize=15), plt.yticks(fontsize=15),\
-plt.axvline(x = 0.68,color='g',linestyle='dashed')
+plt.axvline(x=0.68, color='g', linestyle='dashed')
 
-if show_figs:
+if SHOW_FIGS:
     plt.show()
 
-if save_figs:
+if SAVE_FIGS:
     plt.savefig(str(savepath+"spectral_albedo.png"))

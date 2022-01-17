@@ -2,7 +2,7 @@ from logging import critical
 import matplotlib.pyplot as plt
 
 
-def adding_doubling_solver(inputs):
+def adding_doubling_solver(Inputs):
     
 
     """
@@ -19,24 +19,24 @@ def adding_doubling_solver(inputs):
     import numpy as np
     
     #load variables from input table
-    tau=inputs.tau
-    SSA=inputs.SSA
-    g=inputs.g
-    nbr_wvl=inputs.nbr_wvl
-    wvl=inputs.wvl
-    nbr_lyr=inputs.nbr_lyr
-    layer_type=inputs.layer_type
-    R_sfc=inputs.R_sfc
-    Fs=inputs.Fs
-    Fd=inputs.Fd
-    mu_not=inputs.mu_not
-    L_snw=inputs.L_snw
-    flx_slr=inputs.flx_slr
-    verbosity = inputs.verbosity
-    refidx_re = inputs.refidx_re
-    refidx_im = inputs.refidx_im
-    FL_r_dif_a = inputs.FL_r_dif_a
-    FL_r_dif_b = inputs.FL_r_dif_b
+    tau=Inputs.tau
+    SSA=Inputs.SSA
+    g=Inputs.g
+    nbr_wvl=Inputs.nbr_wvl
+    wvl=Inputs.wvl
+    nbr_lyr=Inputs.nbr_lyr
+    layer_type=Inputs.layer_type
+    R_sfc=Inputs.R_sfc
+    Fs=Inputs.Fs
+    Fd=Inputs.Fd
+    mu_not=Inputs.mu_not
+    L_snw=Inputs.L_snw
+    flx_slr=Inputs.flx_slr
+    verbosity = Inputs.verbosity
+    refidx_re = Inputs.refidx_re
+    refidx_im = Inputs.refidx_im
+    FL_r_dif_a = Inputs.FL_r_dif_a
+    FL_r_dif_b = Inputs.FL_r_dif_b
 
 
     #######################################
@@ -239,7 +239,7 @@ def adding_doubling_solver(inputs):
                     #! the plane containing incident, reflected and refracted rays.
                     
                     #! Eq. 22  Briegleb & Light 2007
-                    # inputs to equation 21 (i.e. Fresnel formulae for R and T)
+                    # Inputs to equation 21 (i.e. Fresnel formulae for R and T)
                     R1 = (mu0[wl]-nr[wl]*mu0n[wl]) / (mu0[wl] + nr[wl]*mu0n[wl])    #reflection amplitude factor for perpendicular polarization
                     R2 = (nr[wl]*mu0[wl] - mu0n[wl]) / (nr[wl]*mu0[wl] + mu0n[wl])    #reflection amplitude factor for parallel polarization
                     T1 = 2 * mu0[wl] / (mu0[wl] + nr[wl]*mu0n[wl])            #transmission amplitude factor for perpendicular polarization

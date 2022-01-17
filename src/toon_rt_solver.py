@@ -1,20 +1,20 @@
-def toon_solver(inputs):
+def toon_solver(Inputs):
     
     #load variables from input table
-    tau=inputs.tau
-    SSA=inputs.SSA
-    g=inputs.g
-    nbr_wvl=inputs.nbr_wvl
-    wvl=inputs.wvl
-    nbr_lyr=inputs.nbr_lyr
-    R_sfc=inputs.R_sfc
-    Fs=inputs.Fs
-    Fd=inputs.Fd
-    mu_not=inputs.mu_not
-    L_snw=inputs.L_snw
-    flx_slr=inputs.flx_slr
-    DELTA=inputs.DELTA
-    APRX_TYP=inputs.APRX_TYP
+    tau=Inputs.tau
+    SSA=Inputs.SSA
+    g=Inputs.g
+    nbr_wvl=Inputs.nbr_wvl
+    wvl=Inputs.wvl
+    nbr_lyr=Inputs.nbr_lyr
+    R_sfc=Inputs.R_sfc
+    Fs=Inputs.Fs
+    Fd=Inputs.Fd
+    mu_not=Inputs.mu_not
+    L_snw=Inputs.L_snw
+    flx_slr=Inputs.flx_slr
+    DELTA=Inputs.DELTA
+    APRX_TYP=Inputs.APRX_TYP
 
     import numpy as np
 
