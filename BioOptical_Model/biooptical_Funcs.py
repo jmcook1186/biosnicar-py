@@ -18,56 +18,81 @@ from plotnine import ggplot, aes, geom_line
 plt.style.use('seaborn')
 
 
-def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw, 
-                           cell_volume, wvl, packaging_correction, 
+def bioptical_calculations(ACS_calculated, ACS_file, ACS_loaded_invivo,
+                           ACS_loaded_reconstructed, biovolume, biomass, 
+                           cellular, density_wet, density_dry,
+                           dir_base, cell_vol, wvl, 
+                           packaging_correction_SA,
+                           packaging_correction_GA, 
                            pigment_dir, pigments_data, n_algae, k_water,
                            smooth, window_size, poly_order, smoothStart, 
                            smoothStop, plot_optical_props, 
                            plot_pigment_ACSs, savefiles, savefilename,
                            saveplots, savepath):
     
-    ##################
+    #################
     ## Initialization
-    ################## 
+    ################# 
+
     data = pd.DataFrame() # storing n,k,ACS
-    abs_cff_pigments = pd.DataFrame(index = wvl*1000) # storing pigment MACs
+    abs_cff_pigments = pd.DataFrame(index = wvl * 1000) # storing pigment MACs
     wvl = wvl # µm
+    xw = 0.59 * density_wet / 1000 # conversion mass to volume water fraction
     
     ##################
     ## ACS calculation
-    ##################      
-    # open mass absorption coefficients (m2/mg) for each algal pigment
-    # from a dictionary ('pigments_data')
-    
+    ##################     
+
     if ACS_calculated: 
+    # open mass absorption coefficients (m2/mg) for each algal pigment
+    # from a dictionary.key is pigment name, value is abs coeff in m2/mg
         abs_coeff = 0 
-        for key,value in pigments_data.items(): # key is pigment name, value is abs coeff in m2/mg
-            abs_pigm = (np.array(pd.read_csv(key))).flatten() # store abs coeff in m2/mg 
-            abs_cff_pigments[str(key.split(pigment_dir,1)[1])[0:-4]] = abs_pigm # store pigment MACs for plotting
-            conc = value # store cellular pigment concentration in mg/µm3 or ng/cell
-            abs_coeff = abs_coeff + conc * abs_pigm # in m2/µm3 cells or 10e6 m2/cell
-        if biovolume:
-            ACS = abs_coeff/density # from m2/µm3 to m2/kg wet biomass, dividing by density in kg/µm3
-        else:
-            ACS = abs_coeff/1000000 # from 10e6 m2/cell to m2/cell
+        for key,value in pigments_data.items(): 
+            abs_pigm = (np.array(pd.read_csv(key))).flatten() # m2/mg 
+            abs_cff_pigments[str(key.split(pigment_dir,1)[1])[0:-4]]=abs_pigm 
+            conc = value # intracellular conc in ng/µm3, ng/cell, or ng/ng
+            abs_coeff = abs_coeff + conc*abs_pigm # 10e6 m2/µm3,m2/cell,m2/ng
         
-        # apply packaging correction
-        if packaging_correction:
-            print('not ready yet') #to upload file from Chevrollier et al 
+        if biovolume: 
+            ACS = abs_coeff/1000000 # correct the 10e6 
+        if cellular: 
+            ACS = abs_coeff/1000000 # correct the 10e6 
+        if biomass: 
+            ACS = abs_coeff/1000 # m2/mg for biomass option
     
-    else:
-        ACS = (np.array(pd.read_csv(ACS_file))).flatten()
-    
-    ##################
+    elif ACS_loaded_reconstructed:
+        ACS = (np.array(pd.read_csv(ACS_file))).flatten() #m2/mg, um3 or cell
+        if packaging_correction_SA: # !! only from 300nm, rest set to 0
+            pckg_SA = np.loadtxt(dir_base + 'Data/pigments/pckg_SA.csv')
+            abs_coeff = abs_coeff * pckg_SA[0:-1] 
+        if packaging_correction_GA: # !! only from 300nm, rest set to 0
+            pckg_GA = np.loadtxt(dir_base + 'Data/pigments/pckg_GA.csv')
+            abs_coeff = abs_coeff * pckg_GA[0:-1]
+            
+    elif ACS_loaded_invivo:
+        ACS = (np.array(pd.read_csv(ACS_file))).flatten() #m2/mg, um3 or cell
+        
+    ################
     ## k calculation
-    ##################
+    ################ 
     
-    if biovolume:
-        k = ACS * density * wvl / 4 / np.pi * 10**(12) # units: abs coeff (converted from m2/µm3 to µm2/µm3 so *10**12) * wvl (µm)
-        n=n_algae
-    else:         
-        k = k_water + ((wvl/(np.pi*4)) / cell_volume * ACS * 10**(12)) # units: ACS (converted from m2/cell to µm2/cell) / volume cell (µm3) * wvl (µm)
-        n=n_algae 
+    k_water_alg = k_water
+    k_water_alg[0:600] = 0 
+    
+    if cellular: # ACS in m2 / cell
+    # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
+        k = xw * k_water_alg + ACS * 10**(12) * wvl / (np.pi * 4) / cell_vol
+        n = n_algae 
+        
+    if biovolume: # ACS in m2 / µm3
+    # units: ACS (m2/µm3 to µm2/µm3) * wvl (µm)
+        k = xw * k_water_alg + ACS * 10**(12) * wvl / (np.pi * 4)  
+        n = n_algae
+        
+    if biomass: # ACS in m2 / dry mg
+    # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
+        k = xw * k_water + ACS * density_dry * wvl / (np.pi * 4)
+        n = n_algae
     
     ###############################
     ## ACS, k storage and rescaling
@@ -90,28 +115,35 @@ def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw,
     ################################
 
     
-    # apply optional smoothing filter with user defined window width and polynomial order
+    # apply optional smoothing filter with user defined window width 
+    # and polynomial order
     if smooth:
-        yhat = savgol_filter(ACS[smoothStart:smoothStop], window_size, poly_order) # window size 51, polynomial order 3
+        yhat = savgol_filter(ACS[smoothStart:smoothStop], window_size, 
+                             poly_order) # window size 51, polynomial order 3
         ACS[smoothStart:smoothStop] = yhat
     
     # optionally save files to savepath
     if savefiles: # optional save dataframe to csv files
-        data['k'].to_csv(str(savepath+'{}_k.csv'.format(savefilename)),header=None,index=False)
-        data['ACS'].to_csv(str(savepath+'{}_ACS.csv'.format(savefilename)),header=None,index=False)
-        data['n'].to_csv(str(savepath+'{}_n.csv'.format(savefilename)),header=None,index=False)
+        data['k'].to_csv(str(savepath+'{}_k.csv'.format(savefilename)),
+                         header=None,index=False)
+        data['ACS'].to_csv(str(savepath+'{}_ACS.csv'.format(savefilename)),
+                           header=None,index=False)
+        data['n'].to_csv(str(savepath+'{}_n.csv'.format(savefilename)),
+                         header=None,index=False)
 
     # optionally plot figures to interative window
     if plot_optical_props:
         plt.figure(figsize=(10,15))
         plt.subplot(2,1,1)
-        plt.plot(wvl[100:700]*1000,ACS[100:700])
+        plt.plot(wvl[100:600]*1000,ACS[100:600])
         plt.xticks(fontsize=24), plt.yticks(fontsize=24)
-        plt.xlabel('Wavelength (nm)',fontsize=24),plt.ylabel(str('ACS (m$2$ cell$^{-1}$ or m$^2$ µm$3$))'),fontsize=24)
+        plt.xlabel('Wavelength (nm)',fontsize=24),
+        plt.ylabel(str('ACS (m$2$ cell$^{-1}$, m$^2$ µm$3$ or m$^2$ ng$3$ ))'),
+                   fontsize=24)
         plt.tight_layout()
     
         plt.subplot(2,1,2)
-        plt.plot(wvl[100:700]*1000,k[100:700])
+        plt.plot(wvl[100:600]*1000,k[100:600])
         plt.xticks(fontsize=24), plt.yticks(fontsize=24)
         plt.xlabel('Wavelength (nm)',fontsize=24),plt.ylabel('k',fontsize=24)
         plt.tight_layout()
@@ -124,7 +156,8 @@ def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw,
             plt.show()
         
     if plot_pigment_ACSs:
-        ax=abs_cff_pigments.replace(0, np.nan).plot(use_index=True,xlim=(300, 800))
+        ax=abs_cff_pigments.replace(0, np.nan).plot(use_index=True,
+                                                    xlim=(300, 800))
         ax.set_xlabel("Wavelength (nm)")
         ax.set_ylabel("Mass absorption coefficient (m$^2$ mg$^{-1}$)")
         abs_cff_pigments.plot()
@@ -137,12 +170,15 @@ def bioptical_calculations(ACS_calculated, ACS_file, biovolume, density, xw,
             #plt.show()
     
 
-    return wvl, wvl_rescaled_BioSNICAR, k, k_rescaled_BioSNICAR, n, n_rescaled_BioSNICAR, ACS, ACS_rescaled_BioSNICAR, data, abs_cff_pigments
+    return wvl, wvl_rescaled_BioSNICAR, k, k_rescaled_BioSNICAR, n, \
+            n_rescaled_BioSNICAR, ACS, ACS_rescaled_BioSNICAR, data, \
+            abs_cff_pigments
 
 
 #%%
 
-def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, savefigs, figname, report_dims):
+def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, 
+                     savefigs, figname, report_dims):
     
     if GO:     
         # set up lists
@@ -155,8 +191,8 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
         # calculate cylinder dimensions
         diameter = 2 * r
         V = L * (np.pi * r ** 2)  # volume of cylinder in µm3
-        Reff = (V / ((
-                                 4 / 3) * np.pi)) ** 1 / 3  # effective radius (i.e. radius of sphere with equal volume to real cylinder)
+        Reff = (V / ((4 / 3) * np.pi)) ** 1 / 3  # effective radius 
+        # (i.e. radius of sphere with equal volume to real cylinder)
         Area_total = 2 * (np.pi * r ** 2) + (2 * np.pi * r) * (
             L)  # total surface area - 2 x ends plus circumference * length
         Area = Area_total / 4  # projected area
@@ -193,7 +229,8 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
             # raytracing g parameterization ar=1
             p_a_eq_1 = [0.780550, 0.00510997, -0.0878268, 0.111549, -0.282453]
         
-            # ---- g correction for AR != 1 (Also applied to AR=1 as plate) (Table 3)
+            # ---- g correction for AR != 1 (Also applied to AR=1 as plate) 
+            # (Table 3)
             nq1 = 3
             nq2 = 7
             q_ij = np.zeros(nq1 * nq2 * 2).reshape((nq1, nq2, 2))
@@ -238,11 +275,15 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
             # ------------ SINGLE SCATTERING ALBEDO ----------
         
             if Chi_abs > 0:
-                w_1 = 1. - a[0] * (1. - np.exp(-Chi_abs * a[1]))  # for AR=1 (Fig. 4, box 2)
+                # for AR=1 (Fig. 4, box 2)
+                w_1 = 1. - a[0] * (1. - np.exp(-Chi_abs * a[1]))  
                 l = np.zeros(nc1)
-                for i in range(nc2): l[:] += c_ij[:, i, col_pla] * np.log10(ar) ** i  # (Fig. 4, box 3)
-                D_w = l[0] * np.exp(-(np.log(Chi_abs) - l[2]) ** 2 / (2. * l[1] ** 2)) / (
-                            Chi_abs * l[1] * np.sqrt(2. * np.pi))  # (Fig. 4, box 3)
+                for i in range(nc2): 
+                    # (Fig. 4, box 3)
+                    l[:] += c_ij[:, i, col_pla] * np.log10(ar) ** i  
+                D_w = l[0] * np.exp(-(np.log(Chi_abs) - l[2]) ** 2 
+                      / (2. * l[1] ** 2)) / (Chi_abs * l[1] * 
+                      np.sqrt(2. * np.pi))  # (Fig. 4, box 3)
                 w = w_1 + D_w  # (Fig. 4, box 4)
             else:
                 w = 1.
@@ -250,24 +291,31 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
             # --------------- ASYMMETRY PARAMETER ------------
         
             # diffraction g
-            g_diffr = b_gdiffr[0] * np.exp(b_gdiffr[1] * np.log(Chi_scat)) + b_gdiffr[2]  # (Fig. 7, box 2)
+            g_diffr = b_gdiffr[0] * np.exp(b_gdiffr[1] * np.log(Chi_scat)) + \
+            b_gdiffr[2]  # (Fig. 7, box 2)
             g_diffr = max([g_diffr, 0.5])
         
             # raytracing g at 862 nm
             g_1 = 0.
-            for i in range(len(p_a_eq_1)): g_1 += p_a_eq_1[i] * delta ** i  # (Fig. 7, box 3)
+            # (Fig. 7, box 3)
+            for i in range(len(p_a_eq_1)): g_1 += p_a_eq_1[i] * delta ** i  
         
             p_delta = np.zeros(nq1)
-            for i in range(nq2): p_delta += q_ij[:, i, col_pla] * np.log10(ar) ** i  # (Fig. 7, box 4)
+            # (Fig. 7, box 4)
+            for i in range(nq2): 
+                p_delta += q_ij[:, i, col_pla] * np.log10(ar) ** i  
             Dg = 0.
-            for i in range(nq1): Dg += p_delta[i] * delta ** i  # (Fig. 7, box 4)
+            # (Fig. 7, box 4)
+            for i in range(nq1): Dg += p_delta[i] * delta ** i  
             g_rt = 2. * (g_1 + Dg) - 1.  # (Fig. 7, box 5)
         
-            # --------- refractive index correction of asymmetry parameter (Fig. 7, box 6)
+            # --------- ref idx correction of asym parameter (Fig. 7, box 6)
             epsilon = c_g[0, col_pla] + c_g[1, col_pla] * np.log10(ar)
             mr1 = 1.3038  # reference value @ 862 nm band
+            # abs function added according to corrigendum to original paper
             C_m = abs((mr1 - epsilon) / (mr1 + epsilon) * (mr + epsilon) / (
-                        mr - epsilon))  # abs function added according to corrigendum to the original paper
+                        mr - epsilon))  
+            
         
             # ---- correction for absorption (Fig. 7, box 7)
             if Chi_abs > 0:
@@ -282,7 +330,7 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
             # raytracing g at required wavelength
             g_rt_corr = g_rt * C_m * C_w  # (Fig. 7, box 9)
         
-            # ------ Calculate total asymmetry parameter and check g_tot <= 1 (Fig. 7, box 9)
+            # ------ Calc tot asym parameter + check g_tot <= 1 (Fig. 7, box 9)
             g_tot = 1. / (2. * w) * ((2. * w - 1.) * g_rt_corr + g_diffr)
             g_tot = min([g_tot, 1.])
         
@@ -304,30 +352,38 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
         if plots:
         
             plt.figure(1)
-            plt.plot(wvl, SSA_list, label='{}x{}'.format(r, L)), plt.xlim(0.3,1.4), plt.ylabel('SSA'), plt.xlabel(
-                'Wavelength (um)'), plt.grid(False), plt.legend(loc='best', ncol=2)
+            plt.plot(wvl, SSA_list, label='{}x{}'.format(r, L)), 
+            plt.xlim(0.3,1.4), plt.ylabel('SSA'), 
+            plt.xlabel('Wavelength (um)'), plt.grid(False), 
+            plt.legend(loc='best', ncol=2)
         
             if savefigs:
                 plt.savefig(str(savepath+'SSA_{}x{}.jpg'.format(r,L)))
         
             plt.figure(2)
-            plt.plot(wvl, Assy_list, label='{}x{}'.format(r, L)), plt.xlim(0.3,1.4), plt.ylabel('Assymetry Parameter'), plt.xlabel(
-                'Wavelength (um)'), plt.grid(False), plt.legend(loc='best', ncol=2)
+            plt.plot(wvl, Assy_list, label='{}x{}'.format(r, L)), 
+            plt.xlim(0.3,1.4), plt.ylabel('Assymetry Parameter'), 
+            plt.xlabel('Wavelength (um)'), plt.grid(False), 
+            plt.legend(loc='best', ncol=2)
             
             if savefigs:
-                plt.savefig(str(savepath+'AssymetryParam_{}x{}.jpg'.format(r,L)))
+                plt.savefig(str(savepath+'AssymetryParam_{}x{}.jpg'.
+                                format(r,L)))
         
         
             plt.figure(3)
-            plt.plot(wvl, absXS_list, label='{}x{}'.format(r, L)), plt.xlim(0.3,1.4), plt.ylabel(
-                'Absorption Cross Section'), plt.xlabel('Wavelength (um)'), plt.grid(False), plt.legend(loc='best', ncol=2)
+            plt.plot(wvl, absXS_list, label='{}x{}'.format(r, L)), 
+            plt.xlim(0.3,1.4), plt.ylabel('Absorption Cross Section'), 
+            plt.xlabel('Wavelength (um)'), plt.grid(False), 
+            plt.legend(loc='best', ncol=2)
             
             if savefigs:
                 plt.savefig(str(savepath+'AbsXS_{}x{}.jpg'.format(r,L)))
         
             plt.figure(4)
-            plt.plot(wvl, X_list, label='{}x{}'.format(r, L)), plt.ylabel('Size Parameter X'), plt.xlabel(
-                'Wavelength (um)'), plt.grid(False), plt.legend(loc='best', ncol=2)
+            plt.plot(wvl, X_list, label='{}x{}'.format(r, L)), 
+            plt.ylabel('Size Parameter X'), plt.xlabel('Wavelength (um)'), 
+            plt.grid(False), plt.legend(loc='best', ncol=2)
          
             if savefigs:
                 plt.savefig(str(savepath+'X_SizeParam_{}x{}.jpg'.format(r,L)))
@@ -347,14 +403,13 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
         X = 2*np.pi*r/wvl # unitless
         qext, qsca, qback, g = mie(n_algae-1j*k_algae,X)        
         qabs = qext - qsca
-        qqabs=qabs*np.pi*r**2 # calculate cross section from efficiency
-        qqsca=qsca*np.pi*r**2 # calculate cross section from efficiency
-        qqext=qext*np.pi*r**2 # calculate cross section from efficiency
         assym = g
-        ss_alb = qqsca/qqext
+        ss_alb = qsca/qext
 
         if plots:
-    
+            qqabs=qabs*np.pi*r**2 # calculate cross section from efficiency
+            qqsca=qsca*np.pi*r**2 # calculate cross section from efficiency
+            qqext=qext*np.pi*r**2 # calculate cross section from efficiency
             plt.figure(1)
             plt.plot(wvl,qqabs,'b',label='absorption cross section')
             plt.plot(wvl,qqsca,'g',label='scattering cross section')
@@ -375,7 +430,8 @@ def ssp_calculations(GO, Mie, savepath, r, L, wvl, n_algae, k_algae, plots, save
     
 
 
-def net_cdf_updater(GO, Mie, savepath, filename, wvl, g, ssa, ACS, L, r, density, information):
+def net_cdf_updater(GO, Mie, savepath, filename, wvl, g, ssa, ACS, L, r, 
+                    density, information):
 
     algfile = pd.DataFrame()
     algfile['asm_prm'] = np.squeeze(g)
@@ -384,15 +440,17 @@ def net_cdf_updater(GO, Mie, savepath, filename, wvl, g, ssa, ACS, L, r, density
     algfile = algfile.to_xarray()
     algfile.attrs['medium_type'] = 'air'
     if GO: 
-        algfile.attrs['description'] = 'Optical properties for glacier algal cell: cylinder of radius {}um and length {}um'.format(
-        str(r), str(L))
+        algfile.attrs['description'] = \
+        'Optical properties for glacier algal cell: cylinder of radius '\
+        '{}um and length {}um'.format(str(r), str(L))
         algfile.attrs['side_length_um'] = L
     if Mie: 
-        algfile.attrs['description'] = 'Optical properties for snow algal cell: sphere of radius {}um'.format(
+        algfile.attrs['description'] = 'Optical properties for snow algal '\
+            'cell: sphere of radius {}um'.format(
         str(r))
     algfile.attrs['psd'] = 'monodisperse'
     algfile.attrs['radius_um'] = r
-    algfile.attrs['density_kg_µm3'] = density
+    algfile.attrs['density_kg_m3'] = density
     algfile.attrs['wvl'] = wvl
     algfile.attrs['information'] = information
     algfile.to_netcdf(str(savepath + filename + '.nc'), mode='w')
