@@ -20,7 +20,7 @@ def adding_doubling_solver(Inputs):
     
     #load variables from input table
     tau=Inputs.tau
-    SSA=Inputs.SSA
+    ssa=Inputs.ssa
     g=Inputs.g
     nbr_wvl=Inputs.nbr_wvl
     wvl=Inputs.wvl
@@ -35,8 +35,8 @@ def adding_doubling_solver(Inputs):
     verbosity = Inputs.verbosity
     refidx_re = Inputs.refidx_re
     refidx_im = Inputs.refidx_im
-    FL_r_dif_a = Inputs.FL_r_dif_a
-    FL_r_dif_b = Inputs.FL_r_dif_b
+    fl_r_dif_a = Inputs.fl_r_dif_a
+    fl_r_dif_b = Inputs.fl_r_dif_b
 
 
     #######################################
@@ -45,7 +45,7 @@ def adding_doubling_solver(Inputs):
     
     tau0    = tau.T   # read and transpose tau
     g0      = g.T  # read and transpose g
-    SSA0  = SSA.T  # read and transpose SSA
+    ssa0  = ssa.T  # read and transpose ssa
 
     epsilon = 1e-5      # to deal with singularity
     exp_min = 1e-5      # exp(-500)  # minimum number that is not zero - zero will raise error
@@ -140,14 +140,14 @@ def adding_doubling_solver(Inputs):
             mu0n = mu0
 
         else:
-            # within or below FL
+            # within or below fl
             mu0n = mu0n 
 
         # calculation over layers with penetrating radiation
         # includes optical thickness, single scattering albedo, 
         # asymmetry parameter and total flux
         tautot = tau0[:,lyr] 
-        wtot   = SSA0[:,lyr] 
+        wtot   = ssa0[:,lyr] 
         gtot   = g0[:,lyr] 
         ftot   = g0[:,lyr] * g0[:,lyr] 
         
@@ -264,11 +264,11 @@ def adding_doubling_solver(Inputs):
                 # Eq. 25  Brigleb and light 2007
                 # diffuse reflection of flux arriving from above
                 
-                Rf_dif_a = FL_r_dif_a[wl]  # reflection from diffuse unpolarized radiation
+                Rf_dif_a = fl_r_dif_a[wl]  # reflection from diffuse unpolarized radiation
                 Tf_dif_a = 1 - Rf_dif_a     # transmission from diffuse unpolarized radiation
                 
                 # diffuse reflection of flux arriving from below
-                Rf_dif_b = FL_r_dif_b[wl]
+                Rf_dif_b = fl_r_dif_b[wl]
                 Tf_dif_b = 1 - Rf_dif_b 
                 
                 ######################################################################

@@ -9,11 +9,11 @@ and the results plotted.
 NB. Setting Mie = 1, GO = 0 and algal impurities = 0 is equivalent to
 running the original SNICAR model of Flanner et al. (2007, 2009)
 
-NB: if using only granular layers, recommend using the faster Toon et al
-tridiagonal matix solver (by setting TOON = True), however this will not
+NB: if using only granular layers, recommend using the faster toon et al
+tridiagonal matix solver (by setting toon = True), however this will not
 include any specular reflection components. If solid ice layers are
 included in the ice/snow column, the ADDING-DOUBLING solver must be used
-(i.e. ADD_DOUBLE = True).
+(i.e. add_double = True).
 
 glacier algae MAC files are provided in units of m2/cell, which requires
 a unit conversion that is not applied to the other LAPS. The conversion
@@ -34,12 +34,12 @@ from snicar_feeder import snicar_feeder
 ######################################
 
 Inputs = c.namedtuple('Inputs', ['dir_base', 'verbosity',\
-    'rf_ice', 'incoming_i', 'DIRECT', 'layer_type',\
-    'cdom_layer', 'APRX_TYP', 'DELTA', 'solzen', \
-    'TOON', 'ADD_DOUBLE', 'R_sfc', 'dz', 'rho_layers',\
+    'rf_ice', 'incoming_i', 'direct', 'layer_type',\
+    'cdom_layer', 'aprx_typ', 'delta', 'solzen', \
+    'toon', 'add_double', 'R_sfc', 'dz', 'rho_layers',\
     'grain_rds', 'side_length', 'depth', 'rwater', 'nbr_lyr',\
     'nbr_aer', 'grain_shp', 'shp_fctr', 'grain_ar', 'GA_units',\
-    'SA_units', 'Cfactor_GA', 'Cfactor_SA', 'mss_cnc_soot1',\
+    'SA_units', 'c_factor_GA', 'c_factor_SA', 'mss_cnc_soot1',\
     'mss_cnc_soot2', 'mss_cnc_brwnC1', 'mss_cnc_brwnC2',\
     'mss_cnc_dust1', 'mss_cnc_dust2', 'mss_cnc_dust3',\
     'mss_cnc_dust4', 'mss_cnc_dust5', 'mss_cnc_ash1',\
@@ -52,17 +52,17 @@ Inputs = c.namedtuple('Inputs', ['dir_base', 'verbosity',\
     'mss_cnc_GreenlandCentral4', 'mss_cnc_GreenlandCentral5',\
     'mss_cnc_Cook_Greenland_dust_L', 'mss_cnc_Cook_Greenland_dust_C',\
     'mss_cnc_Cook_Greenland_dust_H', 'mss_cnc_snw_alg',\
-    'mss_cnc_glacier_algae', 'FILE_soot1', 'FILE_soot2',\
-    'FILE_brwnC1', 'FILE_brwnC2', 'FILE_dust1', 'FILE_dust2',\
-    'FILE_dust3', 'FILE_dust4', 'FILE_dust5', 'FILE_ash1',\
-    'FILE_ash2', 'FILE_ash3', 'FILE_ash4', 'FILE_ash5',\
-    'FILE_ash_st_helens', 'FILE_Skiles_dust1', 'FILE_Skiles_dust2',\
-    'FILE_Skiles_dust3', 'FILE_Skiles_dust4', 'FILE_Skiles_dust5',\
-    'FILE_GreenlandCentral1', 'FILE_GreenlandCentral2',\
-    'FILE_GreenlandCentral3', 'FILE_GreenlandCentral4',\
-    'FILE_GreenlandCentral5', 'FILE_Cook_Greenland_dust_L',\
-    'FILE_Cook_Greenland_dust_C', 'FILE_Cook_Greenland_dust_H',\
-    'FILE_snw_alg', 'FILE_glacier_algae', 'tau', 'g', 'SSA',\
+    'mss_cnc_glacier_algae', 'file_soot1', 'file_soot2',\
+    'file_brwnC1', 'file_brwnC2', 'file_dust1', 'file_dust2',\
+    'file_dust3', 'file_dust4', 'file_dust5', 'file_ash1',\
+    'file_ash2', 'file_ash3', 'file_ash4', 'file_ash5',\
+    'file_ash_st_helens', 'file_Skiles_dust1', 'file_Skiles_dust2',\
+    'file_Skiles_dust3', 'file_Skiles_dust4', 'file_Skiles_dust5',\
+    'file_GreenlandCentral1', 'file_GreenlandCentral2',\
+    'file_GreenlandCentral3', 'file_GreenlandCentral4',\
+    'file_GreenlandCentral5', 'file_Cook_Greenland_dust_L',\
+    'file_Cook_Greenland_dust_C', 'file_Cook_Greenland_dust_H',\
+    'file_snw_alg', 'file_glacier_algae', 'tau', 'g', 'SSA',\
     'mu_not', 'nbr_wvl', 'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr'])
 
 
@@ -73,7 +73,7 @@ Inputs = c.namedtuple('Inputs', ['dir_base', 'verbosity',\
 # set dir_base to the location of the BioSNICAR_GO_PY folder
 Inputs.dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
 savepath = Inputs.dir_base # base path for saving figures
-WRITE_CONFIG_TO_TEXTFILE = False # toggle to save config to file
+WRITE_CONFIG_TO_TEXTfile = False # toggle to save config to file
 Inputs.verbosity = 0 # 1 to print real-time updates
 
 
@@ -93,12 +93,12 @@ POLY_ORDER = 3 # if applying smooting filter, define order of polynomial
 ## 4) RADIATIVE TRANSFER CONFIGURATION
 #######################################
 
-Inputs.DIRECT = 0      # 1 = Direct-beam, 0 = Diffuse flux
+Inputs.direct = 0      # 1 = direct-beam, 0 = Diffuse flux
 Inputs.APRX_TYP = 1    # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
-Inputs.DELTA = 1       # 1 = Apply Delta approximation, 0 = No delta
+Inputs.delta = 1       # 1 = Apply delta approximation, 0 = No delta
 Inputs.solzen = 40     # solar zenith angle between 0 (nadir) and 89 (horizon)
 
-# CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
+# CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
 #    0 = mid-latitude winter
 #    1 = mid-latitude summer
 #    2 = sub-Arctic winter
@@ -112,17 +112,17 @@ Inputs.incoming_i = 4
 
 ###############################################################
 ## 4) SET UP ICE/SNOW LAYERS
-# For granular layers only, choose TOON
-# For granular layers + Fresnel layers, choose ADD_DOUBLE
+# For granular layers only, choose toon
+# For granular layers + Fresnel layers, choose add_double
 ###############################################################
 
-Inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
-Inputs.ADD_DOUBLE = True # toggle addintg-doubling solver
+Inputs.toon = False # toggle toon et al tridiagonal matrix solver
+Inputs.add_double = True # toggle addintg-doubling solver
 
 
 Inputs.dz = [0.001, 0.2] # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [1, 0] # Fresnel layers (set all to 0 if TOON = True)
+Inputs.layer_type = [1, 0] # Fresnel layers (set all to 0 if toon = True)
 Inputs.cdom_layer = [0, 0] # Only for layer type == 1
 Inputs.rho_layers = [916, 916] # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
@@ -150,8 +150,8 @@ Inputs.rf_ice = 2
 # 3 = koch snowflake,
 # 4 = hexagonal prisms
 
-Inputs.grain_shp = [4, 4] # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [10000, 10000] # effective grain or bubble radius
+Inputs.grain_shp = [0, 0] # grain shape (He et al. 2016, 2017)
+Inputs.grain_rds = [100, 100] # effective grain or bubble radius
 Inputs.rwater = [0, 0] # radius of optional liquid water coating
 
 # For 4:
@@ -184,70 +184,70 @@ Inputs.SA_units = 1 # snow algae
 # determine C_factor (can be None or a number)
 # this is the concentrating factor that accounts for
 # resolution difference in field samples and model layers
-Inputs.Cfactor_GA = 30
-Inputs.Cfactor_SA = 0
+Inputs.c_factor_GA = 30
+Inputs.c_factor_SA = 0
 
 ## Set names of files containing the optical properties of these LAPs:
 # uncoated BC (Bohren and Huffman, 1983)
-Inputs.FILE_soot1 = 'mie_sot_ChC90_dns_1317.nc'
+Inputs.file_soot1 = 'mie_sot_ChC90_dns_1317.nc'
 # coated BC (Bohren and Huffman, 1983)
-Inputs.FILE_soot2 = 'miecot_slfsot_ChC90_dns_1317.nc'
+Inputs.file_soot2 = 'miecot_slfsot_ChC90_dns_1317.nc'
 # uncoated brown carbon (Kirchstetter et al. (2004).)
-Inputs.FILE_brwnC1 = 'brC_Kirch_BCsd.nc'
+Inputs.file_brwnC1 = 'brC_Kirch_BCsd.nc'
 # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-Inputs.FILE_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc'
+Inputs.file_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc'
 # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
-Inputs.FILE_dust1 = 'dust_balkanski_central_size1.nc'
+Inputs.file_dust1 = 'dust_balkanski_central_size1.nc'
 # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
-Inputs.FILE_dust2 = 'dust_balkanski_central_size2.nc'
+Inputs.file_dust2 = 'dust_balkanski_central_size2.nc'
 # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
-Inputs.FILE_dust3 = 'dust_balkanski_central_size3.nc'
+Inputs.file_dust3 = 'dust_balkanski_central_size3.nc'
 # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-Inputs.FILE_dust4 = 'dust_balkanski_central_size4.nc'
+Inputs.file_dust4 = 'dust_balkanski_central_size4.nc'
 # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
-Inputs.FILE_dust5 = 'dust_balkanski_central_size5.nc'
+Inputs.file_dust5 = 'dust_balkanski_central_size5.nc'
 # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
-Inputs.FILE_ash1 = 'volc_ash_eyja_central_size1.nc'
+Inputs.file_ash1 = 'volc_ash_eyja_central_size1.nc'
 # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
-Inputs.FILE_ash2 = 'volc_ash_eyja_central_size2.nc'
+Inputs.file_ash2 = 'volc_ash_eyja_central_size2.nc'
 # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
-Inputs.FILE_ash3 = 'volc_ash_eyja_central_size3.nc'
+Inputs.file_ash3 = 'volc_ash_eyja_central_size3.nc'
 # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
-Inputs.FILE_ash4 = 'volc_ash_eyja_central_size4.nc'
+Inputs.file_ash4 = 'volc_ash_eyja_central_size4.nc'
 # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
-Inputs.FILE_ash5 = 'volc_ash_eyja_central_size5.nc'
+Inputs.file_ash5 = 'volc_ash_eyja_central_size5.nc'
 # ashes from Mount Saint Helen's
-Inputs.FILE_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc'
+Inputs.file_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc'
 # Colorado dust 1 (Skiles et al 2017)
-Inputs.FILE_Skiles_dust1 = 'dust_skiles_size1.nc'
+Inputs.file_Skiles_dust1 = 'dust_skiles_size1.nc'
 # Colorado dust 2 (Skiles et al 2017)
-Inputs.FILE_Skiles_dust2 = 'dust_skiles_size2.nc'
+Inputs.file_Skiles_dust2 = 'dust_skiles_size2.nc'
 # Colorado dust 3 (Skiles et al 2017)
-Inputs.FILE_Skiles_dust3 = 'dust_skiles_size3.nc'
+Inputs.file_Skiles_dust3 = 'dust_skiles_size3.nc'
 # Colorado dust 4 (Skiles et al 2017)
-Inputs.FILE_Skiles_dust4 = 'dust_skiles_size4.nc'
+Inputs.file_Skiles_dust4 = 'dust_skiles_size4.nc'
 # Colorado dust 5 (Skiles et al 2017)
-Inputs.FILE_Skiles_dust5 = 'dust_skiles_size5.nc'
+Inputs.file_Skiles_dust5 = 'dust_skiles_size5.nc'
 # Greenland dust 1 (Polashenski et al 2015)
-Inputs.FILE_GreenlandCentral1 = 'dust_greenland_central_size1.nc'
+Inputs.file_GreenlandCentral1 = 'dust_greenland_central_size1.nc'
 # Greenland dust 2 (Polashenski et al 2015)
-Inputs.FILE_GreenlandCentral2 = 'dust_greenland_central_size2.nc'
+Inputs.file_GreenlandCentral2 = 'dust_greenland_central_size2.nc'
 # Greenland dust 3 (Polashenski et al 2015)
-Inputs.FILE_GreenlandCentral3 = 'dust_greenland_central_size3.nc'
+Inputs.file_GreenlandCentral3 = 'dust_greenland_central_size3.nc'
 # Greenland dust 4 (Polashenski et al 2015)
-Inputs.FILE_GreenlandCentral4 = 'dust_greenland_central_size4.nc'
+Inputs.file_GreenlandCentral4 = 'dust_greenland_central_size4.nc'
 # Greenlanddust 5 (Polashenski et al 2015)
-Inputs.FILE_GreenlandCentral5 = 'dust_greenland_central_size5.nc'
+Inputs.file_GreenlandCentral5 = 'dust_greenland_central_size5.nc'
 # Dark Zone dust 1 (Cook et al. 2019 "LOW") NOT FUNCTIONAL (COMING SOON)
-Inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc'
+Inputs.file_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc'
 # Dark Zone dust 2 (Cook et al. 2019 "mean") NOT FUNCTIONAL (COMING SOON)
-Inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc'
+Inputs.file_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc'
 # Dark Zone dust 3 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL (COMING SOON)
-Inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc'
+Inputs.file_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc'
 # Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-Inputs.FILE_snw_alg = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
+Inputs.file_snw_alg = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc'
 # Glacier Algae (Cook et al. 2020)
-Inputs.FILE_glacier_algae = 'Cook2020_glacier_algae_4_40.nc'
+Inputs.file_glacier_algae = 'Cook2020_glacier_algae_4_40.nc'
 
 # Indicate mass mixing ratios scenarios for each impurity
 # default units are ng(species)/g(ice), or ppb
@@ -309,21 +309,21 @@ if Inputs.GA_units == 1 or Inputs.SA_units == 1: # pylint: disable=W0143
     print(" *** This requires your MAC file to be in units of m2/cell***\n\
         our default files are expressed in ppb!")
 
-if Inputs.TOON and Inputs.ADD_DOUBLE: # pylint: disable=W0143
+if Inputs.toon and Inputs.add_double: # pylint: disable=W0143
     raise ValueError("ERROR: BOTH SOLVERS SELECTED:\
-        PLEASE CHOOSE EITHER TOON OR ADD_DOUBLE")
+        PLEASE CHOOSE EITHER toon OR add_double")
 
-if Inputs.TOON and Inputs.solzen < 40: # pylint: disable=W0143
-    raise ValueError("INVALID SOLZEN: outside valid range for Toon solver")
+if Inputs.toon and Inputs.solzen < 40: # pylint: disable=W0143
+    raise ValueError("INVALID SOLZEN: outside valid range for toon solver")
 
-if np.sum(Inputs.layer_type) < 1 and Inputs.ADD_DOUBLE:# pylint: disable=W0143
+if np.sum(Inputs.layer_type) < 1 and Inputs.add_double:# pylint: disable=W0143
     # just warn user but let program continue - in some cases
     # AD method preferable (stable over complete range of SZA)
     print("\n****** WARNING ******\n")
-    print("No solid ice layers - Toon solver is faster")
-    print("Toggle TOON=True and ADD_DOUBLE=False to use it.\n")
+    print("No solid ice layers - toon solver is faster")
+    print("Toggle toon=True and add_double=False to use it.\n")
 
-if np.sum(Inputs.layer_type) > 0 and Inputs.TOON:
+if np.sum(Inputs.layer_type) > 0 and Inputs.toon:
     raise ValueError("There are ice layers - use the adding-doubling solver")
 
 if np.sum(Inputs.mss_cnc_snw_alg) != 0: # pylint: disable=W0143
@@ -344,7 +344,7 @@ if Inputs.solzen > 89: # pylint: disable=W0143
 # CONFIG  AND CALL SNICAR
 #########################################
 
-if WRITE_CONFIG_TO_TEXTFILE:
+if WRITE_CONFIG_TO_TEXTfile:
     omitted_fields = ['tau', 'g', 'SSA', 'mu_not', 'nbr_wvl',\
         'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr']
 
