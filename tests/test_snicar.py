@@ -117,7 +117,7 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
     rds = 1000
     rho = 400
     solzen = 40
-    Cfactor = 0
+    c_factor = 0
     dust = 0
     algae = 0
     dz = 0.2
@@ -126,7 +126,7 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
 
     if fuzz:
         params = set_params(direct, aprx_typ, incoming, shp, rf, rho, rds,\
-            lyr, dz, algae, bc, dust, Cfactor, solzen)
+            lyr, dz, algae, bc, dust, c_factor, solzen)
         albedo, BBA =call_snicar(params)
         assert (BBA > 0) and (BBA <1)
 
@@ -144,12 +144,12 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
 @pytest.mark.parametrize(\
     "solzen", [10, 40, 70])
 @pytest.mark.parametrize(\
-    "Cfactor", [0, 30])
+    "c_factor", [0, 30])
 @pytest.mark.parametrize(\
     "dust", [0, 50000])
 @pytest.mark.parametrize(\
     "algae", [0, 50000])
-def test_var_fuzzer(rds, rho, solzen, Cfactor, dust, algae, fuzz):
+def test_var_fuzzer(rds, rho, solzen, c_factor, dust, algae, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     """
@@ -165,7 +165,7 @@ def test_var_fuzzer(rds, rho, solzen, Cfactor, dust, algae, fuzz):
 
     if fuzz:
         params = set_params(direct, aprx_typ, incoming, shp, rf, rho, rds,\
-            lyr, dz, algae, bc, dust, Cfactor, solzen)
+            lyr, dz, algae, bc, dust, c_factor, solzen)
         albedo, BBA =call_snicar(params)
         assert (BBA > 0) and (BBA <1)
 
@@ -176,9 +176,9 @@ def test_var_fuzzer(rds, rho, solzen, Cfactor, dust, algae, fuzz):
 
 
 
-def set_params(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc, dust, Cfactor, solzen):
+def set_params(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc, dust, c_factor, solzen):
     
-    params = c.namedtuple("params",["direct", "aprx_typ", "incoming", "shp", "rf", "rho", "rds", "lyr", "dz", "algae", "bc", "Cfactor", "solzen", "alg", "dust1"])
+    params = c.namedtuple("params",["direct", "aprx_typ", "incoming", "shp", "rf", "rho", "rds", "lyr", "dz", "algae", "bc", "c_factor", "solzen", "alg", "dust1"])
 
     params.direct = direct
     params.apprx_typ = aprx_typ
@@ -192,7 +192,7 @@ def set_params(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc
     params.algae = [algae,0]
     params.bc = [bc, 0]
     params.dust = [dust,0]
-    params.Cfactor_GA = Cfactor
+    params.c_factor_GA = c_factor
     params.solzen = solzen
 
     return params
@@ -201,12 +201,12 @@ def set_params(direct, aprx_typ, incoming, shp, rf, rho, rds, lyr, dz, algae, bc
 def call_snicar(params):
     
     inputs = c.namedtuple('inputs',['dir_base', 'verbosity',\
-        'rf_ice', 'incoming_i', 'DIRECT', 'layer_type',\
-        'cdom_layer', 'APRX_TYP', 'DELTA', 'solzen', \
-        'TOON', 'ADD_DOUBLE', 'R_sfc', 'dz', 'rho_layers',\
+        'rf_ice', 'incoming_i', 'direct', 'layer_type',\
+        'cdom_layer', 'aprx_typ', 'delta', 'solzen', \
+        'toon', 'add_double', 'R_sfc', 'dz', 'rho_layers',\
         'grain_rds','side_length', 'depth', 'rwater', 'nbr_lyr',\
         'nbr_aer', 'grain_shp', 'shp_fctr', 'grain_ar', 'GA_units',\
-        'SA_units', 'Cfactor_GA','Cfactor_SA','mss_cnc_soot1',\
+        'SA_units', 'c_factor_GA','c_factor_SA','mss_cnc_soot1',\
         'mss_cnc_soot2', 'mss_cnc_brwnC1', 'mss_cnc_brwnC2',\
         'mss_cnc_dust1', 'mss_cnc_dust2', 'mss_cnc_dust3',\
         'mss_cnc_dust4', 'mss_cnc_dust5', 'mss_cnc_ash1',\
@@ -219,17 +219,17 @@ def call_snicar(params):
         'mss_cnc_GreenlandCentral4', 'mss_cnc_GreenlandCentral5',\
         'mss_cnc_Cook_Greenland_dust_L', 'mss_cnc_Cook_Greenland_dust_C',\
         'mss_cnc_Cook_Greenland_dust_H', 'mss_cnc_snw_alg',\
-        'mss_cnc_glacier_algae', 'FILE_soot1', 'FILE_soot2',\
-        'FILE_brwnC1', 'FILE_brwnC2', 'FILE_dust1', 'FILE_dust2',\
-        'FILE_dust3', 'FILE_dust4', 'FILE_dust5', 'FILE_ash1',\
-        'FILE_ash2', 'FILE_ash3', 'FILE_ash4', 'FILE_ash5',\
-        'FILE_ash_st_helens', 'FILE_Skiles_dust1', 'FILE_Skiles_dust2',\
-        'FILE_Skiles_dust3', 'FILE_Skiles_dust4', 'FILE_Skiles_dust5',\
-        'FILE_GreenlandCentral1', 'FILE_GreenlandCentral2',\
-        'FILE_GreenlandCentral3', 'FILE_GreenlandCentral4',\
-        'FILE_GreenlandCentral5', 'FILE_Cook_Greenland_dust_L',\
-        'FILE_Cook_Greenland_dust_C', 'FILE_Cook_Greenland_dust_H',\
-        'FILE_snw_alg', 'FILE_glacier_algae', 'tau', 'g', 'SSA',\
+        'mss_cnc_glacier_algae', 'file_soot1', 'file_soot2',\
+        'file_brwnC1', 'file_brwnC2', 'file_dust1', 'file_dust2',\
+        'file_dust3', 'file_dust4', 'file_dust5', 'file_ash1',\
+        'file_ash2', 'file_ash3', 'file_ash4', 'file_ash5',\
+        'file_ash_st_helens', 'file_Skiles_dust1', 'file_Skiles_dust2',\
+        'file_Skiles_dust3', 'file_Skiles_dust4', 'file_Skiles_dust5',\
+        'file_GreenlandCentral1', 'file_GreenlandCentral2',\
+        'file_GreenlandCentral3', 'file_GreenlandCentral4',\
+        'file_GreenlandCentral5', 'file_Cook_Greenland_dust_L',\
+        'file_Cook_Greenland_dust_C', 'file_Cook_Greenland_dust_H',\
+        'file_snw_alg', 'file_glacier_algae', 'tau', 'g', 'SSA',\
         'mu_not', 'nbr_wvl', 'wvl', 'Fs', 'Fd', 'L_snw', 'flx_slr'])
 
 
@@ -259,12 +259,12 @@ def call_snicar(params):
     ## 4) RADIATIVE TRANSFER CONFIGURATION
     #######################################
 
-    inputs.DIRECT   = params.direct       # 1= Direct-beam incident flux, 0= Diffuse incident flux
-    inputs.APRX_TYP = params.aprx_typ        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
-    inputs.DELTA    = 1        # 1= Apply Delta approximation, 0= No delta
-    inputs.solzen   = params.solzen      # if DIRECT give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
+    inputs.direct   = params.direct       # 1= direct-beam incident flux, 0= Diffuse incident flux
+    inputs.aprx_typ = params.aprx_typ        # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
+    inputs.delta    = 1        # 1= Apply delta approximation, 0= No delta
+    inputs.solzen   = params.solzen      # if direct give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
 
-    # CHOOSE ATMOSPHERIC PROFILE for surface-incident flux:
+    # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
     #    0 = mid-latitude winter
     #    1 = mid-latitude summer
     #    2 = sub-Arctic winter
@@ -278,16 +278,16 @@ def call_snicar(params):
 
     ###############################################################
     ## 4) SET UP ICE/SNOW LAYERS
-    # For granular layers only, choose TOON
-    # For granular layers + Fresnel layers below, choose ADD_DOUBLE
+    # For granular layers only, choose toon
+    # For granular layers + Fresnel layers below, choose add_double
     ###############################################################
 
-    inputs.TOON = False # toggle Toon et al tridiagonal matrix solver
-    inputs.ADD_DOUBLE = True # toggle adding-doubling solver
+    inputs.toon = False # toggle toon et al tridiagonal matrix solver
+    inputs.add_double = True # toggle adding-doubling solver
 
     inputs.dz = params.dz # thickness of each vertical layer (unit = m)
     inputs.nbr_lyr = len(params.dz)  # number of snow layers
-    inputs.layer_type = params.lyr # Fresnel layers for the ADD_DOUBLE option, set all to 0 for the TOON option
+    inputs.layer_type = params.lyr # Fresnel layers for the add_double option, set all to 0 for the toon option
     inputs.cdom_layer = [0,0] # Only for layer type == 1, CDOM data from L Halbach
     inputs.rho_layers = params.rho # density of each layer (unit = kg m-3) 
     inputs.nbr_wvl=480 
@@ -338,49 +338,49 @@ def call_snicar(params):
     # determine C_factor (can be None or a number)
     # this is the concentrating factor that accounts for
     # resolution difference in field samples and model layers
-    inputs.Cfactor_GA = params.Cfactor
-    inputs.Cfactor_SA = 0
+    inputs.c_factor_GA = params.c_factor
+    inputs.c_factor_SA = 0
 
     # Set names of files containing the optical properties of these LAPs:
-    inputs.FILE_soot1 ='mie_sot_ChC90_dns_1317.nc' # uncoated BC (Bohren and Huffman, 1983)
-    inputs.FILE_soot2 = 'miecot_slfsot_ChC90_dns_1317.nc' # coated BC (Bohren and Huffman, 1983)
-    inputs.FILE_brwnC1 = 'brC_Kirch_BCsd.nc' # uncoated brown carbon (Kirchstetter et al. (2004).)
-    inputs.FILE_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc' # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-    inputs.FILE_dust1 = 'dust_balkanski_central_size1.nc' # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
-    inputs.FILE_dust2 = 'dust_balkanski_central_size2.nc' # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
-    inputs.FILE_dust3 = 'dust_balkanski_central_size3.nc' # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
-    inputs.FILE_dust4 = 'dust_balkanski_central_size4.nc' # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-    inputs.FILE_dust5 = 'dust_balkanski_central_size5.nc' # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
-    inputs.FILE_ash1 = 'volc_ash_eyja_central_size1.nc' # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
-    inputs.FILE_ash2 = 'volc_ash_eyja_central_size2.nc' # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
-    inputs.FILE_ash3 = 'volc_ash_eyja_central_size3.nc' # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
-    inputs.FILE_ash4 = 'volc_ash_eyja_central_size4.nc' # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
-    inputs.FILE_ash5 = 'volc_ash_eyja_central_size5.nc' # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
-    inputs.FILE_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc' # ashes from Mount Saint Helen's
-    inputs.FILE_Skiles_dust1 = 'dust_skiles_size1.nc' # Colorado dust 1 (Skiles et al 2017)
-    inputs.FILE_Skiles_dust2 = 'dust_skiles_size2.nc' # Colorado dust 2 (Skiles et al 2017)
-    inputs.FILE_Skiles_dust3 = 'dust_skiles_size3.nc' # Colorado dust 3 (Skiles et al 2017)
-    inputs.FILE_Skiles_dust4 = 'dust_skiles_size4.nc' # Colorado dust 4 (Skiles et al 2017)
-    inputs.FILE_Skiles_dust5 = 'dust_skiles_size5.nc' # Colorado dust 5 (Skiles et al 2017)
-    inputs.FILE_GreenlandCentral1 = 'dust_greenland_central_size1.nc' # Greenland dust 1 (Polashenski et al 2015)
-    inputs.FILE_GreenlandCentral2 = 'dust_greenland_central_size2.nc' # Greenland dust 2 (Polashenski et al 2015)
-    inputs.FILE_GreenlandCentral3 = 'dust_greenland_central_size3.nc' # Greenland dust 3 (Polashenski et al 2015)
-    inputs.FILE_GreenlandCentral4 = 'dust_greenland_central_size4.nc' # Greenland dust 4 (Polashenski et al 2015)
-    inputs.FILE_GreenlandCentral5  = 'dust_greenland_central_size5.nc' # Greenlanddust 5 (Polashenski et al 2015)
-    inputs.FILE_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS dust (Cook et al. 2019 "LOW") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.FILE_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.FILE_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.FILE_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc' # Snow Algae (spherical, C nivalis)
-    inputs.FILE_glacier_algae = 'GA_Chevrollier2022_r4.9_L18.8.nc' # glacier algae in cells/ml or ppb depending on GA_units 
+    inputs.file_soot1 ='mie_sot_ChC90_dns_1317.nc' # uncoated BC (Bohren and Huffman, 1983)
+    inputs.file_soot2 = 'miecot_slfsot_ChC90_dns_1317.nc' # coated BC (Bohren and Huffman, 1983)
+    inputs.file_brwnC1 = 'brC_Kirch_BCsd.nc' # uncoated brown carbon (Kirchstetter et al. (2004).)
+    inputs.file_brwnC2 = 'brC_Kirch_BCsd_slfcot.nc' # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
+    inputs.file_dust1 = 'dust_balkanski_central_size1.nc' # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
+    inputs.file_dust2 = 'dust_balkanski_central_size2.nc' # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
+    inputs.file_dust3 = 'dust_balkanski_central_size3.nc' # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
+    inputs.file_dust4 = 'dust_balkanski_central_size4.nc' # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
+    inputs.file_dust5 = 'dust_balkanski_central_size5.nc' # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
+    inputs.file_ash1 = 'volc_ash_eyja_central_size1.nc' # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
+    inputs.file_ash2 = 'volc_ash_eyja_central_size2.nc' # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
+    inputs.file_ash3 = 'volc_ash_eyja_central_size3.nc' # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
+    inputs.file_ash4 = 'volc_ash_eyja_central_size4.nc' # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
+    inputs.file_ash5 = 'volc_ash_eyja_central_size5.nc' # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
+    inputs.file_ash_st_helens = 'volc_ash_mtsthelens_20081011.nc' # ashes from Mount Saint Helen's
+    inputs.file_Skiles_dust1 = 'dust_skiles_size1.nc' # Colorado dust 1 (Skiles et al 2017)
+    inputs.file_Skiles_dust2 = 'dust_skiles_size2.nc' # Colorado dust 2 (Skiles et al 2017)
+    inputs.file_Skiles_dust3 = 'dust_skiles_size3.nc' # Colorado dust 3 (Skiles et al 2017)
+    inputs.file_Skiles_dust4 = 'dust_skiles_size4.nc' # Colorado dust 4 (Skiles et al 2017)
+    inputs.file_Skiles_dust5 = 'dust_skiles_size5.nc' # Colorado dust 5 (Skiles et al 2017)
+    inputs.file_GreenlandCentral1 = 'dust_greenland_central_size1.nc' # Greenland dust 1 (Polashenski et al 2015)
+    inputs.file_GreenlandCentral2 = 'dust_greenland_central_size2.nc' # Greenland dust 2 (Polashenski et al 2015)
+    inputs.file_GreenlandCentral3 = 'dust_greenland_central_size3.nc' # Greenland dust 3 (Polashenski et al 2015)
+    inputs.file_GreenlandCentral4 = 'dust_greenland_central_size4.nc' # Greenland dust 4 (Polashenski et al 2015)
+    inputs.file_GreenlandCentral5  = 'dust_greenland_central_size5.nc' # Greenlanddust 5 (Polashenski et al 2015)
+    inputs.file_Cook_Greenland_dust_L = 'dust_greenland_Cook_LOW_20190911.nc' # GRIS dust (Cook et al. 2019 "LOW") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
+    inputs.file_Cook_Greenland_dust_C = 'dust_greenland_Cook_CENTRAL_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
+    inputs.file_Cook_Greenland_dust_H = 'dust_greenland_Cook_HIGH_20190911.nc' # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
+    inputs.file_snw_alg  = 'snw_alg_r025um_chla020_chlb025_cara150_carb140.nc' # Snow Algae (spherical, C nivalis)
+    inputs.file_glacier_algae = 'GA_Chevrollier2022_r4.9_L18.8.nc' # glacier algae in cells/ml or ppb depending on GA_units 
 
     # Add more glacier algae (not functional in current code)
     # (optical properties generated with GO), not included in the current model
     # algae1_r = 6 # algae radius
     # algae1_l = 60 # algae length
-    # FILE_glacier_algae1 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae1_r,algae1_l))
+    # file_glacier_algae1 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae1_r,algae1_l))
     # algae2_r = 2 # algae radius
     # algae2_l = 10 # algae length
-    # FILE_glacier_algae2 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae2_r,algae2_l))
+    # file_glacier_algae2 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae2_r,algae2_l))
 
         
     inputs.mss_cnc_soot1 = params.bc    # uncoated black carbon (Bohren and Huffman, 1983)

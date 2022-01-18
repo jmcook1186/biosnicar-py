@@ -426,7 +426,7 @@ def snicar_feeder(inputs):
                                     * diam_ice**g_b2
 
                             # Eqn. 3.1 in Fu (2007)
-                            gg_snw_f07_tmp = g_f07_c0\
+                            gg_snw_F07_tmp = g_f07_c0\
                                 + g_f07_c1 * ar_tmp\
                                     + g_f07_c2 * ar_tmp**2
 
@@ -466,7 +466,7 @@ def snicar_feeder(inputs):
                                     * diam_ice**g_b2
 
                             # Eqn. 3.3 in Fu (2007)
-                            gg_snw_f07_tmp = g_f07_p0\
+                            gg_snw_F07_tmp = g_f07_p0\
                                 + g_f07_p1 * np.log(ar_tmp)\
                                     + g_f07_p2 * (np.log(ar_tmp))**2
 
@@ -506,7 +506,7 @@ def snicar_feeder(inputs):
                                     * diam_ice**g_b2
 
                             # Eqn. 3.3 in Fu (2007)
-                            gg_snw_f07_tmp = g_f07_p0 \
+                            gg_snw_F07_tmp = g_f07_p0 \
                                 + g_f07_p1 * np.log(ar_tmp) \
                                     + g_f07_p2 * (np.log(ar_tmp))**2
 
@@ -515,7 +515,7 @@ def snicar_feeder(inputs):
                         # shape-preserving piecewise interpolation
                         # into 480-bands
                         g_Cg_intp = pchip(g_wvl_center, g_snw_cg_tmp)(wvl)
-                        gg_f07_intp = pchip(g_wvl_center, gg_snw_f07_tmp)(wvl)
+                        gg_f07_intp = pchip(g_wvl_center, gg_snw_F07_tmp)(wvl)
                         g_snw_F07 = gg_f07_intp + (1.0 - gg_f07_intp)\
                              / ssa_snw[i, :] / 2 # Eq.2.2 in Fu (2007)
                         # Eq.6, He et al. (2017)
