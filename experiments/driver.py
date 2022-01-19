@@ -1,111 +1,123 @@
+
+# This driver script allows the user to easily run the various funcs in
+# utils.py. Simply choopse the function from the list below, uncomment
+# the relevant section, change any parameters and run
+# ```
+# cd ~/BioSNICAR_GO_PY
+# python ./experiments/driver.py
+# ```
+#
+# AVAILABLE FUNCTIONS:
+# --------------------
+#
+# find_best_params():
+#
+# This is used to do multiple runs of SNICAR and find the parameter
+# set that best simulates a given field-measured spectrum
+#
+# match_field_spectrum(): for a given set of input params
+# this function plots measured vs simulated spectra
+#
+# build_LUT(): constructs look up tables of be used by inverse model
+#
+# inverse_model(): Uses lookup tables to predict cell
+# concentrations from spectra
+#
+# isolate_biological_effect(): calculate the proportion of albedo
+# change attributed to biological or physical processes by spectral
+# differencing.
+#
+# compare_predicted_and_measured(): provide a comparison between
+# predictions made by the inverse model, 2BDA model and measured
+# cell concentrations. Saves a figure to SAVEPATH.
+#
+# All calls to SNICAR assume solar zenith = 45 degrees,
+# underlying surface has BBA = 0.1, Picard (2016) ice refractive
+# index is used, grains are spherical.
 """
-This driver script allows the user to easily run the various funcs in utils.py. Simply
-choopse the function from the list below, uncomment thhe relevant section, change any parameters
-and run 
-
-```
-cd ~/BioSNICAR_GO_PY
-python ./experiments/driver.py
-
-```
-
-AVAILABLE FUNCTIONS:
---------------------
-
-find_best_params(): 
-
-This is used to do multiple runs of SNICAR and find the parameter set that 
-best simulates a given field-measured spectrum
-
-match_field_spectrum(): for a given set of input params 
-this function plots measured vs simulated spectra
-
-build_LUT(): constructs look up tables of be used by inverse model
-
-inverse_model(): Uses lookup tables to predict cell concentrations from spectra
-
-isolate_biological_effect(): calculate the proportion of albedo change attributed to biological or physical 
-processes by spectral differencing.
-
-compare_predicted_and_measured(): provide a comparison between predictions made by the inverse model,
-2BDA model and measured cell concentrations. Saves a figure to savepath.
-
-All calls to SNICAR assume solar zenith = 45 degrees, underlying surface has BBA = 0.1, Picard (2016) ice refractive
-index is used, grains are spherical.
-
+driver used to easily execute funcs in utils.py
 """
 import sys
-sys.path.append("./src") 
 import numpy as np
-import dask
 import pandas as pd
 from utils import *
-import snicar_feeder
+sys.path.append("./src")
 
-# FIRST determine whether we work in albedo or reflectance - 
+# FIRST determine whether we work in albedo or reflectance
 # apply ARF for reflectance, do not apply ARF for albedo
-apply_ARF = False
-plot_ARF = False
+APPLY_ARF = False
+PLOT_ARF = False
 
 # define path to save figures
-savepath = '/home/joe/Desktop/'
+SAVEPATH = '../'
 
 # provide list of samples to include as examples of each surface type
-CIsites = ['21_7_S4', '13_7_SB3', '14_7_SB6', '15_7_S4', '15_7_SB1', 
-            '15_7_SB5', '21_7_S2', '21_7_SB3', '22_7_S2',
-            '22_7_S4', '23_7_SB1', '23_7_SB2', '23_7_S4', 'WI_3',
-            'WI_8', 'WI_10', 'WI_11']
+CIsites = ['21_7_S4', '13_7_SB3', '14_7_SB6', '15_7_S4', '15_7_SB1',
+           '15_7_SB5', '21_7_S2', '21_7_SB3', '22_7_S2',
+           '22_7_S4', '23_7_SB1', '23_7_SB2', '23_7_S4', 'WI_3',
+           'WI_8', 'WI_10', 'WI_11']
 
 DISPsites = ['DISP1', 'DISP2', 'DISP3', 'DISP4', 'DISP5', 'DISP6',
-            'DISP7', 'DISP8', 'DISP9', 'DISP10', 'DISP11', 'DISP12',
-            'DISP13', 'DISP14', '27_7_16_DISP1', '27_7_16_DISP3']
+             'DISP7', 'DISP8', 'DISP9', 'DISP10', 'DISP11', 'DISP12',
+             'DISP13', 'DISP14', '27_7_16_DISP1', '27_7_16_DISP3']
 
 LAsites = ['13_7_SB1', '13_7_SB3', '14_7_SB2', '14_7_SB3', '22_7_SB3']
 
 HAsites = ['14_7_SB9', '13_7_SB2', '14_7_SB1', '14_7_SB5', '14_7_SB9',
-            '14_7_SB10', '15_7_SB3', '20_7_SB1', '21_7_SB2', '21_7_SB4',
-            '22_7_SB2', '22_7_SB5', '23_7_SB4', '23_7_SB5']
+           '14_7_SB10', '15_7_SB3', '20_7_SB1', '21_7_SB2', '21_7_SB4',
+           '22_7_SB2', '22_7_SB5', '23_7_SB4', '23_7_SB5']
 
 # generate ARF data
 
-ARF_CI_DF = pd.read_csv('/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/ARF_master.csv')
-ARF_CI = np.mean(np.array(ARF_CI_DF[ARF_CI_DF.columns.intersection(CIsites)]), axis=1)
+ARF_CI_DF = pd.read_csv('./Data/additional_data/ARF_master.csv')
+ARF_CI = np.mean(np.array(ARF_CI_DF[ARF_CI_DF.columns.intersection(CIsites)]),
+                 axis=1)
 ARF_CI = ARF_CI[::10]
-ARF_HA_DF = pd.read_csv('/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/ARF_master.csv')
-ARF_HA = np.mean(np.array(ARF_HA_DF[ARF_HA_DF.columns.intersection(HAsites)]), axis=1)
+ARF_HA_DF = pd.read_csv('./Data/additional_data/ARF_master.csv')
+ARF_HA = np.mean(np.array(ARF_HA_DF[ARF_HA_DF.columns.intersection(HAsites)]),
+                 axis=1)
 ARF_HA = ARF_HA[::10]
 
-# set path to field spectral database - reflectance if ARF is applied, albedo if not
-# The ARF adjusts the SNICAR simulated albedo to give nadir reflectance
+# set path to field spectral database - reflectance if ARF is applied, albedo
+# if not the ARF adjusts the SNICAR simulated albedo to give nadir reflectance
 
-if apply_ARF:
-    field_data_fname = '/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/HCRF_master_16171819.csv'
+if APPLY_ARF:
+    FIELD_DATA_FNAME = './Data/additional_data/HCRF_master_16171819.csv'
 
 else:
-    field_data_fname = '/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/Albedo_master.csv'
+    FIELD_DATA_FNAME = './Data/additional_data/Albedo_master.csv'
 
-path_to_metadata = '/home/joe/Code/Remote_Ice_Surface_Analyser/RISA_OUT/Spectra_Metadata.csv'
+PATH_TO_METADATA = './Data/additional_data/Spectra_Metadata.csv'
 
 # set parallel arrays of filenames plus density, radius, thickness, model algal concn (ppb)
 # and measured algal concn (cells/mL) for each sample to plot.
 # These value are likely generated by repeated calls to find_best_params()
 
-if apply_ARF:
-    fnames= ['23_7_SB1', '14_7_SB6', '14_7_SB9', '14_7_SB1', '22_7_SB5', '14_7_SB2', '22_7_SB3', 'RAIN2']
-    rho = [[916,500], [916, 600], [916,600], [916,700], [916,650], [916,600], [916,600], [916,900]]
-    rds = [[1500,1500], [1000,1000], [2000,2000], [1500,1500], [1000,1000],[2500,2500],[1000,1000],[1000,1000]]
-    dz = [[0.001,0.05], [0.001,0.08], [0.001,0.04], [0.001,0.03], [0.001,0.025], [0.001,0.06], [0.001,0.04], [0.001,0.04]]
-    alg = [[0,0], [0,0], [21875,0], [30313,0], [22813,0], [3062,0], [6687,0], [0,0]] #cells in cells/mL  
-    measured_cells=[0, 0, 21875, 30312, 22813, 3062, 6687, 0] #cells in cells/mL
+if APPLY_ARF:
+    fnames = ['23_7_SB1', '14_7_SB6', '14_7_SB9', '14_7_SB1', '22_7_SB5',
+              '14_7_SB2', '22_7_SB3', 'RAIN2']
+    rho = [[916, 500], [916, 600], [916, 600], [916, 700], [916, 650],
+           [916, 600], [916, 600], [916, 900]]
+    rds = [[1500, 1500], [1000, 1000], [2000, 2000], [1500, 1500],
+           [1000, 1000], [2500, 2500], [1000, 1000], [1000, 1000]]
+    dz = [[0.001, 0.05], [0.001, 0.08], [0.001, 0.04], [0.001, 0.03],
+          [0.001, 0.025], [0.001, 0.06], [0.001, 0.04], [0.001, 0.04]]
+    alg = [[0, 0], [0, 0], [21875, 0], [30313, 0], [22813, 0],
+           [3062, 0], [6687, 0], [0, 0]]
+    measured_cells = [0, 0, 21875, 30312, 22813, 3062, 6687, 0]
 
 else:
-    fnames= ['23_7_SB1', '14_7_SB6', '14_7_SB9', '14_7_SB1', '22_7_SB5', '14_7_SB2', '22_7_SB3', 'RAIN2']
-    rho = [[916,500], [916, 600], [916,600], [916,700], [916,650], [916,600], [916,600], [916,900]]
-    rds = [[1500,1500], [1000,1000], [2000,2000], [1500,1500], [1000,1000],[2500,2500],[1000,1000],[1000,1000]]
-    dz = [[0.001,0.05], [0.001,0.08], [0.001,0.04], [0.001,0.03], [0.001,0.025], [0.001,0.06], [0.001,0.04], [0.001,0.04]]
-    alg = [[0,0], [0,0], [21875,0], [30313,0], [22813,0], [3062,0], [6687,0], [0,0]] #cells in cells/mL  
-    measured_cells=[0, 0, 21875, 30312, 22813, 3062, 6687, 0] #cells in cells/mL
-
+    fnames = ['23_7_SB1', '14_7_SB6', '14_7_SB9', '14_7_SB1', '22_7_SB5',
+              '14_7_SB2', '22_7_SB3', 'RAIN2']
+    rho = [[916, 500], [916, 600], [916, 600], [916, 700], [916, 650],
+           [916, 600], [916, 600], [916, 900]]
+    rds = [[1500, 1500], [1000, 1000], [2000, 2000], [1500, 1500],
+           [1000, 1000], [2500, 2500], [1000, 1000], [1000, 1000]]
+    dz = [[0.001, 0.05], [0.001, 0.08], [0.001, 0.04], [0.001, 0.03],
+          [0.001, 0.025], [0.001, 0.06], [0.001, 0.04], [0.001, 0.04]]
+    alg = [[0, 0], [0, 0], [21875, 0], [30313, 0], [22813, 0],
+           [3062, 0], [6687, 0], [0, 0]]
+    measured_cells = [0, 0, 21875, 30312, 22813, 3062, 6687, 0]
 
 
 #################
@@ -117,29 +129,33 @@ else:
 # If no LAPs, set clean=True
 
 
-#namelist=['13_7_SB1','13_7_SB2','13_7_SB3','13_7_SB5','14_7_SB1','14_7_SB2'],\
-    #  '14_7_SB3','14_7_SB5','14_7_SB6','14_7_SB8','14_7_SB9','14_7_SB10',\
-    #  '15_7_SB1','15_7_SB2','15_7_SB3','15_7_SB4','15_7_SB5','17_7_SB1',\
-    #  '17_7_SB2','20_7_SB1','20_7_SB2','20_7_SB3','21_7_SB2','21_7_SB3',\
-    #  '21_7_SB4','21_7_SB9','22_7_SB2','22_7_SB3','22_7_SB5','22_7_SB6',\
-    #  '22_7_SB7','23_7_SB1','23_7_SB2','23_7_SB4','23_7_SB5','24_7_SB1']
+#namelist=['13_7_SB1', '13_7_SB2', '13_7_SB3', '13_7_SB5', '14_7_SB1', '14_7_SB2'],
+    #  '14_7_SB3', '14_7_SB5', '14_7_SB6', '14_7_SB8', '14_7_SB9', '14_7_SB10',
+    #  '15_7_SB1', '15_7_SB2', '15_7_SB3', '15_7_SB4', '15_7_SB5', '17_7_SB1',
+    #  '17_7_SB2', '20_7_SB1', '20_7_SB2', '20_7_SB3', '21_7_SB2', '21_7_SB3',
+    #  '21_7_SB4', '21_7_SB9', '22_7_SB2', '22_7_SB3', '22_7_SB5', '22_7_SB6',
+    #  '22_7_SB7', '23_7_SB1', '23_7_SB2', '23_7_SB4', '23_7_SB5', '24_7_SB1']
 
 
 # ResultArray = np.zeros(shape=(len(namelist),6))
 
 # for i in np.arange(0,len(namelist),1):
 #      fn = namelist[i]
-#      Results = find_best_params(field_data_fname, fn, CIsites, LAsites, HAsites, weight = 1, clean=False)
+#      Results = find_best_params(FIELD_DATA_FNAME, fn, CIsites, LAsites,
+#                                 HAsites, weight = 1, clean=False)
 #      Results = np.array(Results)
 #      best_idx = Results[:,1].argmin()
 #      best_params = Results[best_idx,0]
 #      best_error = Results[best_idx,1]
 #      best_dens, best_rds, best_dz, best_alg, best_zen = zip(best_params)
-#      ResultArray[i,:] = np.array(best_dens),np.array(best_rds),np.array(best_dz),np.array(best_alg),np.array(best_zen),np.array(best_error)
+#      ResultArray[i,:] = np.array(best_dens),np.array(best_rds),
+#                         np.array(best_dz),np.array(best_alg),
+#                         np.array(best_zen),np.array(best_error)
 
 
 # import pandas as pd
-# Out = pd.DataFrame(data=ResultArray,columns=['dens','rds','dz','alg','zen','spec_err'])
+# Out = pd.DataFrame(data=ResultArray, columns=
+#                    ['dens',  rds', 'dz', 'alg', 'zen', 'spec_err'])
 # Out.index=namelist
 # Out.to_csv('/home/tothepoles/Desktop/Out.csv')
 
@@ -150,12 +166,13 @@ else:
 # they are collatd into parallel arrays, pass them to this function to display
 # them in a multipanel figure
 
-match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_cells,\
-    CIsites, LAsites, HAsites, apply_ARF, plot_ARF, ARF_CI, ARF_HA, savepath)
+match_field_spectra(FIELD_DATA_FNAME, fnames, rho, rds, dz, alg, measured_cells,\
+    CIsites, LAsites, HAsites, APPLY_ARF, PLOT_ARF, ARF_CI, ARF_HA, SAVEPATH)
 
 
 # 3) to estimate biological and physical contributions to albedo reduction
-# delAbioLA, delAphysLA, delAbioHA, delAphysHA  = isolate_biological_effect(field_data_fname,CIsites,LAsites,HAsites, savepath)
+# delAbioLA, delAphysLA, delAbioHA, delAphysHA  =
+#   isolate_biological_effect(FIELD_DATA_FNAME,CIsites,LAsites,HAsites, SAVEPATH)
 # print("**LIGHT ALGAE**")
 # print("Total BBA change = {}".format(delAbioLA+delAphysLA))
 # print("Change in BBA due to glacier algae = {}".format(delAbioLA))
@@ -174,17 +191,17 @@ match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_cells,
 # algae = [30000, 32000, 34000, 36000, 38000, 40000]
 # wavelengths = np.arange(0.2,5,0.01)
 # save_LUT = True
-# savepath = '/home/joe/Desktop/'
+# SAVEPATH = '/home/joe/Desktop/'
 # LUT = build_LUT([37], dz, densities, radii, algae, wavelengths, save_LUT,\
-#  apply_ARF, ARF_CI, ARF_HA, savepath)
+#  APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
 
 
 # 5) run inverse model
 #path_to_LUTs = '/home/joe/Code/'
-#field_data_fname = '/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/HCRF_master_16171819.csv'
-#Out = inverse_model(field_data_fname,path_to_LUTs)
+#FIELD_DATA_FNAME =
+#   '/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/HCRF_master_16171819.csv'
+#Out = inverse_model(FIELD_DATA_FNAME,path_to_LUTs)
 
 
 # 6) Field vs model comparison
-#compare_predicted_and_measured(savepath, path_to_metadata)
-
+#compare_predicted_and_measured(SAVEPATH, PATH_TO_METADATA)
