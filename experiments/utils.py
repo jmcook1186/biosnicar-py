@@ -44,8 +44,35 @@ import collections as c
 import xarray as xr
 import dask
 
+def run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES, LA_SITES, HA_SITES, WEIGHT, CLEAN):
+    """
+    function calls out to find_best_params
+    """
+    ResultArray = np.zeros(shape=(len(ALL_FIELD_SAMPLES),6))
 
-def find_best_params(field_data_fname, sampleID, CIsites, LAsites, HAsites, weight, clean=True):
+    for i in np.arange(0,len(ALL_FIELD_SAMPLES),1):
+        
+        fn = ALL_FIELD_SAMPLES[i]
+        Results = find_best_params(FIELD_DATA_FNAME, fn, CI_SITES, LA_SITES,
+                                    HA_SITES, WEIGHT, CLEAN)
+        Results = np.array(Results)
+        best_idx = Results[:,1].argmin()
+        best_params = Results[best_idx,0]
+        best_error = Results[best_idx,1]
+        best_dens, best_rds, best_dz, best_alg, best_zen = zip(best_params)
+        ResultArray[i,:] = np.array(best_dens),np.array(best_rds),\
+                           np.array(best_dz),np.array(best_alg),\
+                           np.array(best_zen),np.array(best_error)
+
+    Out = pd.DataFrame(data = ResultArray, columns=
+                       ['dens',  'rds', 'dz', 'alg', 'zen', 'spec_err'])
+    Out.index = ALL_FIELD_SAMPLES
+    Out.to_csv(str(SAVEPATH+'retrieved_params.csv'))
+
+    return True
+
+
+def find_best_params(FIELD_DATA_FNAME, sampleID, CIsites, LAsites, HAsites, weight, clean=True):
 
     """
     This function will return the SNICAR parameter set that provides the
@@ -53,7 +80,7 @@ def find_best_params(field_data_fname, sampleID, CIsites, LAsites, HAsites, weig
 
     """
 
-    spectra = pd.read_csv(field_data_fname)
+    spectra = pd.read_csv(FIELD_DATA_FNAME)
     spectra = spectra[::10]
 
     CIspec = spectra[spectra.columns.intersection(CIsites)]
@@ -114,7 +141,7 @@ def find_best_params(field_data_fname, sampleID, CIsites, LAsites, HAsites, weig
                         out = run_sims(i,j,k,p,z)
                         Out.append(out)
     
-    Result = dask.compute(*Out,scheduler='processes')
+    Result = dask.compute(*Out,num_workers=12)
 
     return Result
 
@@ -160,7 +187,7 @@ def call_snicar(params):
 
     # set dir_base to the location of the BioSNICAR_GO_PY folder
     inputs.dir_base = '/home/joe/Code/BioSNICAR_GO_PY/'
-    savepath = inputs.dir_base # base path for saving figures
+    SAVEPATH = inputs.dir_base # base path for saving figures
     write_config_to_textfile = False # toggle to save config to file
     inputs.verbosity = 0 # 1 to print real-time updates
 
@@ -343,8 +370,8 @@ def call_snicar(params):
     return outputs.albedo, outputs.BBA
 
 
-def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_cells,\
-    CIsites, LAsites, HAsites, apply_ARF, plot_ARF, ARF_CI, ARF_HA, savepath):
+def match_field_spectra(FIELD_DATA_FNAME, fnames, rho, rds, dz, alg, measured_cells,\
+    CIsites, LAsites, HAsites, APPLY_ARF, PLOT_ARF, ARF_CI, ARF_HA, SAVEPATH):
     
     """
     plot field against SNICAR spectra
@@ -352,7 +379,7 @@ def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_ce
     the relevant params can be generated using the find_best_params() func
 
     params:
-    field_data_fname = filename for spectral database
+    FIELD_DATA_FNAME = filename for spectral database
     
     The following params are parallel arrays - the order matters and 
     must match the filenames! Pairs of values represent values for 
@@ -374,11 +401,11 @@ def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_ce
     alg = [[0,0],[0,0],[20000,0],[30000,0],[45000,0],[3000,0],[8000,0],[0,0]]  
 
     returns:
-    None, but saves figure to savepath
+    None, but saves figure to SAVEPATH
 
     """
 
-    spectra = pd.read_csv(field_data_fname)
+    spectra = pd.read_csv(FIELD_DATA_FNAME)
 
     # reformat feld spectra to match snicar resolution
     spectra = spectra[::10]
@@ -390,12 +417,12 @@ def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_ce
     RAINspec = spectra['RAIN2']
 
 
-    if plot_ARF:
+    if PLOT_ARF:
         plt.plot(spectra.Wavelength[0:100],ARF_CI[0:100],marker='x', label='clean ice ARF'),
         plt.plot(spectra.Wavelength[0:100],ARF_HA[0:100],marker='o',linestyle='dashed',label='algal ice ARF')
         plt.ylabel('Anitostropic Reflectance Factor'),plt.xlabel("Wavelength (nm)")
         plt.legend(loc='best')
-        plt.savefig(str(savepath+'ARF.jpg'),dpi=300)
+        plt.savefig(str(SAVEPATH+'ARF.jpg'),dpi=300)
 
     # define local function for calling snicar
     def simulate_albedo(rds, rho, dz, alg):
@@ -422,7 +449,7 @@ def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_ce
     for i in np.arange(0,len(fnames),1):
 
         albedo,BBA=simulate_albedo(rds[i],rho[i],dz[i],alg[i])
-        if apply_ARF:
+        if APPLY_ARF:
             if alg[i][0] > 5000:
                 albedo[15:230] = albedo[15:230]*ARF_HA
             else:
@@ -439,7 +466,7 @@ def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_ce
     # plot figure
     fig,axes = plt.subplots(4,2,figsize=(10,10))
 
-    if apply_ARF:
+    if APPLY_ARF:
         ylabel='Reflectance'
         PlotName = 'FieldvsMeasuredReflectance.jpg' 
     else:
@@ -512,13 +539,13 @@ def match_field_spectra(field_data_fname, fnames, rho, rds, dz, alg, measured_ce
     axes[3,1].set_ylabel(ylabel), axes[3,1].set_xlabel('Wavelength (nm)')
 
     fig.tight_layout()
-    plt.savefig(str(savepath+PlotName),dpi=300)
+    plt.savefig(str(SAVEPATH+PlotName),dpi=300)
 
-    return
+    return True
 
 
 
-def isolate_biological_effect(field_data_fname, CIsites, LAsites, HAsites, savepath):
+def isolate_biological_effect(FIELD_DATA_FNAME, CIsites, LAsites, HAsites, SAVEPATH):
 
     """
     This function estimates the albedo reduction resulting from the ice physical changes
@@ -530,7 +557,7 @@ def isolate_biological_effect(field_data_fname, CIsites, LAsites, HAsites, savep
     """
 
     #read in spectral database
-    spectra = pd.read_csv(field_data_fname)
+    spectra = pd.read_csv(FIELD_DATA_FNAME)
 
     # reformat feld spectra to match snicar resolution
     spectra = spectra[::10]
@@ -581,7 +608,7 @@ def isolate_biological_effect(field_data_fname, CIsites, LAsites, HAsites, savep
     ax2.set_xlim(350,1500), ax2.legend(loc='best')
     ax2.set_ylabel('Albedo'), ax2.set_xlabel('Wavelength (nm)')
     fig.tight_layout()
-    plt.savefig(str(savepath+'/BiovsPhysEffect.jpg'),dpi=300)
+    plt.savefig(str(SAVEPATH+'/BiovsPhysEffect.jpg'),dpi=300)
         
     # define incoming to calculate broadband albedo
     incoming = xr.open_dataset('/home/joe/Code/BioSNICAR_GO_PY/Data/Mie_files/480band/fsds/swnb_480bnd_sas_clr_SZA60.nc')
@@ -606,7 +633,7 @@ def isolate_biological_effect(field_data_fname, CIsites, LAsites, HAsites, savep
 
 
 
-def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, apply_ARF, ARF_CI, ARF_HA, savepath):
+def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH):
 
     """
     generates LUTs used to invert BioSNICAR in RISA project
@@ -620,7 +647,7 @@ def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, apply_
     algae: mass mixing ratio of algae in top layer
     wavelengths: wavelength range, default is np.arange(0.2, 5, 0.01)
     save_LUT: Boolean to toggle saving to npy file
-    savepath: directory to save LUT
+    SAVEPATH: directory to save LUT
 
     returns:
     WCthickLUT: for each index position in the spectraLUT, this holds the WC 
@@ -665,7 +692,7 @@ def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, apply_
 
     # move the ARF application to new loop because dask compute objets are immutable
     # i.e. modifications to albedo must be done post-compute
-    if apply_ARF:
+    if APPLY_ARF:
         for z in np.arange(0,len(solzen),1):
             for i in np.arange(0,len(densities),1):
                 for j in np.arange(0,len(radii),1):
@@ -681,15 +708,15 @@ def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, apply_
 
 
     if save_LUT:
-        np.save(str(savepath+"LUT.npy"),LUT)
+        np.save(str(SAVEPATH+"LUT.npy"),LUT)
 
     return LUT
 
 
 
-def inverse_model(field_data_fname,path_to_LUTs):
+def inverse_model(FIELD_DATA_FNAME,path_to_LUTs):
 
-    spectra = pd.read_csv(field_data_fname)
+    spectra = pd.read_csv(FIELD_DATA_FNAME)
 
     LUT_idx = [19, 26, 36, 40, 44, 48, 56, 131, 190]
     spectrum_idx = [140, 210, 315, 355, 390, 433, 515, 1260, 1840]
@@ -881,7 +908,7 @@ def BDA2_of_field_samples():
     return Out
 
 
-def compare_predicted_and_measured(savepath, path_to_metadata):
+def compare_predicted_and_measured(SAVEPATH, path_to_metadata):
 
     ## imports and data organisation
     import statsmodels.api as sm
@@ -954,7 +981,7 @@ def compare_predicted_and_measured(savepath, path_to_metadata):
 
     fig.tight_layout()
 
-    savepath = '/home/joe/Code/Remote_Ice_Surface_Analyser/Manuscript/Figures'
-    fig.savefig(str(savepath+'/measured_modelled_algae.png'),dpi=300)
+    SAVEPATH = '/home/joe/Code/Remote_Ice_Surface_Analyser/Manuscript/Figures'
+    fig.savefig(str(SAVEPATH+'/measured_modelled_algae.png'),dpi=300)
 
     return
