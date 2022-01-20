@@ -571,6 +571,7 @@ def snicar_feeder(inputs):
 
         impurity_properties = xr.open_dataset(\
             str(dir_lap_files + files[aer]))
+            
         g_aer[aer, :] = impurity_properties['asm_prm'].values
         ssa_aer[aer, :] = impurity_properties['ss_alb'].values
 

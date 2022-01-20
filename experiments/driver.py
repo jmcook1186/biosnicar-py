@@ -53,6 +53,7 @@ with open("./experiments/config.yaml", "r") as ymlfile:
     cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
 # define paths and constants
+WAVELENGTHS = np.arange(0.2, 5, 0.01)
 SAVEPATH = cfg["PATHS"]["SAVEPATH"]
 CI_SITES = cfg["SAMPLES"]["CI_SITES"]
 DISP_SITES = cfg["SAMPLES"]["DISP_SITES"]
@@ -67,6 +68,13 @@ METADATA = cfg["PATHS"]["METADATA"]
 ALL_FIELD_SAMPLES = cfg["SAMPLES"]["ALL_SITES"]
 WEIGHT = cfg["FIND_BEST_PARAMS"]["WEIGHT"]
 CLEAN = cfg["FIND_BEST_PARAMS"]["CLEAN"]
+LUT_DZ = cfg["BUILD_LUT"]["DZ"]
+LUT_DENSITIES = cfg["BUILD_LUT"]["DENSITIES"]
+LUT_RADII = cfg["BUILD_LUT"]["RADII"]
+LUT_ALGAE = cfg["BUILD_LUT"]["ALGAE"]
+LUT_ZEN = cfg["BUILD_LUT"]["ZEN"]
+SAVE_LUT = cfg["BUILD_LUT"]["SAVE_LUT"]
+LUTS = cfg["PATHS"]["LUT"]
 
 # generate ARF data
 ARF_CI_DF = pd.read_csv(ARF_PATH)
@@ -112,13 +120,14 @@ else:
 ### RUN FUNCS (UNCOMMENT TO ACTIVATE) ###
 #########################################
 
-success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG, CELLS,
-                              CI_SITES, LA_SITES, HA_SITES, APPLY_ARF, PLOT_ARF,
-                              ARF_CI, ARF_HA, SAVEPATH)
+# plot simulated spectra against field spectra
+# success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG, CELLS,
+#                               CI_SITES, LA_SITES, HA_SITES, APPLY_ARF, PLOT_ARF,
+#                               ARF_CI, ARF_HA, SAVEPATH)
 
-
-success = utils.run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES,
-                          LA_SITES, HA_SITES, WEIGHT, CLEAN)
+# finds parameters that minimise error between fielkd and model spectral albedo
+# success = utils.run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES,
+#                           LA_SITES, HA_SITES, WEIGHT, CLEAN)
 
 
 # 3) to estimate biological and physical contributions to albedo reduction
@@ -136,22 +145,12 @@ success = utils.run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, C
 
 
 # # BUILD LUT
-# dz = [0.02, 0.03, 0.04, 0.05, 0.06 ,0.07]
-# densities = [600, 650, 700, 750, 800, 850]
-# radii = [600, 700, 800, 900, 1000]
-# algae = [30000, 32000, 34000, 36000, 38000, 40000]
-# wavelengths = np.arange(0.2,5,0.01)
-# save_LUT = True
-# SAVEPATH = '/home/joe/Desktop/'
-# LUT = build_LUT([37], dz, densities, radii, algae, wavelengths, save_LUT,\
-#  APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
+LUT = utils.build_LUT(LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
+                 APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
 
 
 # 5) run inverse model
-#path_to_LUTs = '/home/joe/Code/'
-#FIELD_DATA_FNAME =
-#   '/home/joe/Code/Remote_Ice_Surface_Analyser/Training_Data/HCRF_master_16171819.csv'
-#Out = inverse_model(FIELD_DATA_FNAME,path_to_LUTs)
+#Out = inverse_model(FIELD_DATA_FNAME,LUTS)
 
 
 # 6) Field vs model comparison
