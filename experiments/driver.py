@@ -121,9 +121,9 @@ else:
 #########################################
 
 # plot simulated spectra against field spectra
-# success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG, CELLS,
-#                               CI_SITES, LA_SITES, HA_SITES, APPLY_ARF, PLOT_ARF,
-#                               ARF_CI, ARF_HA, SAVEPATH)
+success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG, CELLS,
+                                    CI_SITES, LA_SITES, HA_SITES, APPLY_ARF, PLOT_ARF,
+                                    ARF_CI, ARF_HA, SAVEPATH)
 
 # finds parameters that minimise error between fielkd and model spectral albedo
 # success = utils.run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES,
@@ -145,8 +145,8 @@ else:
 
 
 # # BUILD LUT
-LUT = utils.build_LUT(LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
-                 APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
+# LUT = utils.build_LUT(LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
+#                  APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
 
 
 # 5) run inverse model
