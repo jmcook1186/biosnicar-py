@@ -1,8 +1,9 @@
 import sys
+sys.path.append("./src")
 import collections as c
 import numpy as np
 from snicar_feeder import snicar_feeder
-sys.path.append("./src")
+
 
 def call_snicar(params):
     """

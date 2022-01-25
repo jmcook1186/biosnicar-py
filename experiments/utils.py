@@ -1,5 +1,5 @@
 """
-Joseph Cook, Aarhus University, Feb 2021
+Joseph Cook, Aarhus University, Jan 2022
 
 This script contains functions that a) generate 
 SNICAR-predicted spectral albedo that approximate
@@ -33,8 +33,6 @@ inverse_model()
 
 """
 import sys
-# make sure we can import from/src
-sys.path.append("./src") 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -43,107 +41,7 @@ import statsmodels.api as sm
 import collections as c
 import xarray as xr
 import dask
-
-def run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES, LA_SITES, HA_SITES, WEIGHT, CLEAN):
-    """
-    function calls out to find_best_params
-    """
-    ResultArray = np.zeros(shape=(len(ALL_FIELD_SAMPLES),6))
-
-    for i in np.arange(0,len(ALL_FIELD_SAMPLES),1):
-        
-        fn = ALL_FIELD_SAMPLES[i]
-        Results = find_best_params(FIELD_DATA_FNAME, fn, CI_SITES, LA_SITES,
-                                    HA_SITES, WEIGHT, CLEAN)
-        Results = np.array(Results)
-        best_idx = Results[:,1].argmin()
-        best_params = Results[best_idx,0]
-        best_error = Results[best_idx,1]
-        best_dens, best_rds, best_dz, best_alg, best_zen = zip(best_params)
-        ResultArray[i,:] = np.array(best_dens),np.array(best_rds),\
-                           np.array(best_dz),np.array(best_alg),\
-                           np.array(best_zen),np.array(best_error)
-
-    Out = pd.DataFrame(data = ResultArray, columns=
-                       ['dens',  'rds', 'dz', 'alg', 'zen', 'spec_err'])
-    Out.index = ALL_FIELD_SAMPLES
-    Out.to_csv(str(SAVEPATH+'retrieved_params.csv'))
-
-    return True
-
-
-def find_best_params(FIELD_DATA_FNAME, sampleID, CIsites, LAsites, HAsites, weight, clean=True):
-
-    """
-    This function will return the SNICAR parameter set that provides the
-    best approximation to a given field spectrum. 
-
-    """
-
-    spectra = pd.read_csv(FIELD_DATA_FNAME)
-    spectra = spectra[::10]
-
-    CIspec = spectra[spectra.columns.intersection(CIsites)]
-    HAspec = spectra[spectra.columns.intersection(HAsites)]
-    LAspec = spectra[spectra.columns.intersection(LAsites)]
-
-    if sampleID =='CImean':
-        field_spectrum = CIspec.mean(axis=1)
-    elif sampleID =='HAmean':
-        field_spectrum = HAspec.mean(axis=1)
-    elif sampleID == 'LAmean':
-        field_spectrum = LAspec.mean(axis=1)
-    elif sampleID == 'RAIN':
-        field_spectrum = spectra['RAIN2']
-    else:
-        field_spectrum = spectra[sampleID]
-
-    # calculate 2BDA index of field spectrum
-    BDA2idx = np.array(field_spectrum)[36]/np.array(field_spectrum)[31]
-
-    dens = [550, 600, 650, 700, 750, 800, 850]
-    dz = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.2]
-    rds = [600, 700, 800, 900, 1000]
-    alg = [0, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000]
-    c_factors = [10, 20, 30]
-    solzen = [40, 45, 50]
-
-    @dask.delayed
-    def run_sims(i,j,k,p,q,z):
-        
-        params = c.namedtuple("params","rho_layers, grain_rds, layer_type, dz, mss_cnc_glacier_algae, c_factor_GA, solzen")
-        params.rho_layers = [i,i]
-        params.grain_rds = [j,j]
-        params.layer_type = [1,1]
-        params.dz = [0.001,k]
-        params.mss_cnc_glacier_algae = [p,0]
-        params.c_factor_GA = c_factors[q]
-        params.solzen = z
-
-        albedo, BBA = call_snicar(params)
-        
-        error_vis = np.mean(abs(albedo[15:55]-field_spectrum[0:40]))
-        error_nir = np.mean(abs(albedo[55:100]-field_spectrum[40:85]))
-        error = ((error_vis*weight)+error_nir)/(1+weight)
-
-        params = (i,j,k,p,z)
-        out =(params, error)
-
-        return out
-
-    Out = []
-    # now use the reduced LUT to call snicar and obtain best matching spectrum
-    for i in dens:
-        for j in rds:
-            for k in dz:
-                for p in alg:
-                    for z in solzen:
-                        out = run_sims(i,j,k,p,z)
-                        Out.append(out)
-    
-    Result = dask.compute(*Out,num_workers=12)
-
-    return Result
+sys.path.append("./src") 
 
 
 def match_field_spectra(FIELD_DATA_FNAME, fnames, rho, rds, dz, alg, measured_cells,\
@@ -321,6 +219,148 @@ def match_field_spectra(FIELD_DATA_FNAME, fnames, rho, rds, dz, alg, measured_ce
 
 
 
+def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH):
+
+    """
+    generates LUTs used to invert BioSNICAR in RISA project
+
+    params:
+    ice_rds: fixed effective bubble radius for solid ice layers (default = 525)
+    ice dens: fixed density for solid ice layers (default = 894)
+    zeniths: range of solar zenith angles to loop over
+    dz: thickness of each vertical layer
+    densities: densities for top layer. Lower layers predicted by exponential model
+    algae: mass mixing ratio of algae in top layer
+    wavelengths: wavelength range, default is np.arange(0.2, 5, 0.01)
+    save_LUT: Boolean to toggle saving to npy file
+    SAVEPATH: directory to save LUT
+
+    returns:
+    WCthickLUT: for each index position in the spectraLUT, this holds the WC 
+                thickness in the corresponding index position
+    SpectraLUT: ND array containing 480element spectrum for each 
+                dens/alg/zen combination
+
+    return spectraLUT 
+
+
+    """
+    LUT = []
+
+    @dask.delayed
+    def run_sims(dens,rad,dz,alg,zen):
+
+        params = c.namedtuple("params", "rho_layers, grain_rds, layer_type, c_factor_GA, dz, mss_cnc_glacier_algae, solzen")
+        params.rho_layers = [dens,dens]
+        params.grain_rds = [rad,rad] # set equal to density
+        params.layer_type = [1,1]
+        params.dz = [0.001,dz]
+        params.mss_cnc_glacier_algae = [alg,0]
+        params.solzen = zen
+        params.c_factor_GA = 20
+
+        albedo, BBA = call_snicar(params)
+
+        return albedo
+
+    for z in np.arange(0,len(solzen),1):
+        for i in np.arange(0,len(densities),1):
+            for j in np.arange(0,len(radii),1):
+                for p in np.arange(0,len(dz),1):
+                    for q in np.arange(0,len(algae),1):
+                        
+                        albedo = run_sims(densities[i],radii[j],dz[p],algae[q],solzen[z])
+                                
+                        LUT.append(albedo)
+
+    LUT = dask.compute(*LUT, num_workers = 12)
+    LUT = np.array(LUT).reshape(len(solzen),len(densities),len(radii),len(dz),len(algae),len(wavelengths))
+
+    # move the ARF application to new loop because dask compute objets are immutable
+    # i.e. modifications to albedo must be done post-compute
+    if APPLY_ARF:
+        for z in np.arange(0,len(solzen),1):
+            for i in np.arange(0,len(densities),1):
+                for j in np.arange(0,len(radii),1):
+                    for p in np.arange(0,len(dz),1):
+                        for q in np.arange(0,len(algae),1):
+
+                            if algae[q] > 5000:
+                                
+                                LUT[z,i,j,p,q,0:215] = LUT[z,i,j,p,q,0:215]*ARF_HA
+                                
+                            else:
+                                LUT[z,i,j,p,q,0:215] = LUT[z,i,j,p,q,0:215]*ARF_CI
+
+
+    if save_LUT:
+        np.save(str(SAVEPATH+"LUT.npy"),LUT)
+
+    return LUT
+
+
+def inverse_model(FIELD_DATA_FNAME, LUT_PATH, DZ, DENSITIES, RADII, ZENS, ALGAE, WAVELENGTHS):
+
+    spectra = pd.read_csv(FIELD_DATA_FNAME)
+    algaeList = []
+    grainList = []
+    densityList =[]
+    dzList = []
+    filenames = []
+    errorList = []
+    zenithList = []
+
+
+    @dask.delayed()
+    def run_inversion(LUT_VIS, LUT_NIR, spectrum, solzens, densities, radii, dz, algae):
+        
+        error_array = abs(LUT_NIR - spectrum[55:-1:10])
+
+        mean_error = np.mean(error_array, axis=1)
+    
+        index = np.argmin(mean_error)
+
+        param_idx = np.unravel_index(index,[len(solzens),len(densities),len(radii),len(dz),len(algae)])
+
+        return param_idx
+
+    # # STEP 1: MATCH NIR TO GET PHYSICAL PROPERTIES
+    # for i in np.arange(0,len(spectra.columns),1):
+        
+    #     if i != 'wavelength':
+
+    #         colname = spectra.columns[i]
+    #         spectrum = np.array(spectra[colname])
+
+    #         LUT = np.load(str(LUT_PATH+'LUT.npy'))
+    #         LUT_FULL = LUT[:,:,:,:,:,15:230]
+    #         LUT_FULL = LUT_FULL.reshape(len(ZENS)*len(DENSITIES)*len(RADII)*len(DZ)*len(ALGAE),470)
+
+    #         LUT_NIR = LUT[:,:,:,:,:,55:230]
+    #         LUT_NIR = LUT_NIR.reshape(len(ZENS)*len(DENSITIES)*len(RADII)*len(DZ)*len(ALGAE),425)
+            
+    #         param_idx = run_inversion(LUT, spectrum, solzens, densities, radii, dz, algae)
+
+    #         filenames.append(colname)
+    #         zenithList.append(solzens[param_idx[0]])
+    #         densityList.append(densities[param_idx[1]])
+    #         grainList.append(radii[param_idx[2]])
+    #         dzList.append(dz[param_idx[3]])
+    #         algaeList.append(algae[param_idx[4]])
+    #         errorList.append(np.min(mean_error))
+            
+    # Out = pd.DataFrame(columns=['filename','density','grain','algae'])
+    # Out['filename'] = filenames
+    # Out['zenith'] = zenithList
+    # Out['density'] = densityList
+    # Out['grain'] = grainList
+    # Out['dz'] = dzList
+    # Out['algae'] = algaeList
+    # Out['spec_error'] = errorList
+
+    # return Out
+
+
 def isolate_biological_effect(FIELD_DATA_FNAME, CIsites, LAsites, HAsites, SAVEPATH):
 
     """
@@ -409,218 +449,107 @@ def isolate_biological_effect(FIELD_DATA_FNAME, CIsites, LAsites, HAsites, SAVEP
 
 
 
-def build_LUT(solzen, dz, densities, radii, algae, wavelengths, save_LUT, APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH):
+def run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES, LA_SITES, HA_SITES, WEIGHT, CLEAN):
+    """
+    function calls out to find_best_params
+    """
+    ResultArray = np.zeros(shape=(len(ALL_FIELD_SAMPLES),6))
+
+    for i in np.arange(0,len(ALL_FIELD_SAMPLES),1):
+        
+        fn = ALL_FIELD_SAMPLES[i]
+        Results = find_best_params(FIELD_DATA_FNAME, fn, CI_SITES, LA_SITES,
+                                    HA_SITES, WEIGHT, CLEAN)
+        Results = np.array(Results)
+        best_idx = Results[:,1].argmin()
+        best_params = Results[best_idx,0]
+        best_error = Results[best_idx,1]
+        best_dens, best_rds, best_dz, best_alg, best_zen = zip(best_params)
+        ResultArray[i,:] = np.array(best_dens),np.array(best_rds),\
+                           np.array(best_dz),np.array(best_alg),\
+                           np.array(best_zen),np.array(best_error)
+
+    Out = pd.DataFrame(data = ResultArray, columns=
+                       ['dens',  'rds', 'dz', 'alg', 'zen', 'spec_err'])
+    Out.index = ALL_FIELD_SAMPLES
+    Out.to_csv(str(SAVEPATH+'retrieved_params.csv'))
+
+    return True
+
+
+
+def find_best_params(FIELD_DATA_FNAME, sampleID, CIsites, LAsites, HAsites, weight, clean=True):
+    
+    """
+    This function will return the SNICAR parameter set that provides the
+    best approximation to a given field spectrum. 
 
     """
-    generates LUTs used to invert BioSNICAR in RISA project
-
-    params:
-    ice_rds: fixed effective bubble radius for solid ice layers (default = 525)
-    ice dens: fixed density for solid ice layers (default = 894)
-    zeniths: range of solar zenith angles to loop over
-    dz: thickness of each vertical layer
-    densities: densities for top layer. Lower layers predicted by exponential model
-    algae: mass mixing ratio of algae in top layer
-    wavelengths: wavelength range, default is np.arange(0.2, 5, 0.01)
-    save_LUT: Boolean to toggle saving to npy file
-    SAVEPATH: directory to save LUT
-
-    returns:
-    WCthickLUT: for each index position in the spectraLUT, this holds the WC 
-                thickness in the corresponding index position
-    SpectraLUT: ND array containing 480element spectrum for each 
-                dens/alg/zen combination
-
-    return spectraLUT 
-
-
-    """
-    LUT = []
-
-    @dask.delayed
-    def run_sims(dens,rad,dz,alg,zen):
-
-        params = c.namedtuple("params", "rho_layers, grain_rds, layer_type, c_factor_GA, dz, mss_cnc_glacier_algae, solzen")
-        params.rho_layers = [dens,dens]
-        params.grain_rds = [rad,rad] # set equal to density
-        params.layer_type = [1,1]
-        params.dz = [0.001,dz]
-        params.mss_cnc_glacier_algae = [alg,0]
-        params.solzen = zen
-        params.c_factor_GA = 20
-
-        albedo, BBA = call_snicar(params)
-
-        return albedo
-
-    for z in np.arange(0,len(solzen),1):
-        for i in np.arange(0,len(densities),1):
-            for j in np.arange(0,len(radii),1):
-                for p in np.arange(0,len(dz),1):
-                    for q in np.arange(0,len(algae),1):
-                        
-                        albedo = run_sims(densities[i],radii[j],dz[p],algae[q],solzen[z])
-                                
-                        LUT.append(albedo)
-
-    LUT = dask.compute(*LUT, num_workers = 12)
-    LUT = np.array(LUT).reshape(len(solzen),len(densities),len(radii),len(dz),len(algae),len(wavelengths))
-
-    # move the ARF application to new loop because dask compute objets are immutable
-    # i.e. modifications to albedo must be done post-compute
-    if APPLY_ARF:
-        for z in np.arange(0,len(solzen),1):
-            for i in np.arange(0,len(densities),1):
-                for j in np.arange(0,len(radii),1):
-                    for p in np.arange(0,len(dz),1):
-                        for q in np.arange(0,len(algae),1):
-
-                            if algae[q] > 5000:
-                                
-                                LUT[z,i,j,p,q,0:215] = LUT[z,i,j,p,q,0:215]*ARF_HA
-                                
-                            else:
-                                LUT[z,i,j,p,q,0:215] = LUT[z,i,j,p,q,0:215]*ARF_CI
-
-
-    if save_LUT:
-        np.save(str(SAVEPATH+"LUT.npy"),LUT)
-
-    return LUT
-
-
-
-def inverse_model(FIELD_DATA_FNAME,path_to_LUTs):
 
     spectra = pd.read_csv(FIELD_DATA_FNAME)
+    spectra = spectra[::10]
 
-    LUT_idx = [19, 26, 36, 40, 44, 48, 56, 131, 190]
-    spectrum_idx = [140, 210, 315, 355, 390, 433, 515, 1260, 1840]
+    CIspec = spectra[spectra.columns.intersection(CIsites)]
+    HAspec = spectra[spectra.columns.intersection(HAsites)]
+    LAspec = spectra[spectra.columns.intersection(LAsites)]
 
-    algaeList = []
-    grainList = []
-    densityList =[]
-    dzList = []
-    filenames = []
-    errorList = []
-    zenithList = []
+    if sampleID =='CImean':
+        field_spectrum = CIspec.mean(axis=1)
+    elif sampleID =='HAmean':
+        field_spectrum = HAspec.mean(axis=1)
+    elif sampleID == 'LAmean':
+        field_spectrum = LAspec.mean(axis=1)
+    elif sampleID == 'RAIN':
+        field_spectrum = spectra['RAIN2']
+    else:
+        field_spectrum = spectra[sampleID]
 
+    # calculate 2BDA index of field spectrum
+    BDA2idx = np.array(field_spectrum)[36]/np.array(field_spectrum)[31]
 
-    for i in np.arange(0,len(spectra.columns),1):
+    dens = [550, 600, 650, 700, 750, 800, 850]
+    dz = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.2]
+    rds = [600, 700, 800, 900, 1000]
+    alg = [0, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000]
+    c_factors = [10, 20, 30]
+    solzen = [40, 45, 50]
+
+    @dask.delayed
+    def run_sims(i,j,k,p,q,z):
         
-        if i != 'wavelength':
+        params = c.namedtuple("params","rho_layers, grain_rds, layer_type, dz, mss_cnc_glacier_algae, c_factor_GA, solzen")
+        params.rho_layers = [i,i]
+        params.grain_rds = [j,j]
+        params.layer_type = [1,1]
+        params.dz = [0.001,k]
+        params.mss_cnc_glacier_algae = [p,0]
+        params.c_factor_GA = c_factors[q]
+        params.solzen = z
 
-            colname = spectra.columns[i]
-            spectrum = np.array(spectra[colname])
-            # calculate 2BDA index of field spectrum
-            BDA2idx = np.array(spectrum)[360]/np.array(spectrum)[330]
-            BDA2cells = abs(216000*BDA2idx-208600)
+        albedo, BBA = call_snicar(params)
+        
+        error_vis = np.mean(abs(albedo[15:55]-field_spectrum[0:40]))
+        error_nir = np.mean(abs(albedo[55:100]-field_spectrum[40:85]))
+        error = ((error_vis*weight)+error_nir)/(1+weight)
 
-            print(BDA2cells)
+        params = (i,j,k,p,z)
+        out =(params, error)
 
-            if (BDA2cells < 5000):
-                LUT = np.load(str(path_to_LUTs+'LUT_1.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.2]
-                densities = [600, 650, 700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [0, 2500, 5000]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT1")
+        return out
 
-            elif (BDA2cells >= 5000)&(BDA2cells < 10000):
-                LUT = np.load(str(path_to_LUTs+'LUT_2.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1]
-                densities = [700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [7500, 10000, 12500]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT2")
+    Out = []
+    # now use the reduced LUT to call snicar and obtain best matching spectrum
+    for i in dens:
+        for j in rds:
+            for k in dz:
+                for p in alg:
+                    for z in solzen:
+                        out = run_sims(i,j,k,p,z)
+                        Out.append(out)
+    
+    Result = dask.compute(*Out,num_workers=12)
 
-            elif (BDA2cells >= 10000)&(BDA2cells < 15000):
-                LUT = np.load(str(path_to_LUTs+'LUT_3.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08]
-                densities = [700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [10000, 12500, 15000, 17500]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT3")
-
-            elif (BDA2cells >=15000)&(BDA2cells<20000):
-                LUT = np.load(str(path_to_LUTs+'LUT_4.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05]
-                densities = [700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [15000, 20000, 25000]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT4")
-
-            elif (BDA2cells >=20000)&(BDA2cells<25000):
-                LUT = np.load(str(path_to_LUTs+'LUT_5.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05]
-                densities = [700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [20000, 22500, 25000, 27500, 30000]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT5")
-
-            elif (BDA2cells >=25000)&(BDA2cells<30000):
-                LUT = np.load(str(path_to_LUTs+'LUT_6.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05]
-                densities = [700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [25000, 27500, 30000, 32500, 35000]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT6")
-
-            elif (BDA2cells >30000):
-                LUT = np.load(str(path_to_LUTs+'LUT_7.npy'))
-                dz = [0.02, 0.03, 0.04, 0.05]
-                densities = [700, 750, 800, 850, 900]
-                radii = [600, 700, 800, 900]
-                algae = [35000, 37500, 40000, 45000]
-                solzens = [40, 45, 50, 55]
-                wavelengths = np.arange(0.2,5,0.01)
-                print("LUT7")
-
-            LUT = LUT[:,:,:,:,:,15:230]
-            LUT = LUT.reshape(len(solzens)*len(densities)*len(radii)*len(dz)*len(algae),len(wavelengths[15:230]))
-            
-            # LUT = LUT[:,LUT_idx] # reduce wavelengths to only the 9 that match the S2 image
-            # spectrum = spectrum[spectrum_idx]
-            
-            error_array = abs(LUT - spectrum[0:-1:10])
-
-            mean_error = np.mean(error_array,axis=1)
-            
-            index = np.argmin(mean_error)
-
-            param_idx = np.unravel_index(index,[len(solzens),len(densities),len(radii),len(dz),len(algae)])
-
-            filenames.append(colname)
-            zenithList.append(solzens[param_idx[0]])
-            densityList.append(densities[param_idx[1]])
-            grainList.append(radii[param_idx[2]])
-            dzList.append(dz[param_idx[3]])
-            algaeList.append(algae[param_idx[4]])
-            errorList.append(np.min(mean_error))
-            
-    Out = pd.DataFrame(columns=['filename','density','grain','algae'])
-    Out['filename'] = filenames
-    Out['zenith'] = zenithList
-    Out['density'] = densityList
-    Out['grain'] = grainList
-    Out['dz'] = dzList
-    Out['algae'] = algaeList
-    Out['spec_error'] = errorList
-
-    return Out
-
+    return Result
 
 def BDA2_of_field_samples():
 
