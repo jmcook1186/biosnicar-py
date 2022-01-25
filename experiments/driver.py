@@ -74,7 +74,7 @@ LUT_RADII = cfg["BUILD_LUT"]["RADII"]
 LUT_ALGAE = cfg["BUILD_LUT"]["ALGAE"]
 LUT_ZEN = cfg["BUILD_LUT"]["ZEN"]
 SAVE_LUT = cfg["BUILD_LUT"]["SAVE_LUT"]
-LUTS = cfg["PATHS"]["LUT"]
+LUT_PATH = cfg["PATHS"]["LUT"]
 
 # generate ARF data
 ARF_CI_DF = pd.read_csv(ARF_PATH)
@@ -121,9 +121,9 @@ else:
 #########################################
 
 # plot simulated spectra against field spectra
-success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG, CELLS,
-                                    CI_SITES, LA_SITES, HA_SITES, APPLY_ARF, PLOT_ARF,
-                                    ARF_CI, ARF_HA, SAVEPATH)
+# success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG, CELLS,
+#                                     CI_SITES, LA_SITES, HA_SITES, APPLY_ARF, PLOT_ARF,
+#                                     ARF_CI, ARF_HA, SAVEPATH)
 
 # finds parameters that minimise error between fielkd and model spectral albedo
 # success = utils.run_best_params(SAVEPATH, ALL_FIELD_SAMPLES, FIELD_DATA_FNAME, CI_SITES,
@@ -150,8 +150,7 @@ success = utils.match_field_spectra(FIELD_DATA_FNAME, FNAMES, RHO, RDS, DZ, ALG,
 
 
 # 5) run inverse model
-#Out = inverse_model(FIELD_DATA_FNAME,LUTS)
-
+spectra = utils.inverse_model(FIELD_DATA_FNAME, LUT_PATH, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ZEN, LUT_ALGAE, WAVELENGTHS)
 
 # 6) Field vs model comparison
 #compare_predicted_and_measured(SAVEPATH, METADATA)
