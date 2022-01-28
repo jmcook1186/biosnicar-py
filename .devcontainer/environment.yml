@@ -7,6 +7,7 @@ dependencies:
   - dask
   - netCDF4
   - bottleneck
+  - scipy
   - pip:
       - miepython
 prefix: /opt/conda
