@@ -1,5 +1,9 @@
 # BioSNICAR_GO_PY 
 
+
+<b>NOTICE (Jan 2022): We have done a lot of work refactoring and updating this code recently to make it cleaner, faster and more user-friendly. Some of the docs are currently lagging behind - we are working on this - please bear with us! </b>
+
+
 This package is a Python implementation of the BioSNICAR_GO model to represent the albedo of snow and ice with variable grain sizes and densities, either clean or with light absorbing particulates  (LAPs). It builds upon legacy FORTRAN and Matlab code developed by Flanner et al. (2007), Cook et al. (2017, 2020) and Wicker et al. (2021, in review). The model is a two stream radiative transfer model that predicts the albedo of a snow or ice multilayer column with user-defined parameters for the snow/ice background (single scattering properties, density, grain size) as well as the LAPs (single scattering properties, concentration in the ice). Two solvers are available in this new version, the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver (Wicker et al. 2021, in review), representing the ice as a medium including air bubbles and allowing the incorporation of Fresnel layers. It also includes a BioOptical model specifically designed to represent biological albedo reducers on snow and ice surfaces. This functionality, combined with the AD solver for the ice matrix makes BioSNICAR_GO applicable to bare glacier ice surfaces as well as wet and dry snowpacks - a significant step forwards from the original BiOSNICAR model published in Cook et al (2017). 
 
 # Background
