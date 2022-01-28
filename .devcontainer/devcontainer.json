@@ -1,0 +1,41 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or the definition README at
+// https://github.com/microsoft/vscode-dev-containers/tree/master/containers/python-3-miniconda
+{
+	"name": "BIOSNICAR_GO_PY",
+	"context": "..",
+	"dockerFile": "Dockerfile",
+	"settings": {
+		"python.formatting.provider": "black",
+		"editor.formatOnSave": true,
+		"[latex]": {
+			"editor.wordWrap": "on",
+			"editor.formatOnSave": false,
+		},
+		"python.linting.mypyEnabled": true,
+		"python.linting.enabled": true,
+		"python.linting.flake8Enabled": true,
+		"python.linting.flake8Args": [
+			"--max-line-length=88"
+		],
+		"python.linting.pylintEnabled": true,
+		"autoDocstring.docstringFormat": "google",
+		"python.linting.pylintPath": "/opt/conda/bin/pylint",
+		"cSpell.maxNumberOfProblems": 500,
+		"python.testing.pytestEnabled": false,
+		"python.dataScience.alwaysTrustNotebooks": true,
+		"jupyter.alwaysTrustNotebooks": true
+	},
+	"extensions": [
+		"ms-python.python",
+		"njpwerner.autodocstring",
+		"ms-azuretools.vscode-docker",
+		"mhutchie.git-graph",
+		"eamodio.gitlens",
+		"tomoki1207.pdf",
+		"ms-azuretools.vscode-docker",
+		"streetsidesoftware.code-spell-checker",
+		"oderwat.indent-rainbow",
+		"gua.rainbow-brackets",
+		"ms-python.vscode-pylance"
+	],
+}

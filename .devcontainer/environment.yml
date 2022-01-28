@@ -1,0 +1,12 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - xarray
+  - dask
+  - netCDF4
+  - bottleneck
+  - pip:
+      - miepython
+prefix: /opt/conda
