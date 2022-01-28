@@ -1,25 +1,17 @@
-# BioSNICAR_GO_PY 
+# BioSNICAR
 
 
 <b>NOTICE (Jan 2022): We have done a lot of work refactoring and updating this code recently to make it cleaner, faster and more user-friendly. Some of the docs are currently lagging behind - we are working on this - please bear with us! </b>
 
 ## Introduction
-This package is a Python implementation of the BioSNICAR_GO model to represent the albedo of snow and ice with variable grain sizes and densities, either clean or with light absorbing particulates  (LAPs). It builds upon legacy FORTRAN and Matlab code developed by Flanner et al. (2007), Cook et al. (2017, 2020) and Wicker et al. (2021, in review). The model is a two stream radiative transfer model that predicts the albedo of a snow or ice multilayer column with user-defined parameters for the snow/ice background (single scattering properties, density, grain size) as well as the LAPs (single scattering properties, concentration in the ice). Two solvers are available in this new version, the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver (Wicker et al. 2021, in review), representing the ice as a medium including air bubbles and allowing the incorporation of Fresnel layers. It also includes a BioOptical model specifically designed to represent biological albedo reducers on snow and ice surfaces. This functionality, combined with the AD solver for the ice matrix makes BioSNICAR_GO applicable to bare glacier ice surfaces as well as wet and dry snowpacks - a significant step forwards from the original BiOSNICAR model published in Cook et al (2017). 
 
+BioSNICAR is a set of Python scripts that predict the spectral labedo of snow and/or glacier ice given information about the illumination conditions, ice structure and the type and concentration of particulates. The jumping off point for this model was legacy FORTRAN and Matlab code developed by Flanner et al. (2007), Cook et al. (2017, 2020) and Wicker et al. (2022). The model is a two-stream radiative transfer model. Two solvers are available: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver (Brieglib and Light, 2007; Wicker et al. 2022) representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers. BioSNICAR was originally developed in parallel to a set of bio-optical models that allowed for the incorporation of snow and glacier algae as light absorbing particles (Cook et al. 2017). This functionality, along with the vectorized model formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
 
 ## How to use
 
-In top level directory:
+### Environment/Dependencies
 
-`python ./src/snicar_driver.py`
-
-
-Using the BioSNICAR_GO package is straightforwards. The user should not need to engage with any scripts apart from the driver (snicar_driver.py). In this script, the user defines values for all relevant variables. In-script annotations provide fine detail about the nature of each variable. Running this script will then report the broadband albedo to the console and plot the spectral albedo to a new window (if running interactively in Ipython or Jupyter) or save the figure if the user toggles savefigs == True. It is strongly recommended to avoid modifying the SNICAR_feeder script.
-
-BioOptical_driver.py is used to generate new optical properties for algae to include in BioSNICAR_GO. There should be sufficient in-script annotations to guide this process, although it is not suggested to apply purely theoretical optical properties in real scientific use-cases without some empirical "ground-truthing" as there are few published datasets for the MAC of snow and glacier algae to verify them against. In BioSNICAR_GO the glacier algal optical properties were generated using empirically measured pigment profiles by Williamson et al (2020: PNAS) using data from the Black and Bloom project.
-
-
-## Environment/Dependencies
+First set up a Python environment. If you do not have Python installed, download Python >3.6. It is recommended to use a recent Anaconda distribution for easy environment management. However, if you have a regular Python installation already and want to use that, the following instructions can easily be adapted for venv instead of conda.
 
 It is recommended to run this code in a fresh environment as follows:
 
@@ -36,10 +28,21 @@ or alternatively linux users can create from the yaml file provided in this repo
 conda env create -f BioSNICAR_py.yaml
 
 ```
+
 If creating a new environment in this way, please remember to update the prefix in the final line of the file to something appropriate to the new local machine. The .yaml file has been tested on Ubuntu 16.04 and 20.04.
 
+### Running the model
+The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`):
 
-## Background
+`python ./src/snicar_driver.py`
+
+This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albeod plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear int he interactive console. 
+
+Most users will want to experiment with changing input parameters. This is achieved by opening `snicar_driver.py` and adjusting the parameter values therein. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. The user also has the option to change the model meta-config, which controls behaviour such as printing band ratio values to the console, savign the model config to external text file, togglign plottign on and off, etc. Most users should have no reason to modify any other file in this repository except for the clearly marked values in `snicar_driver.py`.
+
+More complex applications of the model code, for example model inversions, snicar-as-a-function, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
+
+## Theoretical Background
 ### Snow and ice 
 
 The snow and ice single scattering properties can be generated from the ice refractive index (Warren 1984, Warren and Brandt 2008, Picard 2016) using Mie scattering (good for fine snow grains that can be assumed spherical, or for representing ice bubbles in an ice matrix) or geometric optics (adapted from van Diedenhoven (2014), good for wet snow and ice). This also enables different grain shapes to be used - geometric optics for hexagonal plates and columns, Mie scattering for spheres, spheroids, hexagonal plates and Koch snowflakes (after He et al. 2016, 2017). The rationale behind providing GO functionality is that geometric optics enables ice grains shaped as large hexagonal plates and columns to be simulated, whereas Mie scattering applies to small spheres. Note that running the model in Mie mode with spherical grains and omitting any biological particles is equivalent to running the original SNICAR model of Flanner et al. (2007, 2009). Since 01/05/2020 there exists an option to model the effects of liquid water coatings around ice grains using two-layer coated sphere Mie calculations (added by Niklas Bohn). This option had previously been included in the Matlab version of BioSNICAR and was deprecated for the Python translation in favour of increasing ice grain radii to simulate interstitial melt water; however, it was subsequently decided that giving the choice of method for incorporating liquid water was a better approach. Gratitude to Niklas for adding this feature.  For each layer, the density has to be indicated together with the shape, coating and size of the grains (ice or air bubbles).
@@ -87,33 +90,6 @@ The main driver now includes the possibility to indicate algae concentrations in
 <img src="./Assets/model_structure2.jpg" width=1500>
 
 
-
-
-# In this repo
-
-## Files
-
-SNICAR_driver.py: driver script for BioSNICAR_GO package
-SNICAR_feeder.py: script called from SNICAR_driver, itself calling the solvers
-Toon_RT_solver.py : Toon et al (1989) tridiagonal matrix solver
-adding_doubling_solver.py: adding-doubling method radiative transfer solver
-snicar_mie_tests.py: script for running unit tests against matlab version
-BioSNICAR_py.yaml: exported environment
-
-## Data
-
-In this repository the requisite datasets are divided into four classes, each contained within their own subdirectory in "/Data". These are:
-
-1) Mie files: NetCDF files containing optical properties of ice crystals predicted by Mie theory. Also contains all LAP optical properties.
-   
-2) GO files: NetCDF files containing optical properties of ice crystals predicted by geometrical optics. 
-
-3) Algal_Optical_Props: NetCDF files containing optical properties for algae of varying length and radius as predicted by geometrical optics (glacier algae) or Mie theory (snow algae)
-
-4) pigments: csv files containing the mass absorption coefficients for individual pigments or cells used in the Bio-optical model. 
-
-5) bubbly_ice_files: optical properties for slabs of ice wth bubbles. numeric value in filename is the
-   effective radius of the bulk material (higher number  = fewer bubbles)
 
 ## Repository Structure
 
