@@ -6,9 +6,8 @@ import pandas as pd
 import xarray as xr
 from scipy.interpolate import pchip
 
-import adding_doubling_solver as adding_doubling
-import mie_coated_water_spheres as wcs
-import toon_rt_solver as toon
+from . import adding_doubling_solver as adding_doubling
+from . import mie_coated_water_spheres as wcs
 
 
 def snicar_feeder(inputs):
@@ -238,9 +237,9 @@ def snicar_feeder(inputs):
         inputs.Fd = flx_slr / (mu_not * np.pi)
         inputs.Fs = np.zeros(nbr_wvl)
 
-    ###################################################
+    # ----------------------------------------------------------------------------------
     # Read in ice optical properties
-    ###################################################
+    # ----------------------------------------------------------------------------------
     # set up empty arrays
     ssa_snw = np.empty([nbr_lyr, nbr_wvl])
     MAC_snw = np.empty([nbr_lyr, nbr_wvl])
@@ -286,7 +285,7 @@ def snicar_feeder(inputs):
     for i in np.arange(0, nbr_lyr, 1):
 
         if verbosity == 1:
-            print("\nLayer: {}".format(i))
+            print(f"\nLayer: {i}")
 
         if layer_type[i] == 0:  # granular layer
             # load ice file from dir depending on grain shape and size
@@ -658,7 +657,7 @@ def snicar_feeder(inputs):
                 cdom_refidx_im_rescaled = cdom_refidx_im[::10]
                 refidx_im[3:54] = np.fmax(refidx_im[3:54], cdom_refidx_im_rescaled)
 
-            rd = "{}".format(grain_rds[i])
+            rd = f"{grain_rds[i]}"
             rd = rd.rjust(4, "0")
             file_ice = str(dir_bubbly_ice + "bbl_{}.nc").format(rd)
             file = xr.open_dataset(file_ice)
@@ -673,9 +672,9 @@ def snicar_feeder(inputs):
                 i, :
             ]
 
-    ###################################################
+    # ----------------------------------------------------------------------------------
     # Read in impurity optical properties
-    ###################################################
+    # ----------------------------------------------------------------------------------
 
     # Load optical properties ssa, MAC and g
     # (one row per impurity, one column per wvalengths)
@@ -747,9 +746,9 @@ def snicar_feeder(inputs):
         ):
             mss_aer[0:nbr_lyr, aer] = c_factor_SA * mss_aer[0:nbr_lyr, aer]
 
-    #####################################
+    # ----------------------------------------------------------------------------------
     # Begin solving Radiative Transfer
-    #####################################
+    # -----------------------------------------------------------------------------------
 
     # 1. Calculate effective tau (optical depth),
     # ssa (single scattering albedo) and
