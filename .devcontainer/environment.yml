@@ -12,4 +12,5 @@ dependencies:
       - miepython
       - statsmodels
       - seaborn
+      - plotnine
 prefix: /opt/conda
