@@ -8,7 +8,6 @@ Called from BioOptical_driver.py
 
 """
 
-import csv
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,17 +1,13 @@
-from logging import critical
-
-import matplotlib.pyplot as plt
-
-
 def adding_doubling_solver(Inputs):
 
     """
-    This script is one of the two optional radiativ transfer solvers available in this package. This
-    script deals with the adding-doubling method as translated from MATLAB code from Chloe Whicker
-    (UMich) - October 2020. When it becomes available, any use of this adding-doubling script should cite
-    Chloe's paper.
+    This script is one of the two optional radiativ transfer solvers available in this
+    package. This script deals with the adding-doubling method as translated from
+    MATLAB code from Chloe Whicker (UMich) - October 2020. When it becomes available,
+    any use of this adding-doubling script should cite Chloe's paper.
 
-    This is the appropriate solver for any configuration where solid ice layers and fresnel reflection
+    This is the appropriate solver for any configuration where solid ice layers and
+    fresnel reflection
     are included.
 
     """
@@ -38,9 +34,7 @@ def adding_doubling_solver(Inputs):
     fl_r_dif_a = Inputs.fl_r_dif_a
     fl_r_dif_b = Inputs.fl_r_dif_b
 
-    #######################################
-    ## DEFINE CONSTANTS AND SET UP ARRAYS
-    #######################################
+    # DEFINE CONSTANTS AND SET UP ARRAYS
 
     tau0 = tau.T  # read and transpose tau
     g0 = g.T  # read and transpose g
@@ -124,7 +118,8 @@ def adding_doubling_solver(Inputs):
     rupdif[:, nbr_lyr] = R_sfc  # reflectivity to diffuse radiation for layers below
 
     # if there are non zeros in layer type, grab the index of the first fresnel layer
-    # if there are non-zeros in layer type, load in the precalculated diffuse fresnel reflection
+    # if there are non-zeros in layer type, load in the precalculated diffuse fresnel
+    # reflection
     # (precalculated as large no. of gaussian points required for convergence)
     if np.sum(layer_type) > 0:
 
@@ -137,7 +132,8 @@ def adding_doubling_solver(Inputs):
 
         lyrfrsnl = 9999999
 
-        # raise error if there are no solid ice layers - in this case use the Toon solver instead!
+        # raise error if there are no solid ice layers
+        #  - in this case use the Toon solver instead!
         if verbosity == 1:
             print(
                 "There are no ice layers in this model configuration\
@@ -156,7 +152,8 @@ def adding_doubling_solver(Inputs):
     # (i.e. this is Snell's Law for refraction at interface between media)
     # mu0n = -1 represents light travelling vertically upwards and mu0n = +1
     # represents light travellign vertically downwards
-    # mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx)))  (original, before update for diffuse Fresnel reflection)
+    # mu0n = np.sqrt(1-((1-mu0**2)/(refindx*refindx)))  (original, before update
+    # for diffuse Fresnel reflection)
     mu0n = np.cos(
         np.arcsin(np.sin(np.arccos(mu0)) / nr)
     )  # this version accounts for diffuse fresnel reflection
@@ -198,7 +195,8 @@ def adding_doubling_solver(Inputs):
         )  # u equation, term in diffuse reflectivity and transmissivity
         extins = np.maximum(
             np.full((nbr_wvl,), exp_min), np.exp(-lm * ts)
-        )  # extinction, MAX function lyr keeps from getting an error if the exp(-lm*ts) is < 1e-5
+        )  # extinction, MAX function lyr keeps from getting an error
+        # if the exp(-lm*ts) is < 1e-5
         ne = (ue + 1) ** 2 / extins - (
             ue - 1
         ) ** 2 * extins  # N equation, term in diffuse reflectivity and transmissivity
@@ -280,13 +278,13 @@ def adding_doubling_solver(Inputs):
         rdif_a[:, lyr] = smr / swt
         tdif_a[:, lyr] = smt / swt
 
-        #! homogeneous layer
+        # homogeneous layer
         rdif_b[:, lyr] = rdif_a[:, lyr]
         tdif_b[:, lyr] = tdif_a[:, lyr]
 
-        ###################################################
+        # ------------------------------------------------------------------------------
         # Fresnel layer
-        ##############################################################
+        # ------------------------------------------------------------------------------
 
         if lyr == lyrfrsnl:
             refindx = refidx_re + 1j * refidx_im  # np.complex(refidx_re,refidx_im)
@@ -297,11 +295,11 @@ def adding_doubling_solver(Inputs):
                 if np.arccos(mu_not) < critical_angle[wl]:
                     # in this case, no total internal reflection
 
-                    #! compute fresnel reflection and transmission amplitudes
-                    #! for two polarizations: 1=perpendicular and 2=parallel to
-                    #! the plane containing incident, reflected and refracted rays.
+                    # compute fresnel reflection and transmission amplitudes
+                    # for two polarizations: 1=perpendicular and 2=parallel to
+                    # the plane containing incident, reflected and refracted rays.
 
-                    #! Eq. 22  Briegleb & Light 2007
+                    # Eq. 22  Briegleb & Light 2007
                     # Inputs to equation 21 (i.e. Fresnel formulae for R and T)
                     R1 = (mu0[wl] - nr[wl] * mu0n[wl]) / (
                         mu0[wl] + nr[wl] * mu0n[wl]
@@ -316,8 +314,8 @@ def adding_doubling_solver(Inputs):
                         2 * mu0[wl] / (nr[wl] * mu0[wl] + mu0n[wl])
                     )  # transmission amplitude factor for parallel polarization
 
-                    #! unpolarized light for direct beam
-                    #! Eq. 21  Brigleb and light 2007
+                    # unpolarized light for direct beam
+                    # Eq. 21  Brigleb and light 2007
                     Rf_dir_a = 0.5 * (R1 ** 2 + R2 ** 2)
                     Tf_dir_a = 0.5 * (T1 ** 2 + T2 ** 2) * nr[wl] * mu0n[wl] / mu0[wl]
 
@@ -345,7 +343,7 @@ def adding_doubling_solver(Inputs):
                 Rf_dif_b = fl_r_dif_b[wl]
                 Tf_dif_b = 1 - Rf_dif_b
 
-                ######################################################################
+                # -----------------------------------------------------------------------
                 # the lyr = lyrfrsnl layer properties are updated to combine
                 # the fresnel (refractive) layer, always taken to be above
                 # the present layer lyr (i.e. be the top interface):
@@ -385,31 +383,31 @@ def adding_doubling_solver(Inputs):
                 # Eq. B10  Briegleb & Light 2007
                 tdif_b[wl, lyr] = tdif_b[wl, lyr] * rintfc * Tf_dif_b
 
-                #! update trnlay to include fresnel transmission
+                # update trnlay to include fresnel transmission
                 trnlay[wl, lyr] = Tf_dir_a * trnlay[wl, lyr]
 
                 # end lyr = lyrfrsnl condition
                 # end trntdr[lyr, wl] > trmin condition
 
-            #  ! Calculate the solar beam transmission, total transmission, and
-            #  ! reflectivity for diffuse radiation from below at interface lyr,
-            #  ! the top of the current layer lyr:
-            #  !
-            #  !              layers       interface
-            #  !
-            #  !       ---------------------  lyr-1
-            #  !                lyr-1
-            #  !       ---------------------  lyr
-            #  !                 lyr
-            #  !       ---------------------
-            #  ! note that we ignore refraction between sea ice and underlying ocean:
-            #  !
-            #  !              layers       interface
-            #  !
-            #  !       ---------------------  lyr-1
-            #  !                lyr-1
-            #  !       ---------------------  lyr
-            #  !       \\\\\\\ ocean \\\\\\\
+            #   Calculate the solar beam transmission, total transmission, and
+            #   reflectivity for diffuse radiation from below at interface lyr,
+            #   the top of the current layer lyr:
+            #
+            #                layers       interface
+            #
+            #         ---------------------  lyr-1
+            #                  lyr-1
+            #         ---------------------  lyr
+            #                   lyr
+            #         ---------------------
+            #   note that we ignore refraction between sea ice and underlying ocean:
+            #
+            #                layers       interface
+            #
+            #         ---------------------  lyr-1
+            #                  lyr-1
+            #         ---------------------  lyr
+            #         \\\\\\\ ocean \\\\\\\
 
         # Eq. 51  Briegleb and Light 2007
 
@@ -460,7 +458,7 @@ def adding_doubling_solver(Inputs):
     ):  # starts at the bottom and works its way up to the top layer
 
         # Eq. B5  Briegleb and Light 2007
-        #! interface scattering
+        # interface scattering
         refkp1 = 1 / (1 - rdif_b[:, lyr] * rupdif[:, lyr + 1])
 
         # dir from top layer plus exp tran ref from lower layer, interface
@@ -525,7 +523,7 @@ def adding_doubling_solver(Inputs):
 
         if np.min(dfdir[:, lyr]) < puny:
 
-            dfdir[:, lyr] = np.zeros((nbr_wvl,), dtype=int)  #!echmod necessary?
+            dfdir[:, lyr] = np.zeros((nbr_wvl,), dtype=int)  # echmod necessary?
             # dfdif = fdifdn - fdifup
 
         dfdif[:, lyr] = trndif[:, lyr] * (1 - rupdif[:, lyr]) * refk
@@ -585,9 +583,7 @@ def adding_doubling_solver(Inputs):
 
     if energy_conservation_error > 1e-10:
 
-        raise ValueError(
-            "energy conservation error: {}".format(energy_conservation_error)
-        )
+        raise ValueError(f"energy conservation error: {energy_conservation_error}")
 
     albedo = F_up[:, 0] / F_dwn[:, 0]
 
@@ -609,25 +605,32 @@ def adding_doubling_solver(Inputs):
         flx_slr[vis_max_idx:nir_max_idx] * (1 - albedo[vis_max_idx:nir_max_idx])
     )
 
-    #########################  OUTPUT  #############################
+    # -------------------- OUTPUT  --------------------
 
     flx_dwn_spc = (
         mu_not * np.pi * Fs + Fd
     )  # spectral downwelling flux at model top [W/m2/band]
     alb_slr = alb_bb  # solar broadband albedo
-    abs_snw_slr = np.sum(
-        F_abs_slr
-    )  # total solar absorption by entire snow column (not including underlying substrate) [W/m2]
-    # abs_snw_vis = np.sum(F_abs_vis)      # visible solar absorption by entire snow column (not including underlying substrate) [W/m2]
-    # abs_snw_nir = np.sum(F_abs_nir)      # near-IR solar absorption by entire snow column (not including underlying substrate) [W/m2]
-    # abs_spc = np.sum(F_abs,axis=1)      # spectral absorption by entire snow column [W/m2/band]
+    abs_snw_slr = np.sum(F_abs_slr)  # total solar absorption by entire snow column
+    #       (not including underlying substrate) [W/m2]
+    # abs_snw_vis = np.sum(F_abs_vis)
+    #   visible solar absorption by entire snow column
+    #   (not including underlying substrate) [W/m2]
+    # abs_snw_nir = np.sum(F_abs_nir)
+    #   near-IR solar absorption by entire snow column
+    #   (not including underlying substrate) [W/m2]
+    # abs_spc = np.sum(F_abs,axis=1)
+    #  spectral absorption by entire snow column [W/m2/band]
 
     # abs_snw_top_slr = F_abs_slr[0]        # top snow layer solar absorption [W/m2]
     # abs_snw_top_vis = F_abs_vis[0]        # top snow layer VIS absorption [W/m2]
     # abs_snw_top_nir = F_abs_nir[0]        # top snow layer NIR absorption [W/m2]
 
-    # abs_ground_slr  = F_abs_btm           # total solar absorption by underlying substrate [W/m2]
-    # abs_ground_vis  = F_abs_vis_btm       # visible absorption by underlying substrate [W/m2]
-    # abs_ground_nir  = F_abs_nir_btm       # near-IR absorption by underlying substrate [W/m2]
+    # abs_ground_slr  = F_abs_btm
+    #    total solar absorption by underlying substrate [W/m2]
+    # abs_ground_vis  = F_abs_vis_btm
+    #    visible absorption by underlying substrate [W/m2]
+    # abs_ground_nir  = F_abs_nir_btm
+    #   near-IR absorption by underlying substrate [W/m2]
 
     return wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt
