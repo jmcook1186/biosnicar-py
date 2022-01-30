@@ -1,6 +1,6 @@
 import numpy as np
 import xarray as xr
-from scipy.interpolate import interp1d
+
 
 ds = xr.open_dataset(
     "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/dust_greenland_C_20150308.nc"
@@ -17,7 +17,7 @@ asm_prm = list(ds.asm_prm.values)
 out = np.zeros(shape=(len(wavelengths), 3))
 
 # initialise counter
-count = 0
+COUNT = 0
 
 # loop through relevant vars
 # and use the first value to
@@ -26,10 +26,10 @@ for y in [ext_cff_mss, ss_alb, asm_prm]:
     num_elements_to_add = 10
     pad_value = y[0]
     y = [pad_value for _ in range(10)] + y
-    out[:, count] = y
-    count += 1
+    out[:, COUNT] = y
+    COUNT += 1
 
-#### alternative = use interp1d
+# alternative = use interp1d
 # x = ds.wvl.values
 # for y in [ext_cff_mss, ss_alb, asm_prm]:
 
