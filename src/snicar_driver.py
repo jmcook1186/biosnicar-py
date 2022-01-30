@@ -25,6 +25,7 @@ Author: Joseph Cook, June 2021
 
 
 import collections as c
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -146,7 +147,7 @@ Inputs = c.namedtuple(
 # --------------------------------------------------------------------------------------
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
-Inputs.dir_base = "/home/joe/Code/BioSNICAR_GO_PY/"
+Inputs.dir_base = str(Path(__file__).parent.parent) + "/"
 savepath = Inputs.dir_base  # base path for saving figures
 WRITE_CONFIG_TO_TEXTFILE = False  # toggle to save config to file
 Inputs.verbosity = 0  # 1 to print real-time updates
