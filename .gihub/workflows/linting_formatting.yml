@@ -1,0 +1,21 @@
+---
+name: linting and formatting
+on: [push, pull_request]
+
+# Allows you to run this workflow manually from the Actions tab
+workflow_dispatch:
+  inputs:
+    tag:
+      description: "linting and formatting "
+      required: true
+      default: "test"
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    name: lint
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v2
+      - name: python-lint
+        uses: ricardochaves/python-lint@v1.4.0
