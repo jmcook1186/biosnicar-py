@@ -6,8 +6,8 @@ import pandas as pd
 import xarray as xr
 from scipy.interpolate import pchip
 
-from . import adding_doubling_solver as adding_doubling
-from . import mie_coated_water_spheres as wcs
+import adding_doubling_solver as adding_doubling
+import mie_coated_water_spheres as wcs
 
 
 def snicar_feeder(inputs):
