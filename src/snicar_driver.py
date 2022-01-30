@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from .snicar_feeder import snicar_feeder
+from snicar_feeder import snicar_feeder
 
 # --------------------------------------------------------------------------------------
 # 1) Initialize Inputs of the model
