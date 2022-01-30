@@ -5,16 +5,17 @@ Created on Mon May 21 08:38:44 2018
 
 @author: Joseph Cook, joe.cook@sheffield.ac.uk
 
-This file calculates the optial properties (single scattering albedo, assymetry parameter,
-mass absorption coefficient and extinction, scattering and absorption cross sections) for
-ice grains shaped as arbitrarily large hexagonal plates or columns. The optical properties
-are then saved into netCDF files in the correct format for loading into the BioSNICAR_GO 
-model provided in the BioSNICAR_GO repository.
+This file calculates the optial properties (single scattering albedo, assymetry
+parameter, mass absorption coefficient and extinction, scattering and absorption cross
+sections) for ice grains shaped as arbitrarily large hexagonal plates or columns.
+The optical propertiesare then saved into netCDF files in the correct format for
+loading into the BioSNICAR_GO model provided in the BioSNICAR_GO repository.
 
-The main function calc_optical_params() is based upon the equations of Diedenhoven et al (2014)
-who provided a python script as supplementary material for their paper:
+The main function calc_optical_params() is based upon the equations of
+Diedenhoven et al (2014) who provided a python script as supplementary material
+for their paper:
 
-"A flexible parameterization for shortwave optical properties of ice crystals" by 
+"A flexible parameterization for shortwave optical properties of ice crystals" by
 Bastiaan van Diedenhoven; Andrew S. Ackerman; Brian Cairns; Ann M. Fridlind
 accepted for publication in J. Atmos. Sci. (2013)
 
@@ -30,7 +31,7 @@ provided in the correct waveband and correct spectral resolution to interface wi
 BioSNICAR_GO model. The refractive indices are taken from Warren and Brandt 2008.
 
 There are no user defined inouts for the preprocessing function, it can simply be
-run as 
+run as
 
 reals, imags, wavelengths = preprocess()
 
@@ -51,14 +52,15 @@ a lookup library for the two-stream radiative transfer model BoSNICAR_GO.
 The function calls are provided at the bottom of this script in a loop, where the
 user can define the range of side lengths and depths to be looped over.
 
-NOTE: The extinction coefficient in the current implementation is 2 for all size parameters 
-as assumed in the conventional geometric optics approximation.
+NOTE: The extinction coefficient in the current implementation is 2 for all size
+parameters as assumed in the conventional geometric optics approximation.
 
-UPDATE March 2019: Now includes option to output a three-band version, with bands relevant for integrating
-BioSNICAR into MAR (modele atmospherique regionale). These bands are 300-799 nm, 800-1199nm, 1201-2500nm. The
-optical properties are averaged over these wavelength ranges and output as three floats to a separate optical
-property library: GO_files/Ice_Optical_Properties_3band. To use this option set ThreeBand to True in the functions
-calculate_optical_params() and netcdf_updater()
+UPDATE March 2019: Now includes option to output a three-band version, with bands
+relevant for integrating BioSNICAR into MAR (modele atmospherique regionale).
+These bands are 300-799 nm, 800-1199nm, 1201-2500nm. The optical properties are averaged
+over these wavelength ranges and output as three floats to a separate optical property
+library: GO_files/Ice_Optical_Properties_3band. To use this option set ThreeBand to
+True in the functions calculate_optical_params() and netcdf_updater()
 
 """
 
@@ -66,12 +68,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
-from scipy import interpolate
 
 # Set paths
-savepath = "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/480band/"
-datapath = "/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc"
-RIsource = 2
+SAVEPATH = "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/480band/"
+DATAPATH = "/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc"
+RI_SOURCE = 2
 
 
 def preprocess_RI(RIsource, datapath):
@@ -276,7 +277,7 @@ def calc_optical_params(
         # raytracing g at required wavelength
         g_rt_corr = g_rt * C_m * C_w  # (Fig. 7, box 9)
 
-        # ------ Calculate total asymmetry parameter and check g_tot <= 1 (Fig. 7, box 9)
+        # ----- Calculate total asymmetry parameter and check g_tot <= 1 (Fig. 7, box 9)
         g_tot = 1.0 / (2.0 * w) * ((2.0 * w - 1.0) * g_rt_corr + g_diffr)
         g_tot = min([g_tot, 1.0])
 
@@ -342,9 +343,8 @@ def net_cdf_updater(
     icefile.attrs["medium_type"] = "air"
     icefile.attrs[
         "description"
-    ] = "Optical properties for ice grain: hexagonal column of side length {}um and length {}um".format(
-        str(side_length), str(depth)
-    )
+    ] = f"""Optical properties for ice grain: hexagonal column of side
+    length {side_length}um and length {depth}um"""
     icefile.attrs["psd"] = "monodisperse"
     icefile.attrs["side_length_um"] = depth
     icefile.attrs["density_kg_m3"] = density
@@ -358,10 +358,11 @@ def net_cdf_updater(
     return
 
 
-###############################################################################
-##########################  FUNCTON CALLS ####################################
+# --------------------------------------------------------------------------------------
+# FUNCTON CALLS
+# --------------------------------------------------------------------------------------
 
-reals, imags, wavelengths = preprocess_RI(RIsource, datapath)
+reals, imags, wavelengths = preprocess_RI(RI_SOURCE, DATAPATH)
 
 for side_length in np.arange(2000, 11000, 1000):
     for depth in np.arange(2000, 31000, 1000):
@@ -378,5 +379,5 @@ for side_length in np.arange(2000, 11000, 1000):
         )
 
         net_cdf_updater(
-            RIsource, savepath, Assy_list, SSA_list, MAC_list, depth, side_length, 917
+            RI_SOURCE, SAVEPATH, Assy_list, SSA_list, MAC_list, depth, side_length, 917
         )
