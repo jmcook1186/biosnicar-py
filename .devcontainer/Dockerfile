@@ -1,4 +1,4 @@
-FROM ghcr.io/tgoelles/python_docker:v0.3.1_py3.8
+FROM ghcr.io/tgoelles/python_docker:v0.3.2_py3.8
 
 
 ENV DEBIAN_FRONTEND=noninteractive

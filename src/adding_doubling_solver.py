@@ -142,10 +142,10 @@ def adding_doubling_solver(Inputs):
 
     mu0 = mu_not * np.ones(480)  # cosine of beam angle is equal to incident beam
     # ice-adjusted real refractive index
-    temp1 = refidx_re ** 2 - refidx_im ** 2 + np.sin(np.arccos(mu_not)) ** 2
-    temp2 = refidx_re ** 2 - refidx_im ** 2 - np.sin(np.arccos(mu_not)) ** 2
+    temp1 = refidx_re**2 - refidx_im**2 + np.sin(np.arccos(mu_not)) ** 2
+    temp2 = refidx_re**2 - refidx_im**2 - np.sin(np.arccos(mu_not)) ** 2
     n_real = (np.sqrt(2) / 2) * (
-        temp1 + (temp2 ** 2 + 4 * refidx_re ** 2 * refidx_im ** 2) ** 0.5
+        temp1 + (temp2**2 + 4 * refidx_re**2 * refidx_im**2) ** 0.5
     ) ** 0.5
     nr = n_real
     # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
@@ -205,7 +205,7 @@ def adding_doubling_solver(Inputs):
         # Eq.: Briegleb 1992  alpha and gamma for direct radiation
 
         rdif_a[:, lyr] = (
-            (ue ** 2 - 1) * (1 / extins - extins) / ne
+            (ue**2 - 1) * (1 / extins - extins) / ne
         )  # R BAR = layer reflectivity to DIFFUSE radiation
         tdif_a[:, lyr] = 4 * ue / ne  # T BAR layer transmissivity to DIFFUSE radiation
 
@@ -218,10 +218,10 @@ def adding_doubling_solver(Inputs):
         alp = (
             (0.75 * ws * mu0n)
             * (1 + gs * (1 - ws))
-            / (1 - lm ** 2 * mu0n ** 2 + epsilon)
+            / (1 - lm**2 * mu0n**2 + epsilon)
         )  # alp = alpha(ws,mu0n,gs,lm)
         gam = (0.5 * ws) * (
-            (1 + 3 * gs * mu0n ** 2 * (1 - ws)) / (1 - lm ** 2 * mu0n ** 2 + epsilon)
+            (1 + 3 * gs * mu0n**2 * (1 - ws)) / (1 - lm**2 * mu0n**2 + epsilon)
         )  # gam = gamma(ws,mu0n,gs,lm)
 
         # apg = alpha plus gamma
@@ -260,12 +260,12 @@ def adding_doubling_solver(Inputs):
             alp = (
                 (0.75 * ws * mu)
                 * (1 + gs * (1 - ws))
-                / (1 - lm ** 2 * mu ** 2 + epsilon)
+                / (1 - lm**2 * mu**2 + epsilon)
             )  # alp = alpha(ws,mu0n,gs,lm)
             gam = (
                 (0.5 * ws)
-                * (1 + 3 * gs * mu ** 2 * (1 - ws))
-                / (1 - lm ** 2 * mu ** 2 + epsilon)
+                * (1 + 3 * gs * mu**2 * (1 - ws))
+                / (1 - lm**2 * mu**2 + epsilon)
             )  # gam = gamma(ws,mu0n,gs,lm)
 
             apg = alp + gam
@@ -316,8 +316,8 @@ def adding_doubling_solver(Inputs):
 
                     # unpolarized light for direct beam
                     # Eq. 21  Brigleb and light 2007
-                    Rf_dir_a = 0.5 * (R1 ** 2 + R2 ** 2)
-                    Tf_dir_a = 0.5 * (T1 ** 2 + T2 ** 2) * nr[wl] * mu0n[wl] / mu0[wl]
+                    Rf_dir_a = 0.5 * (R1**2 + R2**2)
+                    Tf_dir_a = 0.5 * (T1**2 + T2**2) * nr[wl] * mu0n[wl] / mu0[wl]
 
                 else:  # in this case, total internal reflection occurs
                     Tf_dir_a = 0
