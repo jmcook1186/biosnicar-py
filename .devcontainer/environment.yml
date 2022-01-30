@@ -10,4 +10,6 @@ dependencies:
   - scipy
   - pip:
       - miepython
+      - statsmodels
+      - seaborn
 prefix: /opt/conda
