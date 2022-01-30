@@ -1,6 +1,6 @@
-from benchmarking_funcs import generate_snicar_params, call_snicar
 import numpy as np
 import pandas as pd
+from benchmarking_funcs import call_snicar, generate_snicar_params
 
 lyrList = [0, 1]
 densList = [400, 500, 600, 700, 800]

@@ -1,12 +1,14 @@
-import math
-import numpy as np
-import xarray as xr
 import collections as c
+import math
+
+import numpy as np
 import pandas as pd
+import xarray as xr
+from scipy.interpolate import pchip
+
+import adding_doubling_solver as adding_doubling
 import mie_coated_water_spheres as wcs
 import toon_rt_solver as toon
-from scipy.interpolate import pchip
-import adding_doubling_solver as adding_doubling
 
 
 def snicar_feeder(inputs):

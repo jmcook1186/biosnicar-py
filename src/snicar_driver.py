@@ -24,9 +24,11 @@ LAPs are added in future.
 Author: Joseph Cook, June 2021
 """
 import collections as c
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+
 from snicar_feeder import snicar_feeder
 
 ######################################

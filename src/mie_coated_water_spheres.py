@@ -3,11 +3,11 @@
 
 import numpy as np
 import pandas as pd
-from miepython import mie
-from scipy.special import jv, yv
-from scipy.interpolate import interp1d
-from tqdm import tqdm
 import xarray as xr
+from miepython import mie
+from scipy.interpolate import interp1d
+from scipy.special import jv, yv
+from tqdm import tqdm
 
 
 def fill_nans_scipy1(padata, pkind="nearest"):

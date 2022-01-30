@@ -62,11 +62,11 @@ calculate_optical_params() and netcdf_updater()
 
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
-from scipy import interpolate
+import numpy as np
 import pandas as pd
 import xarray as xr
+from scipy import interpolate
 
 # Set paths
 savepath = "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/480band/"

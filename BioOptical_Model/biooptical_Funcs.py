@@ -8,13 +8,14 @@ Called from BioOptical_driver.py
 
 """
 
+import csv
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import csv
-from scipy.signal import savgol_filter
 from miepython import mie
-from plotnine import ggplot, aes, geom_line
+from plotnine import aes, geom_line, ggplot
+from scipy.signal import savgol_filter
 
 plt.style.use("seaborn")
 

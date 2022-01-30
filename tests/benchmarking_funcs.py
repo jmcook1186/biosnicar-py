@@ -1,9 +1,11 @@
-from snicar_feeder import snicar_feeder
+import collections
+
 import matplotlib.pyplot as plt
-import statsmodels.api as sm
 import numpy as np
 import pandas as pd
-import collections
+import statsmodels.api as sm
+
+from snicar_feeder import snicar_feeder
 
 
 def generate_snicar_params(

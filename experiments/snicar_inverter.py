@@ -35,10 +35,9 @@ A MODIFIED VERSION HAS BEEN INTEGRATED INTO COOK & TEDSTONE'S BIG ICE CLASSIFIER
 
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-
 
 ##############################################################################
 # DEFINE VARIABLES AND TARGET SPECTRA

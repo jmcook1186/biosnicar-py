@@ -1,4 +1,5 @@
 from logging import critical
+
 import matplotlib.pyplot as plt
 
 

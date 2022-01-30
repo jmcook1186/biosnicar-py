@@ -32,15 +32,16 @@ inverse_model()
 
 
 """
+import collections as c
 import sys
+
+import dask
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from call_snicar import call_snicar
 import statsmodels.api as sm
-import collections as c
 import xarray as xr
-import dask
+from call_snicar import call_snicar
 
 sys.path.append("./src")
 
@@ -741,9 +742,9 @@ def BDA2_of_field_samples():
 def compare_predicted_and_measured(SAVEPATH, path_to_metadata):
 
     ## imports and data organisation
-    import statsmodels.api as sm
     import numpy as np
     import pandas as pd
+    import statsmodels.api as sm
 
     DF = pd.read_csv(path_to_metadata)
 

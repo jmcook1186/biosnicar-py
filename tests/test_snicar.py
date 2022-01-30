@@ -2,14 +2,16 @@ import sys
 
 # make sure we can import from/src
 sys.path.append("./src")
+import collections as c
+import random
+from pathlib import Path
+
 import matplotlib.pyplot as plt
-from snicar_feeder import snicar_feeder
 import numpy as np
 import pandas as pd
 import pytest
-import random
-import collections as c
-from pathlib import Path
+
+from snicar_feeder import snicar_feeder
 
 """
 To run configure these tests, update the values in conftest.py

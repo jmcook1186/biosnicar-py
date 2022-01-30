@@ -1,7 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 
 """
 This script is for taking specific surface area for bubbly ice an calculating the
