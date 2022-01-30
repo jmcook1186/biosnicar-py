@@ -122,7 +122,7 @@ def calc_optical_params(
     MAC_list = []
     X_list = []
 
-    V = 1.5 * np.sqrt(3) * side_length ** 2 * depth  # volume
+    V = 1.5 * np.sqrt(3) * side_length**2 * depth  # volume
     Area_total = (
         3 * side_length * (np.sqrt(3) * side_length + depth * 2)
     )  # total surface area
@@ -246,14 +246,14 @@ def calc_optical_params(
         # raytracing g at 862 nm
         g_1 = 0.0
         for i in range(len(p_a_eq_1)):
-            g_1 += p_a_eq_1[i] * delta ** i  # (Fig. 7, box 3)
+            g_1 += p_a_eq_1[i] * delta**i  # (Fig. 7, box 3)
 
         p_delta = np.zeros(nq1)
         for i in range(nq2):
             p_delta += q_ij[:, i, col_pla] * np.log10(ar) ** i  # (Fig. 7, box 4)
         Dg = 0.0
         for i in range(nq1):
-            Dg += p_delta[i] * delta ** i  # (Fig. 7, box 4)
+            Dg += p_delta[i] * delta**i  # (Fig. 7, box 4)
         g_rt = 2.0 * (g_1 + Dg) - 1.0  # (Fig. 7, box 5)
 
         # --------- refractive index correction of asymmetry parameter (Fig. 7, box 6)
