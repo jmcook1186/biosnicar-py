@@ -146,101 +146,101 @@ using Scott Prahl's miepython package https://github.com/scottprahl/miepython.
 """
 import numpy as np
 
-#%%
+# %%
 from biooptical_Funcs import bioptical_calculations, net_cdf_updater, ssp_calculations
 
-#%%
+# %%
 
 # --------------------------------------------------------------------------------------
 # INPUTS TO FILL
 # --------------------------------------------------------------------------------------
 
 # Set base directory and constant variables
-dir_base = "path to package" + "/BioSNICAR_GO_PY/"
-wvl = np.arange(0.200, 4.999, 0.001)  # spectral range of interest in µm
-k_water = np.loadtxt(dir_base + "Data/OP_data/k_ice_480.csv")
+DIR_BASE = "path to package" + "/BioSNICAR_GO_PY/"
+WVL = np.arange(0.200, 4.999, 0.001)  # spectral range of interest in µm
+K_WATER = np.loadtxt(DIR_BASE + "Data/OP_data/k_ice_480.csv")
 
 # Chose ACS units
-biovolume = False
-biomass = False
-cellular = True
+BIOVOLUME = False
+BIOMASS = False
+CELLULAR = True
 
-## Chose if ACS is calculated from pigment abs coeff or loaded
-ACS_loaded_invivo = True
-ACS_loaded_reconstructed = False
-ACS_calculated = False
+# Chose if ACS is calculated from pigment abs coeff or loaded
+ACS_LOADED_INVIVO = True
+ACS_LOADED_RECONSTRUCTED = False
+ACS_CALCULATED = False
 # if ACS is loaded:
-ACS_file = "filename"
+ACS_FILE = "filename"
 # if reconstructed ACS is directly loaded from pigment absorbance:
-packaging_correction_SA = False
-packaging_correction_GA = True
+PACKAGING_CORRECTION_SA = False
+PACKAGING_CORRECTION_GA = True
 # if ACS is reconstructed from pigment profiles:
-pigment_dir = dir_base + "Data/pigments/"
-pigments_data = {
-    str(pigment_dir + "alloxanthin.csv"): 0.0,
-    str(pigment_dir + "antheraxanthin.csv"): 0,
-    str(pigment_dir + "chl-a.csv"): 3.96e-3,
-    str(pigment_dir + "chl-b.csv"): 7e-4,
-    str(pigment_dir + "lutein.csv"): 0,
-    str(pigment_dir + "neoxanthin.csv"): 0,
-    str(pigment_dir + "pheophytin.csv"): 0.0,
-    str(pigment_dir + "Photop_carotenoids.csv"): 0.0,
-    str(pigment_dir + "Photos_carotenoids.csv"): 6e-3,
-    str(pigment_dir + "ppg_shifted.csv"): 4.3e-2,
-    str(pigment_dir + "trans_astaxanthin_ester.csv"): 0.0,
-    str(pigment_dir + "trans_astaxanthin.csv"): 0,
-    str(pigment_dir + "violaxanthin.csv"): 0,
-    str(pigment_dir + "zeaxanthin.csv"): 0,
+PIGMENT_DIR = DIR_BASE + "Data/pigments/"
+PIGMENTS_DATA = {
+    str(PIGMENT_DIR + "alloxanthin.csv"): 0.0,
+    str(PIGMENT_DIR + "antheraxanthin.csv"): 0,
+    str(PIGMENT_DIR + "chl-a.csv"): 3.96e-3,
+    str(PIGMENT_DIR + "chl-b.csv"): 7e-4,
+    str(PIGMENT_DIR + "lutein.csv"): 0,
+    str(PIGMENT_DIR + "neoxanthin.csv"): 0,
+    str(PIGMENT_DIR + "pheophytin.csv"): 0.0,
+    str(PIGMENT_DIR + "Photop_carotenoids.csv"): 0.0,
+    str(PIGMENT_DIR + "Photos_carotenoids.csv"): 6e-3,
+    str(PIGMENT_DIR + "ppg_shifted.csv"): 4.3e-2,
+    str(PIGMENT_DIR + "trans_astaxanthin_ester.csv"): 0.0,
+    str(PIGMENT_DIR + "trans_astaxanthin.csv"): 0,
+    str(PIGMENT_DIR + "violaxanthin.csv"): 0,
+    str(PIGMENT_DIR + "zeaxanthin.csv"): 0,
 }
 
 # Algae properties
-n_algae = 1.4 * np.ones(np.size(wvl))
-r = 5
+N_ALGAE = 1.4 * np.ones(np.size(WVL))
+R = 5
 L = 20
-cell_volume = 1500
-density_dry = 684
-density_wet = 1160
+CELL_VOLUME = 1500
+DENSITY_DRY = 684
+DENSITY_WET = 1160
 
 # Chose method for calculation of scattering optical properties
 GO = True
-Mie = False
+MIE = False
 
 # Optional smoothing filter for calculated k, ACS
-smooth = True
-window_size = 25
-poly_order = 3
-smoothStart = 44
-smoothStop = 100
+SMOOTH = True
+WINDOW_SIZE = 25
+POLY_ORDER = 3
+SMOOTH_START = 44
+SMOOTH_STOP = 100
 
 # Directories and printing/saving options for calculated k, ACS
-plot_n_k_ACS_cell = True
-plot_pigment_ACSs = False
-savefiles_n_k_ACS_cell = False
-saveplots_n_k_ACS = False
-savepath_n_k_ACS_plots = dir_base
-savefilename_n_k_ACS_cell = ""
+PLOT_N_K_ACS_CELL = True
+PLOT_PIGMENT_ACSS = False
+SAVEFILES_N_K_ACS_CELL = False
+SAVEPLOTS_N_K_ACS = False
+SAVEPATH_N_K_ACS_PLOTS = DIR_BASE
+SAVEFILENAME_N_K_ACS_CELL = ""
 
 # Directories and printing/saving options for scattering OPs
-plots_OPs = True
-savefigs_OPs = False
-report_dims = False
-savepath_OPs = dir_base
-figname_OPs = "figname"
+PLOTS_OPS = True
+SAVEFIGS_OPS = False
+REPORT_DIMS = False
+SAVEPATH_OPS = DIR_BASE
+FIGNAME_OPS = "figname"
 
 # Saving OPs in netcdf
-netcdf_save = False
-savepath_netcdf = dir_base + "Data/OP_data/480band/lap/"
-filename_netcdf = "filename"
-info = ""
+NETCDF_SAVE = False
+SAVEPATH_NETCDF = DIR_BASE + "Data/OP_data/480band/lap/"
+FILENAME_NETCDF = "filename"
+INFO = ""
 
 
-#%%
+# %%
 # --------------------------------------------------------------------------------------
 # CALCULATIONS OF ABSORPTION PROPERTIES
 # --------------------------------------------------------------------------------------
 
 (
-    wvl,
+    WVL,
     wvl_rescaled_BioSNICAR,
     k,
     k_rescaled_BioSNICAR,
@@ -251,75 +251,75 @@ info = ""
     n_k_ACS_rescaled_BioSNICAR,
     abs_coeff_pigm_DataFrame,
 ) = bioptical_calculations(
-    ACS_calculated,
-    ACS_file,
-    ACS_loaded_invivo,
-    ACS_loaded_reconstructed,
-    biovolume,
-    biomass,
-    cellular,
-    density_wet,
-    density_dry,
-    dir_base,
-    cell_volume,
-    wvl,
-    packaging_correction_SA,
-    packaging_correction_GA,
-    pigment_dir,
-    pigments_data,
-    n_algae,
-    k_water,
-    smooth,
-    window_size,
-    poly_order,
-    smoothStart,
-    smoothStop,
-    plot_n_k_ACS_cell,
-    plot_pigment_ACSs,
-    savefiles_n_k_ACS_cell,
-    savefilename_n_k_ACS_cell,
-    saveplots_n_k_ACS,
-    savepath_n_k_ACS_plots,
+    ACS_CALCULATED,
+    ACS_FILE,
+    ACS_LOADED_INVIVO,
+    ACS_LOADED_RECONSTRUCTED,
+    BIOVOLUME,
+    BIOMASS,
+    CELLULAR,
+    DENSITY_WET,
+    DENSITY_DRY,
+    DIR_BASE,
+    CELL_VOLUME,
+    WVL,
+    PACKAGING_CORRECTION_SA,
+    PACKAGING_CORRECTION_GA,
+    PIGMENT_DIR,
+    PIGMENTS_DATA,
+    N_ALGAE,
+    K_WATER,
+    SMOOTH,
+    WINDOW_SIZE,
+    POLY_ORDER,
+    SMOOTH_START,
+    SMOOTH_STOP,
+    PLOT_N_K_ACS_CELL,
+    PLOT_PIGMENT_ACSS,
+    SAVEFILES_N_K_ACS_CELL,
+    SAVEFILENAME_N_K_ACS_CELL,
+    SAVEPLOTS_N_K_ACS,
+    SAVEPATH_N_K_ACS_PLOTS,
 )
 
 
-#%%
+# %%
 # --------------------------------------------------------------------------------------
 # CALCULATIONS OF SCATTERING PROPERTIES
 # --------------------------------------------------------------------------------------
 
 assym, ss_alb = ssp_calculations(
     GO,
-    Mie,
-    savepath_OPs,
-    r,
+    MIE,
+    SAVEPATH_OPS,
+    R,
     L,
     wvl_rescaled_BioSNICAR,
     n_rescaled_BioSNICAR,
     k_rescaled_BioSNICAR,
-    plots_OPs,
-    savefigs_OPs,
-    figname_OPs,
-    report_dims,
+    PLOTS_OPS,
+    SAVEFIGS_OPS,
+    FIGNAME_OPS,
+    REPORT_DIMS,
 )
 
-#%%
+# %%
 # --------------------------------------------------------------------------------------
 # SAVING DATA IN NETCDF
 # --------------------------------------------------------------------------------------
 
-if netcdf_save:
+if NETCDF_SAVE:
     net_cdf_updater(
         GO,
-        Mie,
-        savepath_netcdf,
-        filename_netcdf,
+        MIE,
+        SAVEPATH_NETCDF,
+        FILENAME_NETCDF,
         wvl_rescaled_BioSNICAR,
         assym,
         ss_alb,
         ACS_rescaled_BioSNICAR,
         L,
-        r,
-        density_wet,
-        info,
+        R,
+        DENSITY_WET,
+        INFO,
     )
