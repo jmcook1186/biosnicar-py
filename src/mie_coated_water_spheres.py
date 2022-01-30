@@ -10,7 +10,7 @@ from tqdm import tqdm
 import xarray as xr
 
 
-def fill_nans_scipy1(padata, pkind='nearest'):
+def fill_nans_scipy1(padata, pkind="nearest"):
     """Interpolates data to fill nan values.
 
     :param padata: source data with np.NaN values
@@ -19,9 +19,15 @@ def fill_nans_scipy1(padata, pkind='nearest'):
     """
 
     aindexes = np.arange(padata.shape[0])
-    agood_indexes, = np.where(np.isfinite(padata))
+    (agood_indexes,) = np.where(np.isfinite(padata))
     f = interp1d(
-        agood_indexes, padata[agood_indexes], bounds_error=False, copy=False, fill_value="extrapolate", kind=pkind)
+        agood_indexes,
+        padata[agood_indexes],
+        bounds_error=False,
+        copy=False,
+        fill_value="extrapolate",
+        kind=pkind,
+    )
 
     return f(aindexes)
 
@@ -42,7 +48,7 @@ def miecoated_ab3(m1, m2, x, y):
     m = m2 / m1
     nmax = int(round(2 + y + 4 * y ** (1 / 3)))
     n = np.arange(1, nmax + 1, 1)
-    nu = (n + 0.5)
+    nu = n + 0.5
     u = m1 * x
     v = m2 * x
     w = m2 * y
@@ -54,26 +60,26 @@ def miecoated_ab3(m1, m2, x, y):
     py = sy * jv(nu, y)
     pv = sv * jv(nu, v)
     pw = sw * jv(nu, w)
-    p1u = np.concatenate([np.array([np.sin(u)]), pu[0:nmax-1]])
-    p1y = np.concatenate([np.array([np.sin(y)]), py[0:nmax-1]])
-    p1v = np.concatenate([np.array([np.sin(v)]), pv[0:nmax-1]])
-    p1w = np.concatenate([np.array([np.sin(w)]), pw[0:nmax-1]])
+    p1u = np.concatenate([np.array([np.sin(u)]), pu[0 : nmax - 1]])
+    p1y = np.concatenate([np.array([np.sin(y)]), py[0 : nmax - 1]])
+    p1v = np.concatenate([np.array([np.sin(v)]), pv[0 : nmax - 1]])
+    p1w = np.concatenate([np.array([np.sin(w)]), pw[0 : nmax - 1]])
     ppw = p1w - n * pw / w
     ppy = p1y - n * py / y
     chv = -sv * yv(nu, v)
     chw = -sw * yv(nu, w)
     chy = -sy * yv(nu, y)
-    ch1y = np.concatenate([np.array([np.cos(y)]), chy[0:nmax-1]])
+    ch1y = np.concatenate([np.array([np.cos(y)]), chy[0 : nmax - 1]])
     gsy = py - 1j * chy
     gs1y = p1y - 1j * ch1y
     gspy = gs1y - n * gsy / y
     du = p1u / pu - n / u
     dv = p1v / pv - n / v
     dw = p1w / pw - n / w
-    chpw = chw * dw - 1. / pw
+    chpw = chw * dw - 1.0 / pw
     uu = m * du - dv
     vv = du / m - dv
-    pvi = 1. / pv
+    pvi = 1.0 / pv
     aaa = pv * uu / (chv * uu + pvi)
     bbb = pv * vv / (chv * vv + pvi)
     aa1 = ppw - aaa * chpw
@@ -138,10 +144,10 @@ def miecoated(m1, m2, x, y):
 
         # displaced numbers used for asymmetry parameter, p. 120
         g1 = np.zeros((4, nmax))
-        g1[0, :n1] = anp[1:nmax + 1]
-        g1[1, :n1] = anpp[1:nmax + 1]
-        g1[2, :n1] = bnp[1:nmax + 1]
-        g1[3, :n1] = bnpp[1:nmax + 1]
+        g1[0, :n1] = anp[1 : nmax + 1]
+        g1[1, :n1] = anpp[1 : nmax + 1]
+        g1[2, :n1] = bnp[1 : nmax + 1]
+        g1[3, :n1] = bnpp[1 : nmax + 1]
 
         dn = cn * (anp + bnp)
         q = sum(dn)
@@ -155,7 +161,9 @@ def miecoated(m1, m2, x, y):
         f_3 = fn * gn
         q = sum(f_3)
         qb = q * q.conj() / y2
-        asy1 = c1n * (anp * g1[0, :] + anpp * g1[1, :] + bnp * g1[2, :] + bnpp * g1[3, :])
+        asy1 = c1n * (
+            anp * g1[0, :] + anpp * g1[1, :] + bnp * g1[2, :] + bnpp * g1[3, :]
+        )
         asy2 = c2n * (anp * bnp + anpp * bnpp)
         asy = 4 / y2 * sum(asy1 + asy2) / qsca
         qratio = qb / qsca
@@ -206,22 +214,22 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     TotalMass = IceMass + WatMass
 
     # read in refractive indices of ice and liquid water
-    
+
     temp = xr.open_dataset(fn_ice)
-    ref_index_ice = np.zeros(shape=(2,len(wvl)))
-    wvl_ice = temp['wvl'].values
+    ref_index_ice = np.zeros(shape=(2, len(wvl)))
+    wvl_ice = temp["wvl"].values
 
     if rf_ice == 0:
-        n_ice = temp['re_Wrn84'].values
-        k_ice = temp['im_Wrn84'].values
+        n_ice = temp["re_Wrn84"].values
+        k_ice = temp["im_Wrn84"].values
 
     if rf_ice == 1:
-        n_ice = temp['re_Wrn08'].values
-        k_ice = temp['im_Wrn08'].values
+        n_ice = temp["re_Wrn08"].values
+        k_ice = temp["im_Wrn08"].values
 
     if rf_ice == 2:
-        n_ice = temp['re_Pic16'].values
-        k_ice = temp['im_Pic16'].values
+        n_ice = temp["re_Pic16"].values
+        k_ice = temp["im_Pic16"].values
 
     ref_index_water = pd.read_csv(fn_water)
     wvl_water = np.zeros(ref_index_water.shape[0])
@@ -229,9 +237,9 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     k_water = np.zeros(ref_index_water.shape[0])
 
     for ii in range(ref_index_water.shape[0]):
-        wvl_water[ii] = ref_index_water.at[ii, 'wl']
-        n_water[ii] = ref_index_water.at[ii, 'n']
-        k_water[ii] = ref_index_water.at[ii, 'k']
+        wvl_water[ii] = ref_index_water.at[ii, "wl"]
+        n_water[ii] = ref_index_water.at[ii, "n"]
+        k_water[ii] = ref_index_water.at[ii, "k"]
 
     n_water_interp = np.interp(x=wvl, xp=wvl_water, fp=n_water)
     k_water_interp = np.interp(x=wvl, xp=wvl_water, fp=k_water)
@@ -265,13 +273,13 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
         ssa[ii] = qsca / qext
 
     # replace any possible nans with values estimated by cubic interpolation
-    extinction = fill_nans_scipy1(padata=extinction, pkind='nearest')
-    scattering = fill_nans_scipy1(padata=scattering, pkind='nearest')
-    absorption = fill_nans_scipy1(padata=absorption, pkind='nearest')
-    backscattering = fill_nans_scipy1(padata=backscattering, pkind='nearest')
-    asymmetry = fill_nans_scipy1(padata=asymmetry, pkind='nearest')
-    q_ratio = fill_nans_scipy1(padata=q_ratio, pkind='nearest')
-    ssa = fill_nans_scipy1(padata=ssa, pkind='nearest')
+    extinction = fill_nans_scipy1(padata=extinction, pkind="nearest")
+    scattering = fill_nans_scipy1(padata=scattering, pkind="nearest")
+    absorption = fill_nans_scipy1(padata=absorption, pkind="nearest")
+    backscattering = fill_nans_scipy1(padata=backscattering, pkind="nearest")
+    asymmetry = fill_nans_scipy1(padata=asymmetry, pkind="nearest")
+    q_ratio = fill_nans_scipy1(padata=q_ratio, pkind="nearest")
+    ssa = fill_nans_scipy1(padata=ssa, pkind="nearest")
 
     # calculate cross sections from efficiency factors
     ExtXC = extinction * TotalXS
@@ -293,15 +301,30 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     ice_frac_vol = 100 - water_frac_vol
 
     # density of particle as average weighted by mass of components
-    part_dens = ((IceDensity * ice_frac_mss / 100) + (WatDensity * water_frac_mss / 100))
+    part_dens = (IceDensity * ice_frac_mss / 100) + (WatDensity * water_frac_mss / 100)
 
-    res = {"extinction": extinction, "scattering": scattering, "absorption": absorption,
-           "backscattering": backscattering, "asymmetry": asymmetry, "q_ratio": q_ratio, "ssa": ssa,
-           "extinction_cross_section": ExtXC, "scattering_cross_section": ScaXC, "absorption_cross_section": AbsXC,
-           "extinction_volume_cross_section": ExtXCvol, "scattering_volume_cross_section": ScaXCvol,
-           "absorption_volume_cross_section": AbsXCvol, "extinction_mass_cross_section": ExtXCmass,
-           "scattering_mass_cross_section": ScaXCmass, "absorption_mass_cross_section": AbsXCmass,
-           "water_mass_fraction": water_frac_mss, "water_volume_fraction": water_frac_vol,
-           "ice_mass_fraction": ice_frac_mss, "ice_volume_fraction": ice_frac_vol, "particle_density": part_dens}
+    res = {
+        "extinction": extinction,
+        "scattering": scattering,
+        "absorption": absorption,
+        "backscattering": backscattering,
+        "asymmetry": asymmetry,
+        "q_ratio": q_ratio,
+        "ssa": ssa,
+        "extinction_cross_section": ExtXC,
+        "scattering_cross_section": ScaXC,
+        "absorption_cross_section": AbsXC,
+        "extinction_volume_cross_section": ExtXCvol,
+        "scattering_volume_cross_section": ScaXCvol,
+        "absorption_volume_cross_section": AbsXCvol,
+        "extinction_mass_cross_section": ExtXCmass,
+        "scattering_mass_cross_section": ScaXCmass,
+        "absorption_mass_cross_section": AbsXCmass,
+        "water_mass_fraction": water_frac_mss,
+        "water_volume_fraction": water_frac_vol,
+        "ice_mass_fraction": ice_frac_mss,
+        "ice_volume_fraction": ice_frac_vol,
+        "particle_density": part_dens,
+    }
 
     return res

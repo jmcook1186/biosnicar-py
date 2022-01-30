@@ -1,4 +1,3 @@
-
 # This driver script allows the user to easily run the various funcs in
 # utils.py. Simply choopse the function from the list below, uncomment
 # the relevant section, change any parameters and run
@@ -42,6 +41,7 @@ import numpy as np
 import pandas as pd
 import yaml
 import utils
+
 sys.path.append("./src")
 
 
@@ -78,12 +78,10 @@ LUT_PATH = cfg["PATHS"]["LUT"]
 
 # generate ARF data
 ARF_CI_DF = pd.read_csv(ARF_PATH)
-ARF_CI = np.mean(np.array(
-    ARF_CI_DF[ARF_CI_DF.columns.intersection(CI_SITES)]), axis=1)
+ARF_CI = np.mean(np.array(ARF_CI_DF[ARF_CI_DF.columns.intersection(CI_SITES)]), axis=1)
 ARF_CI = ARF_CI[::10]
 ARF_HA_DF = pd.read_csv(ARF_PATH)
-ARF_HA = np.mean(np.array(
-    ARF_HA_DF[ARF_HA_DF.columns.intersection(HA_SITES)]), axis=1)
+ARF_HA = np.mean(np.array(ARF_HA_DF[ARF_HA_DF.columns.intersection(HA_SITES)]), axis=1)
 ARF_HA = ARF_HA[::10]
 
 # set path to field spectral database - reflectance if ARF is applied, albedo
@@ -150,7 +148,16 @@ else:
 
 
 # 5) run inverse model
-spectra = utils.inverse_model(FIELD_DATA_FNAME, LUT_PATH, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ZEN, LUT_ALGAE, WAVELENGTHS)
+spectra = utils.inverse_model(
+    FIELD_DATA_FNAME,
+    LUT_PATH,
+    LUT_DZ,
+    LUT_DENSITIES,
+    LUT_RADII,
+    LUT_ZEN,
+    LUT_ALGAE,
+    WAVELENGTHS,
+)
 
 # 6) Field vs model comparison
-#compare_predicted_and_measured(SAVEPATH, METADATA)
+# compare_predicted_and_measured(SAVEPATH, METADATA)
