@@ -1,5 +1,5 @@
 ---
-name: linting and formatting
+name: linting_formatting
 
 on: [push, pull_request]
 
