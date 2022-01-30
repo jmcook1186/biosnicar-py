@@ -1,4 +1,15 @@
 def toon_solver(Inputs):
+    """
+    Three 2-stream approximations are available: Eddington,
+    Quadrature and hemispheric mean. The equations for each
+    approximation are provided in Toon et al. (1989) Table 1.
+
+    The hemispheric mean scheme is derived by assuming that the
+    phase function is equal to 1  + g  in the forward scattering
+    hemisphere and to 1  - g  in the backward scattering hemisphere.
+    The asymmetry parameter is g. The hemispheric mean is only
+    useful for infrared wavelengths
+    """
 
     # load variables from input table
     tau = Inputs.tau
@@ -33,9 +44,9 @@ def toon_solver(Inputs):
     abs_vis = np.zeros(nbr_lyr)
     abs_nir = np.zeros(nbr_lyr)
 
-    ############################################
+    # ----------------------------------------------------------------------------------
     # PERFORM DELTA TRANSFORMATION IF REQUIRED
-    ############################################
+    # ----------------------------------------------------------------------------------
     # The star represents the delta transformed quantity
     # if no delta transformation is applied, the starred quantity
     # is equal to the unstarred quantity
@@ -62,7 +73,8 @@ def toon_solver(Inputs):
         tau_clm[i, :] = tau_clm[i - 1, :] + tau_star[i - 1, :]
 
     # SET BOUNDARY CONDITION: BOTTOM BOUNDARY
-    # calculate radiation reflected skywards by underlying surface (i.e. lower model boundary)
+    # calculate radiation reflected skywards by underlying surface
+    # (i.e. lower model boundary)
     # remainder is lost
 
     S_sfc = (
@@ -73,21 +85,9 @@ def toon_solver(Inputs):
         * Fs
     )
 
-    ######################################################
+    # ----------------------------------------------------------------------------------
     # Apply Two-Stream Approximation (Toon et al, table 1)
-    ######################################################
-    """
-    Three 2-stream approximations are available: Eddington,
-    Quadrature and hemispheric mean. The equations for each
-    approximation are provided in Toon et al. (1989) Table 1.
-
-    The hemispheric mean scheme is derived by assuming that the
-    phase function is equal to 1  + g  in the forward scattering 
-    hemisphere and to 1  - g  in the backward scattering hemisphere. 
-    The asymmetry parameter is g. The hemispheric mean is only
-    useful for infrared wavelengths
-
-    """
+    # ----------------------------------------------------------------------------------
 
     if APRX_TYP == 1:
         # apply Eddington approximation
@@ -127,9 +127,9 @@ def toon_solver(Inputs):
     e3 = GAMMA + np.exp(-lam * tau_star)
     e4 = GAMMA - np.exp(-lam * tau_star)
 
-    ######################################
+    # ----------------------------------------------------------------------------------
     # Calculate C-functions
-    ######################################
+    # ----------------------------------------------------------------------------------
 
     # C is the direct beam flux calculated at the top and bottom of each layer, i,
     # see Toon equations 23 and 24
@@ -204,17 +204,18 @@ def toon_solver(Inputs):
     D = np.zeros([2 * nbr_lyr, nbr_wvl])
     E = np.zeros([2 * nbr_lyr, nbr_wvl])
 
-    ###########################################
+    # ----------------------------------------------------------------------------------
     # Initialize tridiagonal matrix solution
-    ###########################################
+    # ----------------------------------------------------------------------------------
 
     # expanding the number of layers to 2*nbr_lyr so that fluxes at upper and lower
-    # layer boundaries can be resolved. This section was confusing to code - for each layer
+    # layer boundaries can be resolved. This section was confusing to code -
+    # for each layer
     # index (n) a second pair of indices (2 x i) are required. Different solutions are
-    # applied depending upon whether i is even or odd. To translate the indexing for this
-    # from FORTRAN/MATLAB into Python, it was necessary to assert n = (i/2)-1 for even layers
-    # and n = floor(i/2) for odd layers, with specific rules for the boundaries i = 0 and
-    # i = nbr_lyrs-1 (i.e. top surface and bottom surface).
+    # applied depending upon whether i is even or odd. To translate the indexing for
+    # this from FORTRAN/MATLAB into Python, it was necessary to assert n = (i/2)-1
+    # for even layers and n = floor(i/2) for odd layers, with specific rules for the
+    # boundaries i = 0 and i = nbr_lyrs-1 (i.e. top surface and bottom surface).
 
     for i in np.arange(0, 2 * nbr_lyr, 1):
 
@@ -275,8 +276,8 @@ def toon_solver(Inputs):
         E[2 * nbr_lyr - 1, :] / B[2 * nbr_lyr - 1, :]
     )
 
-    # for all layers above bottom layer, starting at second-to-bottom and progressing towards
-    # surface:
+    # for all layers above bottom layer, starting at second-to-bottom and
+    # progressing towards surface:
     # Toon et al Eq 46
     X = np.zeros([nbr_lyr * 2, nbr_wvl])
     for i in np.arange(2 * nbr_lyr - 2, -1, -1):
@@ -294,7 +295,7 @@ def toon_solver(Inputs):
         else:
             Y[i, :] = DS[i, :] - (AS[i, :] * Y[i - 1, :])
 
-    #############################################################
+    # ----------------------------------------------------------------------------------
     # CALCULATE DIRECT BEAM FLUX AT BOTTOM OF EACH LAYER
 
     # loop through layers
@@ -305,7 +306,8 @@ def toon_solver(Inputs):
             mu_not * np.pi * Fs * np.exp(-(tau_clm[i, :] + tau_star[i, :]) / mu_not)
         )
 
-        # net flux (positive upward = F_up - F_down) at the base of each layer (Toon et al. Eq 48)
+        # net flux (positive upward = F_up - F_down) at the base of each layer
+        # (Toon et al. Eq 48)
         F_net[i, :] = (
             (Y[2 * i, :] * (e1[i, :] - e3[i, :]))
             + (Y[2 * i + 1, :] * (e2[i, :] - e4[i, :]))
@@ -340,7 +342,8 @@ def toon_solver(Inputs):
             + C_pls_btm[i, :]
         )
 
-        # Downward flux at the bottom of each layer interface (Toon et al. Eq32) plus direct beam component
+        # Downward flux at the bottom of each layer interface (Toon et al. Eq32)
+        # plus direct beam component
         F_down[i, :] = (
             Y[2 * i, :]
             * (GAMMA[i, :] * np.exp(0) + np.exp(-lam[i, :] * tau_star[i, :]))
@@ -398,7 +401,8 @@ def toon_solver(Inputs):
     heat_rt = heat_rt * 3600  # [K / hr]
 
     # Energy conservation check:
-    # % Incident direct + diffuse radiation equals(absorbed + transmitted + bulk_reflected)
+    # % Incident direct + diffuse radiation equals(absorbed + transmitted +
+    # bulk_reflected)
     energy_sum = (mu_not * np.pi * Fs) + Fd - (sum(F_abs) + F_btm_net + F_top_pls)
 
     # spectrally-integrated terms:
@@ -409,9 +413,9 @@ def toon_solver(Inputs):
         energy_conservation_error = np.sum(abs(energy_sum))
         raise ValueError(f"CONSERVATION OF ENERGY ERROR OF {energy_conservation_error}")
 
-    ######################################
+    # ----------------------------------------------------------------------------------
     # Re-alias results for outputting
-    ######################################
+    # ----------------------------------------------------------------------------------
 
     # total incident insolation(Wm - 2)
     total_insolation = np.sum((mu_not * np.pi * Fs) + Fd)
