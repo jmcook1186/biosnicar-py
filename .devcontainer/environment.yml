@@ -13,4 +13,5 @@ dependencies:
       - statsmodels
       - seaborn
       - plotnine
+      - pre-commit
 prefix: /opt/conda
