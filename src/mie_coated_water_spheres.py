@@ -1,5 +1,7 @@
-# Copyright (C) 2020  Niklas Bohn (GFZ, <nbohn@gfz-potsdam.de>),
-# German Research Centre for Geosciences (GFZ, <https://www.gfz-potsdam.de>)
+"""
+Copyright (C) 2020  Niklas Bohn (GFZ, <nbohn@gfz-potsdam.de>),
+German Research Centre for Geosciences (GFZ, <https://www.gfz-potsdam.de>)
+"""
 
 import numpy as np
 import pandas as pd
@@ -14,7 +16,8 @@ def fill_nans_scipy1(padata, pkind="nearest"):
     """Interpolates data to fill nan values.
 
     :param padata: source data with np.NaN values
-    :param pkind:  kind of interpolation (see scipy.interpolate.interp1d documentation for details)
+    :param pkind:  kind of interpolation (see scipy.interpolate.interp1d documentation
+                    for details)
     :return:       resulting data with interpolated values instead of nans
     """
 
@@ -33,10 +36,13 @@ def fill_nans_scipy1(padata, pkind="nearest"):
 
 
 def miecoated_ab3(m1, m2, x, y):
-    """Computation of Mie Coefficients, a_n, b_n, of orders n=1 to nmax, complex refractive index m=m'+im", and size
-       parameters x=k0*a, y=k0*b where k0 = wave number in the ambient medium for coated spheres, a = inner radius,
-       b = outer radius m1, m2 = inner, outer refractive index; p. 183 in Bohren and Huffman (1983) BEWI:TDD122 but
-       using the bottom equation on p. 483 for chi_prime (Matzler 2002).
+    """Computation of Mie Coefficients, a_n, b_n, of orders n=1 to nmax, complex
+    refractive index m=m'+im", and size
+    parameters x=k0*a, y=k0*b where k0 = wave number in the ambient medium for
+    coated spheres, a = inner radius,
+    b = outer radius m1, m2 = inner, outer refractive index;
+    p. 183 in Bohren and Huffman (1983) BEWI:TDD122 but
+    using the bottom equation on p. 483 for chi_prime (Matzler 2002).
 
     :param m1: refractive index for inner sphere
     :param m2: refractive index for outher sphere
@@ -45,7 +51,7 @@ def miecoated_ab3(m1, m2, x, y):
     :return:   Mie Coefficients a_n and b_n
     """
 
-    m = m2 / m1
+    M = m2 / m1
     nmax = int(round(2 + y + 4 * y ** (1 / 3)))
     n = np.arange(1, nmax + 1, 1)
     nu = n + 0.5
@@ -77,8 +83,8 @@ def miecoated_ab3(m1, m2, x, y):
     dv = p1v / pv - n / v
     dw = p1w / pw - n / w
     chpw = chw * dw - 1.0 / pw
-    uu = m * du - dv
-    vv = du / m - dv
+    uu = M * du - dv
+    vv = du / M - dv
     pvi = 1.0 / pv
     aaa = pv * uu / (chv * uu + pvi)
     bbb = pv * vv / (chv * vv + pvi)
@@ -96,20 +102,24 @@ def miecoated_ab3(m1, m2, x, y):
 
 
 def miecoated(m1, m2, x, y):
-    """Mie Efficiencies of coated spheres for given complex refractive-index ratios m1=m1'+im1", m2= m2'+im2" of kernel
-       and coating, resp., and size parameters x=k0*a, y=k0*b where k0 = wave number in ambient  medium, a,b = inner,
-       outer sphere radius, using complex Mie Coefficients an and bn for n=1 to nmax, s. Bohren and Huffman (1983)
-       BEWI:TDD122, p. 181-185,483.
+    """Mie Efficiencies of coated spheres for given complex refractive-index
+    ratios m1=m1'+im1", m2= m2'+im2" of kernel
+    and coating, resp., and size parameters x=k0*a, y=k0*b where
+    k0 = wave number in ambient  medium, a,b = inner,
+    outer sphere radius, using complex Mie Coefficients an and bn for
+    n=1 to nmax, s. Bohren and Huffman (1983)
+    BEWI:TDD122, p. 181-185,483.
 
-       opt selects the function "Miecoated_ab.." for an and bn, n=1 to nmax.
+    opt selects the function "Miecoated_ab.." for an and bn, n=1 to nmax.
 
-       Note that 0<=x<=y (Matzler, 2002).
+    Note that 0<=x<=y (Matzler, 2002).
 
     :param m1:  refractive-index ratio of kernel
     :param m2:  refractive-index ratio of coating
     :param x:   size parameter for inner sphere
     :param y:   size parameter for outer sphere
-    :return:    efficiencies for extinction (qext), scattering (qsca), absorption (qabs), backscattering (qb),
+    :return:    efficiencies for extinction (qext), scattering (qsca),
+                absorption (qabs), backscattering (qb),
                 asymmetry parameter (asy=<costeta>) and (qratio=qb/qsca)
     """
 
@@ -172,22 +182,26 @@ def miecoated(m1, m2, x, y):
 
 
 def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
-    """Driver for miecoated, originally written by Christian Matzler (see Matzler, 2002). The driver convolves the
-       efficiency factors with the particle dimensions to return the cross sections for extinction, scattering and
-       absorption plus the asymmetry parameter, q ratio and single scattering albedo.
+    """Driver for miecoated, originally written by Christian Matzler
+    (see Matzler, 2002). The driver convolves the efficiency factors with the particle
+    dimensions to return the cross sections for extinction, scattering and
+    absorption plus the asymmetry parameter, q ratio and single scattering albedo.
 
-       Note that the code includes an interpolation regime. This is because the original code produced NaNs for a few
-       wavelengths at certain size parameters, particularly in the mid NIR wavelengths.
+    Note that the code includes an interpolation regime. This is because the original
+    code produced NaNs for a few wavelengths at certain size parameters, particularly
+    in the mid NIR wavelengths.
 
-       Adapted from Joseph Cook, University of Sheffield, UK (2017).
+    Adapted from Joseph Cook, University of Sheffield, UK (2017).
 
     :param rice:     inner sphere diameter in microns
-    :param rwater:   outer sphere diameter in microns (i.e. total coated sphere, not water layer thickness)
+    :param rwater:   outer sphere diameter in microns (i.e. total coated sphere,
+                        not water layer thickness)
     :param fn_ice:   path to csv file containing refractive index of ice (Warren, 1984)
-    :param fn_water: path to csv file containing refractive index of liquid water (Segelstein, 1981)
+    :param fn_water: path to csv file containing refractive index of liquid water
+                    (Segelstein, 1981)
     :param wvl:      wavelength which should be calculated (in microns)
-    :return:         cross sections for extinction, scattering and absorption plus the asymmetry parameter, q ratio and
-                     single scattering albedo
+    :return:         cross sections for extinction, scattering and absorption plus
+                    the asymmetry parameter, q ratio and single scattering albedo
     """
 
     # calculate volume and density of sphere
