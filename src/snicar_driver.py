@@ -1,7 +1,6 @@
-#####################################################################
-################# BioSNICAR_GO DRIVER SCRIPT ########################
-
 """
+BioSNICAR_GO DRIVER SCRIPT
+
 This script is used to configure the 2-stream radiative transfer
 model BioSNICAR_GO. Here variable values are defined, the model called
 and the results plotted.
@@ -29,11 +28,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from snicar_feeder import snicar_feeder
+from .snicar_feeder import snicar_feeder
 
-######################################
-## 1) Initialize Inputs of the model
-######################################
+# --------------------------------------------------------------------------------------
+# 1) Initialize Inputs of the model
+# --------------------------------------------------------------------------------------
 
 Inputs = c.namedtuple(
     "Inputs",
@@ -140,20 +139,20 @@ Inputs = c.namedtuple(
 )
 
 
-##############################
-## 2) Set working directory
-##############################
+# --------------------------------------------------------------------------------------
+# 2) Set working directory
+# --------------------------------------------------------------------------------------
 
 # set dir_base to the location of the BioSNICAR_GO_PY folder
 Inputs.dir_base = "/home/joe/Code/BioSNICAR_GO_PY/"
 savepath = Inputs.dir_base  # base path for saving figures
-WRITE_CONFIG_TO_TEXTfile = False  # toggle to save config to file
+WRITE_CONFIG_TO_TEXTFILE = False  # toggle to save config to file
 Inputs.verbosity = 0  # 1 to print real-time updates
 
 
-################################
-## 3) Choose plot/print options
-################################
+# --------------------------------------------------------------------------------------
+# 3) Choose plot/print options
+# --------------------------------------------------------------------------------------
 
 SHOW_FIGS = True  # toggle to display spectral albedo figure
 SAVE_FIGS = False  # toggle to save spectral albedo figure to file
@@ -163,9 +162,9 @@ SMOOTH = False  # apply optional smoothing function (Savitzky-Golay filter)
 WINDOW_SIZE = 9  # if applying smoothing filter, define window size
 POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 
-#######################################
-## 4) RADIATIVE TRANSFER CONFIGURATION
-#######################################
+# --------------------------------------------------------------------------------------
+# 4) RADIATIVE TRANSFER CONFIGURATION
+# --------------------------------------------------------------------------------------
 
 Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
 Inputs.APRX_TYP = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
@@ -184,11 +183,11 @@ Inputs.solzen = 40  # solar zenith angle between 0 (nadir) and 89 (horizon)
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
 Inputs.incoming_i = 4
 
-###############################################################
-## 4) SET UP ICE/SNOW LAYERS
+# --------------------------------------------------------------------------------------
+# 4) SET UP ICE/SNOW LAYERS
 # For granular layers only, choose toon
 # For granular layers + Fresnel layers, choose add_double
-###############################################################
+# --------------------------------------------------------------------------------------
 
 Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
 Inputs.add_double = True  # toggle addintg-doubling solver
@@ -208,11 +207,11 @@ Inputs.R_sfc = np.genfromtxt(
     delimiter="csv",
 )
 
-##############################################################################
-## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
+# --------------------------------------------------------------------------------------
+# 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
 # For hexagonal plates or columns of any size choose GeometricOptics
 # For sphere, spheroids, koch snowflake with optional water coating choose Mie
-##############################################################################
+# --------------------------------------------------------------------------------------
 
 # define source of ice refractive index data.
 # 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
@@ -243,9 +242,9 @@ Inputs.shp_fctr = [0, 0]
 # Aspect ratio (ratio of width to length)
 Inputs.grain_ar = [0, 0]
 
-#######################################
-## 5) SET LAP CHARACTERISTICS
-#######################################
+# --------------------------------------------------------------------------------------
+# 5) SET LAP CHARACTERISTICS
+# --------------------------------------------------------------------------------------
 
 # Define total number of different LAPs/aerosols in model
 Inputs.nbr_aer = 30
@@ -262,7 +261,7 @@ Inputs.SA_units = 1  # snow algae
 Inputs.c_factor_GA = 30
 Inputs.c_factor_SA = 0
 
-## Set names of files containing the optical properties of these LAPs:
+# Set names of files containing the optical properties of these LAPs:
 # uncoated BC (Bohren and Huffman, 1983)
 Inputs.file_soot1 = "mie_sot_ChC90_dns_1317.nc"
 # coated BC (Bohren and Huffman, 1983)
@@ -362,14 +361,14 @@ Inputs.mss_cnc_snw_alg = [0, 0]
 Inputs.mss_cnc_glacier_algae = [0, 0]
 
 
-##########################################################################
-################## CALL FUNCTIONS AND PLOT OUTPUTS #######################
-##########################################################################
+# --------------------------------------------------------------------------------------
+# CALL FUNCTIONS AND PLOT OUTPUTS
+# --------------------------------------------------------------------------------------
 
 
-###########################################################
-## Error catching: invalid combinations of input variables
-###########################################################
+# --------------------------------------------------------------------------------------
+# Error catching: invalid combinations of input variables
+# --------------------------------------------------------------------------------------
 
 if (
     (np.sum(Inputs.mss_cnc_Cook_Greenland_dust_L) > 0)
@@ -426,12 +425,11 @@ if Inputs.solzen > 89:  # pylint: disable=W0143
         zenith angle < 90 degrees. Solzen set to 89."
     )
 
-#########################################
-## IF NO INPUT ERRORS --> SAVE MODEL
+# --------------------------------------------------------------------------------------
 # CONFIG  AND CALL SNICAR
-#########################################
+# --------------------------------------------------------------------------------------
 
-if WRITE_CONFIG_TO_TEXTfile:
+if WRITE_CONFIG_TO_TEXTFILE:
     omitted_fields = [
         "tau",
         "g",
@@ -445,7 +443,7 @@ if WRITE_CONFIG_TO_TEXTfile:
         "flx_slr",
     ]
 
-    with open("./model_config.txt", "w") as f:
+    with open("./model_config.txt", "w", encoding="utf8") as f:
         for i in Inputs._fields:
             if i not in omitted_fields:
                 f.write(i)
@@ -457,9 +455,9 @@ if WRITE_CONFIG_TO_TEXTfile:
 Outputs = snicar_feeder(Inputs)
 
 
-#########################
-## PLOTTING AND PRINTING
-#########################
+# --------------------------------------------------------------------------------------
+# PLOTTING AND PRINTING
+# --------------------------------------------------------------------------------------
 albedo = Outputs.albedo
 BBA = Outputs.BBA
 wvl = Outputs.wvl
