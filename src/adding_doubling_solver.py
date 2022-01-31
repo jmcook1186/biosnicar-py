@@ -14,31 +14,11 @@ def adding_doubling_solver(Inputs):
 
     import numpy as np
 
-    # load variables from input table
-    tau = Inputs.tau
-    ssa = Inputs.ssa
-    g = Inputs.g
-    nbr_wvl = Inputs.nbr_wvl
-    wvl = Inputs.wvl
-    nbr_lyr = Inputs.nbr_lyr
-    layer_type = Inputs.layer_type
-    R_sfc = Inputs.R_sfc
-    Fs = Inputs.Fs
-    Fd = Inputs.Fd
-    mu_not = Inputs.mu_not
-    L_snw = Inputs.L_snw
-    flx_slr = Inputs.flx_slr
-    verbosity = Inputs.verbosity
-    refidx_re = Inputs.refidx_re
-    refidx_im = Inputs.refidx_im
-    fl_r_dif_a = Inputs.fl_r_dif_a
-    fl_r_dif_b = Inputs.fl_r_dif_b
-
     # DEFINE CONSTANTS AND SET UP ARRAYS
 
-    tau0 = tau.T  # read and transpose tau
-    g0 = g.T  # read and transpose g
-    ssa0 = ssa.T  # read and transpose ssa
+    tau0 = Inputs.tau.T  # read and transpose tau
+    g0 = Inputs.g.T  # read and transpose g
+    ssa0 = Inputs.ssa.T  # read and transpose ssa
 
     epsilon = 1e-5  # to deal with singularity
     exp_min = (
@@ -72,41 +52,41 @@ def adding_doubling_solver(Inputs):
     nir_max_idx = 480  # index of max nir wavelength (5 um)
 
     # empty arrays
-    trndir = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    trntdr = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    trndif = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    rupdir = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    rupdif = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    trndir = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    rdndif = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    fdirup = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    fdifup = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    fdirdn = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    fdifdn = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    dfdir = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    dfdif = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    rdir = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    rdif_a = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
+    trndir = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    trntdr = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    trndif = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    rupdir = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    rupdif = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    trndir = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    rdndif = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    fdirup = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    fdifup = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    fdirdn = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    fdifdn = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    dfdir = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    dfdif = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    rdir = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    rdif_a = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
     rdif_b = np.zeros(
-        shape=[nbr_wvl, nbr_lyr + 1]
+        shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1]
     )  # layer reflectivity to diffuse radiation from below
     tdir = np.zeros(
-        shape=[nbr_wvl, nbr_lyr + 1]
+        shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1]
     )  # layer transmission to direct radiation (solar beam + diffuse)
     tdif_a = np.zeros(
-        shape=[nbr_wvl, nbr_lyr + 1]
+        shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1]
     )  # layer transmission to diffuse radiation from above
     tdif_b = np.zeros(
-        shape=[nbr_wvl, nbr_lyr + 1]
+        shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1]
     )  # layer transmission to diffuse radiation from below
     trnlay = np.zeros(
-        shape=[nbr_wvl, nbr_lyr + 1]
+        shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1]
     )  # solar beam transm for layer (direct beam only)
-    F_up = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    F_dwn = np.zeros(shape=[nbr_wvl, nbr_lyr + 1])
-    F_abs = np.zeros(shape=[nbr_wvl, nbr_lyr])
-    F_abs_vis = np.zeros(shape=[nbr_lyr])
-    F_abs_nir = np.zeros(shape=[nbr_lyr])
+    F_up = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    F_dwn = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr + 1])
+    F_abs = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr])
+    F_abs_vis = np.zeros(shape=[Inputs.nbr_lyr])
+    F_abs_nir = np.zeros(shape=[Inputs.nbr_lyr])
     trndir[:, 0] = 1
     trntdr[:, 0] = 1
     trndif[:, 0] = 1
@@ -114,18 +94,18 @@ def adding_doubling_solver(Inputs):
     n_real = np.zeros(shape=480)
 
     # set the underlying ground albedo
-    rupdir[:, nbr_lyr] = R_sfc  # reflectivity to direct radiation for layers below
-    rupdif[:, nbr_lyr] = R_sfc  # reflectivity to diffuse radiation for layers below
+    rupdir[:, Inputs.nbr_lyr] = Inputs.R_sfc  # reflectivity to direct radiation for layers below
+    rupdif[:, Inputs.nbr_lyr] = Inputs.R_sfc  # reflectivity to diffuse radiation for layers below
 
     # if there are non zeros in layer type, grab the index of the first fresnel layer
     # if there are non-zeros in layer type, load in the precalculated diffuse fresnel
     # reflection
     # (precalculated as large no. of gaussian points required for convergence)
-    if np.sum(layer_type) > 0:
+    if np.sum(Inputs.layer_type) > 0:
 
-        lyrfrsnl = layer_type.index(1)
+        lyrfrsnl = Inputs.layer_type.index(1)
 
-        if verbosity == 1:
+        if Inputs.verbosity == 1:
             print("\nFirst Fresnel boundary is in layer ", lyrfrsnl)
 
     else:
@@ -134,18 +114,18 @@ def adding_doubling_solver(Inputs):
 
         # raise error if there are no solid ice layers
         #  - in this case use the Toon solver instead!
-        if verbosity == 1:
+        if Inputs.verbosity == 1:
             print(
                 "There are no ice layers in this model configuration\
                   - suggest adding a solid ice layer or using faster Toon method"
             )
 
-    mu0 = mu_not * np.ones(480)  # cosine of beam angle is equal to incident beam
+    mu0 = Inputs.mu_not * np.ones(480)  # cosine of beam angle is equal to incident beam
     # ice-adjusted real refractive index
-    temp1 = refidx_re**2 - refidx_im**2 + np.sin(np.arccos(mu_not)) ** 2
-    temp2 = refidx_re**2 - refidx_im**2 - np.sin(np.arccos(mu_not)) ** 2
+    temp1 = Inputs.refidx_re**2 - Inputs.refidx_im**2 + np.sin(np.arccos(Inputs.mu_not)) ** 2
+    temp2 = Inputs.refidx_re**2 - Inputs.refidx_im**2 - np.sin(np.arccos(Inputs.mu_not)) ** 2
     n_real = (np.sqrt(2) / 2) * (
-        temp1 + (temp2**2 + 4 * refidx_re**2 * refidx_im**2) ** 0.5
+        temp1 + (temp2**2 + 4 * Inputs.refidx_re**2 * Inputs.refidx_im**2) ** 0.5
     ) ** 0.5
     nr = n_real
     # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
@@ -162,7 +142,7 @@ def adding_doubling_solver(Inputs):
     # the interface just above a given layer is less than trmin, then no
     # Delta-Eddington computation for that layer is done.
 
-    for lyr in np.arange(0, nbr_lyr, 1):  # loop through layers
+    for lyr in np.arange(0, Inputs.nbr_lyr, 1):  # loop through layers
 
         # condition: if current layer is above fresnel layer or the
         # top layer is a Fresnel layer
@@ -194,7 +174,7 @@ def adding_doubling_solver(Inputs):
             1.5 * (1 - ws * gs) / lm
         )  # u equation, term in diffuse reflectivity and transmissivity
         extins = np.maximum(
-            np.full((nbr_wvl,), exp_min), np.exp(-lm * ts)
+            np.full((Inputs.nbr_wvl,), exp_min), np.exp(-lm * ts)
         )  # extinction, MAX function lyr keeps from getting an error
         # if the exp(-lm*ts) is < 1e-5
         ne = (ue + 1) ** 2 / extins - (
@@ -211,7 +191,7 @@ def adding_doubling_solver(Inputs):
 
         # evaluate rdir, tdir for direct beam
         trnlay[:, lyr] = np.maximum(
-            np.full((nbr_wvl,), exp_min), np.exp(-ts / mu0n)
+            np.full((Inputs.nbr_wvl,), exp_min), np.exp(-ts / mu0n)
         )  # transmission from TOA to interface
 
         #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
@@ -254,7 +234,7 @@ def adding_doubling_solver(Inputs):
             gwt = gauswt[ng]  # gaussian weight
             swt = swt + mu * gwt  # sum of weights
             trn = np.maximum(
-                np.full((nbr_wvl,), exp_min), np.exp(-ts / mu)
+                np.full((Inputs.nbr_wvl,), exp_min), np.exp(-ts / mu)
             )  # transmission
 
             alp = (
@@ -287,12 +267,12 @@ def adding_doubling_solver(Inputs):
         # ------------------------------------------------------------------------------
 
         if lyr == lyrfrsnl:
-            refindx = refidx_re + 1j * refidx_im  # np.complex(refidx_re,refidx_im)
+            refindx = Inputs.refidx_re + 1j * Inputs.refidx_im  # np.complex(Inputs.refidx_re,Inputs.refidx_im)
             critical_angle = np.arcsin(refindx)
 
-            for wl in np.arange(0, nbr_wvl, 1):
+            for wl in np.arange(0, Inputs.nbr_wvl, 1):
 
-                if np.arccos(mu_not) < critical_angle[wl]:
+                if np.arccos(Inputs.mu_not) < critical_angle[wl]:
                     # in this case, no total internal reflection
 
                     # compute fresnel reflection and transmission amplitudes
@@ -332,7 +312,7 @@ def adding_doubling_solver(Inputs):
                 # Eq. 25  Brigleb and light 2007
                 # diffuse reflection of flux arriving from above
 
-                Rf_dif_a = fl_r_dif_a[
+                Rf_dif_a = Inputs.fl_r_dif_a[
                     wl
                 ]  # reflection from diffuse unpolarized radiation
                 Tf_dif_a = (
@@ -340,7 +320,7 @@ def adding_doubling_solver(Inputs):
                 )  # transmission from diffuse unpolarized radiation
 
                 # diffuse reflection of flux arriving from below
-                Rf_dif_b = fl_r_dif_b[wl]
+                Rf_dif_b = Inputs.fl_r_dif_b[wl]
                 Tf_dif_b = 1 - Rf_dif_b
 
                 # -----------------------------------------------------------------------
@@ -414,7 +394,7 @@ def adding_doubling_solver(Inputs):
         trndir[:, lyr + 1] = (
             trndir[:, lyr] * trnlay[:, lyr]
         )  # solar beam transmission from top
-        # trnlay = exp(-ts/mu_not) = direct solar beam transmission
+        # trnlay = exp(-ts/Inputs.mu_not) = direct solar beam transmission
 
         # interface multiple scattering for lyr-1
         refkm1 = 1 / (1 - rdndif[:, lyr] * rdif_a[:, lyr])
@@ -454,7 +434,7 @@ def adding_doubling_solver(Inputs):
     # !       ---------------------
 
     for lyr in np.arange(
-        nbr_lyr - 1, -1, -1
+        Inputs.nbr_lyr - 1, -1, -1
     ):  # starts at the bottom and works its way up to the top layer
 
         # Eq. B5  Briegleb and Light 2007
@@ -483,7 +463,7 @@ def adding_doubling_solver(Inputs):
 
     # fluxes at interface
 
-    for lyr in np.arange(0, nbr_lyr + 1, 1):
+    for lyr in np.arange(0, Inputs.nbr_lyr + 1, 1):
 
         # Eq. 52  Briegleb and Light 2007
         # interface scattering
@@ -523,23 +503,23 @@ def adding_doubling_solver(Inputs):
 
         if np.min(dfdir[:, lyr]) < puny:
 
-            dfdir[:, lyr] = np.zeros((nbr_wvl,), dtype=int)  # echmod necessary?
+            dfdir[:, lyr] = np.zeros((Inputs.nbr_wvl,), dtype=int)  # echmod necessary?
             # dfdif = fdifdn - fdifup
 
         dfdif[:, lyr] = trndif[:, lyr] * (1 - rupdif[:, lyr]) * refk
 
         if np.min(dfdif[:, lyr]) < puny:
 
-            dfdif[:, lyr] = np.zeros((nbr_wvl,), dtype=int)  #!echmod necessary?
+            dfdif[:, lyr] = np.zeros((Inputs.nbr_wvl,), dtype=int)  #!echmod necessary?
 
     # ----- End Radiative Solver Adding Doubling Method -----
 
     # ----- Calculate fluxes ----
 
-    for n in np.arange(0, nbr_lyr + 1, 1):
+    for n in np.arange(0, Inputs.nbr_lyr + 1, 1):
 
-        F_up[:, n] = fdirup[:, n] * (Fs * mu_not * np.pi) + fdifup[:, n] * Fd
-        F_dwn[:, n] = fdirdn[:, n] * (Fs * mu_not * np.pi) + fdifdn[:, n] * Fd
+        F_up[:, n] = fdirup[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi) + fdifup[:, n] * Inputs.Fd
+        F_dwn[:, n] = fdirdn[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi) + fdifdn[:, n] * Inputs.Fd
 
     F_net = F_up - F_dwn
 
@@ -554,12 +534,12 @@ def adding_doubling_solver(Inputs):
 
     # Net flux at lower model boundary = bulk transmission through entire
     # media = absorbed radiation by underlying surface:
-    F_btm_net = -F_net[:, nbr_lyr]
+    F_btm_net = -F_net[:, Inputs.nbr_lyr]
 
     # Spectrally-integrated absorption in each layer:
     F_abs_slr = np.sum(F_abs, axis=0)
 
-    for i in np.arange(0, nbr_lyr, 1):  # [0,1,2,3,4]
+    for i in np.arange(0, Inputs.nbr_lyr, 1):  # [0,1,2,3,4]
 
         F_abs_vis[i] = sum(F_abs[0:vis_max_idx, i])
         F_abs_nir[i] = sum(F_abs[vis_max_idx:nir_max_idx, i])
@@ -570,13 +550,13 @@ def adding_doubling_solver(Inputs):
     F_abs_nir_btm = np.sum(F_btm_net[vis_max_idx : nir_max_idx + 1], axis=0)
 
     # Radiative heating rate:
-    heat_rt = F_abs_slr / (L_snw * 2117)  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
+    heat_rt = F_abs_slr / (Inputs.L_snw * 2117)  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
     heat_rt = heat_rt * 3600  # [K/hr]
 
     # Energy conservation check:
     # Incident direct+diffuse radiation equals (absorbed+transmitted+bulk_reflected)
     energy_sum = (
-        (mu_not * np.pi * Fs) + Fd - (np.sum(F_abs, axis=1) + F_btm_net + F_top_pls)
+        (Inputs.mu_not * np.pi * Inputs.Fs) + Inputs.Fd - (np.sum(F_abs, axis=1) + F_btm_net + F_top_pls)
     )
 
     energy_conservation_error = sum(abs(energy_sum))
@@ -589,26 +569,26 @@ def adding_doubling_solver(Inputs):
 
     # Spectrally-integrated solar, visible, and NIR albedos:
 
-    alb_bb = np.sum(flx_slr * albedo) / np.sum(flx_slr)
+    alb_bb = np.sum(Inputs.flx_slr * albedo) / np.sum(Inputs.flx_slr)
 
-    alb_vis = np.sum(flx_slr[0:vis_max_idx] * albedo[0:vis_max_idx]) / np.sum(
-        flx_slr[0:vis_max_idx]
+    alb_vis = np.sum(Inputs.flx_slr[0:vis_max_idx] * albedo[0:vis_max_idx]) / np.sum(
+        Inputs.flx_slr[0:vis_max_idx]
     )
 
     alb_nir = np.sum(
-        flx_slr[vis_max_idx:nir_max_idx] * albedo[vis_max_idx:nir_max_idx]
-    ) / np.sum(flx_slr[vis_max_idx:nir_max_idx])
+        Inputs.flx_slr[vis_max_idx:nir_max_idx] * albedo[vis_max_idx:nir_max_idx]
+    ) / np.sum(Inputs.flx_slr[vis_max_idx:nir_max_idx])
 
     # Spectrally-integrated VIS and NIR total snowpack absorption:
-    abs_vis = np.sum(flx_slr[0:vis_max_idx] * (1 - albedo[0:vis_max_idx]))
+    abs_vis = np.sum(Inputs.flx_slr[0:vis_max_idx] * (1 - albedo[0:vis_max_idx]))
     abs_nir = np.sum(
-        flx_slr[vis_max_idx:nir_max_idx] * (1 - albedo[vis_max_idx:nir_max_idx])
+        Inputs.flx_slr[vis_max_idx:nir_max_idx] * (1 - albedo[vis_max_idx:nir_max_idx])
     )
 
     # -------------------- OUTPUT  --------------------
 
     flx_dwn_spc = (
-        mu_not * np.pi * Fs + Fd
+        Inputs.mu_not * np.pi * Inputs.Fs + Inputs.Fd
     )  # spectral downwelling flux at model top [W/m2/band]
     alb_slr = alb_bb  # solar broadband albedo
     abs_snw_slr = np.sum(F_abs_slr)  # total solar absorption by entire snow column
@@ -633,4 +613,4 @@ def adding_doubling_solver(Inputs):
     # abs_ground_nir  = F_abs_nir_btm
     #   near-IR absorption by underlying substrate [W/m2]
 
-    return wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt
+    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt

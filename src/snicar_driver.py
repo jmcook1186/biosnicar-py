@@ -170,7 +170,7 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 # --------------------------------------------------------------------------------------
 
 Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
-Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
+Inputs.aprx_typ = 3  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
 Inputs.solzen = 40  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
