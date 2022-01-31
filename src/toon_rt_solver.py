@@ -13,7 +13,7 @@ def toon_solver(Inputs):
 
     # load variables from input table
     tau = Inputs.tau
-    SSA = Inputs.SSA
+    SSA = Inputs.ssa
     g = Inputs.g
     nbr_wvl = Inputs.nbr_wvl
     wvl = Inputs.wvl
@@ -24,7 +24,7 @@ def toon_solver(Inputs):
     mu_not = Inputs.mu_not
     L_snw = Inputs.L_snw
     flx_slr = Inputs.flx_slr
-    DELTA = Inputs.DELTA
+    DELTA = Inputs.delta
     APRX_TYP = Inputs.APRX_TYP
 
     import numpy as np
