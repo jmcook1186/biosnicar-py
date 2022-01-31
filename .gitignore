@@ -1,8 +1,10 @@
 
-\.vscode/
+.vscode/
+
+.env
 
 __pycache__/
 
-\.idea/
+.idea/
 
 **/.DS_Store
