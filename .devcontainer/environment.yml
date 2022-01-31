@@ -1,0 +1,17 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - xarray
+  - dask
+  - netCDF4
+  - bottleneck
+  - scipy
+  - pip:
+      - miepython
+      - statsmodels
+      - seaborn
+      - plotnine
+      - pre-commit
+prefix: /opt/conda

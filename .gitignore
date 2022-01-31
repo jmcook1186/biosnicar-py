@@ -8,3 +8,8 @@ __pycache__/
 .idea/
 
 **/.DS_Store
+
+*.mypy_cache
+
+# test output
+py_mat_comparison.png

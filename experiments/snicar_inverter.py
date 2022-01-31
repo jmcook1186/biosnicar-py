@@ -10,13 +10,13 @@ drone or satellite image), a two-stage process quantifies the ice configuration 
 type and concentration that best simulates it.
 
 This is achieved by first isolating the NIR albedo and comparing this to all spectral albedos in the
-clean ice LUT. The grain dimensions and ice density associated with the spectral albedo that matches 
+clean ice LUT. The grain dimensions and ice density associated with the spectral albedo that matches
 the target spectrum most accurately (lowest wavelength-integrated absolute error) are retrieved.
 
 These physical parameters are then used to isolate a subset of the dirty-ice LUT (i.e. only those
 indices where grain dimensions and density == those retrieved in stage 1). The full target spectrum is
-then compared to each spectral albedo in the sliced dirty ice LUT. The combination of LAP types and 
-mass concentrations that best simulate the target spectrum, with the ice physical parameters held 
+then compared to each spectral albedo in the sliced dirty ice LUT. The combination of LAP types and
+mass concentrations that best simulate the target spectrum, with the ice physical parameters held
 constant, are thereby retrieved.
 
 The LUTs were generated previosuly using the script SNICAR_LUT_builder.py.
@@ -35,10 +35,9 @@ A MODIFIED VERSION HAS BEEN INTEGRATED INTO COOK & TEDSTONE'S BIG ICE CLASSIFIER
 
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-
 
 ##############################################################################
 # DEFINE VARIABLES AND TARGET SPECTRA
@@ -52,42 +51,84 @@ wvl_stop = 90
 
 # load sample spectrum (eventually this will be reflectance values pixelwise in RS
 # dataset)
-spectrum = pd.read_csv('/home/joe/Desktop/TEST.csv',header=None)
+spectrum = pd.read_csv("/home/joe/Desktop/TEST.csv", header=None)
 spectrum = np.squeeze(np.array(spectrum))
 
 # load LUTs from disk
-cleanLUT = np.load('/home/joe/Desktop/clean_ice_LUT.npy')
-dirtyLUT = np.load('/home/joe/Desktop/dirty_ice_LUT.npy')
+cleanLUT = np.load("/home/joe/Desktop/clean_ice_LUT.npy")
+dirtyLUT = np.load("/home/joe/Desktop/dirty_ice_LUT.npy")
 
 # copy range of values used to generate LUT. THESE MUST MATCH THOSE USED TO BUILD LUT!!!
-reffs = [[1000, 1000], [3000, 3000], [5000, 5000], [7000, 7000], [9000, 9000], [11000, 11000], [13000, 13000], [15000, 15000]]
-densities = [[917,200],[917,300],[917,400],[917,500],[917,600],[917,700],[917,800],[917,900]]
-algae = [[0,0],[5000,0],[10000,0],[15000,0], [20000, 0], [25000, 0], [30000, 0]]
-dz = [[0.001,0.03],[0.001,0.05],[0.001,0.07,[0.001,0.1],[0.001,0.15],[0.001,0.2],[0.001,0.5]]
-wavelengths = np.arange(0.3,5,0.01)
+reffs = [
+    [1000, 1000],
+    [3000, 3000],
+    [5000, 5000],
+    [7000, 7000],
+    [9000, 9000],
+    [11000, 11000],
+    [13000, 13000],
+    [15000, 15000],
+]
+densities = [
+    [917, 200],
+    [917, 300],
+    [917, 400],
+    [917, 500],
+    [917, 600],
+    [917, 700],
+    [917, 800],
+    [917, 900],
+]
+algae = [[0, 0], [5000, 0], [10000, 0], [15000, 0], [20000, 0], [25000, 0], [30000, 0]]
+dz = [
+    [0.001, 0.03],
+    [0.001, 0.05],
+    [0.001, 0.07],
+    [0.001, 0.1],
+    [0.001, 0.15],
+    [0.001, 0.2],
+    [0.001, 0.5],
+]
 
-
+wavelengths = np.arange(0.3, 5, 0.01)
 
 
 ##############################################################################
 # DEFINE FUNCTIONS
 ###################
 
-def retrieve_ice_params(cleanLUT, wvl_start, wvl_stop, spectrum, depths, side_lengths, densities, wavelengths, plot_comparison=False):
+
+def retrieve_ice_params(
+    cleanLUT,
+    wvl_start,
+    wvl_stop,
+    spectrum,
+    depths,
+    side_lengths,
+    densities,
+    wavelengths,
+    plot_comparison=False,
+):
 
     # reduce spectrum to NIR wavelengths
     sample_spectrum = spectrum[wvl_start:wvl_stop]
 
     # reformat LUT
-    LUTshape = cleanLUT.shape # get shape
-    cleanLUT = cleanLUT.reshape(LUTshape[0]*LUTshape[1]*LUTshape[2],len(wavelengths)) # flatten to 2D array 
-    cleanLUT = cleanLUT[:,wvl_start:wvl_stop] # reduce wavelengths to match sample spectrum
-    nbr_spectra = len(cleanLUT[:,0]) # count columns
+    LUTshape = cleanLUT.shape  # get shape
+    cleanLUT = cleanLUT.reshape(
+        LUTshape[0] * LUTshape[1] * LUTshape[2], len(wavelengths)
+    )  # flatten to 2D array
+    cleanLUT = cleanLUT[
+        :, wvl_start:wvl_stop
+    ]  # reduce wavelengths to match sample spectrum
+    nbr_spectra = len(cleanLUT[:, 0])  # count columns
 
     # calculate error columnwise
-    error = abs(np.subtract(cleanLUT,sample_spectrum)) # subtract sample from target with uFunc
-    mean_error = np.mean(error,axis=1) # column means
-    
+    error = abs(
+        np.subtract(cleanLUT, sample_spectrum)
+    )  # subtract sample from target with uFunc
+    mean_error = np.mean(error, axis=1)  # column means
+
     # find index of minimum error
     reshaped_LUT_idx = np.argmin(mean_error)
 
@@ -95,7 +136,9 @@ def retrieve_ice_params(cleanLUT, wvl_start, wvl_stop, spectrum, depths, side_le
     nbr_depths = len(depths)
     nbr_sidelengths = len(side_lengths)
     nbr_densities = len(densities)
-    original_LUT_idx = np.unravel_index(reshaped_LUT_idx, (nbr_depths,nbr_sidelengths,nbr_densities))
+    original_LUT_idx = np.unravel_index(
+        reshaped_LUT_idx, (nbr_depths, nbr_sidelengths, nbr_densities)
+    )
 
     # find variable values from idxs
     side_length = side_lengths[original_LUT_idx[0]]
@@ -107,26 +150,40 @@ def retrieve_ice_params(cleanLUT, wvl_start, wvl_stop, spectrum, depths, side_le
         idx2 = original_LUT_idx[1]
         idx3 = original_LUT_idx[2]
 
-        plt.plot(wavelengths[wvl_start:wvl_stop],sample_spectrum), plt.plot(wavelengths[wvl_start:wvl_stop],cleanLUT[reshaped_LUT_idx,:])
-        plt.ylabel("Albedo"),plt.xlabel("Wavelength (microns)")
+        plt.plot(wavelengths[wvl_start:wvl_stop], sample_spectrum), plt.plot(
+            wavelengths[wvl_start:wvl_stop], cleanLUT[reshaped_LUT_idx, :]
+        )
+        plt.ylabel("Albedo"), plt.xlabel("Wavelength (microns)")
         plt.title("Sample spectrum and closest match: NIR wavelengths only")
 
     return side_length, depth, density, original_LUT_idx
 
 
+def retrieve_impurities(
+    dirtyLUT,
+    original_LUT_idx,
+    spectrum,
+    depths,
+    side_lengths,
+    densities,
+    wavelengths,
+    dust,
+    algae,
+    plot_comparison=True,
+):
 
-def retrieve_impurities(dirtyLUT, original_LUT_idx, spectrum, depths, side_lengths, densities, wavelengths, dust, algae, plot_comparison = True):
-
-    dirtyLUT = dirtyLUT[original_LUT_idx[0],original_LUT_idx[1],original_LUT_idx[2],:,:,:]
+    dirtyLUT = dirtyLUT[
+        original_LUT_idx[0], original_LUT_idx[1], original_LUT_idx[2], :, :, :
+    ]
     nbr_dust = len(dust)
     nbr_alg = len(algae)
-    dirtyLUT = dirtyLUT.reshape(nbr_dust*nbr_alg,len(wavelengths))
+    dirtyLUT = dirtyLUT.reshape(nbr_dust * nbr_alg, len(wavelengths))
 
-    error = abs(np.subtract(dirtyLUT,spectrum))
-    mean_error = np.mean(error,axis=1)
+    error = abs(np.subtract(dirtyLUT, spectrum))
+    mean_error = np.mean(error, axis=1)
 
     reshaped_LUT_idx = np.argmin(mean_error)
-    original_LUT_idx = np.unravel_index(reshaped_LUT_idx, (nbr_dust,nbr_alg))
+    original_LUT_idx = np.unravel_index(reshaped_LUT_idx, (nbr_dust, nbr_alg))
 
     # find values from idxs
     dust_vals = dust[original_LUT_idx[0]]
@@ -136,8 +193,10 @@ def retrieve_impurities(dirtyLUT, original_LUT_idx, spectrum, depths, side_lengt
         idx1 = original_LUT_idx[0]
         idx2 = original_LUT_idx[1]
 
-        plt.plot(wavelengths,spectrum), plt.plot(wavelengths,dirtyLUT[reshaped_LUT_idx,:])
-        plt.ylabel("Albedo"),plt.xlabel("Wavelength (microns)")
+        plt.plot(wavelengths, spectrum), plt.plot(
+            wavelengths, dirtyLUT[reshaped_LUT_idx, :]
+        )
+        plt.ylabel("Albedo"), plt.xlabel("Wavelength (microns)")
         plt.title("Sample spectrum and closest match: NIR wavelengths only")
 
     return dust_vals, algae_vals
@@ -149,8 +208,29 @@ def retrieve_impurities(dirtyLUT, original_LUT_idx, spectrum, depths, side_lengt
 
 
 for i in range(1000000):
-    side_length, depth, density, original_LUT_idx = retrieve_ice_params(cleanLUT, wvl_start, wvl_stop, spectrum, depths, side_lengths, densities, wavelengths, plot_comparison=False)
-    dust_vals, algae_vals = retrieve_impurities(dirtyLUT, original_LUT_idx, spectrum, depths, side_lengths, densities, wavelengths, dust, algae, plot_comparison = False)
+    side_length, depth, density, original_LUT_idx = retrieve_ice_params(
+        cleanLUT,
+        wvl_start,
+        wvl_stop,
+        spectrum,
+        depths,
+        side_lengths,
+        densities,
+        wavelengths,
+        plot_comparison=False,
+    )
+    dust_vals, algae_vals = retrieve_impurities(
+        dirtyLUT,
+        original_LUT_idx,
+        spectrum,
+        depths,
+        side_lengths,
+        densities,
+        wavelengths,
+        dust,
+        algae,
+        plot_comparison=False,
+    )
 
 print("\n\nSNICAR CONFIGURATION THAT BEST MATCHES SAMPLE SPECTRUM: \n")
 print(f"Grain side Lengths (microns) = {side_length}")
