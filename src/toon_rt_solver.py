@@ -25,7 +25,7 @@ def toon_solver(Inputs):
     L_snw = Inputs.L_snw
     flx_slr = Inputs.flx_slr
     DELTA = Inputs.delta
-    APRX_TYP = Inputs.APRX_TYP
+    APRX_TYP = Inputs.aprx_typ
 
     import numpy as np
 
@@ -112,6 +112,9 @@ def toon_solver(Inputs):
         gamma3 = (1 - (np.sqrt(3) * g_star * mu_not)) / 2
         gamma4 = 1 - gamma3
         mu_one = 0.5
+    
+    else:
+        raise ValueError("INVALID APRX_TYP: CHOOSE 1, 2 or 3")
 
     # Toon et al equation 21 and 22
     # Note that the values of lam and GAMMA depend upon gamma1 and gamma2, which

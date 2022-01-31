@@ -170,7 +170,7 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 # --------------------------------------------------------------------------------------
 
 Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
-Inputs.APRX_TYP = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
+Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
 Inputs.solzen = 40  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
@@ -192,13 +192,13 @@ Inputs.incoming_i = 4
 # For granular layers + Fresnel layers, choose add_double
 # --------------------------------------------------------------------------------------
 
-Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
-Inputs.add_double = True  # toggle addintg-doubling solver
+Inputs.toon = True  # toggle toon et al tridiagonal matrix solver
+Inputs.add_double = False  # toggle addintg-doubling solver
 
 
 Inputs.dz = [0.001, 0.2]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [1, 0]  # Fresnel layers (set all to 0 if toon = True)
+Inputs.layer_type = [0, 0]  # Fresnel layers (set all to 0 if toon = True)
 Inputs.cdom_layer = [0, 0]  # Only for layer type == 1
 Inputs.rho_layers = [916, 916]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480

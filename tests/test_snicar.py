@@ -116,6 +116,8 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
     algae = 0
     dz = 0.2
     bc = 0
+    toon = False
+    ad = True
 
     if fuzz:
         params = set_params(
@@ -133,6 +135,8 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
             dust,
             c_factor,
             solzen,
+            toon,
+            ad
         )
         albedo, BBA = call_snicar(params)
         assert (BBA > 0) and (BBA < 1)
@@ -145,11 +149,11 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
 
 @pytest.mark.parametrize("rds", [1000, 5000, 10000])
 @pytest.mark.parametrize("rho", [400, 600, 800])
-@pytest.mark.parametrize("solzen", [10, 40, 70])
+@pytest.mark.parametrize("solzen", [10, 40, 60])
 @pytest.mark.parametrize("c_factor", [0, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer(rds, rho, solzen, c_factor, dust, algae, fuzz):
+def test_var_fuzzer_AD(rds, rho, solzen, c_factor, dust, algae, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     """
@@ -157,11 +161,13 @@ def test_var_fuzzer(rds, rho, solzen, c_factor, dust, algae, fuzz):
     dz = 0.2
     bc = 0
     direct = 1
-    aprx_typ = 0
+    aprx_typ = 1
     incoming = 4
     shp = 0
     rf = 2
     lyr = 1
+    toon = False
+    ad = True
 
     if fuzz:
         params = set_params(
@@ -179,6 +185,8 @@ def test_var_fuzzer(rds, rho, solzen, c_factor, dust, algae, fuzz):
             dust,
             c_factor,
             solzen,
+            toon,
+            ad
         )
         albedo, BBA = call_snicar(params)
         assert (BBA > 0) and (BBA < 1)
@@ -187,6 +195,60 @@ def test_var_fuzzer(rds, rho, solzen, c_factor, dust, algae, fuzz):
         pass
 
     return
+
+
+@pytest.mark.parametrize("rds", [1000, 5000])
+@pytest.mark.parametrize("rho", [400, 600])
+@pytest.mark.parametrize("solzen", [30, 40])
+@pytest.mark.parametrize("c_factor", [0, 30])
+@pytest.mark.parametrize("dust", [0, 50000])
+@pytest.mark.parametrize("algae", [0, 50000])
+def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
+    """
+    ensures code runs and gives valid BBA with combinations of input vals
+    note that toon solver has a smaller valid range of solzens than
+    the a-d solver
+    """
+
+    dz = 0.2
+    bc = 0
+    direct = 1
+    aprx_typ = 3
+    incoming = 4
+    shp = 0
+    rf = 2
+    lyr = 1,
+    toon = True
+    ad = False
+
+
+    if fuzz:
+        params = set_params(
+            direct,
+            aprx_typ,
+            incoming,
+            shp,
+            rf,
+            rho,
+            rds,
+            lyr,
+            dz,
+            algae,
+            bc,
+            dust,
+            c_factor,
+            solzen,
+            toon,
+            ad
+        )
+        albedo, BBA = call_snicar(params)
+        assert (BBA > 0) and (BBA < 1)
+
+    else:
+        pass
+
+    return
+
 
 
 def set_params(
@@ -204,6 +266,8 @@ def set_params(
     dust,
     c_factor,
     solzen,
+    toon,
+    ad
 ):
 
     params = c.namedtuple(
@@ -224,11 +288,13 @@ def set_params(
             "solzen",
             "alg",
             "dust1",
+            "toon",
+            "add_double"
         ],
     )
 
     params.direct = direct
-    params.apprx_typ = aprx_typ
+    params.aprx_typ = aprx_typ
     params.incoming = incoming
     params.rf = rf
     params.shp = shp
@@ -241,6 +307,8 @@ def set_params(
     params.dust = [dust, 0]
     params.c_factor_GA = c_factor
     params.solzen = solzen
+    params.toon = toon
+    params.add_double = ad
 
     return params
 
@@ -407,8 +475,8 @@ def call_snicar(params):
     # For granular layers + Fresnel layers below, choose add_double
     ###############################################################
 
-    inputs.toon = False  # toggle toon et al tridiagonal matrix solver
-    inputs.add_double = True  # toggle adding-doubling solver
+    inputs.toon = params.toon  # toggle toon et al tridiagonal matrix solver
+    inputs.add_double = params.add_double  # toggle adding-doubling solver
 
     inputs.dz = params.dz  # thickness of each vertical layer (unit = m)
     inputs.nbr_lyr = len(params.dz)  # number of snow layers
