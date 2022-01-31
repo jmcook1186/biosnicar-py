@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy.interpolate import pchip
-
+import toon_solver as toon_solver
 import adding_doubling_solver as adding_doubling
 import mie_coated_water_spheres as wcs
 
@@ -834,7 +834,7 @@ def snicar_feeder(inputs):
     inputs.g = g
     inputs.L_snw = L_snw
 
-    # CALL RT SOLVER (toon  = toon ET AL, TRIDIAGONAL MATRIX METHOD;
+    # CALL RT SOLVER (toon_solver  = toon ET AL, TRIDIAGONAL MATRIX METHOD;
     # add_double = ADDING-DOUBLING METHOD)
 
     Outputs = c.namedtuple(
@@ -852,7 +852,7 @@ def snicar_feeder(inputs):
             Outputs.BBANIR,
             Outputs.abs_slr,
             Outputs.heat_rt,
-        ) = toon.toon_solver(inputs)
+        ) = toon_solver.toon_solver(inputs)
 
     if add_double:
 
