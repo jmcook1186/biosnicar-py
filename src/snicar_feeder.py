@@ -182,9 +182,9 @@ def snicar_feeder(Inputs):
         # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
         flx_slr = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
-        Inputs.flx_slr = flx_slr
-        Inputs.Fs = flx_slr / (mu_not * np.pi)
-        Inputs.Fd = np.zeros(nbr_wvl)
+        flx_slr = flx_slr
+        Fs = flx_slr / (mu_not * np.pi)
+        Fd = np.zeros(nbr_wvl)
 
     else:
 
@@ -209,9 +209,9 @@ def snicar_feeder(Inputs):
 
         flx_slr = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
-        Inputs.flx_slr = flx_slr
-        Inputs.Fd = flx_slr / (mu_not * np.pi)
-        Inputs.Fs = np.zeros(nbr_wvl)
+        flx_slr = flx_slr
+        Fd = flx_slr / (mu_not * np.pi)
+        Fs = np.zeros(nbr_wvl)
 
     # ----------------------------------------------------------------------------------
     # Read in ice optical properties
@@ -251,11 +251,14 @@ def snicar_feeder(Inputs):
         refidx_im = refidx_file["im_Pic16"].values
         fl_r_dif_a = fresnel_diffuse_file["R_dif_fa_ice_Pic16"].values
         fl_r_dif_b = fresnel_diffuse_file["R_dif_fb_ice_Pic16"].values
+    
+    else:
+        raise ValueError("invalid choice of ice refractive index")
 
-    Inputs.refidx_re = refidx_re
-    Inputs.refidx_im = refidx_im
-    Inputs.fl_r_dif_a = fl_r_dif_a
-    Inputs.fl_r_dif_b = fl_r_dif_b
+    refidx_re = refidx_re
+    refidx_im = refidx_im
+    fl_r_dif_a = fl_r_dif_a
+    fl_r_dif_b = fl_r_dif_b
 
     # calculations of ice OPs in each layer
     for i in np.arange(0, Inputs.nbr_lyr, 1):
@@ -805,6 +808,9 @@ def snicar_feeder(Inputs):
     g[g <= 0] = 0.00001
     g[g >= 1] = 0.99999
 
+    Inputs.flx_slr = flx_slr
+    Inputs.Fs = Fs
+    Inputs.Fd = Fd
     Inputs.tau = tau
     Inputs.ssa = ssa
     Inputs.g = g
