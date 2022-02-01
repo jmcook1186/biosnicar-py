@@ -7,11 +7,12 @@
 
 ## Introduction
 
-BioSNICAR is a set of Python scripts that predict the spectral albedo of snow and/or glacier ice given information about the illumination conditions, ice structure and the type and concentration of particulates. The jumping off point for this model was legacy FORTRAN and Matlab code developed by Flanner et al. (2007), Cook et al. (2017, 2020) and Wicker et al. (2022). The model is a two-stream radiative transfer model. Two solvers are available: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver (Brieglib and Light, 2007; Wicker et al. 2022) representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers. BioSNICAR was originally developed in parallel to a set of bio-optical models that allowed for the incorporation of snow and glacier algae as light absorbing particles (Cook et al. 2017). This functionality, along with the vectorized model formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
+BioSNICAR is a set of Python scripts that predict the spectral albedo of snow and glacier ice between 200nm to 5000nm given information about the illumination conditions, ice structure and the type and concentration of light absorbing particulates externally mixed with the snow/ice. The jumping off point for this model was legacy FORTRAN and Matlab code of the SNICAR model developed by Flanner et al. (2007), which solves the radiative transfer equations simplified into a two-stream scheme after Toon et al. 1989. Two solvers are available: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers (Brieglib and Light, 2007, Dang et al. 2019, Wicker et al. 2022). BioSNICAR couples SNICAR to a bio-optical model that allows for to incorporation of the main biological albedo reducers as light absorbing particles, namely snow and glacier algae (Cook et al. 2017, 2020). This functionality, along with the vectorized model formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
 
 ## How to use
 
-### Environment/Dependencies
+### Installing Environment/Dependencies
+<!--  here add the installation of Docker as an option instead of installing python dependencies?  -->
 
 First set up a Python environment. If you do not have Python installed, download Python >3.6. It is recommended to use a recent Anaconda distribution for easy environment management. However, if you have a regular Python installation already and want to use that, the following instructions can easily be adapted for venv instead of conda.
 
@@ -38,59 +39,31 @@ The model driver and all the core source code can be found in `/src`. From the t
 
 `python ./src/snicar_driver.py`
 
-This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albeod plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear int he interactive console. 
+This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console. 
 
-Most users will want to experiment with changing input parameters. This is achieved by opening `snicar_driver.py` and adjusting the parameter values therein. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. The user also has the option to change the model meta-config, which controls behaviour such as printing band ratio values to the console, savign the model config to external text file, togglign plottign on and off, etc. Most users should have no reason to modify any other file in this repository except for the clearly marked values in `snicar_driver.py`.
+Most users will want to experiment with changing input parameters. This is achieved by opening `snicar_driver.py` and adjusting the parameter values therein. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. The user also has the option to change the model meta-config, which controls behaviour such as printing band ratio values to the console, savign the model config to external text file, toggling plotting on and off, etc. Most users should have no reason to modify any other file in this repository except for the clearly marked values in `snicar_driver.py`.
 
 More complex applications of the model code, for example model inversions, snicar-as-a-function, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
 
 ## Theoretical Background
+
+A detailed description of the theory on which the model is based can be found in Flanner et al. 2021. Briefly, the spectral albedo is computed from the single scattering  properties of snow/ice and the light absorbing particulates (LAPs), along with the concentrations of LAPs and the physical properties of snow/ice (density, grain/pore size). These can vary in each layer, allowing for representation of e.g. porous weathered crust above unweathered ice with an uppermost mm of liquid water containing algae, or deep layers of ancient dust. Below are detailed the different options to calculate the single scattering properties.
+
 ### Snow and ice 
 
-The snow and ice single scattering properties can be generated from the ice refractive index (Warren 1984, Warren and Brandt 2008, Picard 2016) using Mie scattering (good for fine snow grains that can be assumed spherical, or for representing ice bubbles in an ice matrix) or geometric optics (adapted from van Diedenhoven (2014), good for wet snow and ice). This also enables different grain shapes to be used - geometric optics for hexagonal plates and columns, Mie scattering for spheres, spheroids, hexagonal plates and Koch snowflakes (after He et al. 2016, 2017). The rationale behind providing GO functionality is that geometric optics enables ice grains shaped as large hexagonal plates and columns to be simulated, whereas Mie scattering applies to small spheres. Note that running the model in Mie mode with spherical grains and omitting any biological particles is equivalent to running the original SNICAR model of Flanner et al. (2007, 2009). Since 01/05/2020 there exists an option to model the effects of liquid water coatings around ice grains using two-layer coated sphere Mie calculations (added by Niklas Bohn). This option had previously been included in the Matlab version of BioSNICAR and was deprecated for the Python translation in favour of increasing ice grain radii to simulate interstitial melt water; however, it was subsequently decided that giving the choice of method for incorporating liquid water was a better approach. Gratitude to Niklas for adding this feature.  For each layer, the density has to be indicated together with the shape, coating and size of the grains (ice or air bubbles).
+The snow and ice single scattering properties are generated from the refractive index of ice from Warren 1984, Warren 2008 or Picard 2016 and all parametrisation is done in the driver of the model. Snow and ice are represented either as a collection of grains, or as a continuous layer with embedded air bubbles. This second option requires to use the AD solver with fresnel layers (ADD_DOUBLE and LAYER_TYPE toggled on in the model driver). The embedded bubbles are represented as spheres of air surrounded by ice, and the optical properties are calculated using Mie theory (Whicker et al. 2022). Alternatively, the grains can be represented as spheres using Mie theory, as spheroids, hexagonal plates or koch snowflakes using calculations adapted from Mie theory (He et al. 2017, 2018), or hexagonal prisms using geometric optics calculations (van Diedenhoven 2014, Cook et al. 2020). This option works with both solvers as long as there is no fresnel layer included when using the AD solver. There is also an option to add liquid water coating around the grains using using two-layer coated sphere Mie calculations (Niklas Bohn, 01/05/2020). This option had previously been included in the Matlab version of BioSNICAR and was deprecated for the Python translation in favour of increasing ice grain radii to simulate interstitial melt water; however, it was subsequently decided that giving the choice of method for incorporating liquid water was a better approach. Gratitude to Niklas for adding this feature. Note that running the model with spherical grains and omitting any biological particles is equivalent to running the original SNICAR model of Flanner et al. (2007, 2009). The impact of colored dissolved organic matter (CDOM) on snow/ice optical properties can be incorporated by toggling on the cdom_layer parameter in the model. The current parametrisation is based on CDOM absorption measurements carried on samples from south-eastern greenlandic glaciers (Halbach et al. 2022).
 
 ### LAPs
 
-The LAPs single scattering properties can be also be generated using Mie theory (good for mineral dust or snow algae) or geometric optics (good for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013). In particular, the BioSNICAR_GO package includes a BioOptical model designed to generate the optical properties of snow and glacier algae cells and store them in a file directly usable in the main driver. The user needs to prescribe algae dry density, real part of refractive index and cell size for the calculation of the scattering properties, and for the calculation of extinction properties the cells are assumed homogeneous so that they are directly calculated from absorption cross sections (ACS), prescribed by an empirical measurement or a pigment profile (cellular pigment concentrations) from which the ACS is reconstructed following Cook et al. 2017, Pottier et al. 2005. The ACS of both glacier and snow algae are to date only theoretically reconstructed from pigment profiles.
-The mineral dusts included in this version include four "global average" dusts with typically Saharan optical properties as described by Flanner et al. 2009. There are three Greenland Ice Sheet mineral dusts that were generated from field measurements of local mineralogy on the south-western sector of the ice sheet near Kangerlussuaq. The optical properties for each mineral was obtained from the literature and mixed according to the measured relative abundance using the Maxwell-Garnett mixing model, and the optical properties predicted using Mie theory over a measured particle size distribution. There are also three additional Greenlandic dusts from Polashenski et al. (2015) who generated hypothetical dust samples with low, medium and high hematitie content, with the remainder being similar to dusts collected on Greenlandic snow. Black carbon is included in both sulphate-coated and uncoated forms, and volcanic ash is included as per Flanner et al. (2009).
-
-## Recent Additions
-
-There have been several additions to the BioSNICAR model that have not yet been documented in any publication paper. These include:
-
-### 1) Refactor of bio-optical model
-The bio-optical model was refactored into a much more useable format. Hard coded variables were moved into the function call, the two bio-optical components (the mixing model and mie/go code) ware now controlled from a single driver script, and file paths were all synchronised.
-
-### 2) Update of glacier algae optical properties
-The new glacier algal optical properties account for intracellular protein attachment and packaging of pigments into specific regions of the cell rather than assuming uniform distribution through the cell using a linear correction.
- 
-### 3) Addition of liquid water films
-Thanks to Niklas Bohn to incorporating liquid water films of user-defined thickness to the model. This is controlled by providing a value for r_water when running the model in Mie mode and the optical properties are then calculated using a coated-spheres model.
-
-### 4) October 2020: Addition of aspherical grains
-Adjustments to the single scattering optical properties of the ice grains resulting from variations in grain shape have been added to the model when run in Mie mode - running in GO mode assumes hexagonal columnar grains. These adjustments are from He et al. (2016) and enable the modelling of spheroids, hexagonal plates and Koch snowflakes.
-
-### 5) November 2020: Addition of adding-doubling solver leading to solid ice layers and fresnel reflection
-A second option for the treatment of multiple layers was added in October 2020. The user can now opt to include solid ice layers with fresnel reflections at their surfaces and solve the radiative transfer using the adding-doubling method as an alternative to the Toon et al (1989) matrix inversion method that was previously used that cannot include fresnel reflection and refraction. The A-D solver is pretty much a direct translation of the Matlab code written by Chloe Whicker (UMich) who in turn built on work by Dang et al. (2019). The solid ice layers can be positioned anywhere in the vertical profile, meaning unweathered ice beneath an increasingly porous weathered crust can now be realistically simulated.
-
-### 6) November 2020: removed separate scripts for GO and Mie modes and synthesised into single SNICAR_feeder script, extended model to 200nm and enabled GO ice crytals in AD mode
-Model now runs across 480 wavelengths between 200 - 5000 nm in all configurations, including GO.
-The model now works using a single call to a snicar feeder script where the various radiative transfer properties (tau, SSA, g etc) are calculated and then passed to one of the two solvers.
-
-### 7) January 2021: added testing scripts for comparing new code against matlab benchmarks. Extend spectral range of all model modes to 200nm
-Reorganised directory structure to gather all testing scripts and data into the folder "Unit_Tests". Using Whicker/Flanner's Matlab code as benchmark for testing Python code.
-
-### 8) September 2021: Bio-optical model renewed, new units
-The bio-optical model was updated into a much simpler and user-friendly format that can be run from a short driver script. In addition, the user now has the option to generate or input the algae ACS in m2/cell or m2/um3 from the pigment profiles. This allows to reduce the uncertainty on the final ACS, as cell numbers and biovolumes are empirically determined, in contrary to single cell mass.
-
-### 9) October 2021: CDOM layers and algae concentrations in cells/mL
-The main driver now includes the possibility to indicate algae concentrations in cells/mL through the "GA/SA_units" variable, which is the standard unit for algae quantification from environmental samples. In this mode, the ACS needs to be indicated in m2/cell. Experimental CDOM layers have also been added based on coefficients from Halbach et al. 2021 (in prep), so that the impact of CDOM can be represented in each layer of the snow/ice column. 
+The single scattering properties (ssps) of LAPs are calculated outside of the main driver of the model. For most of them, the ssps were calculated in published studies and are directly loaded from the main driver, so that the user only needs to select the type of LAP to include in the simulations (black carbon from Bohren and Huffman, 1983; brown carbon from Kirchstetter et al. 2004; dust from Balkanski et al 2007; volcanic ashes from Flanner et al 2014; Colorado dust from Skiles et al 2017; Greenlandic dust with low to high hematite content from Polashenski et al 2015, Greenlandic dust sampled in the south-western ablation area of the ice sheet from Cook et al. 2020; snow and glacier algae from Cook et al. 2017, Cook et al. 2020). <!--  here I removed the reference to the methods used to generate the OPs ebcause the user can get the info from the related papers + we will need to add the new OPs for glacier and snow algae but maybe wait that they're in the  driver -->
+However, BioSNICAR includes a bio-optical model that allows for the calculations of ssps of pigmented algae stored into file directly usable in the main driver of the model. Two options are available: spherical cells as per ice grains using Mie theory typically used for snow algae and circular based cylinders using geometric optics typically used for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013.
+<!--    -->
+The user needs to feed the bio-optical model with the refractive index and absorption cross section of the cell, along with algae dry and wet density and cell size. The absorption cross section can be calculated in the model from intracellular pigment concentrations (Cook et al. 2017) or loaded as the absorbance of extracted pigments directly, which allows to use a pigment packaging correction (Chevrollier et al. 2022) or loaded as an empirical measurement of whole-cells.
 
 
 ## Model Structure
 
 <img src="./Assets/model_structure2.jpg" width=1500>
-
 
 
 ## Repository Structure
@@ -240,14 +213,20 @@ Cook, J. et al. (2020): Glacier algae accelerate melt rates on the western Green
 
 Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
 
-And if using the adding-doubling method please also cite Dang et al (2019) and Whicker et al (2021) as their code was translated to form the adding_doubling_solver.py script here. The aspherical grain correction equations come from He et al. (2016).
+And if using the adding-doubling method please also cite Dang et al (2019) and Whicker et al (2022) as their code was translated to form the adding_doubling_solver.py script here. The aspherical grain correction equations comes from He et al. (2016).
 
 
 # References
 
+Balkanski, Y., Schulz, M., Claquin, T., & Guibert, S. (2007). Reevaluation of Mineral aerosol radiative forcings suggests a better agreement with satellite and AERONET data. Atmospheric Chemistry and Physics, 7(1), 81-95.
+
+Bohren, C. F., & Huffman, D. R. (1983). Absorption and scattering of light by small particles. John Wiley & Sons.
+
 Cook JM, et al (2017) Quantifying bioalbedo: A new physically-based model and critique of empirical methods for characterizing biological influence on ice and snow albedo. The Cryosphere: 1–29. DOI: 10.5194/tc-2017-73, 2017b
 
-Cook, J. M. et al. (2019): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019. 
+Cook, J. M. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019. 
+
+Briegleb, B. P., and B. Light. "A Delta-Eddington multiple scattering parameterization for solar radiation in the sea ice component of the Community Climate System Model." NCAR technical note (2007).
 
 Dang, C., Zender, C., Flanner M. 2019. Intercomparison and improvement of two-stream shortwave radiative transfer schemes in Earth system models for a unified treatment of cryospheric surfaces. The Cryosphere, 13, 2325–2343, https://doi.org/10.5194/tc-13-2325-2019 
 
@@ -256,12 +235,30 @@ Flanner, M. et al. (2007): Present-day climate forcing and response from black c
 Flanner, M et al. (2009) Springtime warming and reduced snow cover from
 carbonaceous particles. Atmospheric Chemistry and Physics, 9: 2481-2497, 2009.
 
-He, C., Liou, K.‐N., Takano, Y., Yang, P., Qi, L., & Chen, F. (2018). Impact of grain shape and multiple black carbon internal mixing on snow albedo: Parameterization and radiative effect analysis. Journal of Geophysical Research: Atmospheres, 123, 1253– 1268. https://doi.org/10.1002/2017JD027752 
+Flanner, M. G., Gardner, A. S., Eckhardt, S., Stohl, A., & Perket, J. (2014). Aerosol radiative forcing from the 2010 Eyjafjallajökull volcanic eruptions. Journal of Geophysical Research: Atmospheres, 119(15), 9481-9491.
+
+Flanner, M. G. et al., SNICAR-ADv3: a community tool for modeling spectral snow albedo, Geosci. Model Dev., 14, 7673–7704, https://doi.org/10.5194/gmd-14-7673-2021, 2021.
+
+He, C., Takano, Y., Liou, K. N., Yang, P., Li, Q., & Chen, F. (2017). Impact of snow grain shape and black carbon–snow internal mixing on snow optical properties: Parameterizations for climate models. Journal of Climate, 30(24), 10019-10036.
+
+He, C., Liou, K. N., Takano, Y., Yang, P., Qi, L., & Chen, F. (2018). Impact of grain shape and multiple black carbon internal mixing on snow albedo: Parameterization and radiative effect analysis. Journal of Geophysical Research: Atmospheres, 123(2), 1253-1268.
+
+Kirchstetter, T. W., Novakov, T., & Hobbs, P. V. (2004). Evidence that the spectral dependence of light absorption by aerosols is affected by organic carbon. Journal of Geophysical Research: Atmospheres, 109(D21).
+
+Lee, E., & Pilon, L. (2013). Absorption and scattering by long and randomly oriented linear chains of spheres. JOSA A, 30(9), 1892-1900.
+
+Picard, G., Libois, Q., & Arnaud, L. (2016). Refinement of the ice absorption spectrum in the visible using radiance profile measurements in Antarctic snow. The Cryosphere, 10(6), 2655-2672.
 
 Polashenski et al. (2015): Neither dust nor black carbon causing apparent albedo decline in Greenland's dry snow zone: Implications for MODIS C5 surface reflectance, Geophys. Res. Lett., 42, 9319– 9327, doi:10.1002/2015GL065912, 2015.
+
+Skiles, S. M., Painter, T., & Okin, G. S. (2017). A method to retrieve the spectral complex refractive index and single scattering optical properties of dust deposited in mountain snow. Journal of Glaciology, 63(237), 133-147.
 
 Toon, O. B., McKay, C. P., Ackerman, T. P., and Santhanam, K. (1989), Rapid calculation of radiative heating rates and photodissociation rates in inhomogeneous multiple scattering atmospheres, J. Geophys. Res., 94( D13), 16287– 16301, doi:10.1029/JD094iD13p16287. 
 
 van Diedenhoven et al. (2014): A flexible paramaterization for shortwave opticalproperties of ice crystals. Journal of the Atmospheric Sciences, 71: 1763 – 1782, doi:10.1175/JAS-D-13-0205.1
 
-Whicker et al. COMING SOON!
+Warren, S. G. (1984). Optical constants of ice from the ultraviolet to the microwave. Applied optics, 23(8), 1206-1225.
+
+Warren, S. G., & Brandt, R. E. (2008). Optical constants of ice from the ultraviolet to the microwave: A revised compilation. Journal of Geophysical Research: Atmospheres, 113(D14).
+
+Whicker et al., Halbach et al., Chevrollier et al. coming soon!
