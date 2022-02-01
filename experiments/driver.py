@@ -37,7 +37,6 @@
 driver used to easily execute funcs in utils.py
 """
 import sys
-
 import numpy as np
 import pandas as pd
 import utils

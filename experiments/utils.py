@@ -392,65 +392,94 @@ def inverse_model(
     FIELD_DATA_FNAME, LUT_PATH, DZ, DENSITIES, RADII, ZENS, ALGAE, WAVELENGTHS
 ):
 
-    spectra = pd.read_csv(FIELD_DATA_FNAME)
-    algaeList = []
-    grainList = []
-    densityList = []
-    dzList = []
-    filenames = []
-    errorList = []
-    zenithList = []
+    # read in and reshape luts and field spectra
+    field_data = pd.read_csv(FIELD_DATA_FNAME, index_col=None)
+    field_spectra = field_data[::10]
+    lut = np.load(str(LUT_PATH + "LUT.npy"))
+    vis_start_idx = 15
+    vis_end_idx = 55
+    nir_start_idx = 55
+    nir_end_idx = 230
+    lut_nir = lut[:, :, :, :, :, nir_start_idx:nir_end_idx]
+    lut_vis = lut[:, :, :, :, :, vis_start_idx:vis_end_idx]
 
-    @dask.delayed()
-    def run_inversion(LUT_VIS, LUT_NIR, spectrum, solzens, densities, radii, dz, algae):
+    #   LUT = np.array(LUT).reshape(
+    #         len(solzen),
+    #   len(densities),
+    #   len(radii),
+    #   len(dz),
+    #   len(algae),
+    #   len(wavelengths)
+    #     )
+    # TODO: make this dynamic depending on var
+    # values from config
+    flat_nir_lut = lut_nir.reshape(
+        len(ZENS) * len(DENSITIES) * len(RADII) * len(DZ) * len(ALGAE), 175
+    )
 
-        error_array = abs(LUT_NIR - spectrum[55:-1:10])
+    output = pd.DataFrame()
 
-        mean_error = np.mean(error_array, axis=1)
+    retrieved_solzen = []
+    retrieved_density = []
+    retrieved_radii = []
+    retrieved_dz = []
+    retrieved_algae = []
+    names = []
+    errors = []
 
-        index = np.argmin(mean_error)
+    for (name, data) in field_spectra.iteritems():
 
-        param_idx = np.unravel_index(
-            index, [len(solzens), len(densities), len(radii), len(dz), len(algae)]
+        names.append(name)
+
+        # step 1: find params that match best in NIR
+        error_array = abs(flat_nir_lut - np.array(data[40:]))
+        error_mean = np.mean(error_array, axis=1)
+        index = np.argmin(error_mean)
+        param_idx_phys = np.unravel_index(index, [len(ZENS) * len(DENSITIES) * len(RADII) * len(DZ) * len(ALGAE), 1])
+
+        # step 2: fix physical params and minimise error in visd by varying algae
+        lut2 = lut_vis[
+            param_idx_phys[0],
+            param_idx_phys[1],
+            param_idx_phys[2],
+            param_idx_phys[3],
+            :,
+            :,
+        ]
+        error_array = abs(lut2 - np.array(data[vis_start_idx:vis_end_idx]))
+        error_mean = np.mean(error_array, axis=1)
+        index = np.argmin(error_mean)
+        param_idx_alg = np.unravel_index(index, [1, 1, 1, 1, len(ALGAE), 1])
+
+        # setp 3:
+        retrieved_zen.append(ZENS[param_idx_phys[0]])
+        retrieved_density.append(DENSITIES[param_idx_phys[1]])
+        retrieved_radii.append(RADII[param_idx_phys[2]])
+        retrieved_dz.append(DZ[param_idx_phys[3]])
+        retrieved_algae.append(ALGAE[param_idx_alg[4]])
+
+        total_error = abs(
+            lut[
+                param_idx_phys[0],
+                param_idx_phys[1],
+                param_idx_phys[2],
+                param_idx_phys[3],
+                param_idx_alg[4],
+                vis_start_idx:nir_end_idx,
+            ]
+            - data
         )
+        errors.append(np.mean(total_error))
 
-        return param_idx
+    output["fname"] = names
+    output["solzen"] = retrieved_solzen
+    output["density"] = retrieved_density
+    output["radii"] = retrieved_radii
+    output["dz"] = retrieved_dz
+    output["algae"] = retrieved_algae
+    output["error"] = errors
 
-    # # STEP 1: MATCH NIR TO GET PHYSICAL PROPERTIES
-    # for i in np.arange(0,len(spectra.columns),1):
-
-    #     if i != 'wavelength':
-
-    #         colname = spectra.columns[i]
-    #         spectrum = np.array(spectra[colname])
-
-    #         LUT = np.load(str(LUT_PATH+'LUT.npy'))
-    #         LUT_FULL = LUT[:,:,:,:,:,15:230]
-    #         LUT_FULL = LUT_FULL.reshape(len(ZENS)*len(DENSITIES)*len(RADII)*len(DZ)*len(ALGAE),470)
-
-    #         LUT_NIR = LUT[:,:,:,:,:,55:230]
-    #         LUT_NIR = LUT_NIR.reshape(len(ZENS)*len(DENSITIES)*len(RADII)*len(DZ)*len(ALGAE),425)
-
-    #         param_idx = run_inversion(LUT, spectrum, solzens, densities, radii, dz, algae)
-
-    #         filenames.append(colname)
-    #         zenithList.append(solzens[param_idx[0]])
-    #         densityList.append(densities[param_idx[1]])
-    #         grainList.append(radii[param_idx[2]])
-    #         dzList.append(dz[param_idx[3]])
-    #         algaeList.append(algae[param_idx[4]])
-    #         errorList.append(np.min(mean_error))
-
-    # Out = pd.DataFrame(columns=['filename','density','grain','algae'])
-    # Out['filename'] = filenames
-    # Out['zenith'] = zenithList
-    # Out['density'] = densityList
-    # Out['grain'] = grainList
-    # Out['dz'] = dzList
-    # Out['algae'] = algaeList
-    # Out['spec_error'] = errorList
-
-    # return Out
+    return output
 
 
 def isolate_biological_effect(FIELD_DATA_FNAME, CIsites, LAsites, HAsites, SAVEPATH):
