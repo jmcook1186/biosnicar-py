@@ -808,6 +808,10 @@ def snicar_feeder(Inputs):
     g[g <= 0] = 0.00001
     g[g >= 1] = 0.99999
 
+    Inputs.fl_r_dif_a = fl_r_dif_a
+    Inputs.fl_r_dif_b = fl_r_dif_b
+    Inputs.refidx_re = refidx_re
+    Inputs.refidx_im = refidx_im
     Inputs.flx_slr = flx_slr
     Inputs.Fs = Fs
     Inputs.Fd = Fd
