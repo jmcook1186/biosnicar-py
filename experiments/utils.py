@@ -34,6 +34,7 @@ inverse_model()
 """
 import collections as c
 import sys
+
 sys.path.append("./src")
 import dask
 import matplotlib.pyplot as plt
@@ -42,8 +43,6 @@ import pandas as pd
 import statsmodels.api as sm
 import xarray as xr
 from call_snicar import call_snicar
-
-
 
 
 def match_field_spectra(
@@ -383,7 +382,7 @@ def build_LUT(
                                 )
 
     if save_LUT:
-        np.save(str(LUT_PATH+"LUT.npy"), LUT)
+        np.save(str(LUT_PATH + "LUT.npy"), LUT)
 
     return LUT
 
@@ -428,7 +427,7 @@ def inverse_model(
     errors = []
 
     counter = 0
-    
+
     for (name, data) in field_spectra.iteritems():
 
         names.append(name)
@@ -436,17 +435,23 @@ def inverse_model(
         # step 1: find params that match best in NIR
         error_array = abs(flat_nir_lut - np.array(data[40:]))
         error_mean = np.mean(error_array, axis=1)
-        error_mean[error_mean==np.nan] = 99999
-        error_mean = np.nan_to_num(error_mean, nan=9999) # protect agaiunst nans being interpreted as low error
+        error_mean[error_mean == np.nan] = 99999
+        error_mean = np.nan_to_num(
+            error_mean, nan=9999
+        )  # protect agaiunst nans being interpreted as low error
         index = np.argmin(error_mean)
-        param_idx_phys = np.unravel_index(index, (len(ZENS), len(DENSITIES),len(RADII), len(DZ), len(ALGAE), 1))
-        
+        param_idx_phys = np.unravel_index(
+            index, (len(ZENS), len(DENSITIES), len(RADII), len(DZ), len(ALGAE), 1)
+        )
+
         # print to debug
-        if counter ==10:
-            plt.plot(np.arange(0,175,1),data[40:]), plt.plot(np.arange(0,175,1),flat_nir_lut[0,:])
+        if counter == 10:
+            plt.plot(np.arange(0, 175, 1), data[40:]), plt.plot(
+                np.arange(0, 175, 1), flat_nir_lut[0, :]
+            )
             plt.show()
-        counter+=1
-        
+        counter += 1
+
         # step 2: fix physical params and minimise error in visd by varying algae
         lut2 = lut_vis[
             param_idx_phys[0],
@@ -480,9 +485,9 @@ def inverse_model(
             - data
         )
         errors.append(np.mean(total_error))
-    
+
     plt.show()
-        
+
     print(field_spectra.head())
     output["fname"] = names
     output["solzen"] = retrieved_zen
