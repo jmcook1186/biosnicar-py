@@ -431,14 +431,13 @@ def inverse_model(
             names.append(name)
 
             # step 1: find params that match best in NIR
-            error_array = abs(flat_nir_lut - np.array(data[40:]))
-            error_mean = np.mean(error_array, axis=1)
-            error_mean[error_mean == np.nan] = 99999
-            error_mean = np.nan_to_num(
-                error_mean, nan=9999
+            error_array = np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:])**2))
+            error_array = np.nan_to_num(
+                error_array, nan=9999
             )  # protect agaiunst nans being interpreted as low error
-            index = np.argmin(error_mean)
-            nir_errors.append(error_mean[index])
+            error_list = np.sum(error_array, axis=1)
+            index = np.argmin(error_list)
+            nir_errors.append(error_list[index])
             param_idx_phys = np.unravel_index(
                 index, (len(ZENS), len(DENSITIES), len(RADII), len(DZ), len(ALGAE), 1)
             )
@@ -453,10 +452,12 @@ def inverse_model(
                 :,
                 :,
             ]
-            error_array = abs(lut2 - np.array(data[vis_start_idx:vis_end_idx]))
-            error_mean = np.mean(error_array, axis=1)
-            index = np.argmin(error_mean)
-            vis_errors.append(error_mean[index])
+
+            np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:])**2))
+            error_array = np.sqrt(abs(lut2**2 - np.array(data[vis_start_idx:vis_end_idx])**2))
+            error_list = np.sum(error_array, axis=1)
+            index = np.argmin(error_list)
+            vis_errors.append(error_list[index])
             param_idx_alg = np.unravel_index(index, [1, 1, 1, 1, len(ALGAE), 1])
 
             # step 3: organize out data
