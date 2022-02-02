@@ -381,6 +381,7 @@ def build_LUT(
                                     LUT[z, i, j, p, q, 15:230] * ARF_CI
                                 )
 
+
     if save_LUT:
         np.save(str(LUT_PATH + "LUT.npy"), LUT)
 
@@ -413,7 +414,6 @@ def inverse_model(
     )
 
     output = pd.DataFrame()
-
     retrieved_zen = []
     retrieved_density = []
     retrieved_radii = []
@@ -424,7 +424,6 @@ def inverse_model(
     vis_errors = []
     total_errors = []
 
-    counter = 0
 
     for (name, data) in field_spectra.iteritems():
         # filter to sites defined in config
@@ -490,7 +489,7 @@ def inverse_model(
     output["vis_error"] = vis_errors
     output["total_error"] = total_errors
 
-    output.to_csv(str(SAVEPATH + "inverse_model_output.csv"))
+    output.to_csv(str(SAVEPATH+"inverse_model_output.csv"))
 
     return output
 
