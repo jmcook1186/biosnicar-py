@@ -3,7 +3,7 @@ ARF:
   PLOT_ARF: False
  
 PATHS:
-  SAVEPATH: "../"
+  SAVEPATH: "./experiments/"
   ARF_DATA: "./Data/additional_data/ARF_master.csv"
   HCRF_DATA: "./Data/additional_data/HCRF_master_16171819.csv"
   ALBEDO_DATA: "./Data/additional_data/Albedo_master.csv"
@@ -73,3 +73,10 @@ BUILD_LUT:
   ALGAE: [0, 5000, 7500, 10000, 12500, 15000, 17500, 20000, 25000, 30000, 35000, 40000]
   ZEN: [40]
   SAVE_LUT:  True
+
+INVERSE_MODEL:
+      SITES: [13_7_SB1, 13_7_SB2, 13_7_SB3, 13_7_SB5, 14_7_SB1, 14_7_SB2, 14_7_SB3,
+              14_7_SB5, 14_7_SB6, 14_7_SB9, 14_7_SB10, 15_7_SB1, 15_7_SB2, 15_7_SB3,
+              15_7_SB4, 15_7_SB5, 17_7_SB1, 17_7_SB2, 20_7_SB2, 20_7_SB3, 21_7_SB2,
+              21_7_SB4, 22_7_SB2, 22_7_SB3, 22_7_SB5, 22_7_SB6, 22_7_SB7, 23_7_SB1,
+              23_7_SB2, 23_7_SB4, 23_7_SB5]

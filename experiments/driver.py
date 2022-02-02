@@ -75,6 +75,7 @@ LUT_ALGAE = cfg["BUILD_LUT"]["ALGAE"]
 LUT_ZEN = cfg["BUILD_LUT"]["ZEN"]
 SAVE_LUT = cfg["BUILD_LUT"]["SAVE_LUT"]
 LUT_PATH = cfg["PATHS"]["LUT"]
+SITES = cfg["INVERSE_MODEL"]["SITES"]
 
 # generate ARF data
 ARF_CI_DF = pd.read_csv(ARF_PATH)
@@ -151,15 +152,16 @@ else:
 output = utils.inverse_model(
     FIELD_DATA_FNAME,
     LUT_PATH,
+    SITES,
     LUT_DZ,
     LUT_DENSITIES,
     LUT_RADII,
     LUT_ZEN,
     LUT_ALGAE,
-    WAVELENGTHS,
+    SAVEPATH
 )
 
-print(output)
+# print(output)
 
 # 6) Field vs model comparison
 # compare_predicted_and_measured(SAVEPATH, METADATA)
