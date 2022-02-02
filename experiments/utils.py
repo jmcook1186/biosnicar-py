@@ -419,7 +419,7 @@ def inverse_model(
 
     output = pd.DataFrame()
 
-    retrieved_solzen = []
+    retrieved_zen = []
     retrieved_density = []
     retrieved_radii = []
     retrieved_dz = []
@@ -472,7 +472,7 @@ def inverse_model(
         errors.append(np.mean(total_error))
 
     output["fname"] = names
-    output["solzen"] = retrieved_solzen
+    output["solzen"] = retrieved_zen
     output["density"] = retrieved_density
     output["radii"] = retrieved_radii
     output["dz"] = retrieved_dz
