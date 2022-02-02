@@ -148,7 +148,7 @@ else:
 
 
 # 5) run inverse model
-spectra = utils.inverse_model(
+output = utils.inverse_model(
     FIELD_DATA_FNAME,
     LUT_PATH,
     LUT_DZ,
@@ -158,6 +158,8 @@ spectra = utils.inverse_model(
     LUT_ALGAE,
     WAVELENGTHS,
 )
+
+print(output)
 
 # 6) Field vs model comparison
 # compare_predicted_and_measured(SAVEPATH, METADATA)

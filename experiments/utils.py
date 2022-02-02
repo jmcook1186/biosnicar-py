@@ -437,7 +437,7 @@ def inverse_model(
         error_array = abs(flat_nir_lut - np.array(data[40:]))
         error_mean = np.mean(error_array, axis=1)
         error_mean[error_mean==np.nan] = 99999
-        error_mean = np.nan_to_num(error_mean, nan=9999)
+        error_mean = np.nan_to_num(error_mean, nan=9999) # protect agaiunst nans being interpreted as low error
         index = np.argmin(error_mean)
         param_idx_phys = np.unravel_index(index, (len(ZENS), len(DENSITIES),len(RADII), len(DZ), len(ALGAE), 1))
         
