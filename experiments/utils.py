@@ -381,7 +381,6 @@ def build_LUT(
                                     LUT[z, i, j, p, q, 15:230] * ARF_CI
                                 )
 
-
     if save_LUT:
         np.save(str(LUT_PATH + "LUT.npy"), LUT)
 
@@ -491,7 +490,7 @@ def inverse_model(
     output["vis_error"] = vis_errors
     output["total_error"] = total_errors
 
-    output.to_csv(str(SAVEPATH+"inverse_model_output.csv"))
+    output.to_csv(str(SAVEPATH + "inverse_model_output.csv"))
 
     return output
 
