@@ -34,7 +34,6 @@ inverse_model()
 """
 import collections as c
 import sys
-
 sys.path.append("./src")
 import dask
 import matplotlib.pyplot as plt
@@ -43,6 +42,8 @@ import pandas as pd
 import statsmodels.api as sm
 import xarray as xr
 from call_snicar import call_snicar
+
+
 
 
 def match_field_spectra(
@@ -382,7 +383,7 @@ def build_LUT(
                                 )
 
     if save_LUT:
-        np.save(str(LUT_PATH + "LUT.npy"), LUT)
+        np.save(str(LUT_PATH+"LUT.npy"), LUT)
 
     return LUT
 
@@ -401,17 +402,6 @@ def inverse_model(
     nir_end_idx = 230
     lut_nir = lut[:, :, :, :, :, nir_start_idx:nir_end_idx]
     lut_vis = lut[:, :, :, :, :, vis_start_idx:vis_end_idx]
-
-    #   LUT = np.array(LUT).reshape(
-    #         len(solzen),
-    #   len(densities),
-    #   len(radii),
-    #   len(dz),
-    #   len(algae),
-    #   len(wavelengths)
-    #     )
-    # TODO: make this dynamic depending on var
-    # values from config
     flat_nir_lut = lut_nir.reshape(
         len(ZENS) * len(DENSITIES) * len(RADII) * len(DZ) * len(ALGAE), 175
     )
@@ -427,7 +417,7 @@ def inverse_model(
     errors = []
 
     counter = 0
-
+    
     for (name, data) in field_spectra.iteritems():
 
         names.append(name)
@@ -435,24 +425,13 @@ def inverse_model(
         # step 1: find params that match best in NIR
         error_array = abs(flat_nir_lut - np.array(data[40:]))
         error_mean = np.mean(error_array, axis=1)
-        error_mean[error_mean == np.nan] = 99999
-        error_mean = np.nan_to_num(
-            error_mean, nan=9999
-        )  # protect agaiunst nans being interpreted as low error
+        error_mean[error_mean==np.nan] = 99999
+        error_mean = np.nan_to_num(error_mean, nan=9999) # protect agaiunst nans being interpreted as low error
         index = np.argmin(error_mean)
-        param_idx_phys = np.unravel_index(
-            index, (len(ZENS), len(DENSITIES), len(RADII), len(DZ), len(ALGAE), 1)
-        )
-
-        # print to debug
-        if counter == 10:
-            plt.plot(np.arange(0, 175, 1), data[40:]), plt.plot(
-                np.arange(0, 175, 1), flat_nir_lut[0, :]
-            )
-            plt.show()
-        counter += 1
-
-        # step 2: fix physical params and minimise error in visd by varying algae
+        param_idx_phys = np.unravel_index(index, (len(ZENS), len(DENSITIES),len(RADII), len(DZ), len(ALGAE), 1))
+               
+        # step 2: fix physical params and minimise error 
+        # in vis by varying algae only
         lut2 = lut_vis[
             param_idx_phys[0],
             param_idx_phys[1],
@@ -466,7 +445,7 @@ def inverse_model(
         index = np.argmin(error_mean)
         param_idx_alg = np.unravel_index(index, [1, 1, 1, 1, len(ALGAE), 1])
 
-        # setp 3:
+        # step 3: organize out data
         retrieved_zen.append(ZENS[param_idx_phys[0]])
         retrieved_density.append(DENSITIES[param_idx_phys[1]])
         retrieved_radii.append(RADII[param_idx_phys[2]])
@@ -485,10 +464,7 @@ def inverse_model(
             - data
         )
         errors.append(np.mean(total_error))
-
-    plt.show()
-
-    print(field_spectra.head())
+    
     output["fname"] = names
     output["solzen"] = retrieved_zen
     output["density"] = retrieved_density
