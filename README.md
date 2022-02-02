@@ -31,7 +31,10 @@ conda env create -f BioSNICAR_py.yaml
 
 ```
 
-If creating a new environment in this way, please remember to update the prefix in the final line of the file to something appropriate to the new local machine. The .yaml file has been tested on Ubuntu 16.04 and 20.04.
+If creating a new environment in this way, please remember to update the prefix in the final line of the file to something appropriate to the new local machine. The .yaml file has been tested on Ubuntu 16.04 and 20.04. 
+
+Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the "remote containers" extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
+
 
 ### Running the model
 The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`):
@@ -213,7 +216,7 @@ BioSNICAR_GO_PY
 
 # Testing
 
-This repository contains a set of executable tests that anyone can run independently to verify the codebase against a Matlab benchmark version (published in Whicker et al 2021) along with a fuzzer that tests that the model runs and returns valid results across a wide parameter space. The fuzzer can be configured for speicific ranges of values by adjusting the `pytest.mark.parameterize` statements in `test_snicar.py`, or just use our recommended defaults. The fuzzer can be toggled off by setting `fuzz = 0` in `conftest.py`. Tests are organised in `/tests` but are run from the top level directory so that the model code can be more conveniently imported as modules into the test session. Therefore, to run the tests, simply navigate to the top level directory and run:
+This repository contains a set of executable tests that anyone can run independently to verify the codebase against a Matlab benchmark version (published in Whicker et al 2021) along with a fuzzer that tests that the model runs and returns valid results across a wide parameter space. The fuzzer can be configured for specific ranges of values by adjusting the `pytest.mark.parameterize` statements in `test_snicar.py`, or just use our recommended defaults. The fuzzer can be toggled off by setting `fuzz = 0` in `conftest.py`. Tests are organised in `/tests` but are run from the top level directory so that the model code can be more conveniently imported as modules into the test session. Therefore, to run the tests, simply navigate to the top level directory and run:
 
 `$ pytest tests`
 
