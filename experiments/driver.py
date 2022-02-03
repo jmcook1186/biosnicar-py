@@ -69,6 +69,7 @@ ALL_FIELD_SAMPLES = cfg["SAMPLES"]["ALL_SITES"]
 WEIGHT = cfg["FIND_BEST_PARAMS"]["WEIGHT"]
 CLEAN = cfg["FIND_BEST_PARAMS"]["CLEAN"]
 LUT_DZ = cfg["BUILD_LUT"]["DZ"]
+LUT_CFACTOR = cfg["BUILD_LUT"]["CFACTOR"]
 LUT_DENSITIES = cfg["BUILD_LUT"]["DENSITIES"]
 LUT_RADII = cfg["BUILD_LUT"]["RADII"]
 LUT_ALGAE = cfg["BUILD_LUT"]["ALGAE"]
@@ -144,22 +145,22 @@ else:
 
 
 # # BUILD LUT
-# LUT = utils.build_LUT(LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
-#                  APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
+LUT = utils.build_LUT(LUT_CFACTOR, LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
+                 APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
 
 
 # 5) run inverse model
-output = utils.inverse_model(
-    FIELD_DATA_FNAME,
-    LUT_PATH,
-    SITES,
-    LUT_DZ,
-    LUT_DENSITIES,
-    LUT_RADII,
-    LUT_ZEN,
-    LUT_ALGAE,
-    SAVEPATH
-)
+# output = utils.inverse_model(
+#     FIELD_DATA_FNAME,
+#     LUT_PATH,
+#     SITES,
+#     LUT_DZ,
+#     LUT_DENSITIES,
+#     LUT_RADII,
+#     LUT_ZEN,
+#     LUT_ALGAE,
+#     SAVEPATH
+# )
 
 # print(output)
 

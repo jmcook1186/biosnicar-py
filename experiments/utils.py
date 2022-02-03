@@ -286,6 +286,7 @@ def match_field_spectra(
 
 
 def build_LUT(
+    cfactor,
     solzen,
     dz,
     densities,
@@ -326,7 +327,7 @@ def build_LUT(
     LUT = []
 
     @dask.delayed
-    def run_sims(dens, rad, dz, alg, zen):
+    def run_sims(cfactor, dens, rad, dz, alg, zen):
 
         params = c.namedtuple(
             "params",
@@ -338,49 +339,61 @@ def build_LUT(
         params.dz = [0.001, dz]
         params.mss_cnc_glacier_algae = [alg, 0]
         params.solzen = zen
-        params.c_factor_GA = 20
+        params.c_factor_GA = cfactor
 
         albedo, BBA = call_snicar(params)
 
         return albedo
 
-    for z in np.arange(0, len(solzen), 1):
-        for i in np.arange(0, len(densities), 1):
-            for j in np.arange(0, len(radii), 1):
-                for p in np.arange(0, len(dz), 1):
-                    for q in np.arange(0, len(algae), 1):
-
-                        albedo = run_sims(
-                            densities[i], radii[j], dz[p], algae[q], solzen[z]
-                        )
-
-                        LUT.append(albedo)
-
-    LUT = dask.compute(*LUT, num_workers=12)
-    LUT = np.array(LUT).reshape(
-        len(solzen), len(densities), len(radii), len(dz), len(algae), len(wavelengths)
-    )
-
-    # move the ARF application to new loop because dask compute objets are immutable
-    # i.e. modifications to albedo must be done post-compute
-    if APPLY_ARF:
+    for x in np.arange(0, len(cfactor), 1):
         for z in np.arange(0, len(solzen), 1):
             for i in np.arange(0, len(densities), 1):
                 for j in np.arange(0, len(radii), 1):
                     for p in np.arange(0, len(dz), 1):
                         for q in np.arange(0, len(algae), 1):
 
-                            if algae[q] > 5000:
+                            albedo = run_sims(
+                                cfactor[x],
+                                densities[i],
+                                radii[j],
+                                dz[p],
+                                algae[q],
+                                solzen[z],
+                            )
 
-                                LUT[z, i, j, p, q, 15:230] = (
-                                    LUT[z, i, j, p, q, 15:230] * ARF_HA
-                                )
+                            LUT.append(albedo)
 
-                            else:
-                                LUT[z, i, j, p, q, 15:230] = (
-                                    LUT[z, i, j, p, q, 15:230] * ARF_CI
-                                )
+    LUT = dask.compute(*LUT, num_workers=12)
+    LUT = np.array(LUT).reshape(
+        len(cfactor),
+        len(solzen),
+        len(densities),
+        len(radii),
+        len(dz),
+        len(algae),
+        len(wavelengths),
+    )
 
+    # move the ARF application to new loop because dask compute objets are immutable
+    # i.e. modifications to albedo must be done post-compute
+    if APPLY_ARF:
+        for x in np.arange(0, len(cfactor), 1):
+            for z in np.arange(0, len(solzen), 1):
+                for i in np.arange(0, len(densities), 1):
+                    for j in np.arange(0, len(radii), 1):
+                        for p in np.arange(0, len(dz), 1):
+                            for q in np.arange(0, len(algae), 1):
+
+                                if algae[q] > 5000:
+
+                                    LUT[x, z, i, j, p, q, 15:230] = (
+                                        LUT[x, z, i, j, p, q, 15:230] * ARF_HA
+                                    )
+
+                                else:
+                                    LUT[x, z, i, j, p, q, 15:230] = (
+                                        LUT[x, z, i, j, p, q, 15:230] * ARF_CI
+                                    )
 
     if save_LUT:
         np.save(str(LUT_PATH + "LUT.npy"), LUT)
@@ -424,14 +437,13 @@ def inverse_model(
     vis_errors = []
     total_errors = []
 
-
     for (name, data) in field_spectra.iteritems():
         # filter to sites defined in config
         if name in SITES:
             names.append(name)
 
             # step 1: find params that match best in NIR
-            error_array = np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:])**2))
+            error_array = np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:]) ** 2))
             error_array = np.nan_to_num(
                 error_array, nan=9999
             )  # protect agaiunst nans being interpreted as low error
@@ -453,8 +465,10 @@ def inverse_model(
                 :,
             ]
 
-            np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:])**2))
-            error_array = np.sqrt(abs(lut2**2 - np.array(data[vis_start_idx:vis_end_idx])**2))
+            np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:]) ** 2))
+            error_array = np.sqrt(
+                abs(lut2**2 - np.array(data[vis_start_idx:vis_end_idx]) ** 2)
+            )
             error_list = np.sum(error_array, axis=1)
             index = np.argmin(error_list)
             vis_errors.append(error_list[index])
@@ -490,7 +504,7 @@ def inverse_model(
     output["vis_error"] = vis_errors
     output["total_error"] = total_errors
 
-    output.to_csv(str(SAVEPATH+"inverse_model_output.csv"))
+    output.to_csv(str(SAVEPATH + "inverse_model_output.csv"))
 
     return output
 
