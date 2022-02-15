@@ -68,7 +68,7 @@ def test_v3():
 
 
 def test_v4():
-    
+
     print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
 
     lyrList = [0, 1]

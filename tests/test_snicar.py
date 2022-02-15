@@ -35,6 +35,7 @@ To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
 
 """
 
+
 def test_realistic_BBA(get_matlab_data, get_python_data):
     # are the values predicted by the model always physical (i.e. between 0-1)
     # do the files have the right shape and size?
@@ -74,7 +75,9 @@ def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_toleran
     assert len(error[error > 1e-8]) == 0
 
 
-def test_compare_pySPEC_to_matSPEC_TOON(get_matlab_data_toon, get_python_data_toon, set_tolerance):
+def test_compare_pySPEC_to_matSPEC_TOON(
+    get_matlab_data_toon, get_python_data_toon, set_tolerance
+):
     # check that for each individual wavelenght, the spectral albedo
     # matches to within tolerance between the two models
     mat = get_matlab_data_toon
@@ -147,7 +150,7 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
             c_factor,
             solzen,
             toon,
-            ad
+            ad,
         )
         albedo, BBA = call_snicar(params)
         assert (BBA > 0) and (BBA < 1)
@@ -197,7 +200,7 @@ def test_var_fuzzer_AD(rds, rho, solzen, c_factor, dust, algae, fuzz):
             c_factor,
             solzen,
             toon,
-            ad
+            ad,
         )
         albedo, BBA = call_snicar(params)
         assert (BBA > 0) and (BBA < 1)
@@ -228,10 +231,9 @@ def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
     incoming = 4
     shp = 0
     rf = 2
-    lyr = 1,
+    lyr = (1,)
     toon = True
     ad = False
-
 
     if fuzz:
         params = set_params(
@@ -250,7 +252,7 @@ def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
             c_factor,
             solzen,
             toon,
-            ad
+            ad,
         )
         albedo, BBA = call_snicar(params)
         assert (BBA > 0) and (BBA < 1)
@@ -259,7 +261,6 @@ def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
         pass
 
     return
-
 
 
 def set_params(
@@ -278,7 +279,7 @@ def set_params(
     c_factor,
     solzen,
     toon,
-    ad
+    ad,
 ):
 
     params = c.namedtuple(
@@ -300,7 +301,7 @@ def set_params(
             "alg",
             "dust1",
             "toon",
-            "add_double"
+            "add_double",
         ],
     )
 
