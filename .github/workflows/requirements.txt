@@ -28,7 +28,7 @@ immutables==0.11
 importlib-metadata==2.0.0
 iniconfig==1.1.1
 ipykernel==5.1.4
-ipython==7.13.0
+ipython==7.16.3
 ipython-genutils==0.2.0
 ipywidgets==7.6.3
 isort==4.3.21
