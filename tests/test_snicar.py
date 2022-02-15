@@ -35,7 +35,6 @@ To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
 
 """
 
-
 def test_realistic_BBA(get_matlab_data, get_python_data):
     # are the values predicted by the model always physical (i.e. between 0-1)
     # do the files have the right shape and size?
@@ -68,6 +67,18 @@ def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_toleran
     # matches to within tolerance between the two models
     mat = get_matlab_data
     py = get_python_data
+    tol = set_tolerance
+    bb_spec = py.loc[:, :480]
+    bb_spec = mat.loc[:, :480]
+    error = np.array(abs(bb_spec - bb_spec))
+    assert len(error[error > 1e-8]) == 0
+
+
+def test_compare_pySPEC_to_matSPEC_TOON(get_matlab_data_toon, get_python_data_toon, set_tolerance):
+    # check that for each individual wavelenght, the spectral albedo
+    # matches to within tolerance between the two models
+    mat = get_matlab_data_toon
+    py = get_python_data_toon
     tol = set_tolerance
     bb_spec = py.loc[:, :480]
     bb_spec = mat.loc[:, :480]

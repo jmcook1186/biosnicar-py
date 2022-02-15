@@ -6,11 +6,17 @@ import pytest
 def get_matlab_data():
     return pd.read_csv("./tests/matlab_benchmark_data.csv", header=None)
 
+@pytest.fixture
+def get_matlab_data():
+    return pd.read_csv("./tests/matlab_benchmark_data_toon.csv", header=None)
 
 @pytest.fixture
 def get_python_data():
     return pd.read_csv("./tests/py_benchmark_data.csv", header=None).transpose()
 
+@pytest.fixture
+def get_python_data_toon():
+    return pd.read_csv("./tests/py_benchmark_data_toon.csv", header=None).transpose()
 
 @pytest.fixture
 def set_tolerance():
