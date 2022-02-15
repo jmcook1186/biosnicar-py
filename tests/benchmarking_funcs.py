@@ -1,5 +1,6 @@
 import collections as c
 import sys
+
 sys.path.append("./src")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -47,8 +48,9 @@ def generate_snicar_params(
     params.c_factor = 20
     return params
 
+
 def call_snicar(params):
-    
+
     inputs = c.namedtuple(
         "inputs",
         [
@@ -214,8 +216,8 @@ def call_snicar(params):
 
     inputs.dz = params.dz  # thickness of each vertical layer (unit = m)
     inputs.nbr_lyr = len(params.dz)  # number of snow layers
-    inputs.layer_type = (
-        [params.lyr] * len(params.dz)
+    inputs.layer_type = [params.lyr] * len(
+        params.dz
     )  # Fresnel layers for the add_double option, set all to 0 for the toon option
     inputs.cdom_layer = [0, 0]  # Only for layer type == 1, CDOM data from L Halbach
     inputs.rho_layers = params.rho  # density of each layer (unit = kg m-3)
@@ -362,7 +364,7 @@ def call_snicar(params):
     )  # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
     inputs.mss_cnc_dust1 = [0] * len(
         params.dz
-    )# dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
+    )  # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
     inputs.mss_cnc_dust2 = [0] * len(
         params.dz
     )  # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
@@ -428,7 +430,8 @@ def call_snicar(params):
         params.dz
     )  # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
     inputs.mss_cnc_glacier_algae = [0] * len(
-        params.dz)  # glacier algae type1 (Cook et al. 2020)
+        params.dz
+    )  # glacier algae type1 (Cook et al. 2020)
 
     nbr_aer = 30
 
