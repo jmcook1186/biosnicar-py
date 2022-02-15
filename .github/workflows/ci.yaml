@@ -19,6 +19,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r .devcontainer/environment.yaml
+          pip install -r .devcontainer/environment.yml
       - name: Run tests with pytest
         run: pytest ./tests
