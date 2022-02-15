@@ -13,32 +13,19 @@ BioSNICAR is a set of Python scripts that predict the spectral albedo of snow an
 
 ### Installing Environment/Dependencies
 
-First set up a Python environment. If you do not have Python installed, download Python >3.6. It is recommended to use a recent Anaconda distribution for easy environment management. However, if you have a regular Python installation already and want to use that, the following instructions can easily be adapted for venv instead of conda.
-
-It is recommended to run this code in a fresh environment as follows:
+If you do not have Python installed, download Python >3.6. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
 
 ```
-conda create -n BioSNICAR_py python 3.6.8, numpy, scipy, matplotlib, pandas
-conda install xarray dask netCDF4 bottleneck
-pip install miepython
+pip install -r requirements.txt
 
 ```
-
-or alternatively linux users can create from the yaml file provided in this repository.
-
-```
-conda env create -f BioSNICAR_py.yaml
-
-```
-
-If creating a new environment in this way, please remember to update the prefix in the final line of the file to something appropriate to the new local machine. The .yaml file has been tested on Ubuntu 16.04 and 20.04. 
 
 Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the "remote containers" extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
 
 
 ### Running the model
 
-The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`):
+The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
 
 `python ./src/snicar_driver.py`
 
@@ -200,10 +187,13 @@ More tests can and will be added over time (please feel free to contribute tests
 
 The model configuration used to generate the data used to drive the automated tests can be found in the `matlab_benchmark_script.m` and `python_benchmark_script.py` files. The Python version calls functions in `py_benchmarking_funcs.py` The matlab version was run on a linux server at UMich, the Python version was run locally by the repository owner on Ubuntu 20.04. 
 
+# Contributions
+
+New issues and pull requests are welcomed. Pull requests trigger our Github Actions workflow to test for any breaking changes. PRs that pass these automated tests will be reviewed.
 
 # Permissions
 
-This code is in active development. Collaboration ideas and pull-requests generally welcomed. The author assumes no responsibility for downstream usage and, while collaboration is welcome, there is no obligation to provide training or technical support for users. This code is provided without warranty or guarantee, nor is there the implied warranty of merchantability or fitness for any particular purpose.
+This code is provided under an MIT license with the caveat that it is in active development. Collaboration ideas and pull-requests generally welcomed. Please use the citations below to credit the builders of this repository and its predecessors.
 
 # Citation
 
@@ -224,13 +214,13 @@ Bidigare, R. R., Ondrusek, M. E., Morrow, J. H., & Kiefer, D. A. (1990, Septembe
 
 Bohren, C. F., & Huffman, D. R. (1983). Absorption and scattering of light by small particles. John Wiley & Sons.
 
+Briegleb, B. P., and B. Light. "A Delta-Eddington multiple scattering parameterization for solar radiation in the sea ice component of the Community Climate System Model." NCAR technical note (2007).
+
 Clementson, L. A., & Wojtasiewicz, B. (2019). Dataset on the absorption characteristics of extracted phytoplankton pigments. Data in brief, 24, 103875.
 
 Cook JM, et al (2017) Quantifying bioalbedo: A new physically-based model and critique of empirical methods for characterizing biological influence on ice and snow albedo. The Cryosphere: 1–29. DOI: 10.5194/tc-2017-73, 2017b
 
 Cook, J. M. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019. 
-
-Briegleb, B. P., and B. Light. "A Delta-Eddington multiple scattering parameterization for solar radiation in the sea ice component of the Community Climate System Model." NCAR technical note (2007).
 
 Dang, C., Zender, C., Flanner M. 2019. Intercomparison and improvement of two-stream shortwave radiative transfer schemes in Earth system models for a unified treatment of cryospheric surfaces. The Cryosphere, 13, 2325–2343, https://doi.org/10.5194/tc-13-2325-2019 
 
