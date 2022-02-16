@@ -1,0 +1,12 @@
+direct: 1
+nbr_wvl: 480
+aprx_typ: 3
+delta: 1
+solzen: 40
+incoming: 4
+toon: True
+add_double: False
+illumination_file_stubs: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
+                        "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
+                        "swnb_480bnd_toa"]
+flx_dir: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/480band/fsds/"
