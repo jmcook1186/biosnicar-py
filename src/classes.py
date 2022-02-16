@@ -4,7 +4,6 @@ import yaml
 import numpy as np
 import math
 
-dir_base = "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/480band/"
 
 class Impurity:
 
@@ -29,46 +28,38 @@ class Impurity:
 
 
 class Ice:
-    def __init__(self, dir_base):
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/ice_physical_config.yaml", "r") as ymlfile:
-            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    def __init__(self, ice_cfg, model_cfg):
         
-        self.dz = cfg["dz"]
-        self.layer_type = cfg["layer_type"]
-        self.cdom = cfg["cdom"]
-        self.rho = cfg["rho"]        
-        self.sfc = np.genfromtxt(dir_base+cfg["sfc_file"],delimiter="csv")
-        self.rf = cfg["rf"]
-        self.shp = cfg["shp"]
-        self.rds = cfg["rds"]
-        self.water = cfg["water"]
-        self.hex_side = cfg["hex_side"]
-        self.hex_length = cfg["hex_length"]
-        self.shp_fctr = cfg["shp_fctr"]
-        self.ar = cfg["ar"]
+        self.dz = ice_cfg["dz"]
+        self.layer_type = ice_cfg["layer_type"]
+        self.cdom = ice_cfg["cdom"]
+        self.rho = ice_cfg["rho"]        
+        self.sfc = np.genfromtxt(model_cfg["DIR_BASE"]+ice_cfg["sfc_file"],delimiter="csv")
+        self.rf = ice_cfg["rf"]
+        self.shp = ice_cfg["shp"]
+        self.rds = ice_cfg["rds"]
+        self.water = ice_cfg["water"]
+        self.hex_side = ice_cfg["hex_side"]
+        self.hex_length = ice_cfg["hex_length"]
+        self.shp_fctr = ice_cfg["shp_fctr"]
+        self.ar = ice_cfg["ar"]
 
 
 
-class illumination:
-    def __init__(self):
+class Illumination:
+    def __init__(self, rtm_cfg):
     
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/rtm_config.yaml", "r") as ymlfile:
-            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-        
-        self.direct = cfg["direct"]
-        self.solzen = cfg["solzen"]
-        self.incoming = cfg["incoming"]
+        self.direct = rtm_cfg["direct"]
+        self.solzen = rtm_cfg["solzen"]
+        self.incoming = rtm_cfg["incoming"]
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
-
+        self.rtm_cfg = rtm_cfg
 
     def calculate_flx_slr(self):
 
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/rtm_config.yaml", "r") as ymlfile:
-            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-        
-            stubs = cfg["illumination_file_stubs"]
-            flx_dir = cfg["flx_dir"]
-            nbr_wvl = cfg["nbr_wvl"]
+        stubs = self.rtm_cfg["illumination_file_stubs"]
+        flx_dir = self.rtm_cfg["flx_dir"]
+        nbr_wvl = self.rtm_cfg["nbr_wvl"]
         
         cloud_stub = "_cld"
         coszen_stub = ""
@@ -98,14 +89,11 @@ class illumination:
 
 
 class RTConfig:
-    def __init__(self):
+    def __init__(self, rtm_cfg):
 
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/rtm_config.yaml", "r") as ymlfile:
-            cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-        self.aprx_typ = cfg["aprx_typ"]
-        self.delta = cfg["delta"]
-        self.toon = cfg["toon"]
-        self.add_double = cfg["add_double"]
+        self.aprx_typ = rtm_cfg["aprx_typ"]
+        self.delta = rtm_cfg["delta"]
+        self.toon = rtm_cfg["toon"]
+        self.add_double = rtm_cfg["add_double"]
 
 
