@@ -3,8 +3,6 @@ VARIABLES:
   layer_type: [0, 0]  # Fresnel layers (set all to 0 if toon : True)
   cdom: [0, 0]  # Only for layer type :: 1
   rho: [916, 916]  # density of each layer (unit : kg m-3)
-  nbr_wvl: 480
-  sfc_file: "r_sfc/blue_ice_spectrum_s10290721.csv"
   rf: 2
   shp: [0, 0]  # grain shape (He et al. 2016, 2017)
   rds: [100, 100]  # effective grain or bubble radius
@@ -21,3 +19,6 @@ PATHS:
     BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
     RI_ICE: "Data/OP_data/480band/"
     OP_DIR_STUBS: ["ice_Wrn84/ice_Wrn84_", "ice_Wrn08/ice_Wrn08_", "ice_Pic16/ice_Pic16_"]
+    SFC: "/Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
+    FN_ICE: "/Data/OP_data/480band/rfidx_ice.nc"
+    FN_WATER: "/Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"

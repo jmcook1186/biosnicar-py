@@ -1,14 +1,14 @@
 impurities:
   algae:
     name: "algae"
-    file: "lap/Cook2020_glacier_algae_4_40.nc"
+    file: "Cook2020_glacier_algae_4_40.nc"
     cfactor: 20
     coated: False
     unit: 1
     conc: [1000,0]
   dust:
     name: "dust"
-    file: "lap/dust_skiles_size5.nc"
+    file: "dust_skiles_size5.nc"
     cfactor: 0
     coated: False
     unit: 0

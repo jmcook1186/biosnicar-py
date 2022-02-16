@@ -13,7 +13,7 @@ class Impurity:
         self.unit = unit
         self.conc = conc
 
-        self.impurity_properties = xr.open_dataset(str(dir_base + file))
+        self.impurity_properties = xr.open_dataset(str(dir_base + "/Data/OP_data/480band/lap/" + file))
 
         if coated:
             mac_stub = "ext_cff_mss_ncl"
@@ -28,13 +28,14 @@ class Impurity:
 
 
 class Ice:
+
     def __init__(self, ice_cfg, model_cfg):
         
         self.dz = ice_cfg["VARIABLES"]["dz"]
         self.layer_type = ice_cfg["VARIABLES"]["layer_type"]
         self.cdom = ice_cfg["VARIABLES"]["cdom"]
         self.rho = ice_cfg["VARIABLES"]["rho"]        
-        self.sfc = np.genfromtxt(model_cfg["PATHS"]["DIR_BASE"]+ice_cfg["VARIABLES"]["sfc_file"],delimiter="csv")
+        self.sfc = np.genfromtxt(model_cfg["PATHS"]["DIR_BASE"]+ice_cfg["PATHS"]["SFC"],delimiter="csv")
         self.rf = ice_cfg["VARIABLES"]["rf"]
         self.shp = ice_cfg["VARIABLES"]["shp"]
         self.rds = ice_cfg["VARIABLES"]["rds"]
@@ -43,6 +44,7 @@ class Ice:
         self.hex_length = ice_cfg["VARIABLES"]["hex_length"]
         self.shp_fctr = ice_cfg["VARIABLES"]["shp_fctr"]
         self.ar = ice_cfg["VARIABLES"]["ar"]
+        self.nbr_lyr = len(self.dz)
 
 
     def get_ref_indices(self, ice_cfg):
@@ -57,7 +59,7 @@ class Ice:
         self. ref_idx_im = refidx_file[str("im_" + ref_idx_name)].values
         self.fl_r_dif_a = fresnel_diffuse_file[str("R_dif_fa_ice_" + ref_idx_name)].values
         self.fl_r_dif_b = fresnel_diffuse_file[str("R_dif_fb_ice_" + ref_idx_name)].values
-
+        self.op_dir = op_dir_stub
 
 
 

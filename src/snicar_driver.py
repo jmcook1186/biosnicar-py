@@ -32,6 +32,7 @@ import numpy as np
 import seaborn as sns
 from setup_snicar import *
 from classes import *
+from column_OPs import *
 
 # --------------------------------------------------------------------------------------
 # 1) Initialize Inputs of the model
@@ -53,6 +54,8 @@ ice.get_ref_indices(ice_cfg)
 
 print(illumination.Fd)
 
+
+ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg)
 
 # Inputs = c.namedtuple(
 #     "Inputs",
