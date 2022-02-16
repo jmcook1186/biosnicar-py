@@ -83,10 +83,10 @@ def bioptical_calculations(
 
     elif ACS_loaded_reconstructed:
         ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
-        if packaging_correction_SA:  # !! only from 300nm, rest set to 0
+        if packaging_correction_SA:  # ! applies only from 300nm
             pckg_SA = np.loadtxt(dir_base + "Data/pigments/pckg_SA.csv")
             abs_coeff = abs_coeff * pckg_SA[0:-1]
-        if packaging_correction_GA:  # !! only from 300nm, rest set to 0
+        if packaging_correction_GA:  # ! applies from 300nm
             pckg_GA = np.loadtxt(dir_base + "Data/pigments/pckg_GA.csv")
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
