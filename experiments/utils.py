@@ -35,6 +35,7 @@ inverse_model()
 import collections as c
 import sys
 
+sys.path.append("./src")
 import dask
 import matplotlib.pyplot as plt
 import numpy as np
@@ -42,8 +43,6 @@ import pandas as pd
 import statsmodels.api as sm
 import xarray as xr
 from call_snicar import call_snicar
-
-sys.path.append("./src")
 
 
 def match_field_spectra(
@@ -287,6 +286,7 @@ def match_field_spectra(
 
 
 def build_LUT(
+    cfactor,
     solzen,
     dz,
     densities,
@@ -297,7 +297,7 @@ def build_LUT(
     APPLY_ARF,
     ARF_CI,
     ARF_HA,
-    SAVEPATH,
+    LUT_PATH,
 ):
 
     """
@@ -327,71 +327,91 @@ def build_LUT(
     LUT = []
 
     @dask.delayed
-    def run_sims(dens, rad, dz, alg, zen):
+    def run_sims(cfactor, dens, rad, dz, alg, zen):
 
         params = c.namedtuple(
             "params",
             "rho_layers, grain_rds, layer_type, c_factor_GA, dz, mss_cnc_glacier_algae, solzen",
         )
-        params.rho_layers = [dens, dens]
+        params.rho_layers = [916, dens]
         params.grain_rds = [rad, rad]  # set equal to density
         params.layer_type = [1, 1]
         params.dz = [0.001, dz]
         params.mss_cnc_glacier_algae = [alg, 0]
         params.solzen = zen
-        params.c_factor_GA = 20
+        params.c_factor_GA = cfactor
 
         albedo, BBA = call_snicar(params)
 
         return albedo
 
-    for z in np.arange(0, len(solzen), 1):
-        for i in np.arange(0, len(densities), 1):
-            for j in np.arange(0, len(radii), 1):
-                for p in np.arange(0, len(dz), 1):
-                    for q in np.arange(0, len(algae), 1):
-
-                        albedo = run_sims(
-                            densities[i], radii[j], dz[p], algae[q], solzen[z]
-                        )
-
-                        LUT.append(albedo)
-
-    LUT = dask.compute(*LUT, num_workers=12)
-    LUT = np.array(LUT).reshape(
-        len(solzen), len(densities), len(radii), len(dz), len(algae), len(wavelengths)
-    )
-
-    # move the ARF application to new loop because dask compute objets are immutable
-    # i.e. modifications to albedo must be done post-compute
-    if APPLY_ARF:
+    for x in np.arange(0, len(cfactor), 1):
         for z in np.arange(0, len(solzen), 1):
             for i in np.arange(0, len(densities), 1):
                 for j in np.arange(0, len(radii), 1):
                     for p in np.arange(0, len(dz), 1):
                         for q in np.arange(0, len(algae), 1):
 
-                            if algae[q] > 5000:
+                            albedo = run_sims(
+                                cfactor[x],
+                                densities[i],
+                                radii[j],
+                                dz[p],
+                                algae[q],
+                                solzen[z],
+                            )
 
-                                LUT[z, i, j, p, q, 0:215] = (
-                                    LUT[z, i, j, p, q, 0:215] * ARF_HA
-                                )
+                            LUT.append(albedo)
 
-                            else:
-                                LUT[z, i, j, p, q, 0:215] = (
-                                    LUT[z, i, j, p, q, 0:215] * ARF_CI
-                                )
+    LUT = dask.compute(*LUT, num_workers=12)
+    LUT = np.array(LUT).reshape(
+        len(cfactor),
+        len(solzen),
+        len(densities),
+        len(radii),
+        len(dz),
+        len(algae),
+        len(wavelengths),
+    )
+
+    # move the ARF application to new loop because dask compute objets are immutable
+    # i.e. modifications to albedo must be done post-compute
+    if APPLY_ARF:
+        for x in np.arange(0, len(cfactor), 1):
+            for z in np.arange(0, len(solzen), 1):
+                for i in np.arange(0, len(densities), 1):
+                    for j in np.arange(0, len(radii), 1):
+                        for p in np.arange(0, len(dz), 1):
+                            for q in np.arange(0, len(algae), 1):
+
+                                if algae[q] > 5000:
+
+                                    LUT[x, z, i, j, p, q, 15:230] = (
+                                        LUT[x, z, i, j, p, q, 15:230] * ARF_HA
+                                    )
+
+                                else:
+                                    LUT[x, z, i, j, p, q, 15:230] = (
+                                        LUT[x, z, i, j, p, q, 15:230] * ARF_CI
+                                    )
 
     if save_LUT:
-        np.save(str(SAVEPATH + "LUT.npy"), LUT)
+        np.save(str(LUT_PATH + "LUT.npy"), LUT)
 
     return LUT
 
 
 def inverse_model(
-    FIELD_DATA_FNAME, LUT_PATH, DZ, DENSITIES, RADII, ZENS, ALGAE, WAVELENGTHS
+    FIELD_DATA_FNAME, LUT_PATH, SITES, DZ, DENSITIES, RADII, ZENS, ALGAE, SAVEPATH
 ):
+    """
+    function takes arrays of vals used to build LUT and runs a 2 step inversion.
+    First, each spectrum in the LUT is compared to each field spectrum
+    The parameters giving the smallest mean error are selected
+    Then those parameters are fixed and the process repeats, only varying algal concentration
+    This gives the parameter set that best simulates each field measurement
 
+    """
     # read in and reshape luts and field spectra
     field_data = pd.read_csv(FIELD_DATA_FNAME, index_col=None)
     field_spectra = field_data[::10]
@@ -402,74 +422,77 @@ def inverse_model(
     nir_end_idx = 230
     lut_nir = lut[:, :, :, :, :, nir_start_idx:nir_end_idx]
     lut_vis = lut[:, :, :, :, :, vis_start_idx:vis_end_idx]
-
-    #   LUT = np.array(LUT).reshape(
-    #         len(solzen),
-    #   len(densities),
-    #   len(radii),
-    #   len(dz),
-    #   len(algae),
-    #   len(wavelengths)
-    #     )
-    # TODO: make this dynamic depending on var
-    # values from config
     flat_nir_lut = lut_nir.reshape(
         len(ZENS) * len(DENSITIES) * len(RADII) * len(DZ) * len(ALGAE), 175
     )
 
     output = pd.DataFrame()
-
     retrieved_zen = []
     retrieved_density = []
     retrieved_radii = []
     retrieved_dz = []
     retrieved_algae = []
     names = []
-    errors = []
+    nir_errors = []
+    vis_errors = []
+    total_errors = []
 
     for (name, data) in field_spectra.iteritems():
+        # filter to sites defined in config
+        if name in SITES:
+            names.append(name)
 
-        names.append(name)
+            # step 1: find params that match best in NIR
+            error_array = np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:]) ** 2))
+            error_array = np.nan_to_num(
+                error_array, nan=9999
+            )  # protect agaiunst nans being interpreted as low error
+            error_list = np.sum(error_array, axis=1)
+            index = np.argmin(error_list)
+            nir_errors.append(error_list[index])
+            param_idx_phys = np.unravel_index(
+                index, (len(ZENS), len(DENSITIES), len(RADII), len(DZ), len(ALGAE), 1)
+            )
 
-        # step 1: find params that match best in NIR
-        error_array = abs(flat_nir_lut - np.array(data[40:]))
-        error_mean = np.mean(error_array, axis=1)
-        index = np.argmin(error_mean)
-        param_idx_phys = np.unravel_index(index, [len(ZENS) * len(DENSITIES) * len(RADII) * len(DZ) * len(ALGAE), 1])
-
-        # step 2: fix physical params and minimise error in visd by varying algae
-        lut2 = lut_vis[
-            param_idx_phys[0],
-            param_idx_phys[1],
-            param_idx_phys[2],
-            param_idx_phys[3],
-            :,
-            :,
-        ]
-        error_array = abs(lut2 - np.array(data[vis_start_idx:vis_end_idx]))
-        error_mean = np.mean(error_array, axis=1)
-        index = np.argmin(error_mean)
-        param_idx_alg = np.unravel_index(index, [1, 1, 1, 1, len(ALGAE), 1])
-
-        # setp 3:
-        retrieved_zen.append(ZENS[param_idx_phys[0]])
-        retrieved_density.append(DENSITIES[param_idx_phys[1]])
-        retrieved_radii.append(RADII[param_idx_phys[2]])
-        retrieved_dz.append(DZ[param_idx_phys[3]])
-        retrieved_algae.append(ALGAE[param_idx_alg[4]])
-
-        total_error = abs(
-            lut[
+            # step 2: fix physical params and minimise error
+            # in vis by varying algae only
+            lut2 = lut_vis[
                 param_idx_phys[0],
                 param_idx_phys[1],
                 param_idx_phys[2],
                 param_idx_phys[3],
-                param_idx_alg[4],
-                vis_start_idx:nir_end_idx,
+                :,
+                :,
             ]
-            - data
-        )
-        errors.append(np.mean(total_error))
+
+            np.sqrt(abs(flat_nir_lut**2 - np.array(data[40:]) ** 2))
+            error_array = np.sqrt(
+                abs(lut2**2 - np.array(data[vis_start_idx:vis_end_idx]) ** 2)
+            )
+            error_list = np.sum(error_array, axis=1)
+            index = np.argmin(error_list)
+            vis_errors.append(error_list[index])
+            param_idx_alg = np.unravel_index(index, [1, 1, 1, 1, len(ALGAE), 1])
+
+            # step 3: organize out data
+            retrieved_zen.append(ZENS[param_idx_phys[0]])
+            retrieved_density.append(DENSITIES[param_idx_phys[1]])
+            retrieved_radii.append(RADII[param_idx_phys[2]])
+            retrieved_dz.append(DZ[param_idx_phys[3]])
+            retrieved_algae.append(ALGAE[param_idx_alg[4]])
+
+            total_error = abs(
+                lut[
+                    param_idx_phys[0],
+                    param_idx_phys[1],
+                    param_idx_phys[2],
+                    param_idx_phys[3],
+                    param_idx_alg[4],
+                    vis_start_idx:nir_end_idx,
+                ]
+                - data
+            )
+            total_errors.append(np.mean(total_error))
 
     output["fname"] = names
     output["solzen"] = retrieved_zen
@@ -477,7 +500,11 @@ def inverse_model(
     output["radii"] = retrieved_radii
     output["dz"] = retrieved_dz
     output["algae"] = retrieved_algae
-    output["error"] = errors
+    output["nir_error"] = nir_errors
+    output["vis_error"] = vis_errors
+    output["total_error"] = total_errors
+
+    output.to_csv(str(SAVEPATH + "inverse_model_output.csv"))
 
     return output
 

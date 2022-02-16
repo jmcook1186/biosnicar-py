@@ -69,12 +69,14 @@ ALL_FIELD_SAMPLES = cfg["SAMPLES"]["ALL_SITES"]
 WEIGHT = cfg["FIND_BEST_PARAMS"]["WEIGHT"]
 CLEAN = cfg["FIND_BEST_PARAMS"]["CLEAN"]
 LUT_DZ = cfg["BUILD_LUT"]["DZ"]
+LUT_CFACTOR = cfg["BUILD_LUT"]["CFACTOR"]
 LUT_DENSITIES = cfg["BUILD_LUT"]["DENSITIES"]
 LUT_RADII = cfg["BUILD_LUT"]["RADII"]
 LUT_ALGAE = cfg["BUILD_LUT"]["ALGAE"]
 LUT_ZEN = cfg["BUILD_LUT"]["ZEN"]
 SAVE_LUT = cfg["BUILD_LUT"]["SAVE_LUT"]
 LUT_PATH = cfg["PATHS"]["LUT"]
+SITES = cfg["INVERSE_MODEL"]["SITES"]
 
 # generate ARF data
 ARF_CI_DF = pd.read_csv(ARF_PATH)
@@ -143,21 +145,24 @@ else:
 
 
 # # BUILD LUT
-# LUT = utils.build_LUT(LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
-#                  APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
+LUT = utils.build_LUT(LUT_CFACTOR, LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
+                 APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
 
 
 # 5) run inverse model
-spectra = utils.inverse_model(
-    FIELD_DATA_FNAME,
-    LUT_PATH,
-    LUT_DZ,
-    LUT_DENSITIES,
-    LUT_RADII,
-    LUT_ZEN,
-    LUT_ALGAE,
-    WAVELENGTHS,
-)
+# output = utils.inverse_model(
+#     FIELD_DATA_FNAME,
+#     LUT_PATH,
+#     SITES,
+#     LUT_DZ,
+#     LUT_DENSITIES,
+#     LUT_RADII,
+#     LUT_ZEN,
+#     LUT_ALGAE,
+#     SAVEPATH
+# )
+
+# print(output)
 
 # 6) Field vs model comparison
 # compare_predicted_and_measured(SAVEPATH, METADATA)
