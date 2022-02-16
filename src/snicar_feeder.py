@@ -34,7 +34,6 @@ def snicar_feeder(Inputs):
 
     # load variables from input table
 
-
     files = [
         Inputs.file_soot1,
         Inputs.file_soot2,
@@ -251,7 +250,7 @@ def snicar_feeder(Inputs):
         refidx_im = refidx_file["im_Pic16"].values
         fl_r_dif_a = fresnel_diffuse_file["R_dif_fa_ice_Pic16"].values
         fl_r_dif_b = fresnel_diffuse_file["R_dif_fb_ice_Pic16"].values
-    
+
     else:
         raise ValueError("invalid choice of ice refractive index")
 
@@ -282,7 +281,8 @@ def snicar_feeder(Inputs):
                 if Inputs.verbosity == 1:
                     print(
                         "Using hex col w side length = {}, length = {}".format(
-                            str(Inputs.side_length[i]).rjust(4, "0"), str(Inputs.depth[i])
+                            str(Inputs.side_length[i]).rjust(4, "0"),
+                            str(Inputs.depth[i]),
                         )
                     )
 
@@ -481,7 +481,7 @@ def snicar_feeder(Inputs):
 
                         # Eq.7, He et al. (2017)
                         g_snw_cg_tmp = (
-                            g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice ** g_b2
+                            g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice**g_b2
                         )
 
                         # Eqn. 3.3 in Fu (2007)
@@ -519,12 +519,12 @@ def snicar_feeder(Inputs):
 
                             # Eq.7, He et al. (2017)
                             g_snw_cg_tmp = (
-                                g_b0 * (fs_sphd / fs_hex) ** g_b1 * diam_ice ** g_b2
+                                g_b0 * (fs_sphd / fs_hex) ** g_b1 * diam_ice**g_b2
                             )
 
                             # Eqn. 3.1 in Fu (2007)
                             gg_snw_F07_tmp = (
-                                g_f07_c0 + g_f07_c1 * ar_tmp + g_f07_c2 * ar_tmp ** 2
+                                g_f07_c0 + g_f07_c1 * ar_tmp + g_f07_c2 * ar_tmp**2
                             )
 
                         # 3=hexagonal plate,
@@ -556,7 +556,7 @@ def snicar_feeder(Inputs):
 
                             # Eq.7, He et al. (2017)
                             g_snw_cg_tmp = (
-                                g_b0 * (fs_hex0 / fs_hex) ** g_b1 * diam_ice ** g_b2
+                                g_b0 * (fs_hex0 / fs_hex) ** g_b1 * diam_ice**g_b2
                             )
 
                             # Eqn. 3.3 in Fu (2007)
@@ -596,7 +596,7 @@ def snicar_feeder(Inputs):
 
                             # Eq.7, He et al. (2017)
                             g_snw_cg_tmp = (
-                                g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice ** g_b2
+                                g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice**g_b2
                             )
 
                             # Eqn. 3.3 in Fu (2007)
@@ -647,9 +647,9 @@ def snicar_feeder(Inputs):
             MAC_snw[i, :] = (
                 (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
             ) + abs_cff_mss_ice
-            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
-                i, :
-            ]
+            ssa_snw[i, :] = (
+                (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
+            ) / MAC_snw[i, :]
 
     # ----------------------------------------------------------------------------------
     # Read in impurity optical properties
@@ -686,12 +686,14 @@ def snicar_feeder(Inputs):
             # with density of ice 917 kg m3
             if Inputs.GA_units == 1:
 
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
-                    917 * 10 ** (-6)
-                )
+                mss_aer[0 : Inputs.nbr_lyr, aer] = np.array(
+                    mass_concentrations[aer]
+                ) / (917 * 10 ** (-6))
 
             else:
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
+                mss_aer[0 : Inputs.nbr_lyr, aer] = (
+                    np.array(mass_concentrations[aer]) * 1e-9
+                )
 
         elif files[aer] == Inputs.file_snw_alg:
             # if SA_units == 1, SA concentration provided in cells/mL
@@ -699,16 +701,18 @@ def snicar_feeder(Inputs):
             # thus mss_aer is divided by kg/mL ice = 917*10**(-6)
             # with density of ice 917 kg m3
             if Inputs.SA_units == 1:
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
-                    917 * 10 ** (-6)
-                )
+                mss_aer[0 : Inputs.nbr_lyr, aer] = np.array(
+                    mass_concentrations[aer]
+                ) / (917 * 10 ** (-6))
 
             else:
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
+                mss_aer[0 : Inputs.nbr_lyr, aer] = (
+                    np.array(mass_concentrations[aer]) * 1e-9
+                )
 
         else:
             # conversion to kg/kg ice from ng/g
-            mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
+            mss_aer[0 : Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
 
         # if c_factor provided, then mss_aer multiplied by c_factor
         if (
@@ -716,14 +720,18 @@ def snicar_feeder(Inputs):
             and isinstance(Inputs.c_factor_GA, (int, float))
             and (Inputs.c_factor_GA > 0)
         ):
-            mss_aer[0:Inputs.nbr_lyr, aer] = Inputs.c_factor_GA * mss_aer[0:Inputs.nbr_lyr, aer]
+            mss_aer[0 : Inputs.nbr_lyr, aer] = (
+                Inputs.c_factor_GA * mss_aer[0 : Inputs.nbr_lyr, aer]
+            )
 
         if (
             files[aer] == Inputs.file_snw_alg
             and isinstance(Inputs.c_factor_SA, (int, float))
             and (Inputs.c_factor_SA > 0)
         ):
-            mss_aer[0:Inputs.nbr_lyr, aer] = Inputs.c_factor_SA * mss_aer[0:Inputs.nbr_lyr, aer]
+            mss_aer[0 : Inputs.nbr_lyr, aer] = (
+                Inputs.c_factor_SA * mss_aer[0 : Inputs.nbr_lyr, aer]
+            )
 
     # ----------------------------------------------------------------------------------
     # Begin solving Radiative Transfer

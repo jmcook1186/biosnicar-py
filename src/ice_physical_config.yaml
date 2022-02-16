@@ -1,14 +1,23 @@
-dz: [0.001, 0.2]  # thickness of each vertical layer (unit : m)
-layer_type: [0, 0]  # Fresnel layers (set all to 0 if toon : True)
-cdom: [0, 0]  # Only for layer type :: 1
-rho: [916, 916]  # density of each layer (unit : kg m-3)
-nbr_wvl: 480
-sfc_file: "r_sfc/blue_ice_spectrum_s10290721.csv"
-rf: 2
-shp: [0, 0]  # grain shape (He et al. 2016, 2017)
-rds: [100, 100]  # effective grain or bubble radius
-water: [0, 0]  # radius of optional liquid water coating
-hex_side: [10000, 10000]
-hex_length: [10000, 10000]
-shp_fctr: [0, 0]
-ar: [0, 0]
+VARIABLES:
+  dz: [0.001, 0.2]  # thickness of each vertical layer (unit : m)
+  layer_type: [0, 0]  # Fresnel layers (set all to 0 if toon : True)
+  cdom: [0, 0]  # Only for layer type :: 1
+  rho: [916, 916]  # density of each layer (unit : kg m-3)
+  nbr_wvl: 480
+  sfc_file: "r_sfc/blue_ice_spectrum_s10290721.csv"
+  rf: 2
+  shp: [0, 0]  # grain shape (He et al. 2016, 2017)
+  rds: [100, 100]  # effective grain or bubble radius
+  water: [0, 0]  # radius of optional liquid water coating
+  hex_side: [10000, 10000]
+  hex_length: [10000, 10000]
+  shp_fctr: [0, 0]
+  ar: [0, 0]
+
+PATHS:
+    # working Inputs.directories
+    SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
+    HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
+    BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
+    RI_ICE: "Data/OP_data/480band/"
+    OP_DIR_STUBS: ["ice_Wrn84/ice_Wrn84_", "ice_Wrn08/ice_Wrn08_", "ice_Pic16/ice_Pic16_"]

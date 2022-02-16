@@ -30,19 +30,35 @@ class Impurity:
 class Ice:
     def __init__(self, ice_cfg, model_cfg):
         
-        self.dz = ice_cfg["dz"]
-        self.layer_type = ice_cfg["layer_type"]
-        self.cdom = ice_cfg["cdom"]
-        self.rho = ice_cfg["rho"]        
-        self.sfc = np.genfromtxt(model_cfg["DIR_BASE"]+ice_cfg["sfc_file"],delimiter="csv")
-        self.rf = ice_cfg["rf"]
-        self.shp = ice_cfg["shp"]
-        self.rds = ice_cfg["rds"]
-        self.water = ice_cfg["water"]
-        self.hex_side = ice_cfg["hex_side"]
-        self.hex_length = ice_cfg["hex_length"]
-        self.shp_fctr = ice_cfg["shp_fctr"]
-        self.ar = ice_cfg["ar"]
+        self.dz = ice_cfg["VARIABLES"]["dz"]
+        self.layer_type = ice_cfg["VARIABLES"]["layer_type"]
+        self.cdom = ice_cfg["VARIABLES"]["cdom"]
+        self.rho = ice_cfg["VARIABLES"]["rho"]        
+        self.sfc = np.genfromtxt(model_cfg["PATHS"]["DIR_BASE"]+ice_cfg["VARIABLES"]["sfc_file"],delimiter="csv")
+        self.rf = ice_cfg["VARIABLES"]["rf"]
+        self.shp = ice_cfg["VARIABLES"]["shp"]
+        self.rds = ice_cfg["VARIABLES"]["rds"]
+        self.water = ice_cfg["VARIABLES"]["water"]
+        self.hex_side = ice_cfg["VARIABLES"]["hex_side"]
+        self.hex_length = ice_cfg["VARIABLES"]["hex_length"]
+        self.shp_fctr = ice_cfg["VARIABLES"]["shp_fctr"]
+        self.ar = ice_cfg["VARIABLES"]["ar"]
+
+
+    def get_ref_indices(self, ice_cfg):
+
+        refidx_file = xr.open_dataset(ice_cfg["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
+        fresnel_diffuse_file = xr.open_dataset(ice_cfg["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc")
+
+        rf = ice_cfg["VARIABLES"]["rf"]
+        op_dir_stub = ice_cfg["PATHS"]["OP_DIR_STUBS"][rf]
+        ref_idx_name = op_dir_stub[4:9]
+        self. ref_idx_re = refidx_file[str("re_" + ref_idx_name)].values
+        self. ref_idx_im = refidx_file[str("im_" + ref_idx_name)].values
+        self.fl_r_dif_a = fresnel_diffuse_file[str("R_dif_fa_ice_" + ref_idx_name)].values
+        self.fl_r_dif_b = fresnel_diffuse_file[str("R_dif_fb_ice_" + ref_idx_name)].values
+
+
 
 
 

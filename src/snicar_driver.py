@@ -31,18 +31,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from setup_snicar import *
-from snicar_feeder import snicar_feeder
+from classes import *
 
 # --------------------------------------------------------------------------------------
 # 1) Initialize Inputs of the model
 # --------------------------------------------------------------------------------------
-from classes import *
-
-
 
 
 impurity_cfg, rtm_cfg, ice_cfg, model_cfg = get_config()
 ice = build_ice_column(ice_cfg, model_cfg)
+get_wavelengths(model_cfg)
 impurities = build_impurities_array(impurity_cfg, model_cfg)
 
 print("impurities length: ", len(impurities))
@@ -51,13 +49,9 @@ rt = RTConfig(rtm_cfg)
 illumination = Illumination(rtm_cfg)
 illumination.calculate_flx_slr()
 
+ice.get_ref_indices(ice_cfg)
+
 print(illumination.Fd)
-
-
-
-
-
-
 
 
 # Inputs = c.namedtuple(
@@ -165,7 +159,6 @@ print(illumination.Fd)
 # )
 
 
-
 # nbr_aer = len(impurities)
 
 # ## ERROR CHECKING
@@ -223,7 +216,6 @@ print(illumination.Fd)
 # #         "Surface irradiance profiles exist for a solar\
 # #         zenith angle < 90 degrees. Solzen set to 89."
 # #     )
-
 
 
 # Outputs = snicar_feeder(Inputs)

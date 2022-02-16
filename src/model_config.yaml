@@ -1,11 +1,15 @@
 
-WRITE_CONFIG_TO_TEXTFILE: False
-verbosity: 0
-SHOW_FIGS: True
-SAVE_FIGS: False
-PRINT_BBA: True
-PRINT_BAND_RATIOS: True
-SMOOTH: False
-WINDOW_SIZE: 9
-POLY_ORDER: 3
-DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/480band/"
+CTRL:
+  WRITE_CONFIG_TO_TEXTFILE: False
+  verbosity: 0
+  SHOW_FIGS: True
+  SAVE_FIGS: False
+  PRINT_BBA: True
+  PRINT_BAND_RATIOS: True
+  SMOOTH: False
+  WINDOW_SIZE: 9
+  POLY_ORDER: 3
+
+PATHS:
+  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/480band/"
+  WVL: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/wavelengths.csv"
