@@ -63,3 +63,9 @@ def build_ice_column(rtm_cfg, model_cfg):
     creates an instance of Ice with properties from ice_physical_config.yaml
     """
     return Ice(rtm_cfg, model_cfg)
+
+
+def get_illumination(rtm_cfg):
+    illumination = Illumination(rtm_cfg)
+    illumination.calculate_flx_slr()
+    return illumination

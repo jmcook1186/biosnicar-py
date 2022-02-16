@@ -1,7 +1,7 @@
 direct: 1
 nbr_wvl: 480
 aprx_typ: 3
-delta: 1
+delta: True
 solzen: 40
 incoming: 4
 toon: True

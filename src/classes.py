@@ -91,7 +91,7 @@ class Illumination:
 
         flx_slr = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
-        flx_slr = flx_slr
+        self.flx_slr = flx_slr
         out = flx_slr / (self.mu_not * np.pi)
         
         if self.direct:
@@ -115,3 +115,11 @@ class RTConfig:
         self.add_double = rtm_cfg["add_double"]
 
 
+class Outputs:
+    def __init__(self):
+        self.heat_rt = None
+        self.BBAVIS = None
+        self.BBANIR = None
+        self.BBA = None
+        self.abs_slr = None
+        self.albedo = None

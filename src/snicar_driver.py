@@ -31,30 +31,28 @@ import seaborn as sns
 from setup_snicar import *
 from classes import *
 from column_OPs import *
+from toon_rt_solver import toon_solver
 
 
 impurity_cfg, rtm_cfg, ice_cfg, model_cfg = get_config()
+illumination = get_illumination(rtm_cfg)
 ice = build_ice_column(ice_cfg, model_cfg)
 ice.get_ref_indices(ice_cfg)
 impurities = build_impurities_array(impurity_cfg, model_cfg)
 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg)
 tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, ice_cfg, model_cfg, rtm_cfg)
+outputs = toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg)
+
 
 # rt = RTConfig(rtm_cfg)
-# illumination = Illumination(rtm_cfg)
-# illumination.calculate_flx_slr()
-
-# ice.get_ref_indices(ice_cfg)
-
-# print(illumination.Fd)
 
 
 
-
-
+print(outputs.albedo[0:20])
 import matplotlib.pyplot as plt
 plt.plot(ssa_snw.T)
 plt.show()
+
 
 
 # Inputs = c.namedtuple(
