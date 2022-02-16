@@ -83,10 +83,10 @@ def bioptical_calculations(
 
     elif ACS_loaded_reconstructed:
         ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
-        if packaging_correction_SA:  # !! only from 300nm, rest set to 0
+        if packaging_correction_SA:  # ! applies only from 300nm
             pckg_SA = np.loadtxt(dir_base + "Data/pigments/pckg_SA.csv")
             abs_coeff = abs_coeff * pckg_SA[0:-1]
-        if packaging_correction_GA:  # !! only from 300nm, rest set to 0
+        if packaging_correction_GA:  # ! applies from 300nm
             pckg_GA = np.loadtxt(dir_base + "Data/pigments/pckg_GA.csv")
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
@@ -98,7 +98,7 @@ def bioptical_calculations(
     ################
 
     k_water_alg = k_water
-    k_water_alg[0:600] = 0
+    k_water_alg[0:600] = 0 #200 to 800nm
 
     if cellular:  # ACS in m2 / cell
         # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
@@ -120,10 +120,10 @@ def bioptical_calculations(
     ###############################
 
     # rescaling variables to BioSNICAR resolution (10nm)
-    wvl_rescaled_BioSNICAR = wvl[::10]
-    ACS_rescaled_BioSNICAR = ACS[::10]
-    k_rescaled_BioSNICAR = k[::10]
-    n_rescaled_BioSNICAR = n[::10]
+    wvl_rescaled_BioSNICAR = wvl[5::10]
+    ACS_rescaled_BioSNICAR = ACS[5::10]
+    k_rescaled_BioSNICAR = k[5::10]
+    n_rescaled_BioSNICAR = n[5::10]
 
     data["wvl"] = wvl_rescaled_BioSNICAR
     data["ACS"] = ACS_rescaled_BioSNICAR  # in m2/kg dry or wet biomass

@@ -156,7 +156,7 @@ from biooptical_Funcs import bioptical_calculations, net_cdf_updater, ssp_calcul
 # --------------------------------------------------------------------------------------
 
 # Set base directory and constant variables
-DIR_BASE = "path to package" + "/BioSNICAR_GO_PY/"
+DIR_BASE = "./BioSNICAR_GO_PY/"
 WVL = np.arange(0.200, 4.999, 0.001)  # spectral range of interest in µm
 K_WATER = np.loadtxt(DIR_BASE + "Data/OP_data/k_ice_480.csv")
 
@@ -170,7 +170,7 @@ ACS_LOADED_INVIVO = True
 ACS_LOADED_RECONSTRUCTED = False
 ACS_CALCULATED = False
 # if ACS is loaded:
-ACS_FILE = "filename"
+ACS_FILE = "acs.csv"
 # if reconstructed ACS is directly loaded from pigment absorbance:
 PACKAGING_CORRECTION_SA = False
 PACKAGING_CORRECTION_GA = True
@@ -195,11 +195,11 @@ PIGMENTS_DATA = {
 
 # Algae properties
 N_ALGAE = 1.4 * np.ones(np.size(WVL))
-R = 5
+R = 10
 L = 20
-CELL_VOLUME = 1500
-DENSITY_DRY = 684
-DENSITY_WET = 1160
+CELL_VOLUME = 4/3*np.pi*R**3
+DENSITY_DRY = 625
+DENSITY_WET = 1060
 
 # Chose method for calculation of scattering optical properties
 GO = True
