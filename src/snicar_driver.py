@@ -23,10 +23,8 @@ LAPs are added in future.
 Author: Joseph Cook, June 2021
 """
 
-
 import collections as c
 from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -34,28 +32,30 @@ from setup_snicar import *
 from classes import *
 from column_OPs import *
 
-# --------------------------------------------------------------------------------------
-# 1) Initialize Inputs of the model
-# --------------------------------------------------------------------------------------
-
 
 impurity_cfg, rtm_cfg, ice_cfg, model_cfg = get_config()
 ice = build_ice_column(ice_cfg, model_cfg)
-get_wavelengths(model_cfg)
-impurities = build_impurities_array(impurity_cfg, model_cfg)
-
-print("impurities length: ", len(impurities))
-
-rt = RTConfig(rtm_cfg)
-illumination = Illumination(rtm_cfg)
-illumination.calculate_flx_slr()
-
 ice.get_ref_indices(ice_cfg)
-
-print(illumination.Fd)
-
-
+impurities = build_impurities_array(impurity_cfg, model_cfg)
 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg)
+tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, ice_cfg, model_cfg, rtm_cfg)
+
+# rt = RTConfig(rtm_cfg)
+# illumination = Illumination(rtm_cfg)
+# illumination.calculate_flx_slr()
+
+# ice.get_ref_indices(ice_cfg)
+
+# print(illumination.Fd)
+
+
+
+
+
+import matplotlib.pyplot as plt
+plt.plot(ssa_snw.T)
+plt.show()
+
 
 # Inputs = c.namedtuple(
 #     "Inputs",

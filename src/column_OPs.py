@@ -400,3 +400,86 @@ def correct_for_asphericity(ice, ice_cfg, model_cfg, g_snw, i):
     # values (so far only occur in large-size spheroid cases)
 
     return g_snw
+
+
+def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, ice_cfg, model_cfg, rtm_cfg):
+        
+    ssa_aer = np.zeros([len(impurities), rtm_cfg["nbr_wvl"]])
+    mac_aer = np.zeros([len(impurities), rtm_cfg["nbr_wvl"]])
+    g_aer = np.zeros([len(impurities), rtm_cfg["nbr_wvl"]])
+    mss_aer = np.zeros([len(impurities), len(impurities)])
+
+    for i, impurity in enumerate(impurities):
+
+        g_aer[i, :] = impurity.g
+        ssa_aer[i, :] = impurity.ssa
+
+        if impurity.unit==1:
+
+            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) / 917 * 10 ** (-6)) * impurity.cfactor
+
+        else:
+            
+            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) * 1e-9) * impurity.cfactor
+
+
+    g_sum = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    ssa_sum = np.zeros([ice.nbr_lyr, len(impurities), rtm_cfg["nbr_wvl"]])
+    tau = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    ssa = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    g = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    L_aer = np.zeros([ice.nbr_lyr, len(impurities)])
+    tau_aer = np.zeros([ice.nbr_lyr, len(impurities), rtm_cfg["nbr_wvl"]])
+    tau_sum = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    ssa_sum = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    L_snw = np.zeros(ice.nbr_lyr)
+    tau_snw = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+
+    # for each layer, the layer mass (L) is density * layer thickness
+    # for each layer the optical ice.depth is
+    # the layer mass * the mass extinction coefficient
+    # first for the ice in each layer
+
+    for i in range(ice.nbr_lyr):
+
+        L_snw[i] = ice.rho[i] * ice.dz[i]
+
+        for j in range(len(impurities)):
+
+            # kg ice m-2 * cells kg-1 ice = cells m-2
+            L_aer[i, j] = L_snw[i] * mss_aer[i, j]
+            # cells m-2 * m2 cells-1
+            tau_aer[i, j, :] = L_aer[i, j] * mac_aer[j, :]
+            tau_sum[i, :] = tau_sum[i, :] + tau_aer[i, j, :]
+            ssa_sum[i, :] = ssa_sum[i, :] + (tau_aer[i, j, :] * ssa_aer[j, :])
+            g_sum[i, :] = g_sum[i, :] + (tau_aer[i, j, :] * ssa_aer[j, :] * g_aer[j, :])
+
+            # ice mass = snow mass - impurity mass (generally tiny correction)
+            # if aer == algae and L_aer is in cells m-2, should be converted
+            # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg
+
+            if impurity.unit == 1:
+
+                L_snw[i] = L_snw[i] - L_aer[i, j] * 10 ** (-12)
+
+            else:
+
+                L_snw[i] = L_snw[i] - L_aer[i, j]
+
+        tau_snw[i, :] = L_snw[i] * mac_snw[i, :]
+        # finally, for each layer calculate the effective ssa, tau and g
+        # for the snow+LAP
+        tau[i, :] = tau_sum[i, :] + tau_snw[i, :]
+        ssa[i, :] = (1 / tau[i, :]) * (ssa_sum[i, :] + (ssa_snw[i, :] * tau_snw[i, :]))
+        g[i, :] = (1 / (tau[i, :] * (ssa[i, :]))) * (
+            g_sum[i, :] + (g_snw[i, :] * ssa_snw[i, :] * tau_snw[i, :])
+        )
+
+    # just in case any unrealistic values arise (none detected so far)
+    ssa[ssa <= 0] = 0.00000001
+    ssa[ssa >= 1] = 0.99999999
+    g[g <= 0] = 0.00001
+    g[g >= 1] = 0.99999
+
+
+    return tau, ssa, g, L_snw
