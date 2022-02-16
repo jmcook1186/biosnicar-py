@@ -8,3 +8,4 @@ PRINT_BAND_RATIOS: True
 SMOOTH: False
 WINDOW_SIZE: 9
 POLY_ORDER: 3
+DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/480band/"

@@ -30,7 +30,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-
+from setup_snicar import *
 from snicar_feeder import snicar_feeder
 
 # --------------------------------------------------------------------------------------
@@ -38,24 +38,17 @@ from snicar_feeder import snicar_feeder
 # --------------------------------------------------------------------------------------
 from classes import *
 
-with open("/home/joe/Code/BioSNICAR_GO_PY/src/impurity_config.yaml", "r") as ymlfile:
-    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-impurities = []
 
-for i, id in enumerate(cfg["impurities"]):
-    name = cfg["impurities"][id]["name"]
-    file = cfg["impurities"][id]["file"]
-    cfactor = cfg["impurities"][id]["cfactor"]
-    coated = cfg["impurities"][id]["coated"]
-    unit = cfg["impurities"][id]["unit"]
-    conc = cfg["impurities"][id]["conc"]
-    impurities.append(Impurity(dir_base, file, coated, cfactor, unit, name, conc))
 
-ice = Ice(dir_base)
-rt = RTConfig()
-illumination = illumination()
+impurity_cfg, rtm_cfg, ice_cfg, model_cfg = get_config()
+ice = build_ice_column(ice_cfg, model_cfg)
+impurities = build_impurities_array(impurity_cfg, model_cfg)
 
+print("impurities length: ", len(impurities))
+
+rt = RTConfig(rtm_cfg)
+illumination = Illumination(rtm_cfg)
 illumination.calculate_flx_slr()
 
 print(illumination.Fd)
