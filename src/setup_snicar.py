@@ -10,22 +10,20 @@ def build_impurities_array():
     properties defined in impurity_config.yaml
     """
 
-    with open("/home/joe/Code/BioSNICAR_GO_PY/src/impurity_config.yaml", "r") as ymlfile:
-        impurity_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-    
-    with open("/home/joe/Code/BioSNICAR_GO_PY/src/model_config.yaml", "r") as ymlfile:
-        model_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+   
+    with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+        inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
     impurities = []
-    dir_base = model_cfg["PATHS"]["DIR_BASE"]
+    dir_base = inputs["PATHS"]["DIR_BASE"]
     
-    for i, id in enumerate(impurity_cfg["impurities"]):
-        name = impurity_cfg["impurities"][id]["name"]
-        file = impurity_cfg["impurities"][id]["file"]
-        cfactor = impurity_cfg["impurities"][id]["cfactor"]
-        coated = impurity_cfg["impurities"][id]["coated"]
-        unit = impurity_cfg["impurities"][id]["unit"]
-        conc = impurity_cfg["impurities"][id]["conc"]
+    for i, id in enumerate(inputs["IMPURITIES"]):
+        name = inputs["IMPURITIES"][id]["name"]
+        file = inputs["IMPURITIES"][id]["file"]
+        cfactor = inputs["IMPURITIES"][id]["cfactor"]
+        coated = inputs["IMPURITIES"][id]["coated"]
+        unit = inputs["IMPURITIES"][id]["unit"]
+        conc = inputs["IMPURITIES"][id]["conc"]
         impurities.append(Impurity(dir_base, file, coated, cfactor, unit, name, conc))
 
     return impurities

@@ -54,4 +54,5 @@ for i in [0,  50000]:
 
     plt.figure()
     plt.plot(outputs1.albedo)
+    plt.ylim(0,1)
     plt.show()

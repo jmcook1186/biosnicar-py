@@ -33,31 +33,30 @@ class Ice:
     def __init__(self):
         
         # use config to calculate refractive indices
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/ice_physical_config.yaml", "r") as ymlfile:
-            ice_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/model_config.yaml", "r") as ymlfile:
-            model_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
         
-        self.dz = ice_cfg["VARIABLES"]["dz"]
-        self.layer_type = ice_cfg["VARIABLES"]["layer_type"]
-        self.cdom = ice_cfg["VARIABLES"]["cdom"]
-        self.rho = ice_cfg["VARIABLES"]["rho"]        
-        self.sfc = np.genfromtxt(model_cfg["PATHS"]["DIR_BASE"]+model_cfg["PATHS"]["SFC"],delimiter="csv")
-        self.rf = ice_cfg["VARIABLES"]["rf"]
-        self.shp = ice_cfg["VARIABLES"]["shp"]
-        self.rds = ice_cfg["VARIABLES"]["rds"]
-        self.water = ice_cfg["VARIABLES"]["water"]
-        self.hex_side = ice_cfg["VARIABLES"]["hex_side"]
-        self.hex_length = ice_cfg["VARIABLES"]["hex_length"]
-        self.shp_fctr = ice_cfg["VARIABLES"]["shp_fctr"]
-        self.ar = ice_cfg["VARIABLES"]["ar"]
+        self.dz = inputs["VARIABLES"]["dz"]
+        self.layer_type = inputs["VARIABLES"]["layer_type"]
+        self.cdom = inputs["VARIABLES"]["cdom"]
+        self.rho = inputs["VARIABLES"]["rho"]        
+        self.sfc = np.genfromtxt(inputs["PATHS"]["DIR_BASE"]+inputs["PATHS"]["SFC"],delimiter="csv")
+        self.rf = inputs["VARIABLES"]["rf"]
+        self.shp = inputs["VARIABLES"]["shp"]
+        self.rds = inputs["VARIABLES"]["rds"]
+        self.water = inputs["VARIABLES"]["water"]
+        self.hex_side = inputs["VARIABLES"]["hex_side"]
+        self.hex_length = inputs["VARIABLES"]["hex_length"]
+        self.shp_fctr = inputs["VARIABLES"]["shp_fctr"]
+        self.ar = inputs["VARIABLES"]["ar"]
         self.nbr_lyr = len(self.dz)
        
-        refidx_file = xr.open_dataset(model_cfg["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
-        fresnel_diffuse_file = xr.open_dataset(model_cfg["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc")
+        refidx_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
+        fresnel_diffuse_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc")
 
-        rf = ice_cfg["VARIABLES"]["rf"]
-        op_dir_stub = model_cfg["PATHS"]["OP_DIR_STUBS"][rf]
+        rf = inputs["VARIABLES"]["rf"]
+        op_dir_stub = inputs["PATHS"]["OP_DIR_STUBS"][rf]
         ref_idx_name = op_dir_stub[4:9]
 
         self. ref_idx_re = refidx_file[str("re_" + ref_idx_name)].values
@@ -66,26 +65,25 @@ class Ice:
         self.fl_r_dif_b = fresnel_diffuse_file[str("R_dif_fb_ice_" + ref_idx_name)].values
         self.op_dir = op_dir_stub
 
-        ice_cfg = None
+        inputs = None
 
 
 
 class Illumination:
     def __init__(self):
     
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/rtm_config.yaml", "r") as ymlfile:
-            rtm_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.direct = rtm_cfg["direct"]
-        self.solzen = rtm_cfg["solzen"]
-        self.incoming = rtm_cfg["incoming"]
+        self.direct = inputs["RTM"]["direct"]
+        self.solzen = inputs["RTM"]["solzen"]
+        self.incoming = inputs["RTM"]["incoming"]
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
-        self.rtm_cfg = rtm_cfg
 
 
-        stubs = self.rtm_cfg["illumination_file_stubs"]
-        flx_dir = self.rtm_cfg["flx_dir"]
-        nbr_wvl = self.rtm_cfg["nbr_wvl"]
+        stubs = inputs["RTM"]["illumination_file_stubs"]
+        flx_dir = inputs["PATHS"]["FLX_DIR"]
+        nbr_wvl = inputs["RTM"]["nbr_wvl"]
         
         cloud_stub = "_cld"
         coszen_stub = ""
@@ -115,42 +113,42 @@ class Illumination:
 class RTConfig:
     def __init__(self):
 
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/rtm_config.yaml", "r") as ymlfile:
-            rtm_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.aprx_typ = rtm_cfg["aprx_typ"]
-        self.delta = rtm_cfg["delta"]
-        self.toon = rtm_cfg["toon"]
-        self.add_double = rtm_cfg["add_double"]
+        self.aprx_typ = inputs["RTM"]["aprx_typ"]
+        self.delta = inputs["RTM"]["delta"]
+        self.toon = inputs["RTM"]["toon"]
+        self.add_double = inputs["RTM"]["add_double"]
 
 
 class ModelConfig:
     def __init__(self):
 
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/model_config.yaml", "r") as ymlfile:
-            model_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.show_figs = model_cfg["CTRL"]["SHOW_FIGS"]
-        self.save_figs = model_cfg["CTRL"]["SAVE_FIGS"]
-        self.print_bba = model_cfg["CTRL"]["PRINT_BBA"]
-        self.print_band_ratios = model_cfg["CTRL"]["PRINT_BAND_RATIOS"]
-        self.smooth = model_cfg["CTRL"]["SMOOTH"]
-        self.window_size = model_cfg["CTRL"]["WINDOW_SIZE"]
-        self.poly_order = model_cfg["CTRL"]["POLY_ORDER"]
-        self.smooth = model_cfg["CTRL"]["SMOOTH"]
-        self.dir_base = model_cfg["PATHS"]["DIR_BASE"]
-        self.dir_wvl = model_cfg["PATHS"]["WVL"]
-        self.sphere_ice_path = model_cfg["PATHS"]["SPHERE_ICE"]
-        self.hex_ice_path = model_cfg["PATHS"]["HEX_ICE"]
-        self.bubbly_ice_path = model_cfg["PATHS"]["BUBBLY_ICE"]
-        self.ri_ice_path = model_cfg["PATHS"]["RI_ICE"]
-        self.sphere_ice_path = model_cfg["PATHS"]["SPHERE_ICE"]
-        self.sphere_ice_path = model_cfg["PATHS"]["SPHERE_ICE"]
-        self.op_dir_stubs = model_cfg["PATHS"]["OP_DIR_STUBS"]
+        self.show_figs = inputs["CTRL"]["SHOW_FIGS"]
+        self.save_figs = inputs["CTRL"]["SAVE_FIGS"]
+        self.print_bba = inputs["CTRL"]["PRINT_BBA"]
+        self.print_band_ratios = inputs["CTRL"]["PRINT_BAND_RATIOS"]
+        self.smooth = inputs["CTRL"]["SMOOTH"]
+        self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
+        self.poly_order = inputs["CTRL"]["POLY_ORDER"]
+        self.smooth = inputs["CTRL"]["SMOOTH"]
+        self.dir_base = inputs["PATHS"]["DIR_BASE"]
+        self.dir_wvl = inputs["PATHS"]["WVL"]
+        self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
+        self.hex_ice_path = inputs["PATHS"]["HEX_ICE"]
+        self.bubbly_ice_path = inputs["PATHS"]["BUBBLY_ICE"]
+        self.ri_ice_path = inputs["PATHS"]["RI_ICE"]
+        self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
+        self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
+        self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
         self.wavelengths = np.arange(0.2,5,0.01)
         self.nbr_wvl = len(self.wavelengths)
-        self.vis_max_idx = model_cfg["CTRL"]["VIS_MAX_IDX"]
-        self.nir_max_idx = model_cfg["CTRL"]["NIR_MAX_IDX"]
+        self.vis_max_idx = inputs["CTRL"]["VIS_MAX_IDX"]
+        self.nir_max_idx = inputs["CTRL"]["NIR_MAX_IDX"]
 
 
 
