@@ -52,6 +52,6 @@ for i in [0,  50000]:
     outputs1 = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
     outputs2 = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
 
-    # plt.figure()
-    # plt.plot(outputs1.albedo)
-    # plt.show()
+    plt.figure()
+    plt.plot(outputs1.albedo)
+    plt.show()

@@ -26,7 +26,6 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
     # (i.e. lower model boundary)
     # remainder is lost
 
-
     s_sfc = boundary_condition(ice, illumination, tau_clm, tau_star)
 
     # ----------------------------------------------------------------------------------
@@ -40,7 +39,6 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
     # Note that the values of lam and GAMMA depend upon gamma1 and gamma2, which
     # vary depending upon the two-stream approximation used
     # variable "lambda" renamed "lam" to avoid confusion with lambda function
-
     lam, GAMMA, e1, e2, e3, e4 = calculate_matrix_coefficients(gamma1, gamma2, tau_star)
 
     # ----------------------------------------------------------------------------------
@@ -140,7 +138,7 @@ def delta_transformation(rt_config, g, ssa, tau):
 
 def calculate_optical_depth_of_column(ice, model_config, tau_star):
     
-    tau_clm = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    tau_clm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     for i in np.arange(1, ice.nbr_lyr, 1):
         # start loop from 2nd layer, i.e. index = 1
@@ -161,8 +159,6 @@ def boundary_condition(ice, illumination, tau_clm, tau_star):
         * illumination.Fs
     )
     return s_sfc
-
-
 
 
 
@@ -235,10 +231,10 @@ def c_functions(
     gamma4,
 ):
 
-    C_pls_btm = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    C_mns_btm = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    C_pls_top = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    C_mns_top = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    C_pls_btm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    C_mns_btm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    C_pls_top = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    C_mns_top = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     for i in np.arange(0, ice.nbr_lyr, 1):
         
@@ -265,6 +261,7 @@ def c_functions(
                     + (gamma2[i, :] * gamma3[i, :])
                 )
             ) / ((lam[i, :] ** 2) - (1 / illumination.mu_not**2))
+
 
             C_pls_top[i, :] = (
                 ssa_star[i, :]
@@ -316,10 +313,10 @@ def matrix_solver(
     # Toon equations 41-43.
     # Boundary values for i=1 and i=2 * nbr_lyr, specifics for i=odd and i=even
     # Set up lists
-    A = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
-    B = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
-    D = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
-    E = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
+    A = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
+    B = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
+    D = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
+    E = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
 
 
     for i in np.arange(0, 2 * ice.nbr_lyr, 1):
@@ -370,8 +367,8 @@ def matrix_solver(
 
     # for bottom layer only
     # Toon et al Eq 45
-    AS = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
-    DS = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
+    AS = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
+    DS = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
 
     np.seterr(divide="ignore", invalid="ignore")
     AS[2 * ice.nbr_lyr - 1, :] = np.nan_to_num(
@@ -384,7 +381,7 @@ def matrix_solver(
     # for all layers above bottom layer, starting at second-to-bottom and
     # progressing towards surface:
     # Toon et al Eq 46
-    X = np.zeros((ice.nbr_lyr * 2, model_config.nbr_wvl))
+    X = np.zeros([ice.nbr_lyr * 2, model_config.nbr_wvl])
 
     for i in np.arange(2 * ice.nbr_lyr - 2, -1, -1):
         X[i, :] = 1 / (B[i, :] - (D[i, :] * AS[i + 1, :]))
@@ -393,7 +390,7 @@ def matrix_solver(
 
     # then for all layers, progressing from surface to bottom
     # Toon et al Eq 47
-    Y = np.zeros((ice.nbr_lyr * 2, model_config.nbr_wvl))
+    Y = np.zeros([ice.nbr_lyr * 2, model_config.nbr_wvl])
 
     for i in np.arange(0, 2 * ice.nbr_lyr, 1):
         if i == 0:
@@ -424,14 +421,14 @@ def layer_fluxes(
     mu_one,
 ):
 
-    direct = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    F_net = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    F_btm_net = np.zeros((1, model_config.nbr_wvl))
-    F_top_net = np.zeros((1, model_config.nbr_wvl))
-    intensity = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    F_top_pls = np.zeros((1, model_config.nbr_wvl))
-    F_up = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
-    F_down = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    direct = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    F_net = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    F_btm_net = np.zeros([1, model_config.nbr_wvl])
+    F_top_net = np.zeros([1, model_config.nbr_wvl])
+    intensity = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    F_top_pls = np.zeros([1, model_config.nbr_wvl])
+    F_up = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    F_down = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     # ----------------------------------------------------------------------------------
     # CALCULATE DIRECT BEAM FLUX AT BOTTOM OF EACH LAYER
@@ -475,6 +472,7 @@ def layer_fluxes(
     )
 
     for i in np.arange(0, ice.nbr_lyr, 1):
+        
         # Upward flux at the bottom of each layer interface (Toon et al. Eq31)
         F_up[i, :] = (
             Y[2 * i, :]
@@ -498,13 +496,15 @@ def layer_fluxes(
     # Net flux at lower model boundary = bulk transmission through entire media
     # = energy absorbed by underlying surface
     F_btm_net[0, :] = -F_net[ice.nbr_lyr - 1, :]
-    
+
+   
     return F_net, F_top_pls, F_btm_net, F_top_net, intensity
+
 
 
 def absorbed_fluxes(ice, model_config, F_net, F_top_net):
 
-    F_abs = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    F_abs = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     # absorbed flux in each layer (negative if there is net emission (bnd_typ = 4))
     for i in np.arange(0, ice.nbr_lyr, 1):
         if i == 0:
@@ -564,7 +564,6 @@ def get_outputs(
             F_abs[i, model_config.vis_max_idx : model_config.nir_max_idx]
         )
 
-    
     # Spectrally-integrated absorption in each layer:
     outputs.abs_slr = np.sum(F_abs, axis=1)
     outputs.abs_slr_btm = sum(np.squeeze(F_btm_net))
