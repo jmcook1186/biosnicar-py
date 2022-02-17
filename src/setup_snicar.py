@@ -39,11 +39,18 @@ def get_wavelengths(model_cfg):
     return wvl
 
 
-def build_impurities_array(impurity_cfg, model_cfg):
+def build_impurities_array():
     """
     creates an array of impurities - each one an instance of Impurity with
     properties defined in impurity_config.yaml
     """
+
+    with open("/home/joe/Code/BioSNICAR_GO_PY/src/impurity_config.yaml", "r") as ymlfile:
+        impurity_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    
+    with open("/home/joe/Code/BioSNICAR_GO_PY/src/model_config.yaml", "r") as ymlfile:
+        model_cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
     impurities = []
     dir_base = model_cfg["PATHS"]["DIR_BASE"]
     for i, id in enumerate(impurity_cfg["impurities"]):

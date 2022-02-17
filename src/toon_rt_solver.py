@@ -1,7 +1,7 @@
 from setup_snicar import *
 from classes import *
 
-def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
+def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
     """
     Three 2-stream approximations are available: Eddington,
     Quadrature and hemispheric mean. The equations for each
@@ -14,20 +14,20 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
     useful for infrared wavelengths
     """
     
-    direct = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    F_net = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    F_btm_net = np.empty([1, rtm_cfg["nbr_wvl"]])
-    F_top_net = np.empty([1, rtm_cfg["nbr_wvl"]])
-    intensity = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    F_top_pls = np.empty([1, rtm_cfg["nbr_wvl"]])
-    F_up = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    F_down = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    F_net2 = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    intensity2 = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    intensity2_top = np.empty(rtm_cfg["nbr_wvl"])
-    F_abs = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    abs_vis = np.empty(ice.nbr_lyr)
-    abs_nir = np.empty(ice.nbr_lyr)
+    direct = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    F_net = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    F_btm_net = np.zeros((1, model_config.nbr_wvl))
+    F_top_net = np.zeros((1, model_config.nbr_wvl))
+    intensity = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    F_top_pls = np.zeros((1, model_config.nbr_wvl))
+    F_up = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    F_down = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    F_net2 = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    intensity2 = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    intensity2_top = np.zeros(model_config.nbr_wvl)
+    F_abs = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    abs_vis = np.zeros(ice.nbr_lyr)
+    abs_nir = np.zeros(ice.nbr_lyr)
     outputs = Outputs()
 
     # ----------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
     # if no delta transformation is applied, the starred quantity
     # is equal to the unstarred quantity
 
-    if rtm_cfg["delta"]:
+    if rt_config.delta:
         g_star = g / (1 + g)
         ssa_star = ((1 - (g ** 2)) * ssa) / (1 - (ssa * (g ** 2)))
         tau_star = (1 - (ssa * (g ** 2))) * tau
@@ -53,7 +53,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
     # quantity - subsequently lower layers contain the sum of the
     # # optical depth of all overlying layers
 
-    tau_clm = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    tau_clm = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
     for i in np.arange(1, ice.nbr_lyr, 1):
         # start loop from 2nd layer, i.e. index = 1
         tau_clm[i, :] = tau_clm[i - 1, :] + tau_star[i - 1, :]
@@ -75,7 +75,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
     # Apply Two-Stream Approximation (Toon et al, table 1)
     # ----------------------------------------------------------------------------------
 
-    if rtm_cfg["aprx_typ"] == 1:
+    if rt_config.aprx_typ == 1:
         # apply Eddington approximation
         gamma1 = (7 - (ssa_star * (4 + (3 * g_star)))) / 4
         gamma2 = -(1 - (ssa_star * (4 - (3 * g_star)))) / 4
@@ -83,7 +83,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
         gamma4 = 1 - gamma3
         mu_one = 0.5
 
-    elif rtm_cfg["aprx_typ"] == 2:
+    elif rt_config.aprx_typ == 2:
         # apply quadrature approximation
         gamma1 = np.sqrt(3) * (2 - (ssa_star * (1 + g_star))) / 2
         gamma2 = ssa_star * np.sqrt(3) * (1 - g_star) / 2
@@ -91,7 +91,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
         gamma4 = 1 - gamma3
         mu_one = 1 / np.sqrt(3)
 
-    elif rtm_cfg["aprx_typ"] == 3:
+    elif rt_config.aprx_typ == 3:
         # apply hemispheric mean approximation
         gamma1 = 2 - (ssa_star * (1 + g_star))
         gamma2 = ssa_star * (1 - g_star)
@@ -122,10 +122,10 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
 
     """ N.B. consider adding in stability check here as per Flanner's Matlab code """
 
-    C_pls_btm = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    C_mns_btm = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    C_pls_top = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    C_mns_top = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    C_pls_btm = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    C_mns_btm = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    C_pls_top = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
+    C_mns_top = np.zeros((ice.nbr_lyr, model_config.nbr_wvl))
 
     for i in np.arange(0, ice.nbr_lyr, 1):
 
@@ -185,10 +185,10 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
     # Toon equations 41-43.
     # Boundary values for i=1 and i=2ice.nbr_lyr, specifics for i=odd and i=even
     # Set up lists
-    A = np.empty([2 * ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    B = np.empty([2 * ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    D = np.empty([2 * ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    E = np.empty([2 * ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    A = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
+    B = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
+    D = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
+    E = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
 
     # ----------------------------------------------------------------------------------
     # Initialize tridiagonal matrix solution
@@ -246,13 +246,13 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
 
     # Now the actual tridiagonal matrix solving. Simply dividing A/B and E/B
     # throws an exception due to division by zero. Here we use numpy's nan_to_num
-    # function to achieve the division where possible and replace nans with empty.
+    # function to achieve the division where possible and replace nans with zeros.
     # We also set numpy to ignore the division error.
 
     # for bottom layer only
     # Toon et al Eq 45
-    AS = np.empty([2 * ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    DS = np.empty([2 * ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    AS = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
+    DS = np.zeros((2 * ice.nbr_lyr, model_config.nbr_wvl))
 
     np.seterr(divide="ignore", invalid="ignore")
     AS[2 * ice.nbr_lyr - 1, :] = np.nan_to_num(
@@ -265,7 +265,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
     # for all layers above bottom layer, starting at second-to-bottom and
     # progressing towards surface:
     # Toon et al Eq 46
-    X = np.empty([ice.nbr_lyr * 2, rtm_cfg["nbr_wvl"]])
+    X = np.zeros((ice.nbr_lyr * 2, model_config.nbr_wvl))
     for i in np.arange(2 * ice.nbr_lyr - 2, -1, -1):
         X[i, :] = 1 / (B[i, :] - (D[i, :] * AS[i + 1, :]))
         AS[i, :] = np.nan_to_num(A[i, :] * X[i, :])
@@ -273,7 +273,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
 
     # then for all layers, progressing from surface to bottom
     # Toon et al Eq 47
-    Y = np.empty([ice.nbr_lyr * 2, rtm_cfg["nbr_wvl"]])
+    Y = np.zeros((ice.nbr_lyr * 2, model_config.nbr_wvl))
 
     for i in np.arange(0, 2 * ice.nbr_lyr, 1):
         if i == 0:
@@ -345,7 +345,6 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
         intensity2[i, :] = F_up[i, :] + F_down[i, :]
 
 
-
     # surface planar intensity
     intensity2_top[:] = F_top_pls + ((illumination.mu_not * np.pi * illumination.Fs) + illumination.Fd)
 
@@ -368,7 +367,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, rtm_cfg, model_cfg):
 
     # set indices for constraining calculations to VIS and NIR bands
     vis_max_idx = 39
-    nir_max_idx = len(get_wavelengths(model_cfg))
+    nir_max_idx = model_config.nbr_wvl
 
     # Spectrally-integrated absorption in each layer:
     outputs.abs_slr = np.sum(F_abs, axis=1)

@@ -7,12 +7,13 @@ from scipy.interpolate import pchip
 import mie_coated_water_spheres as wcs
 from classes import *
 
-def get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg):
 
-    ssa_snw = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    mac_snw = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    g_snw = np.empty([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    abs_cff_mss_ice = np.empty(rtm_cfg["nbr_wvl"])
+def get_layer_OPs(ice, impurities, model_config):
+
+    ssa_snw = np.empty([ice.nbr_lyr, model_config.nbr_wvl])
+    mac_snw = np.empty([ice.nbr_lyr, model_config.nbr_wvl])
+    g_snw = np.empty([ice.nbr_lyr, model_config.nbr_wvl])
+    abs_cff_mss_ice = np.empty(model_config.nbr_wvl)
 
     # calculations of ice OPs in each layer
     for i in np.arange(0, ice.nbr_lyr, 1):
@@ -21,8 +22,8 @@ def get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg):
 
             if ice.shp[i] == 4:  # large hex prisms (geometric optics)
                 file_ice = str(
-                    model_cfg["PATHS"]["DIR_BASE"] +
-                    ice_cfg["PATHS"]["HEX_ICE"]
+                    model_config.dir_base +
+                    model_config.hex_ice_path
                     + ice.op_dir
                     + "{}_{}.nc".format(
                         str(ice.hex_side[i]).rjust(4, "0"), str(ice.hex_length[i])
@@ -31,21 +32,19 @@ def get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg):
 
             elif ice.shp[i] < 4:
                 file_ice = str(
-                    model_cfg["PATHS"]["DIR_BASE"] +
-                    ice_cfg["PATHS"]["SPHERE_ICE"]
+                    model_config.dir_base +
+                    model_config.sphere_ice_path
                     + ice.op_dir
                     + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
                 )
 
-
             # if liquid water coatings are applied
             if ice.water[i] > ice.rds[i]:
-                ssa_snw[i, ice.nbr_wvl], g_snw[i], mac_snw[i] = add_water_coating(ice, ice_cfg, model_cfg, ssa_snw, g_snw, mac_snw, i)
+                ssa_snw[i, ice.nbr_wvl], g_snw[i], mac_snw[i] = add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i)
 
             else:
 
                 with xr.open_dataset(file_ice) as temp:
-
                     ssa = temp["ss_alb"].values
                     ssa_snw[i, :] = ssa
                     ext_cff_mss = temp["ext_cff_mss"].values
@@ -62,31 +61,31 @@ def get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg):
                     # to very small biases (<3%)
 
                     if (ice.shp[i] > 0) & (ice.shp[i] < 4):
-                        g_snw = correct_for_asphericity(ice, ice_cfg, model_cfg, g_snw, i)
+                        g_snw = correct_for_asphericity(ice, model_config, g_snw, i)
 
 
         else:  # solid ice layer (ice.layer_type == 1)
 
             if ice.cdom_layer[i]:
-                cdom_refidx_im = np.array(
-                    pd.read_csv(ice_cfg["PATHS"]["RI_ICE"] + "k_cdom_240_750.csv")
-                ).flatten()
+                cdom = pd.read_csv("k_cdom_240_750.csv")
+                cdom_refidx_im = np.array(ice.ref_idx_im + cdom).flatten()
+                print(cdom_refidx_im.shape)
 
                 # rescale to SNICAR resolution
                 cdom_refidx_im_rescaled = cdom_refidx_im[::10]
                 refidx_im[3:54] = np.fmax(refidx_im[3:54], cdom_refidx_im_rescaled)
 
             rd = f"{ice.rds[i]}".rjust(4, "0")
-            file_ice = str(ice_cfg["PATHS"]["BUBBLY_ICE"] + "bbl_{}.nc").format(rd)
+            file_ice = str(model_config["PATHS"]["BUBBLY_ICE"] + "bbl_{}.nc").format(rd)
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
             g_snw[i, :] = file["asm_prm"].values
             abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
-            vlm_frac_air = (917 - ice.rho_layers[i]) / 917
+            vlm_frac_air = (917 - ice.rho[i]) / 917
             mac_snw[i, :] = (
-                (sca_cff_vlm * vlm_frac_air) / ice.rho_layers[i]
+                (sca_cff_vlm * vlm_frac_air) / ice.rho[i]
             ) + abs_cff_mss_ice
-            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / ice.rho_layers[i]) / mac_snw[
+            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / ice.rho[i]) / mac_snw[
                 i, :
             ]
 
@@ -94,7 +93,7 @@ def get_layer_OPs(ice, impurities, model_cfg, ice_cfg, rtm_cfg):
 
 
 
-def add_water_coating(ice, ice_cfg, model_cfg, ssa_snw, g_snw, mac_snw, i):
+def add_water_coating(ice, model_cfg, ssa_snw, g_snw, mac_snw, i):
 
     """
     adds liquid water coating to spherical ice grains
@@ -104,8 +103,8 @@ def add_water_coating(ice, ice_cfg, model_cfg, ssa_snw, g_snw, mac_snw, i):
     if ice.shp[i] != 0:
         raise ValueError("Water coating can only be applied to spheres")
 
-    fn_ice = model_cfg["PATHS"]["DIR_BASE"] + ice_cfg["PATHS"]["RFX_ICE"]
-    fn_water = model_cfg["PATHS"]["DIR_BASE"] + ice_cfg["PATHS"]["RFX_WATER"]
+    fn_ice = model_cfg["PATHS"]["DIR_BASE"] + model_cfg["PATHS"]["FN_ICE"]
+    fn_water = model_cfg["PATHS"]["DIR_BASE"] + model_cfg["PATHS"]["FN_WATER"]
 
     res = wcs.miecoated_driver(
         rice=ice.rds[i],
@@ -126,7 +125,7 @@ def add_water_coating(ice, ice_cfg, model_cfg, ssa_snw, g_snw, mac_snw, i):
     return ssa_snw, g_snw, mac_snw
 
 
-def correct_for_asphericity(ice, ice_cfg, model_cfg, g_snw, i):
+def correct_for_asphericity(ice, model_cfg, g_snw, i):
     
     g_wvl = np.array(
     [0.25, 0.70, 1.41, 1.90, 2.50, 3.50, 4.00, 5.00])
@@ -402,11 +401,11 @@ def correct_for_asphericity(ice, ice_cfg, model_cfg, g_snw, i):
     return g_snw
 
 
-def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, ice_cfg, model_cfg, rtm_cfg):
+def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
         
-    ssa_aer = np.zeros([len(impurities), rtm_cfg["nbr_wvl"]])
-    mac_aer = np.zeros([len(impurities), rtm_cfg["nbr_wvl"]])
-    g_aer = np.zeros([len(impurities), rtm_cfg["nbr_wvl"]])
+    ssa_aer = np.zeros([len(impurities), model_config.nbr_wvl])
+    mac_aer = np.zeros([len(impurities), model_config.nbr_wvl])
+    g_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     mss_aer = np.zeros([len(impurities), len(impurities)])
 
     for i, impurity in enumerate(impurities):
@@ -423,17 +422,17 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, ice_cfg, model_c
             mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) * 1e-9) * impurity.cfactor
 
 
-    g_sum = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    ssa_sum = np.zeros([ice.nbr_lyr, len(impurities), rtm_cfg["nbr_wvl"]])
-    tau = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    ssa = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    g = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    g_sum = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    ssa_sum = np.zeros([ice.nbr_lyr, len(impurities), model_config.nbr_wvl])
+    tau = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    ssa = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    g = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     L_aer = np.zeros([ice.nbr_lyr, len(impurities)])
-    tau_aer = np.zeros([ice.nbr_lyr, len(impurities), rtm_cfg["nbr_wvl"]])
-    tau_sum = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
-    ssa_sum = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    tau_aer = np.zeros([ice.nbr_lyr, len(impurities), model_config.nbr_wvl])
+    tau_sum = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
+    ssa_sum = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     L_snw = np.zeros(ice.nbr_lyr)
-    tau_snw = np.zeros([ice.nbr_lyr, rtm_cfg["nbr_wvl"]])
+    tau_snw = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     # for each layer, the layer mass (L) is density * layer thickness
     # for each layer the optical ice.depth is
@@ -480,6 +479,5 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, ice_cfg, model_c
     ssa[ssa >= 1] = 0.99999999
     g[g <= 0] = 0.00001
     g[g >= 1] = 0.99999
-
 
     return tau, ssa, g, L_snw
