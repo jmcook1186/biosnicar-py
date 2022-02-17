@@ -121,7 +121,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
 
 
 def delta_transformation(rt_config, g, ssa, tau):
-
+   
     if rt_config.delta:
 
         g_star = g / (1 + g)
@@ -129,6 +129,7 @@ def delta_transformation(rt_config, g, ssa, tau):
         tau_star = (1 - (ssa * (g**2))) * tau
 
     else:
+
         g_star = g
         ssa_star = ssa
         tau_star = tau
