@@ -32,6 +32,7 @@ from setup_snicar import *
 from classes import *
 from column_OPs import *
 from toon_rt_solver import toon_solver
+from adding_doubling_solver import adding_doubling_solver
 
 
 ice = Ice()
@@ -43,7 +44,11 @@ impurities = build_impurities_array()
 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
 tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config)
 
-outputs = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
-assert(len(outputs.albedo)==480)
-plt.plot(outputs.albedo)
+outputs1 = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
+outputs2 = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
+
+
+plt.plot(outputs1.albedo)
+plt.plot(outputs2.albedo)
+
 plt.show()
