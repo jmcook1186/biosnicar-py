@@ -24,6 +24,8 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
     g0 = g.T  # read and transpose g
     ssa0 = ssa.T  # read and transpose ssa
 
+
+
     epsilon = 1e-5  # to deal with singularity
     exp_min = (
         1e-5  # exp(-500)  # minimum number that is not zero - zero will raise error

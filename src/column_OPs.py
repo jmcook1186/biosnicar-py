@@ -407,21 +407,6 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     mac_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     g_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     mss_aer = np.zeros([len(impurities), len(impurities)])
-
-    for i, impurity in enumerate(impurities):
-
-        g_aer[i, :] = impurity.g
-        ssa_aer[i, :] = impurity.ssa
-
-        if impurity.unit==1:
-
-            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) / 917 * 10 ** (-6)) * impurity.cfactor
-
-        else:
-            
-            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) * 1e-9) * impurity.cfactor
-
-
     g_sum = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     ssa_sum = np.zeros([ice.nbr_lyr, len(impurities), model_config.nbr_wvl])
     tau = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
@@ -434,6 +419,20 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     L_snw = np.zeros(ice.nbr_lyr)
     tau_snw = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
+
+    for i, impurity in enumerate(impurities):
+
+        g_aer[i, :] = impurity.g
+        ssa_aer[i, :] = impurity.ssa
+
+        if impurity.unit==1:
+            
+            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) / 917 * 10 ** (-6)) * impurity.cfactor
+
+        else: 
+            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) * 1e-9) * impurity.cfactor
+
+
     # for each layer, the layer mass (L) is density * layer thickness
     # for each layer the optical ice.depth is
     # the layer mass * the mass extinction coefficient
@@ -443,11 +442,14 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
 
         L_snw[i] = ice.rho[i] * ice.dz[i]
 
-        for j in range(len(impurities)):
-
+        for j, impurity in enumerate(impurities):
+            
+            mac_aer[j,:] = impurity.mac
+            
             # kg ice m-2 * cells kg-1 ice = cells m-2
             L_aer[i, j] = L_snw[i] * mss_aer[i, j]
             # cells m-2 * m2 cells-1
+
             tau_aer[i, j, :] = L_aer[i, j] * mac_aer[j, :]
             tau_sum[i, :] = tau_sum[i, :] + tau_aer[i, j, :]
             ssa_sum[i, :] = ssa_sum[i, :] + (tau_aer[i, j, :] * ssa_aer[j, :])
@@ -458,14 +460,15 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
             # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg
 
             if impurity.unit == 1:
-
+                print("in A")
                 L_snw[i] = L_snw[i] - L_aer[i, j] * 10 ** (-12)
 
             else:
-
+                print("in B")
                 L_snw[i] = L_snw[i] - L_aer[i, j]
 
         tau_snw[i, :] = L_snw[i] * mac_snw[i, :]
+        
         # finally, for each layer calculate the effective ssa, tau and g
         # for the snow+LAP
         tau[i, :] = tau_sum[i, :] + tau_snw[i, :]

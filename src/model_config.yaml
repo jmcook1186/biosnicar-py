@@ -9,6 +9,8 @@ CTRL:
   SMOOTH: False
   WINDOW_SIZE: 9
   POLY_ORDER: 3
+  VIS_MAX_IDX: 39
+  NIR_MAX_IDX: 480
 
 PATHS:
   DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"

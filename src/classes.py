@@ -123,6 +123,7 @@ class RTConfig:
         self.toon = rtm_cfg["toon"]
         self.add_double = rtm_cfg["add_double"]
 
+
 class ModelConfig:
     def __init__(self):
 
@@ -148,6 +149,8 @@ class ModelConfig:
         self.op_dir_stubs = model_cfg["PATHS"]["OP_DIR_STUBS"]
         self.wavelengths = np.arange(0.2,5,0.01)
         self.nbr_wvl = len(self.wavelengths)
+        self.vis_max_idx = model_cfg["CTRL"]["VIS_MAX_IDX"]
+        self.nir_max_idx = model_cfg["CTRL"]["NIR_MAX_IDX"]
 
 
 
@@ -158,5 +161,13 @@ class Outputs:
         self.BBAVIS = None
         self.BBANIR = None
         self.BBA = None
-        self.abs_slr = None
+        self.abs_slr_btm = None
+        self.abs_vis_btm = None
+        self.abs_nir_btm = None
         self.albedo = None
+        self.total_insolation = None
+        self.abs_slr_tot = None
+        self.abs_vis_tot = None
+        self.abs_nir_tot = None
+        self.energy_abs_under_sfc = None
+        self.absorbed_flux_per_layer = None

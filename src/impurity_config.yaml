@@ -9,7 +9,7 @@ impurities:
   dust:
     name: "dust"
     file: "dust_skiles_size5.nc"
-    cfactor: 0
+    cfactor: 1
     coated: False
     unit: 0
     conc: [1000,0]

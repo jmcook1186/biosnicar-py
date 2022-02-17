@@ -41,14 +41,17 @@ rt_config = RTConfig()
 model_config = ModelConfig()
 
 impurities = build_impurities_array()
-ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
-tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config)
 
-outputs1 = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
-outputs2 = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
+for i in [0,  50000]:
+    
+    impurities[0].conc = [i,0]
 
+    ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
+    tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config)
+    
+    outputs1 = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
+    outputs2 = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
 
-plt.plot(outputs1.albedo)
-plt.plot(outputs2.albedo)
-
-plt.show()
+    # plt.figure()
+    # plt.plot(outputs1.albedo)
+    # plt.show()

@@ -1,8 +1,8 @@
 VARIABLES:
   dz: [0.001, 0.5]  # thickness of each vertical layer (unit : m)
   layer_type: [0, 0]  # Fresnel layers (set all to 0 if toon : True)
-  cdom: [1, 0]  # Only for layer type :: 1
-  rho: [850, 850]  # density of each layer (unit : kg m-3)
+  cdom: [0, 0]  # Only for layer type :: 1
+  rho: [650, 650]  # density of each layer (unit : kg m-3)
   rf: 1
   shp: [0, 0]  # grain shape (He et al. 2016, 2017)
   rds: [1000, 1000]  # effective grain or bubble radius
