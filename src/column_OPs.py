@@ -393,7 +393,7 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     ssa_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     mac_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     g_aer = np.zeros([len(impurities), model_config.nbr_wvl])
-    mss_aer = np.zeros([len(impurities), len(impurities)])
+    mss_aer = np.zeros([ice.nbr_lyr, len(impurities)])
     g_sum = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     ssa_sum = np.zeros([ice.nbr_lyr, len(impurities), model_config.nbr_wvl])
     tau = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
