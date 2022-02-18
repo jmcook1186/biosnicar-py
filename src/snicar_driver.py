@@ -1,24 +1,14 @@
 """
 BioSNICAR_GO DRIVER SCRIPT
 
-This script is used to configure the 2-stream radiative transfer
-model BioSNICAR_GO. Here variable values are defined, the model called
-and the results plotted.
-
-NB. Setting Mie = 1, GO = 0 and algal impurities = 0 is equivalent to
-running the original SNICAR model of Flanner et al. (2007, 2009)
+This script is used to run the 2-stream radiative transfer
+model BioSNICAR_GO. Here solvers are called and the results plotted.
 
 NB: if using only granular layers, recommend using the faster toon et al
 tridiagonal matix solver (by setting toon = True), however this will not
 include any specular reflection components. If solid ice layers are
 included in the ice/snow column, the ADDING-DOUBLING solver must be used
 (i.e. add_double = True).
-
-glacier algae MAC files are provided in units of m2/cell, which requires
-a unit conversion that is not applied to the other LAPS. The conversion
-is selectivlely applid by indexing to the last element in the LAP
-lists, meaning glacier algae must always be the final LAP, even if more
-LAPs are added in future.
 
 Author: Joseph Cook, June 2021
 """

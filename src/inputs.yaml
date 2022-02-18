@@ -40,8 +40,8 @@ VARIABLES:
   ar: [0, 0]
 
 PATHS:
-  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"
-  WVL: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/wavelengths.csv"
+  DIR_BASE: "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/"
+  WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
   BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
@@ -50,7 +50,7 @@ PATHS:
   SFC: "/Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
   FN_ICE: "/Data/OP_data/480band/rfidx_ice.nc"
   FN_WATER: "/Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
-  FLX_DIR: "/home/joe/Code/BioSNICAR_GO_PY/Data/OP_data/480band/fsds/"
+  FLX_DIR: "Data/OP_data/480band/fsds/"
 
 
 IMPURITIES:
