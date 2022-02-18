@@ -47,4 +47,4 @@ for i in [0, 50000]:
         tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
     )
 
-plot_albedo(plot_config, model_config, outputs2.albedo)
+plot_albedo(plot_config,model_config, outputs2.albedo)
