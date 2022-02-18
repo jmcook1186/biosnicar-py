@@ -33,7 +33,7 @@ class Ice:
     def __init__(self):
         
         # use config to calculate refractive indices
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+        with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         
@@ -72,7 +72,7 @@ class Ice:
 class Illumination:
     def __init__(self):
     
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+        with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.direct = inputs["RTM"]["direct"]
@@ -82,7 +82,7 @@ class Illumination:
 
 
         stubs = inputs["RTM"]["illumination_file_stubs"]
-        flx_dir = inputs["PATHS"]["FLX_DIR"]
+        flx_dir = (inputs["PATHS"]["DIR_BASE"]+inputs["PATHS"]["FLX_DIR"])
         nbr_wvl = inputs["RTM"]["nbr_wvl"]
         
         cloud_stub = "_cld"
@@ -113,7 +113,7 @@ class Illumination:
 class RTConfig:
     def __init__(self):
 
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+        with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.aprx_typ = inputs["RTM"]["aprx_typ"]
@@ -125,7 +125,7 @@ class RTConfig:
 class ModelConfig:
     def __init__(self):
 
-        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+        with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.show_figs = inputs["CTRL"]["SHOW_FIGS"]
