@@ -26,12 +26,11 @@ from adding_doubling_solver import adding_doubling_solver
 from validate_inputs import *
 from plot import *
 
-
 ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
 status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
 
 
-for i in [0, 50000]:
+for i in [0, 0]:
 
     impurities[0].conc = [i, 0]
 
@@ -48,3 +47,4 @@ for i in [0, 50000]:
     )
 
 plot_albedo(plot_config,model_config, outputs2.albedo)
+print(outputs2.BBA)
