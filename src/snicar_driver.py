@@ -33,6 +33,7 @@ from classes import *
 from column_OPs import *
 from toon_rt_solver import toon_solver
 from adding_doubling_solver import adding_doubling_solver
+from validate_inputs import *
 
 
 ice = Ice()
@@ -42,6 +43,8 @@ model_config = ModelConfig()
 
 impurities = build_impurities_array()
 
+status =validate_inputs(ice, rt_config, model_config, illumination, impurities)
+print(status)
 for i in [0,  50000]:
     
     impurities[0].conc = [i,0]
