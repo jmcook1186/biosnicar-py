@@ -12,6 +12,7 @@ class Impurity:
         self.cfactor = cfactor
         self.unit = unit
         self.conc = conc
+        self.file = file
 
         self.impurity_properties = xr.open_dataset(
             str(dir_base + "/Data/OP_data/480band/lap/" + file)
@@ -27,7 +28,8 @@ class Impurity:
         self.g = self.impurity_properties["asm_prm"].values
 
         assert len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480
-
+    
+ 
 
 class Ice:
     def __init__(self):

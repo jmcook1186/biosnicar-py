@@ -67,21 +67,21 @@ def get_layer_OPs(ice, impurities, model_config):
 
         else:  # solid ice layer (ice.layer_type == 1)
 
-            if ice.cdom_layer[i]:
+            if ice.cdom[i]:
                 cdom = pd.read_csv("k_cdom_240_750.csv")
-                cdom_refidx_im = np.array(ice.ref_idx_im + cdom).flatten()
-                print(cdom_refidx_im.shape)
+                cdom_ref_idx_im = np.array(ice.ref_idx_im + cdom).flatten()
+                print(cdom_ref_idx_im.shape)
 
                 # rescale to SNICAR resolution
-                cdom_refidx_im_rescaled = cdom_refidx_im[::10]
-                refidx_im[3:54] = np.fmax(refidx_im[3:54], cdom_refidx_im_rescaled)
+                cdom_ref_idx_im_rescaled = cdom_ref_idx_im[::10]
+                ice.ref_idx_im[3:54] = np.fmax(ice.ref_idx_im[3:54], cdom_ref_idx_im_rescaled)
 
             rd = f"{ice.rds[i]}".rjust(4, "0")
-            file_ice = str(model_config["PATHS"]["BUBBLY_ICE"] + "bbl_{}.nc").format(rd)
+            file_ice = str(model_config.bubbly_ice_path + "bbl_{}.nc").format(rd)
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
             g_snw[i, :] = file["asm_prm"].values
-            abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
+            abs_cff_mss_ice[:] = ((4 * np.pi * ice.ref_idx_im) / (model_config.wavelengths * 1e-6)) / 917
             vlm_frac_air = (917 - ice.rho[i]) / 917
             mac_snw[i, :] = (
                 (sca_cff_vlm * vlm_frac_air) / ice.rho[i]
@@ -110,7 +110,7 @@ def add_water_coating(ice, model_cfg, ssa_snw, g_snw, mac_snw, i):
         fn_ice=fn_ice,
         rf_ice=ice.rf_ice,
         fn_water=fn_water,
-        wvl=get_wavelengths(),
+        wvl=model_config.wavelengths,
     )
 
     ssa_snw[i, :] = res["ssa"]
