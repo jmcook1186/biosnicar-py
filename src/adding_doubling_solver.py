@@ -64,7 +64,7 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
 
 
         if lyr == lyrfrsnl:
-             rdif_a, rdif_b, tdif_a, tdif_b, trnlay, 
+             rdif_a, rdif_b, tdif_a, tdif_b, trnlay,\
              rdir, tdir = calc_correction_fresnel_layer(model_config,ice,
                                                     illumination,mu0n,mu0,nr,
                                                     rdif_a, rdif_b, 
@@ -185,15 +185,6 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     nr = np.zeros(shape=480)
     mu0 = illumination.mu_not * np.ones(480)  # cos beam angle = incident beam
     
-    # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
-    # (i.e. this is Snell's Law for refraction at interface between media)
-    # mu0n = -1 represents light travelling vertically upwards and mu0n = +1
-    # represents light travellign vertically downwards
-    # mu0n = np.sqrt(1-((1-mu0**2)/(ref_indx*ref_indx)))  (original, 
-    # before update for diffuse Fresnel reflection)
-    # this version accounts for diffuse fresnel reflection:
-    mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0)) / nr))
-    
     # ice-adjusted real refractive index
     temp1 = (
         ice.ref_idx_re**2
@@ -208,6 +199,15 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     nr = (np.sqrt(2) / 2) * (
         temp1 + (temp2**2 + 4 * ice.ref_idx_re**2 * ice.ref_idx_im**2) ** 0.5
     ) ** 0.5
+
+    # . Eq. 20: Briegleb and Light 2007: adjusts beam angle
+    # (i.e. this is Snell's Law for refraction at interface between media)
+    # mu0n = -1 represents light travelling vertically upwards and mu0n = +1
+    # represents light travellign vertically downwards
+    # mu0n = np.sqrt(1-((1-mu0**2)/(ref_indx*ref_indx)))  (original, 
+    # before update for diffuse Fresnel reflection)
+    # this version accounts for diffuse fresnel reflection:
+    mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0)) / nr))
     
     # solar beam transm for layer (direct beam only)
     trnlay = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
