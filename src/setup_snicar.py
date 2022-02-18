@@ -11,7 +11,7 @@ def build_impurities_array():
     """
 
    
-    with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+    with open("./src/inputs.yaml", "r") as ymlfile:
         inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
     impurities = []
