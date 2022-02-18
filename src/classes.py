@@ -169,3 +169,25 @@ class Outputs:
         self.abs_nir_tot = None
         self.energy_abs_under_sfc = None
         self.absorbed_flux_per_layer = None
+
+
+class PlotConfig:
+    def __init__(self):
+
+        with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        
+        self.figsize = inputs["PLOT"]["FIGSIZE"]
+        self.facecolor = inputs["PLOT"]["FACECOLOR"]
+        self.grid = inputs["PLOT"]["FIGSIZE"]
+        self.grid_color = inputs["PLOT"]["GRIDCOLOR"]
+        self.xtick_width = inputs["PLOT"]["XTICK_WIDTH"]
+        self.xtick_size = inputs["PLOT"]["XTICK_SIZE"]
+        self.ytick_width = inputs["PLOT"]["YTICK_WIDTH"]
+        self.ytick_size = inputs["PLOT"]["YTICK_SIZE"]
+        self.linewidth = inputs["PLOT"]["LINEWIDTH"]
+        self.fontsize = inputs["PLOT"]["FONTSIZE"]
+        self.xtick_btm = inputs["PLOT"]["XTICK_BTM"]
+        self.ytick_left = inputs["PLOT"]["YTICK_LEFT"]
+        self.show = inputs["PLOT"]["SHOW"]
+        self.save = inputs["PLOT"]["SAVE"]

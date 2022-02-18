@@ -34,17 +34,18 @@ from column_OPs import *
 from toon_rt_solver import toon_solver
 from adding_doubling_solver import adding_doubling_solver
 from validate_inputs import *
+from plot import *
 
 
 ice = Ice()
 illumination = Illumination()
 rt_config = RTConfig()
 model_config = ModelConfig()
-
+plot_config = PlotConfig()
 impurities = build_impurities_array()
-
 status =validate_inputs(ice, rt_config, model_config, illumination, impurities)
-print(status)
+
+
 for i in [0,  50000]:
     
     impurities[0].conc = [i,0]
@@ -55,7 +56,4 @@ for i in [0,  50000]:
     outputs1 = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
     outputs2 = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
 
-    plt.figure()
-    plt.plot(outputs1.albedo)
-    plt.ylim(0,1)
-    plt.show()
+plot_albedo(plot_config, model_config, outputs2.albedo)

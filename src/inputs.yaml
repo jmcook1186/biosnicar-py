@@ -10,6 +10,7 @@ CTRL:
   POLY_ORDER: 3
   VIS_MAX_IDX: 39
   NIR_MAX_IDX: 480
+  PLOT_PER_FIGURE: True
 
 RTM:
   direct: 1
@@ -67,3 +68,20 @@ IMPURITIES:
     coated: False
     unit: 0
     conc: [1000,0]
+
+
+PLOT:
+    FIGSIZE: True
+    FACECOLOR: "white"
+    GRID: False
+    GRIDCOLOR: .8
+    XTICK_WIDTH: 1
+    XTICK_SIZE: 5
+    YTICK_WIDTH: 1
+    YTICK_SIZE: 5
+    LINEWIDTH: 1.25
+    FONTSIZE: 20
+    XTICK_BTM: True
+    YTICK_LEFT: True
+    SHOW: True
+    SAVE: False
