@@ -5,10 +5,10 @@ import seaborn as sns
 
 
 def setup_axes(plot_config):
-
+    
     rc = {
-        "figure.figsize": (8, 6),
-        "axes.facecolor": plot_config.facecolor,
+        "figure.figsize": (8,6),
+        "axes.facecolor": str(plot_config.facecolor),
         "axes.grid": plot_config.grid,
         "grid.color": str(plot_config.grid_color),
         "xtick.major.width": plot_config.xtick_width,
@@ -20,10 +20,11 @@ def setup_axes(plot_config):
         "xtick.bottom": plot_config.xtick_btm,
         "ytick.left": plot_config.ytick_left,
     }
+
     return rc
 
 
-def plot_albedo(plot_config, model_config, albedo):
+def plot_albedo(plot_config,model_config, albedo):
 
     rc = setup_axes(plot_config)
     plt.style.use("seaborn")

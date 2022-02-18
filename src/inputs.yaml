@@ -19,8 +19,8 @@ RTM:
   delta: True
   solzen: 60
   incoming: 4
-  toon: True
-  add_double: False
+  toon: False
+  add_double: True
   illumination_file_stubs: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
                           "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
                           "swnb_480bnd_toa"]
@@ -40,7 +40,7 @@ VARIABLES:
   ar: [0, 0]
 
 PATHS:
-  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"
+  DIR_BASE: "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/"
   WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
@@ -71,10 +71,10 @@ IMPURITIES:
 
 
 PLOT:
-    FIGSIZE: True
+    FIG_SIZE: (8,6)
     FACECOLOR: "white"
     GRID: False
-    GRIDCOLOR: .8
+    GRIDCOLOR: ".8"
     XTICK_WIDTH: 1
     XTICK_SIZE: 5
     YTICK_WIDTH: 1

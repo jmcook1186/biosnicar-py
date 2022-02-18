@@ -561,6 +561,8 @@ def get_outputs(
 
     # Spectrally-integrated absorption in each layer:
     outputs.abs_slr = np.sum(F_abs, axis=1)
+    
+    # energy absorbed by underlying substrate
     outputs.abs_slr_btm = sum(np.squeeze(F_btm_net))
     outputs.abs_vis_btm = sum(np.squeeze(F_btm_net[0 : model_config.vis_max_idx]))
     outputs.abs_nir_btm = sum(
@@ -585,9 +587,6 @@ def get_outputs(
 
     # energy absorbed by all snow layers
     outputs.abs_slr_tot = np.sum(np.sum(F_abs))
-
-    # energy absorbed by underlying substrate
-    outputs.energy_abs_under_sfc = np.sum(F_btm_net)
 
     # Spectrally - integrated solar, visible, and NIR albedos:
     outputs.BBA = np.sum(illumination.flx_slr * albedo) / np.sum(illumination.flx_slr)
