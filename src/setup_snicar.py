@@ -3,6 +3,25 @@ from classes import *
 import csv
 
 
+def setup_snicar():
+
+    impurities = build_impurities_array()
+    ice, illumination, rt_config, model_config, plot_config = build_classes()
+    
+    return ice, illumination, rt_config, model_config, plot_config, impurities
+
+
+def build_classes():
+
+    ice = Ice()
+    illumination = Illumination()
+    rt_config = RTConfig()
+    model_config = ModelConfig()
+    plot_config = PlotConfig()
+    
+    return ice, illumination, rt_config, model_config, plot_config
+
+
 def build_impurities_array():
 
     """
@@ -10,7 +29,6 @@ def build_impurities_array():
     properties defined in impurity_config.yaml
     """
 
-   
     with open("./src/inputs.yaml", "r") as ymlfile:
         inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 

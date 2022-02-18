@@ -27,12 +27,7 @@ from validate_inputs import *
 from plot import *
 
 
-ice = Ice()
-illumination = Illumination()
-rt_config = RTConfig()
-model_config = ModelConfig()
-plot_config = PlotConfig()
-impurities = build_impurities_array()
+ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
 status =validate_inputs(ice, rt_config, model_config, illumination, impurities)
 
 
