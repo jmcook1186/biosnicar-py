@@ -27,7 +27,7 @@ RTM:
 
 VARIABLES:
   dz: [0.001, 0.5]  # thickness of each vertical layer (unit : m)
-  layer_type: [1, 1]  # Fresnel layers (set all to 0 if toon : True)
+  layer_type: [0, 0]  # Fresnel layers (set all to 0 if toon : True)
   cdom: [0, 0]  # Only for layer type :: 1
   rho: [650, 650]  # density of each layer (unit : kg m-3)
   rf: 1

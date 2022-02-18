@@ -1,5 +1,7 @@
 import sys
 
+from src.classes import Impurity
+
 # make sure we can import from/src
 sys.path.append("./src")
 from setup_snicar import *
@@ -42,6 +44,7 @@ def test_v3(new_benchmark_toon):
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
         status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
         ice, impurities, illumination, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+
 
         lyrList = [0]
         densList = [400, 500, 600, 700, 800]
@@ -99,8 +102,8 @@ def test_v3(new_benchmark_toon):
                                 counter +=1
 
 
-        
         np.savetxt("./tests/test_data/py_benchmark_data_toon.csv", specOut, delimiter=",")
+
     else:
         pass
 
@@ -148,13 +151,16 @@ def test_v4(new_benchmark_ad):
                     for zen in zenList:
                         for bc in bcList:
                             for dz in dzList:
-
-                                ice.layer_type = [layer_type]*len(dz)
-                                ice.rho = [density]*len(dz)
-                                ice.rds = [reff]*len(ice.rds)
-                                illumination.sza = zen
-                                impurities[0].conc[0] = bc
+                                
                                 ice.dz = dz
+                                ice.nbr_lyr = len(ice.dz)
+                                ice.layer_type = [layer_type]*len(ice.dz)
+                                ice.rho = [density]*len(ice.dz)
+                                ice.rds = [reff]*len(ice.dz)
+                                illumination.sza = zen
+                                impurities[0].conc = [bc]*len(ice.dz) #bc in all layers
+                                assert(len(ice.dz)==5)
+                                
                                 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
@@ -214,15 +220,19 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     ice.ar = [0]*nbr_lyr
     ice.sfc = np.array([0.25]*model_config.nbr_wvl)
     ice.cdom = [0]*nbr_lyr
+    ice.water = [0]*nbr_lyr
+    ice.nbr_lyr = nbr_lyr
+    ice.layer_type = [0]*nbr_lyr
 
     illumination.incoming = 4
     illumination.direct = 1
-    
+
     impurities = []
 
     # make sure impurities[0] is bc
     # (same bc used by matlab model)
-    conc = [0]
+
+    conc = [0]*nbr_lyr
     impurity0 = Impurity(model_config.dir_base, "mie_sot_ChC90_dns_1317.nc", False, 1, 0, "bc", conc)
     impurities.append(impurity0)
 

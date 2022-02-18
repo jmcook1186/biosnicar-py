@@ -34,7 +34,7 @@ def get_n_spectra():
 
 @pytest.fixture
 def fuzz():
-    return True
+    return False
 
 @pytest.fixture
 def new_benchmark_ad():
@@ -42,4 +42,4 @@ def new_benchmark_ad():
 
 @pytest.fixture
 def new_benchmark_toon():
-    return True
+    return False

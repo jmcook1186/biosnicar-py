@@ -31,7 +31,7 @@ ice, illumination, rt_config, model_config, plot_config, impurities = setup_snic
 status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
 
 
-for i in [0, 50000]:
+for i in [0]:
 
     impurities[0].conc = [i, 0]
 
@@ -39,9 +39,13 @@ for i in [0, 50000]:
     tau, ssa, g, L_snw = mix_in_impurities(
         ssa_snw, g_snw, mac_snw, ice, impurities, model_config
     )
+    outputs1 = toon_solver(
+        tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+    )
 
     outputs2 = adding_doubling_solver(
         tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
     )
 
 plot_albedo(plot_config, model_config, outputs2.albedo)
+print(outputs1.BBA, outputs2.BBA)
