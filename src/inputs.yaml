@@ -17,7 +17,7 @@ RTM:
   nbr_wvl: 480
   aprx_typ: 3
   delta: True
-  solzen: 50
+  solzen: 60
   incoming: 4
   toon: True
   add_double: False
