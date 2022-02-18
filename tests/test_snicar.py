@@ -116,7 +116,7 @@ def test_v4(new_benchmark_ad):
         
         print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
 
-        lyrList = [1,2]
+        lyrList = [0,1]
         densList = [400, 500, 600, 700, 800]
         reffList = [200, 400, 600, 800, 1000]
         zenList = [30, 40, 50, 60, 70]
@@ -217,7 +217,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
 
     illumination.incoming = 4
     illumination.direct = 1
-
+    
     impurities = []
 
     # make sure impurities[0] is bc

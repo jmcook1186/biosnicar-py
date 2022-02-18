@@ -4,7 +4,7 @@ import pytest
 
 @pytest.fixture
 def get_matlab_data():
-    return pd.read_csv("./tests/test_data/testsuite_20211104_lyr1.csv", header=None)
+    return pd.read_csv("./tests/test_data/matlab_benchmark_data.csv", header=None)
 
 
 @pytest.fixture
