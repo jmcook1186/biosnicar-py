@@ -8,7 +8,7 @@ def validate_inputs(ice, rt_config, model_config, illumination, impurities):
     """
 
     check_toon_instabilities(rt_config, illumination)
-    check_layer_types(ice, rt_config)
+    #check_layer_types(ice, rt_config)
     check_algae(impurities)
     check_sza_range(illumination)
 
@@ -25,23 +25,23 @@ def check_toon_instabilities(rt_config, illumination):
     return
 
 
-def check_layer_types(ice, rt_config):
-    """
-    checks solver and ice layer types match up. If granular and AD just
-    warn user faster option is available.
-    If solid ice and toon raise value error as this is invalid.
-    """
-    if np.sum(ice.layer_type) < 1 and rt_config.add_double:  # pylint: disable=W0143
-        # just warn user but let program continue - in some cases
-        # AD method preferable (stable over complete range of SZA)
-        print("*** WARNING ***")
-        print("No solid ice layers - toon solver is faster")
-        print("Toggle toon=True and add_double=False to use it.\n")
+# def check_layer_types(ice, rt_config):
+#     """
+#     checks solver and ice layer types match up. If granular and AD just
+#     warn user faster option is available.
+#     If solid ice and toon raise value error as this is invalid.
+#     """
+#     if np.sum(ice.layer_type) < 1 and rt_config.add_double:  # pylint: disable=W0143
+#         # just warn user but let program continue - in some cases
+#         # AD method preferable (stable over complete range of SZA)
+#         print("*** WARNING ***")
+#         print("No solid ice layers - toon solver is faster")
+#         print("Toggle toon=True and add_double=False to use it.\n")
 
-    if np.sum(ice.layer_type) > 0 and rt_config.toon:
-        raise ValueError("There are ice layers - use the adding-doubling solver")
+#     if np.sum(ice.layer_type) > 0 and rt_config.toon:
+#         raise ValueError("There are ice layers - use the adding-doubling solver")
 
-    return
+#     return
 
 
 def check_algae(impurities):
