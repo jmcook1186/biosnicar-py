@@ -207,11 +207,11 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     # calculate volume and density of sphere
 
     # cross sectional area of ice core
-    XSArea_inner = np.pi * (rice ** 2)
+    XSArea_inner = np.pi * (rice**2)
 
     # cross sectional area of water layer sphere
-    XSArea_outer = np.pi * (rwater ** 2) - XSArea_inner
-    TotalXS = np.pi * (rwater ** 2)
+    XSArea_outer = np.pi * (rwater**2) - XSArea_inner
+    TotalXS = np.pi * (rwater**2)
 
     # density of water at 1 degree C in kg m-3
     WatDensity = 999
@@ -219,9 +219,9 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     # density of ice in kg m-3
     IceDensity = 934
 
-    IceVol = 4 / 3 * np.pi * rice ** 3
-    WatVol = (4 / 3 * np.pi * rwater ** 3) - IceVol
-    TotalVol = 4 / 3 * np.pi * rwater ** 3
+    IceVol = 4 / 3 * np.pi * rice**3
+    WatVol = (4 / 3 * np.pi * rwater**3) - IceVol
+    TotalVol = 4 / 3 * np.pi * rwater**3
 
     IceMass = IceVol * IceDensity
     WatMass = WatVol * WatDensity

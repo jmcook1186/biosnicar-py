@@ -6,15 +6,16 @@ import math
 
 
 class Impurity:
-
     def __init__(self, dir_base, file, coated, cfactor, unit, name, conc):
-               
+
         self.name = name
         self.cfactor = cfactor
         self.unit = unit
         self.conc = conc
 
-        self.impurity_properties = xr.open_dataset(str(dir_base + "/Data/OP_data/480band/lap/" + file))
+        self.impurity_properties = xr.open_dataset(
+            str(dir_base + "/Data/OP_data/480band/lap/" + file)
+        )
 
         if coated:
             mac_stub = "ext_cff_mss_ncl"
@@ -25,23 +26,23 @@ class Impurity:
         self.ssa = self.impurity_properties["ss_alb"].values
         self.g = self.impurity_properties["asm_prm"].values
 
-        assert (len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480)
+        assert len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480
 
 
 class Ice:
-
     def __init__(self):
-        
+
         # use config to calculate refractive indices
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        
         self.dz = inputs["VARIABLES"]["dz"]
         self.layer_type = inputs["VARIABLES"]["layer_type"]
         self.cdom = inputs["VARIABLES"]["cdom"]
-        self.rho = inputs["VARIABLES"]["rho"]        
-        self.sfc = np.genfromtxt(inputs["PATHS"]["DIR_BASE"]+inputs["PATHS"]["SFC"],delimiter="csv")
+        self.rho = inputs["VARIABLES"]["rho"]
+        self.sfc = np.genfromtxt(
+            inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
+        )
         self.rf = inputs["VARIABLES"]["rf"]
         self.shp = inputs["VARIABLES"]["shp"]
         self.rds = inputs["VARIABLES"]["rds"]
@@ -51,27 +52,32 @@ class Ice:
         self.shp_fctr = inputs["VARIABLES"]["shp_fctr"]
         self.ar = inputs["VARIABLES"]["ar"]
         self.nbr_lyr = len(self.dz)
-       
+
         refidx_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
-        fresnel_diffuse_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc")
+        fresnel_diffuse_file = xr.open_dataset(
+            inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc"
+        )
 
         rf = inputs["VARIABLES"]["rf"]
         op_dir_stub = inputs["PATHS"]["OP_DIR_STUBS"][rf]
         ref_idx_name = op_dir_stub[4:9]
 
-        self. ref_idx_re = refidx_file[str("re_" + ref_idx_name)].values
-        self. ref_idx_im = refidx_file[str("im_" + ref_idx_name)].values
-        self.fl_r_dif_a = fresnel_diffuse_file[str("R_dif_fa_ice_" + ref_idx_name)].values
-        self.fl_r_dif_b = fresnel_diffuse_file[str("R_dif_fb_ice_" + ref_idx_name)].values
+        self.ref_idx_re = refidx_file[str("re_" + ref_idx_name)].values
+        self.ref_idx_im = refidx_file[str("im_" + ref_idx_name)].values
+        self.fl_r_dif_a = fresnel_diffuse_file[
+            str("R_dif_fa_ice_" + ref_idx_name)
+        ].values
+        self.fl_r_dif_b = fresnel_diffuse_file[
+            str("R_dif_fb_ice_" + ref_idx_name)
+        ].values
         self.op_dir = op_dir_stub
 
         inputs = None
 
 
-
 class Illumination:
     def __init__(self):
-    
+
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -80,26 +86,26 @@ class Illumination:
         self.incoming = inputs["RTM"]["incoming"]
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
 
-
         stubs = inputs["RTM"]["illumination_file_stubs"]
-        flx_dir = (inputs["PATHS"]["DIR_BASE"]+inputs["PATHS"]["FLX_DIR"])
+        flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
         nbr_wvl = inputs["RTM"]["nbr_wvl"]
-        
+
         cloud_stub = "_cld"
         coszen_stub = ""
-        
+
         if self.direct:
             cloud_stub = "_clr_"
             coszen_stub = str("SZA" + str(self.solzen).rjust(2, "0"))
 
         incoming_file = xr.open_dataset(
-            str(flx_dir + stubs[self.incoming] + cloud_stub + coszen_stub + ".nc"))
+            str(flx_dir + stubs[self.incoming] + cloud_stub + coszen_stub + ".nc")
+        )
 
         flx_slr = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
         self.flx_slr = flx_slr
         out = flx_slr / (self.mu_not * np.pi)
-        
+
         if self.direct:
             self.Fs = out
             self.Fd = np.zeros(nbr_wvl)
@@ -145,12 +151,10 @@ class ModelConfig:
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
-        self.wavelengths = np.arange(0.2,5,0.01)
+        self.wavelengths = np.arange(0.2, 5, 0.01)
         self.nbr_wvl = len(self.wavelengths)
         self.vis_max_idx = inputs["CTRL"]["VIS_MAX_IDX"]
         self.nir_max_idx = inputs["CTRL"]["NIR_MAX_IDX"]
-
-
 
 
 class Outputs:
@@ -176,7 +180,7 @@ class PlotConfig:
 
         with open("/home/joe/Code/BioSNICAR_GO_PY/src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
-        
+
         self.figsize = inputs["PLOT"]["FIGSIZE"]
         self.facecolor = inputs["PLOT"]["FACECOLOR"]
         self.grid = inputs["PLOT"]["FIGSIZE"]

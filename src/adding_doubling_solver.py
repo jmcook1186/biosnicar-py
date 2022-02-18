@@ -2,7 +2,10 @@ from setup_snicar import *
 from classes import *
 import numpy as np
 
-def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
+
+def adding_doubling_solver(
+    tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+):
 
     """
     This script is one of the two optional radiativ transfer solvers available in this
@@ -23,8 +26,6 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
     tau0 = tau.T  # read and transpose tau
     g0 = g.T  # read and transpose g
     ssa0 = ssa.T  # read and transpose ssa
-
-
 
     epsilon = 1e-5  # to deal with singularity
     exp_min = (
@@ -100,8 +101,12 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
     n_real = np.zeros(shape=480)
 
     # set the underlying ground albedo
-    rupdir[:, ice.nbr_lyr] = ice.sfc  # reflectivity to direct radiation for layers below
-    rupdif[:, ice.nbr_lyr] = ice.sfc  # reflectivity to diffuse radiation for layers below
+    rupdir[
+        :, ice.nbr_lyr
+    ] = ice.sfc  # reflectivity to direct radiation for layers below
+    rupdif[
+        :, ice.nbr_lyr
+    ] = ice.sfc  # reflectivity to diffuse radiation for layers below
 
     # if there are non zeros in layer type, grab the index of the first fresnel layer
     # if there are non-zeros in layer type, load in the precalculated diffuse fresnel
@@ -115,11 +120,20 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
 
         lyrfrsnl = 9999999
 
-
-    mu0 = illumination.mu_not * np.ones(480)  # cosine of beam angle is equal to incident beam
+    mu0 = illumination.mu_not * np.ones(
+        480
+    )  # cosine of beam angle is equal to incident beam
     # ice-adjusted real refractive index
-    temp1 = ice.ref_idx_re**2 - ice.ref_idx_im**2 + np.sin(np.arccos(illumination.mu_not)) ** 2
-    temp2 = ice.ref_idx_re**2 - ice.ref_idx_im**2 - np.sin(np.arccos(illumination.mu_not)) ** 2
+    temp1 = (
+        ice.ref_idx_re**2
+        - ice.ref_idx_im**2
+        + np.sin(np.arccos(illumination.mu_not)) ** 2
+    )
+    temp2 = (
+        ice.ref_idx_re**2
+        - ice.ref_idx_im**2
+        - np.sin(np.arccos(illumination.mu_not)) ** 2
+    )
     n_real = (np.sqrt(2) / 2) * (
         temp1 + (temp2**2 + 4 * ice.ref_idx_re**2 * ice.ref_idx_im**2) ** 0.5
     ) ** 0.5
@@ -263,7 +277,9 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
         # ------------------------------------------------------------------------------
 
         if lyr == lyrfrsnl:
-            ref_indx = ice.ref_idx_re + 1j * ice.ref_idx_im  # np.complex(ice.ref_idx_re,ice.ref_idx_im)
+            ref_indx = (
+                ice.ref_idx_re + 1j * ice.ref_idx_im
+            )  # np.complex(ice.ref_idx_re,ice.ref_idx_im)
             critical_angle = np.arcsin(ref_indx)
 
             for wl in np.arange(0, model_config.nbr_wvl, 1):
@@ -499,14 +515,18 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
 
         if np.min(dfdir[:, lyr]) < puny:
 
-            dfdir[:, lyr] = np.zeros((model_config.nbr_wvl,), dtype=int)  # echmod necessary?
+            dfdir[:, lyr] = np.zeros(
+                (model_config.nbr_wvl,), dtype=int
+            )  # echmod necessary?
             # dfdif = fdifdn - fdifup
 
         dfdif[:, lyr] = trndif[:, lyr] * (1 - rupdif[:, lyr]) * refk
 
         if np.min(dfdif[:, lyr]) < puny:
 
-            dfdif[:, lyr] = np.zeros((model_config.nbr_wvl,), dtype=int)  #!echmod necessary?
+            dfdif[:, lyr] = np.zeros(
+                (model_config.nbr_wvl,), dtype=int
+            )  #!echmod necessary?
 
     # ----- End Radiative Solver Adding Doubling Method -----
 
@@ -514,8 +534,14 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
 
     for n in np.arange(0, ice.nbr_lyr + 1, 1):
 
-        F_up[:, n] = fdirup[:, n] * (illumination.Fs * illumination.mu_not * np.pi) + fdifup[:, n] * illumination.Fd
-        F_dwn[:, n] = fdirdn[:, n] * (illumination.Fs * illumination.mu_not * np.pi) + fdifdn[:, n] * illumination.Fd
+        F_up[:, n] = (
+            fdirup[:, n] * (illumination.Fs * illumination.mu_not * np.pi)
+            + fdifup[:, n] * illumination.Fd
+        )
+        F_dwn[:, n] = (
+            fdirdn[:, n] * (illumination.Fs * illumination.mu_not * np.pi)
+            + fdifdn[:, n] * illumination.Fd
+        )
 
     F_net = F_up - F_dwn
 
@@ -541,9 +567,9 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
         F_abs_nir[i] = sum(F_abs[vis_max_idx:nir_max_idx, i])
 
     # Spectrally-integrated absorption by underlying surface:
-    F_abs_btm = np.sum(F_btm_net, axis=0)
-    F_abs_vis_btm = np.sum(F_btm_net[0:vis_max_idx], axis=0)
-    F_abs_nir_btm = np.sum(F_btm_net[vis_max_idx : nir_max_idx + 1], axis=0)
+    outputs.F_abs_btm = np.sum(F_btm_net, axis=0)
+    outputs.F_abs_vis_btm = np.sum(F_btm_net[0:vis_max_idx], axis=0)
+    outputs.F_abs_nir_btm = np.sum(F_btm_net[vis_max_idx : nir_max_idx + 1], axis=0)
 
     # Radiative heating rate:
     heat_rt = F_abs_slr / (L_snw * 2117)  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
@@ -552,7 +578,9 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
     # Energy conservation check:
     # Incident direct+diffuse radiation equals (absorbed+transmitted+bulk_reflected)
     energy_sum = (
-        (illumination.mu_not * np.pi * illumination.Fs) + illumination.Fd - (np.sum(F_abs, axis=1) + F_btm_net + F_top_pls)
+        (illumination.mu_not * np.pi * illumination.Fs)
+        + illumination.Fd
+        - (np.sum(F_abs, axis=1) + F_btm_net + F_top_pls)
     )
 
     energy_conservation_error = sum(abs(energy_sum))
@@ -567,18 +595,19 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
 
     alb_bb = np.sum(illumination.flx_slr * albedo) / np.sum(illumination.flx_slr)
 
-    alb_vis = np.sum(illumination.flx_slr[0:vis_max_idx] * albedo[0:vis_max_idx]) / np.sum(
-        illumination.flx_slr[0:vis_max_idx]
-    )
+    outputs.BBAVIS = np.sum(
+        illumination.flx_slr[0:vis_max_idx] * albedo[0:vis_max_idx]
+    ) / np.sum(illumination.flx_slr[0:vis_max_idx])
 
-    alb_nir = np.sum(
+    outputs.BBANIR = np.sum(
         illumination.flx_slr[vis_max_idx:nir_max_idx] * albedo[vis_max_idx:nir_max_idx]
     ) / np.sum(illumination.flx_slr[vis_max_idx:nir_max_idx])
 
     # Spectrally-integrated VIS and NIR total snowpack absorption:
-    abs_vis = np.sum(illumination.flx_slr[0:vis_max_idx] * (1 - albedo[0:vis_max_idx]))
-    abs_nir = np.sum(
-        illumination.flx_slr[vis_max_idx:nir_max_idx] * (1 - albedo[vis_max_idx:nir_max_idx])
+    outputs.abs_vis_tot = np.sum(illumination.flx_slr[0:vis_max_idx] * (1 - albedo[0:vis_max_idx]))
+    outputs.abs_nir_tot = np.sum(
+        illumination.flx_slr[vis_max_idx:nir_max_idx]
+        * (1 - albedo[vis_max_idx:nir_max_idx])
     )
 
     # -------------------- OUTPUT  --------------------
@@ -586,8 +615,8 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
     flx_dwn_spc = (
         illumination.mu_not * np.pi * illumination.Fs + illumination.Fd
     )  # spectral downwelling flux at model top [W/m2/band]
-    alb_slr = alb_bb  # solar broadband albedo
-    abs_snw_slr = np.sum(F_abs_slr)  # total solar absorption by entire snow column
+    outputs.BBA = alb_bb  # solar broadband albedo
+    outputs.abs_slr_tot = np.sum(F_abs_slr)  # total solar absorption by entire snow column
     #       (not including underlying substrate) [W/m2]
     # abs_snw_vis = np.sum(F_abs_vis)
     #   visible solar absorption by entire snow column
@@ -609,4 +638,5 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config, 
     # abs_ground_nir  = F_abs_nir_btm
     #   near-IR absorption by underlying substrate [W/m2]
     outputs.albedo = albedo
+
     return outputs

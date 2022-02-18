@@ -22,8 +22,8 @@ def get_layer_OPs(ice, impurities, model_config):
 
             if ice.shp[i] == 4:  # large hex prisms (geometric optics)
                 file_ice = str(
-                    model_config.dir_base +
-                    model_config.hex_ice_path
+                    model_config.dir_base
+                    + model_config.hex_ice_path
                     + ice.op_dir
                     + "{}_{}.nc".format(
                         str(ice.hex_side[i]).rjust(4, "0"), str(ice.hex_length[i])
@@ -32,15 +32,17 @@ def get_layer_OPs(ice, impurities, model_config):
 
             elif ice.shp[i] < 4:
                 file_ice = str(
-                    model_config.dir_base +
-                    model_config.sphere_ice_path
+                    model_config.dir_base
+                    + model_config.sphere_ice_path
                     + ice.op_dir
                     + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
                 )
 
             # if liquid water coatings are applied
             if ice.water[i] > ice.rds[i]:
-                ssa_snw[i, ice.nbr_wvl], g_snw[i], mac_snw[i] = add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i)
+                ssa_snw[i, ice.nbr_wvl], g_snw[i], mac_snw[i] = add_water_coating(
+                    ice, model_config, ssa_snw, g_snw, mac_snw, i
+                )
 
             else:
 
@@ -63,7 +65,6 @@ def get_layer_OPs(ice, impurities, model_config):
                     if (ice.shp[i] > 0) & (ice.shp[i] < 4):
                         g_snw = correct_for_asphericity(ice, model_config, g_snw, i)
 
-
         else:  # solid ice layer (ice.layer_type == 1)
 
             if ice.cdom_layer[i]:
@@ -85,12 +86,9 @@ def get_layer_OPs(ice, impurities, model_config):
             mac_snw[i, :] = (
                 (sca_cff_vlm * vlm_frac_air) / ice.rho[i]
             ) + abs_cff_mss_ice
-            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / ice.rho[i]) / mac_snw[
-                i, :
-            ]
+            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / ice.rho[i]) / mac_snw[i, :]
 
     return ssa_snw, g_snw, mac_snw
-
 
 
 def add_water_coating(ice, model_cfg, ssa_snw, g_snw, mac_snw, i):
@@ -112,7 +110,7 @@ def add_water_coating(ice, model_cfg, ssa_snw, g_snw, mac_snw, i):
         fn_ice=fn_ice,
         rf_ice=ice.rf_ice,
         fn_water=fn_water,
-        wvl = get_wavelengths(),
+        wvl=get_wavelengths(),
     )
 
     ssa_snw[i, :] = res["ssa"]
@@ -121,44 +119,49 @@ def add_water_coating(ice, model_cfg, ssa_snw, g_snw, mac_snw, i):
     with xr.open_dataset(file_ice) as temp:
         ext_cff_mss = temp["ext_cff_mss"].values
         mac_snw[i, :] = ext_cff_mss
-    
+
     return ssa_snw, g_snw, mac_snw
 
 
 def correct_for_asphericity(ice, model_cfg, g_snw, i):
-    
-    g_wvl = np.array(
-    [0.25, 0.70, 1.41, 1.90, 2.50, 3.50, 4.00, 5.00])
-    
-    g_wvl_center = (np.array(g_wvl[1:8]) / 2 + np.array(g_wvl[0:7]) / 2)
-    g_b0 = np.array([
-        9.76029e-01,
-        9.67798e-01,
-        1.00111e00,
-        1.00224e00,
-        9.64295e-01,
-        9.97475e-01,
-        9.97475e-01]
+
+    g_wvl = np.array([0.25, 0.70, 1.41, 1.90, 2.50, 3.50, 4.00, 5.00])
+
+    g_wvl_center = np.array(g_wvl[1:8]) / 2 + np.array(g_wvl[0:7]) / 2
+    g_b0 = np.array(
+        [
+            9.76029e-01,
+            9.67798e-01,
+            1.00111e00,
+            1.00224e00,
+            9.64295e-01,
+            9.97475e-01,
+            9.97475e-01,
+        ]
     )
-    
-    g_b1 = np.array([
-        5.21042e-01,
-        4.96181e-01,
-        1.83711e-01,
-        1.37082e-01,
-        5.50598e-02,
-        8.48743e-02,
-        8.48743e-02]
+
+    g_b1 = np.array(
+        [
+            5.21042e-01,
+            4.96181e-01,
+            1.83711e-01,
+            1.37082e-01,
+            5.50598e-02,
+            8.48743e-02,
+            8.48743e-02,
+        ]
     )
-    
-    g_b2 = np.array([
-        -2.66792e-04,
-        1.14088e-03,
-        2.37011e-04,
-        -2.35905e-04,
-        8.40449e-04,
-        -4.71484e-04,
-        -4.71484e-04,]
+
+    g_b2 = np.array(
+        [
+            -2.66792e-04,
+            1.14088e-03,
+            2.37011e-04,
+            -2.35905e-04,
+            8.40449e-04,
+            -4.71484e-04,
+            -4.71484e-04,
+        ]
     )
 
     # Tables 1 & 2 and Eqs. 3.1-3.4 from Fu, 2007
@@ -228,7 +231,7 @@ def correct_for_asphericity(ice, model_cfg, g_snw, i):
             4.634944e-1,
         ]
     )
-    
+
     fs_hex = 0.788  # shape factor for hex plate
 
     # eff grain diameter
@@ -253,15 +256,11 @@ def correct_for_asphericity(ice, model_cfg, g_snw, i):
         ar_tmp = ice.grain_ar[i]
 
     # Eq.7, He et al. (2017)
-    g_snw_cg_tmp = (
-        g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice ** g_b2
-    )
+    g_snw_cg_tmp = g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice**g_b2
 
     # Eqn. 3.3 in Fu (2007)
     gg_snw_f07_tmp = (
-        g_f07_p0
-        + g_f07_p1 * np.log(ar_tmp)
-        + g_f07_p2 * (np.log(ar_tmp)) ** 2
+        g_f07_p0 + g_f07_p1 * np.log(ar_tmp) + g_f07_p2 * (np.log(ar_tmp)) ** 2
     )
 
     # 1 = spheroid, He et al. (2017)
@@ -291,14 +290,10 @@ def correct_for_asphericity(ice, model_cfg, g_snw, i):
             ar_tmp = ice.grain_ar[i]
 
         # Eq.7, He et al. (2017)
-        g_snw_cg_tmp = (
-            g_b0 * (fs_sphd / fs_hex) ** g_b1 * diam_ice ** g_b2
-        )
+        g_snw_cg_tmp = g_b0 * (fs_sphd / fs_hex) ** g_b1 * diam_ice**g_b2
 
         # Eqn. 3.1 in Fu (2007)
-        gg_snw_F07_tmp = (
-            g_f07_c0 + g_f07_c1 * ar_tmp + g_f07_c2 * ar_tmp ** 2
-        )
+        gg_snw_F07_tmp = g_f07_c0 + g_f07_c1 * ar_tmp + g_f07_c2 * ar_tmp**2
 
     # 3=hexagonal plate,
     # He et al. 2017 parameterization
@@ -328,15 +323,11 @@ def correct_for_asphericity(ice, model_cfg, g_snw, i):
             ar_tmp = ice.grain_ar[i]
 
         # Eq.7, He et al. (2017)
-        g_snw_cg_tmp = (
-            g_b0 * (fs_hex0 / fs_hex) ** g_b1 * diam_ice ** g_b2
-        )
+        g_snw_cg_tmp = g_b0 * (fs_hex0 / fs_hex) ** g_b1 * diam_ice**g_b2
 
         # Eqn. 3.3 in Fu (2007)
         gg_snw_F07_tmp = (
-            g_f07_p0
-            + g_f07_p1 * np.log(ar_tmp)
-            + g_f07_p2 * (np.log(ar_tmp)) ** 2
+            g_f07_p0 + g_f07_p1 * np.log(ar_tmp) + g_f07_p2 * (np.log(ar_tmp)) ** 2
         )
 
     # 4=koch snowflake,
@@ -368,15 +359,11 @@ def correct_for_asphericity(ice, model_cfg, g_snw, i):
             ar_tmp = ice.grain_ar[i]
 
         # Eq.7, He et al. (2017)
-        g_snw_cg_tmp = (
-            g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice ** g_b2
-        )
+        g_snw_cg_tmp = g_b0 * (fs_koch / fs_hex) ** g_b1 * diam_ice**g_b2
 
         # Eqn. 3.3 in Fu (2007)
         gg_snw_F07_tmp = (
-            g_f07_p0
-            + g_f07_p1 * np.log(ar_tmp)
-            + g_f07_p2 * (np.log(ar_tmp)) ** 2
+            g_f07_p0 + g_f07_p1 * np.log(ar_tmp) + g_f07_p2 * (np.log(ar_tmp)) ** 2
         )
 
     # 6 wavelength bands for g_snw to be
@@ -402,7 +389,7 @@ def correct_for_asphericity(ice, model_cfg, g_snw, i):
 
 
 def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
-        
+
     ssa_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     mac_aer = np.zeros([len(impurities), model_config.nbr_wvl])
     g_aer = np.zeros([len(impurities), model_config.nbr_wvl])
@@ -419,19 +406,21 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     L_snw = np.zeros(ice.nbr_lyr)
     tau_snw = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
-
     for i, impurity in enumerate(impurities):
 
         g_aer[i, :] = impurity.g
         ssa_aer[i, :] = impurity.ssa
 
-        if impurity.unit==1:
-            
-            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) / 917 * 10 ** (-6)) * impurity.cfactor
+        if impurity.unit == 1:
 
-        else: 
-            mss_aer[0:ice.nbr_lyr, i] = (np.array(impurity.conc) * 1e-9) * impurity.cfactor
+            mss_aer[0 : ice.nbr_lyr, i] = (
+                np.array(impurity.conc) / 917 * 10 ** (-6)
+            ) * impurity.cfactor
 
+        else:
+            mss_aer[0 : ice.nbr_lyr, i] = (
+                np.array(impurity.conc) * 1e-9
+            ) * impurity.cfactor
 
     # for each layer, the layer mass (L) is density * layer thickness
     # for each layer the optical ice.depth is
@@ -443,9 +432,9 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
         L_snw[i] = ice.rho[i] * ice.dz[i]
 
         for j, impurity in enumerate(impurities):
-            
-            mac_aer[j,:] = impurity.mac
-            
+
+            mac_aer[j, :] = impurity.mac
+
             # kg ice m-2 * cells kg-1 ice = cells m-2
             L_aer[i, j] = L_snw[i] * mss_aer[i, j]
             # cells m-2 * m2 cells-1
@@ -466,7 +455,7 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
                 L_snw[i] = L_snw[i] - L_aer[i, j]
 
         tau_snw[i, :] = L_snw[i] * mac_snw[i, :]
-        
+
         # finally, for each layer calculate the effective ssa, tau and g
         # for the snow+LAP
         tau[i, :] = tau_sum[i, :] + tau_snw[i, :]

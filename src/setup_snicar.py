@@ -7,7 +7,7 @@ def setup_snicar():
 
     impurities = build_impurities_array()
     ice, illumination, rt_config, model_config, plot_config = build_classes()
-    
+
     return ice, illumination, rt_config, model_config, plot_config, impurities
 
 
@@ -18,7 +18,7 @@ def build_classes():
     rt_config = RTConfig()
     model_config = ModelConfig()
     plot_config = PlotConfig()
-    
+
     return ice, illumination, rt_config, model_config, plot_config
 
 
@@ -34,7 +34,7 @@ def build_impurities_array():
 
     impurities = []
     dir_base = inputs["PATHS"]["DIR_BASE"]
-    
+
     for i, id in enumerate(inputs["IMPURITIES"]):
         name = inputs["IMPURITIES"][id]["name"]
         file = inputs["IMPURITIES"][id]["file"]
@@ -45,4 +45,3 @@ def build_impurities_array():
         impurities.append(Impurity(dir_base, file, coated, cfactor, unit, name, conc))
 
     return impurities
-

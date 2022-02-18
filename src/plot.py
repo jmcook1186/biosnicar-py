@@ -5,7 +5,7 @@ import seaborn as sns
 
 
 def setup_axes(plot_config):
-    
+
     rc = {
         "figure.figsize": (8, 6),
         "axes.facecolor": plot_config.facecolor,

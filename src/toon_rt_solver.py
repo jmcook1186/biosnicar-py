@@ -18,9 +18,9 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
     # to upper boundary of layer n. This is therefore a cumulative
     # quantity - subsequently lower layers contain the sum of the
     # # optical depth of all overlying layers
-    
+
     tau_clm = calculate_optical_depth_of_column(ice, model_config, tau_star)
-    
+
     # SET BOUNDARY CONDITION: BOTTOM BOUNDARY
     # calculate radiation reflected skywards by underlying surface
     # (i.e. lower model boundary)
@@ -121,7 +121,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
 
 
 def delta_transformation(rt_config, g, ssa, tau):
-   
+
     if rt_config.delta:
 
         g_star = g / (1 + g)
@@ -138,7 +138,7 @@ def delta_transformation(rt_config, g, ssa, tau):
 
 
 def calculate_optical_depth_of_column(ice, model_config, tau_star):
-    
+
     tau_clm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     for i in np.arange(1, ice.nbr_lyr, 1):
@@ -162,7 +162,6 @@ def boundary_condition(ice, illumination, tau_clm, tau_star):
     return s_sfc
 
 
-
 def two_stream_approximation(rt_config, ssa_star, g_star, illumination):
     """
     Three 2-stream approximations are available: Eddington,
@@ -175,7 +174,7 @@ def two_stream_approximation(rt_config, ssa_star, g_star, illumination):
     The asymmetry parameter is g. The hemispheric mean is only
     useful for infrared wavelengths
     """
-    
+
     if rt_config.aprx_typ == 1:
         # apply Eddington approximation
         gamma1 = (7 - (ssa_star * (4 + (3 * g_star)))) / 4
@@ -238,7 +237,7 @@ def c_functions(
     C_mns_top = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     for i in np.arange(0, ice.nbr_lyr, 1):
-        
+
         if np.sum(illumination.Fs) > 0.0:
 
             C_pls_btm[i, :] = (
@@ -262,7 +261,6 @@ def c_functions(
                     + (gamma2[i, :] * gamma3[i, :])
                 )
             ) / ((lam[i, :] ** 2) - (1 / illumination.mu_not**2))
-
 
             C_pls_top[i, :] = (
                 ssa_star[i, :]
@@ -318,7 +316,6 @@ def matrix_solver(
     B = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
     D = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
     E = np.zeros([2 * ice.nbr_lyr, model_config.nbr_wvl])
-
 
     for i in np.arange(0, 2 * ice.nbr_lyr, 1):
 
@@ -464,7 +461,6 @@ def layer_fluxes(
         ) + (direct[i, :] / illumination.mu_not)
         intensity[i, :] = intensity[i, :] / (4 * np.pi)
 
-
     # Upward flux at upper model boundary (Toon et al Eq 31)
     F_top_pls = (
         (Y[0, :] * (np.exp(-lam[0, :] * tau_star[0, :]) + GAMMA[0, :]))
@@ -473,7 +469,7 @@ def layer_fluxes(
     )
 
     for i in np.arange(0, ice.nbr_lyr, 1):
-        
+
         # Upward flux at the bottom of each layer interface (Toon et al. Eq31)
         F_up[i, :] = (
             Y[2 * i, :]
@@ -498,9 +494,7 @@ def layer_fluxes(
     # = energy absorbed by underlying surface
     F_btm_net[0, :] = -F_net[ice.nbr_lyr - 1, :]
 
-   
     return F_net, F_top_pls, F_btm_net, F_top_net, intensity
-
 
 
 def absorbed_fluxes(ice, model_config, F_net, F_top_net):
