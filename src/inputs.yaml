@@ -19,8 +19,8 @@ RTM:
   delta: True
   solzen: 60
   incoming: 4
-  toon: True
-  add_double: False
+  toon: False
+  add_double: True
   illumination_file_stubs: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
                           "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
                           "swnb_480bnd_toa"]

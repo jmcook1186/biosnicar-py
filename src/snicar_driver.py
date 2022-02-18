@@ -39,6 +39,9 @@ for i in [0, 0]:
         ssa_snw, g_snw, mac_snw, ice, impurities, model_config
     )
 
+   # outputs1 = toon_solver(
+   #     tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+   # )
     outputs2 = adding_doubling_solver(
         tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
     )
