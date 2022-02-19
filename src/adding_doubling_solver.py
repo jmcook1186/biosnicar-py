@@ -19,8 +19,7 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
     """
     
     # DEFINE CONSTANTS AND ARRAYS
-    tau0, g0, ssa0, epsilon, exp_min, vis_max_idx, \
-    nir_max_idx, nr, mu0, mu0n, trnlay, rdif_a, rdif_b, tdif_a,\
+    tau0, g0, ssa0, epsilon, exp_min, nr, mu0, mu0n, trnlay, rdif_a, rdif_b, tdif_a,\
     tdif_b, rdir, tdir, lyrfrsnl = define_constants_arrays(tau, g, ssa,
                                                 illumination,
                                                 ice, model_config)
@@ -96,13 +95,11 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
                                                                  fdirup, 
                                                                  fdifup, 
                                                                  fdirdn, 
-                                                                 fdifdn,
-                                                                 vis_max_idx,
-                                                                 nir_max_idx)
+                                                                 fdifdn)
 
     conservation_of_energy_check(illumination,F_abs,F_btm_net,F_top_pls)
     
-    outputs=get_outputs(illumination,albedo,vis_max_idx,nir_max_idx, L_snw,
+    outputs=get_outputs(illumination,albedo, model_config, L_snw,
                         F_abs,F_btm_net)
     
     return outputs
@@ -180,8 +177,6 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     ssa0 = ssa.T  # read and transpose ssa
     epsilon = 1e-5  # to deal with singularity    
     exp_min = (1e-5) # exp(-500)  # min value > 0 to avoid error
-    vis_max_idx = 50  # index of maximum visible wavelength (0.7 um)
-    nir_max_idx = 480  # index of max nir wavelength (5 um)
     nr = np.zeros(shape=480)
     mu0 = illumination.mu_not * np.ones(480)  # cos beam angle = incident beam
     
@@ -234,8 +229,7 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     else:
         lyrfrsnl = 9999999
     
-    return tau0, g0, ssa0, epsilon, exp_min, vis_max_idx, \
-            nir_max_idx, nr, mu0, mu0n, trnlay, rdif_a, rdif_b, tdif_a,\
+    return tau0, g0, ssa0, epsilon, exp_min, nr, mu0, mu0n, trnlay, rdif_a, rdif_b, tdif_a,\
             tdif_b, rdir, tdir, lyrfrsnl
 
 
@@ -598,7 +592,7 @@ def trans_refl_at_interfaces(model_config,ice,rupdif,rupdir,rdndif,trndir,trndif
     return fdirup, fdifup, fdirdn, fdifdn
 
 def calculate_fluxes(model_config,ice,illumination,fdirup, 
-                     fdifup, fdirdn, fdifdn, vis_max_idx,nir_max_idx):
+                     fdifup, fdirdn, fdifdn):
     
     F_up = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     F_dwn = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -632,8 +626,8 @@ def calculate_fluxes(model_config,ice,illumination,fdirup,
 
     for i in np.arange(0, ice.nbr_lyr, 1):  # [0,1,2,3,4]
 
-        F_abs_vis[i] = sum(F_abs[0:vis_max_idx, i])
-        F_abs_nir[i] = sum(F_abs[vis_max_idx:nir_max_idx, i])
+        F_abs_vis[i] = sum(F_abs[0:model_config.vis_max_idx, i])
+        F_abs_nir[i] = sum(F_abs[model_config.vis_max_idx:model_config.nir_max_idx, i])
 
     albedo = F_up[:, 0] / F_dwn[:, 0]
     
@@ -655,7 +649,7 @@ def conservation_of_energy_check(illumination,F_abs,F_btm_net,F_top_pls):
     else:
         pass
 
-def get_outputs(illumination,albedo,vis_max_idx,nir_max_idx, L_snw,
+def get_outputs(illumination,albedo,model_config, L_snw,
                 F_abs,F_btm_net):
     
     outputs = Outputs()
@@ -671,12 +665,12 @@ def get_outputs(illumination,albedo,vis_max_idx,nir_max_idx, L_snw,
     # Spectrally-integrated solar, visible, and NIR albedos:
     outputs.BBA = np.sum(illumination.flx_slr * albedo) / np.sum(illumination.flx_slr)
     outputs.BBAVIS = np.sum(
-        illumination.flx_slr[0:vis_max_idx] * albedo[0:vis_max_idx]
-        ) / np.sum(illumination.flx_slr[0:vis_max_idx])
+        illumination.flx_slr[0:model_config.vis_max_idx] * albedo[0:model_config.vis_max_idx]
+        ) / np.sum(illumination.flx_slr[0:model_config.vis_max_idx])
     outputs.BBANIR = np.sum(
-        illumination.flx_slr[vis_max_idx:nir_max_idx] * 
-        albedo[vis_max_idx:nir_max_idx]
-        ) / np.sum(illumination.flx_slr[vis_max_idx:nir_max_idx])
+        illumination.flx_slr[model_config.vis_max_idx:model_config.nir_max_idx] * 
+        albedo[model_config.vis_max_idx:model_config.nir_max_idx]
+        ) / np.sum(illumination.flx_slr[model_config.vis_max_idx:model_config.nir_max_idx])
     
     # Total incident insolation( Wm - 2)
     outputs.total_insolation = np.sum(
@@ -685,15 +679,15 @@ def get_outputs(illumination,albedo,vis_max_idx,nir_max_idx, L_snw,
     
     # Spectrally-integrated absorption by underlying surface:
     outputs.abs_slr_btm = np.sum(F_btm_net, axis=0)
-    outputs.abs_vis_btm = np.sum(F_btm_net[0:vis_max_idx], axis=0)
-    outputs.abs_nir_btm = np.sum(F_btm_net[vis_max_idx : nir_max_idx + 1], axis=0)
+    outputs.abs_vis_btm = np.sum(F_btm_net[0:model_config.vis_max_idx], axis=0)
+    outputs.abs_nir_btm = np.sum(F_btm_net[model_config.vis_max_idx : model_config.nir_max_idx + 1], axis=0)
     
     # Spectrally-integrated VIS and NIR total snowpack absorption:
-    outputs.abs_vis_tot = np.sum(illumination.flx_slr[0:vis_max_idx] *
-                                 (1 - albedo[0:vis_max_idx]))
+    outputs.abs_vis_tot = np.sum(illumination.flx_slr[0:model_config.vis_max_idx] *
+                                 (1 - albedo[0:model_config.vis_max_idx]))
     outputs.abs_nir_tot = np.sum(
-        illumination.flx_slr[vis_max_idx:nir_max_idx]
-        * (1 - albedo[vis_max_idx:nir_max_idx])
+        illumination.flx_slr[model_config.vis_max_idx:model_config.nir_max_idx]
+        * (1 - albedo[model_config.vis_max_idx:model_config.nir_max_idx])
         )
     # Spectrally-integrated absorption by entire snow/ice column
     outputs.abs_slr_tot = np.sum(F_abs_slr) 

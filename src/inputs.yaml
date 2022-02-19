@@ -40,7 +40,7 @@ VARIABLES:
   ar: [0, 0]
 
 PATHS:
-  DIR_BASE: "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/"
+  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"
   WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
