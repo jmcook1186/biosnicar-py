@@ -29,16 +29,11 @@ from plot import *
 ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
 status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
 
-
-
-
 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
 
 tau, ssa, g, L_snw = mix_in_impurities(
     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
 )
-
-print(tau[1,0:20])
 
 outputs = adding_doubling_solver(
     tau, ssa, g, L_snw, ice, illumination, model_config)

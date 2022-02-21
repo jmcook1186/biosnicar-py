@@ -449,6 +449,7 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
             # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg
 
             if impurity.unit == 1:
+                
                 L_snw[i] = L_snw[i] - L_aer[i, j] * 10 ** (-12)
 
             else:

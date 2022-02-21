@@ -156,7 +156,10 @@ def test_v4(new_benchmark_ad):
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
                                 illumination.solzen = zen
-                                impurities[0].conc = [bc]*len(ice.dz) #bc in all layers
+                                impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
+                                ice.calculate_refractive_index()
+                                illumination.calculate_irradiance()
+
                                 
                                 assert(len(impurities[0].conc)==5)
                                 assert(impurities[0].name=='bc')
@@ -190,6 +193,87 @@ def test_v4(new_benchmark_ad):
     return
 
 
+def test_v4_clean(new_benchmark_ad_clean):
+    
+    if new_benchmark_ad_clean:
+        ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        
+        print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
+
+        lyrList = [0,1]
+        densList = [400, 500, 600, 700, 800]
+        reffList = [200, 400, 600, 800, 1000]
+        zenList = [30, 40, 50, 60]
+        bcList = [0]
+        dzList = [
+            [0.02, 0.04, 0.06, 0.08, 0.1],
+            [0.04, 0.06, 0.08, 0.10, 0.15],
+            [0.05, 0.10, 0.15, 0.2, 0.5],
+            [0.15, 0.2, 0.25, 0.3, 0.5],
+            [0.5, 0.5, 0.5, 1, 10],
+        ]
+
+        ncols = (
+        len(lyrList)
+        * len(densList)
+        * len(reffList)
+        * len(zenList)
+        * len(bcList)
+        * len(dzList)
+        )
+
+        specOut = np.zeros(shape=(ncols, 481))
+        counter = 0
+        for layer_type in lyrList:
+            for density in densList:
+                for reff in reffList:
+                    for zen in zenList:
+                        for bc in bcList:
+                            for dz in dzList:
+                                
+                                ice.dz = dz
+                                ice.nbr_lyr = 5
+                                ice.layer_type = [layer_type]*len(ice.dz)
+                                ice.rho = [density]*len(ice.dz)
+                                ice.rds = [reff]*len(ice.dz)
+                                illumination.solzen = zen
+                                impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
+                                ice.calculate_refractive_index()
+                                illumination.calculate_irradiance()
+
+                                
+                                assert(len(impurities[0].conc)==5)
+                                assert(impurities[0].name=='bc')
+                                assert(impurities[0].cfactor==1)
+                                assert(ice.nbr_lyr==5)
+                                assert(len(impurities)==1)
+                                assert(impurities[0].conc==[bc, bc, bc, bc, bc])
+                                assert(illumination.incoming==4)
+                                assert(illumination.solzen == zen)
+                                assert(ice.shp == [0, 0, 0, 0, 0])
+                                assert(ice.shp_fctr == [0, 0, 0, 0, 0])
+
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
+                                tau, ssa, g, L_snw = mix_in_impurities(
+                                    ssa_snw, g_snw, mac_snw, ice, impurities, model_config
+                                )
+
+                                outputs = adding_doubling_solver(
+                                tau, ssa, g, L_snw, ice, illumination, model_config
+                                )
+
+                                specOut[counter, 0:480] = outputs.albedo
+                                specOut[counter, 480] = outputs.BBA
+                                counter +=1
+
+        np.savetxt("./tests/test_data/py_benchmark_data_clean.csv", specOut, delimiter=",")
+    
+    else:
+        pass
+
+    return
+
 
 def test_realistic_BBA(get_matlab_data, get_python_data):
     # are the values predicted by the model always physical (i.e. between 0-1)
@@ -217,6 +301,16 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
     error = np.array(abs(bb_mat - bb_py))
     assert len(error[error > tol]) == 0
 
+def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_clean, set_tolerance):
+    # check the BBA predicted for each run matches to within tolerance between
+    # the two models
+    mat = get_matlab_data_clean
+    py = get_python_data_clean
+    tol = set_tolerance
+    bb_py = py.loc[:, 481]
+    bb_mat = mat.loc[:, 481]
+    error = np.array(abs(bb_mat - bb_py))
+    assert len(error[error > tol]) == 0
 
 def match_matlab_config(ice, illumination, rt_config, model_config):
     

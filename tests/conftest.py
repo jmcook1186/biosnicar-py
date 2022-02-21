@@ -8,6 +8,10 @@ def get_matlab_data():
 
 
 @pytest.fixture
+def get_matlab_data_clean():
+    return pd.read_csv("./tests/test_data/matlab_benchmark_data_clean.csv", header=None)
+
+@pytest.fixture
 def get_matlab_data_toon():
     return pd.read_csv("./tests/test_data/matlab_benchmark_data_toon.csv", header=None)
 
@@ -18,13 +22,18 @@ def get_python_data():
 
 
 @pytest.fixture
+def get_python_data_clean():
+    return pd.read_csv("./tests/test_data/py_benchmark_data_clean.csv", header=None).transpose()
+
+
+@pytest.fixture
 def get_python_data_toon():
     return pd.read_csv("./tests/test_data/py_benchmark_data_toon.csv", header=None).transpose()
 
 
 @pytest.fixture
 def set_tolerance():
-    return 1e-6
+    return 1e-3
 
 
 @pytest.fixture
@@ -38,6 +47,10 @@ def fuzz():
 
 @pytest.fixture
 def new_benchmark_ad():
+    return False
+
+@pytest.fixture
+def new_benchmark_ad_clean():
     return True
 
 @pytest.fixture
