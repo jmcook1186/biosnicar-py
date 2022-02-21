@@ -151,7 +151,7 @@ def test_v4(new_benchmark_ad):
                             for dz in dzList:
                                 
                                 ice.dz = dz
-                                ice.nbr_lyr = len(ice.dz)
+                                ice.nbr_lyr = 5
                                 ice.layer_type = [layer_type]*len(ice.dz)
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
@@ -166,6 +166,8 @@ def test_v4(new_benchmark_ad):
                                 assert(impurities[0].conc==[bc, bc, bc, bc, bc])
                                 assert(illumination.incoming==4)
                                 assert(illumination.solzen == zen)
+                                assert(ice.shp == [0, 0, 0, 0, 0])
+                                assert(ice.shp_fctr == [0, 0, 0, 0, 0])
 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
