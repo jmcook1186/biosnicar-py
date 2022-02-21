@@ -42,11 +42,9 @@ class Ice:
         self.layer_type = inputs["VARIABLES"]["layer_type"]
         self.cdom = inputs["VARIABLES"]["cdom"]
         self.rho = inputs["VARIABLES"]["rho"]
-        self.sfc = [0]*480
-        
-        #np.genfromtxt(
-        #    inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
-        #)
+        self.sfc = np.genfromtxt(
+            inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
+        )
         self.rf = inputs["VARIABLES"]["rf"]
         self.shp = inputs["VARIABLES"]["shp"]
         self.rds = inputs["VARIABLES"]["rds"]
@@ -166,7 +164,7 @@ class ModelConfig:
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
-        self.wavelengths = np.arange(0.2, 5, 0.01)
+        self.wavelengths = np.arange(0.205, 4.999, 0.01)
         self.nbr_wvl = len(self.wavelengths)
         self.vis_max_idx = inputs["CTRL"]["VIS_MAX_IDX"]
         self.nir_max_idx = inputs["CTRL"]["NIR_MAX_IDX"]
