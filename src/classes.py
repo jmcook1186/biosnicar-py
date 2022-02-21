@@ -42,7 +42,7 @@ class Ice:
         self.layer_type = inputs["VARIABLES"]["layer_type"]
         self.cdom = inputs["VARIABLES"]["cdom"]
         self.rho = inputs["VARIABLES"]["rho"]
-        self.sfc = [0.25]*480
+        self.sfc = [0]*480
         
         #np.genfromtxt(
         #    inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"

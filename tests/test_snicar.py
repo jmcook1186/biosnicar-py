@@ -241,10 +241,10 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     # (same bc used by matlab model)
 
     conc = [0]*nbr_lyr
-    impurity0 = Impurity(model_config.dir_base, "mie_sot_ChC90_dns_1317.nc", False, 1, 0, "bc", conc)
+    impurity0 = Impurity(model_config.dir_base, "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc)
     impurities.append(impurity0)
 
-    assert((impurities[0].name=="bc") and (impurities[0].file == "mie_sot_ChC90_dns_1317.nc"))
+    assert((impurities[0].name=="bc") and (impurities[0].file == "bc_ChCB_rn40_dns1270.nc"))
 
     return ice, illumination, impurities, rt_config, model_config
 

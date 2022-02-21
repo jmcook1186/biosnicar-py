@@ -468,6 +468,6 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     ssa[ssa <= 0] = 0.00000001
     ssa[ssa >= 1] = 0.99999999
     g[g <= 0] = 0.00001
-    g[g >= 1] = 0.99999
+    g[g > 0.99] = 0.99
 
     return tau, ssa, g, L_snw
