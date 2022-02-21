@@ -9,7 +9,6 @@ from classes import *
 from column_OPs import *
 from toon_rt_solver import toon_solver
 from adding_doubling_solver import adding_doubling_solver
-from validate_inputs import *
 import random
 import matplotlib.pyplot as plt
 import pytest
@@ -114,16 +113,15 @@ def test_v4(new_benchmark_ad):
     
     if new_benchmark_ad:
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
-        status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
-        ice, impurities, illumination, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
         
         print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
 
         lyrList = [0,1]
         densList = [400, 500, 600, 700, 800]
         reffList = [200, 400, 600, 800, 1000]
-        zenList = [30, 40, 50, 60, 70]
-        bcList = [500, 1000, 1500, 2000]
+        zenList = [30, 40, 50, 60]
+        bcList = [500, 1000, 2000]
         dzList = [
             [0.02, 0.04, 0.06, 0.08, 0.1],
             [0.04, 0.06, 0.08, 0.10, 0.15],
@@ -141,7 +139,7 @@ def test_v4(new_benchmark_ad):
         * len(dzList)
         )
 
-        assert(ncols==5000)
+        assert(ncols==3000)
 
         specOut = np.zeros(shape=(ncols, 481))
         counter = 0
@@ -157,15 +155,25 @@ def test_v4(new_benchmark_ad):
                                 ice.layer_type = [layer_type]*len(ice.dz)
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
-                                illumination.sza = zen
+                                illumination.solzen = zen
                                 impurities[0].conc = [bc]*len(ice.dz) #bc in all layers
-                                assert(len(ice.dz)==5)
                                 
-                                
+                                assert(len(impurities[0].conc)==5)
+                                assert(impurities[0].name=='bc')
+                                assert(impurities[0].cfactor==1)
+                                assert(ice.nbr_lyr==5)
+                                assert(len(impurities)==1)
+                                assert(impurities[0].conc==[bc, bc, bc, bc, bc])
+                                assert(illumination.incoming==4)
+                                assert(illumination.solzen == zen)
+
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
+
+                                
+
                                 outputs = adding_doubling_solver(
                                 tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
                                 )
@@ -236,14 +244,9 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     impurity0 = Impurity(model_config.dir_base, "mie_sot_ChC90_dns_1317.nc", False, 1, 0, "bc", conc)
     impurities.append(impurity0)
 
-    impurity1 = Impurity(model_config.dir_base, "dust_balkanski_central_size1.nc", False, 1, 0, "dust1", conc)
-    impurities.append(impurity1)
+    assert((impurities[0].name=="bc") and (impurities[0].file == "mie_sot_ChC90_dns_1317.nc"))
 
-    impurity2 = Impurity(model_config.dir_base, "dust_balkanski_central_size5.nc", False, 1, 0, "dust5", conc)
-    impurities.append(impurity2)
-
-
-    return ice, impurities, illumination, rt_config, model_config
+    return ice, illumination, impurities, rt_config, model_config
 
 
 def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_tolerance):
@@ -255,7 +258,7 @@ def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_toleran
     bb_spec = py.loc[:, :480]
     bb_spec = mat.loc[:, :480]
     error = np.array(abs(bb_spec - bb_spec))
-    assert len(error[error > 1e-8]) == 0
+    assert len(error[error > tol]) == 0
 
 
 def test_compare_pySPEC_to_matSPEC_TOON(
@@ -269,7 +272,7 @@ def test_compare_pySPEC_to_matSPEC_TOON(
     bb_spec = py.loc[:, :480]
     bb_spec = mat.loc[:, :480]
     error = np.array(abs(bb_spec - bb_spec))
-    assert len(error[error > 1e-8]) == 0
+    assert len(error[error > tol]) == 0
 
 
 def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spectra):

@@ -54,6 +54,13 @@ PATHS:
 
 
 IMPURITIES:
+  bc:
+    name: "bc"
+    file: "mie_sot_ChC90_dns_1317.nc"
+    cfactor: 1
+    coated: False
+    unit: 0
+    conc: [0,0]
   algae:
     name: "algae"
     file: "Cook2020_glacier_algae_4_40.nc"
@@ -67,7 +74,7 @@ IMPURITIES:
     cfactor: 1
     coated: False
     unit: 0
-    conc: [1000,0]
+    conc: [0,0]
 
 
 PLOT:
