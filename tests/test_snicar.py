@@ -93,7 +93,7 @@ def test_v3(new_benchmark_toon):
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
                                 outputs = toon_solver(
-                                tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+                                tau, ssa, g, L_snw, ice, illumination, model_config
                                 )
 
                                 specOut[counter, 0:480] = outputs.albedo
@@ -174,10 +174,8 @@ def test_v4(new_benchmark_ad):
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
 
-                                
-
                                 outputs = adding_doubling_solver(
-                                tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+                                tau, ssa, g, L_snw, ice, illumination, model_config
                                 )
 
                                 specOut[counter, 0:480] = outputs.albedo

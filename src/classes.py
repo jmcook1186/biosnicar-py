@@ -42,9 +42,11 @@ class Ice:
         self.layer_type = inputs["VARIABLES"]["layer_type"]
         self.cdom = inputs["VARIABLES"]["cdom"]
         self.rho = inputs["VARIABLES"]["rho"]
-        self.sfc = np.genfromtxt(
-            inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
-        )
+        self.sfc = [0.25]*480
+        
+        #np.genfromtxt(
+        #    inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
+        #)
         self.rf = inputs["VARIABLES"]["rf"]
         self.shp = inputs["VARIABLES"]["shp"]
         self.rds = inputs["VARIABLES"]["rds"]
@@ -54,6 +56,14 @@ class Ice:
         self.shp_fctr = inputs["VARIABLES"]["shp_fctr"]
         self.ar = inputs["VARIABLES"]["ar"]
         self.nbr_lyr = len(self.dz)
+
+        self.calculate_refractive_index()
+
+
+    def calculate_refractive_index(self):
+
+        with open("./src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         refidx_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
         fresnel_diffuse_file = xr.open_dataset(
@@ -74,7 +84,6 @@ class Ice:
         ].values
         self.op_dir = op_dir_stub
 
-        inputs = None
 
 
 class Illumination:
@@ -87,11 +96,14 @@ class Illumination:
         self.solzen = inputs["RTM"]["solzen"]
         self.incoming = inputs["RTM"]["incoming"]
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
+        self.flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
+        self.stubs = inputs["RTM"]["illumination_file_stubs"]
+        self.nbr_wvl = inputs["RTM"]["nbr_wvl"]
 
-        stubs = inputs["RTM"]["illumination_file_stubs"]
-        flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
-        nbr_wvl = inputs["RTM"]["nbr_wvl"]
+        self.calculate_irradiance()
 
+    def calculate_irradiance(self):
+        
         cloud_stub = "_cld"
         coszen_stub = ""
 
@@ -100,7 +112,7 @@ class Illumination:
             coszen_stub = str("SZA" + str(self.solzen).rjust(2, "0"))
 
         incoming_file = xr.open_dataset(
-            str(flx_dir + stubs[self.incoming] + cloud_stub + coszen_stub + ".nc")
+            str(self.flx_dir + self.stubs[self.incoming] + cloud_stub + coszen_stub + ".nc")
         )
 
         flx_slr = incoming_file["flx_dwn_sfc"].values
@@ -110,10 +122,11 @@ class Illumination:
 
         if self.direct:
             self.Fs = out
-            self.Fd = np.zeros(nbr_wvl)
+            self.Fd = np.zeros(self.nbr_wvl)
         else:
             self.Fd = out
-            self.Fs = np.zeros(nbr_wvl)
+            self.Fs = np.zeros(self.nbr_wvl)
+        return
 
         return
 

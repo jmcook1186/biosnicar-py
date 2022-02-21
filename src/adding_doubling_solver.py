@@ -4,7 +4,7 @@ import numpy as np
 
 
 def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, 
-                           model_config, rt_config):
+                           model_config):
 
     """
     This script is one of the two optional radiative transfer solvers 
@@ -52,8 +52,7 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
         # since Delta-Eddington rdif formula is not well-behaved (it is usually
         # biased low and can even be negative)  use ngmax angles and gaussian
         # integration for most accuracy:
-        smt, smr, tdr, rdr,\
-        amg, apg, swt = apply_gaussian_integral(model_config,exp_min, ts,ws, 
+        smt, smr, swt = apply_gaussian_integral(model_config,exp_min, ts,ws, 
                                                 gs, epsilon,lm, lyr,
                                                 rdif_a, tdif_a)
         
@@ -71,8 +70,7 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
                                                     trnlay, lyr,
                                                     rdir,tdir)
             
-        trndir, tdrrdir, tdndif,\
-        trntdr, rdndif, trndif = calc_reflection_transmission_from_top(
+        trndir, trntdr, rdndif, trndif = calc_reflection_transmission_from_top(
                                                             lyr, trnlay, 
                                                             rdif_a, rdir, 
                                                             tdif_a, rdif_b, 
@@ -103,6 +101,8 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
                         F_abs,F_btm_net)
     
     return outputs
+
+
 
 def calc_reflectivity_transmittivity(tau0, ssa0, g0, lyr, model_config, 
                                      exp_min, rdif_a, tdif_a, trnlay, mu0n, 
@@ -276,7 +276,7 @@ def calc_reflection_transmission_from_top(lyr, trnlay, rdif_a, rdir, tdif_a,
         trndif[:, lyr] * refkm1 * tdif_a[:, lyr]
     )  
     
-    return trndir, tdrrdir, tdndif, trntdr, rdndif, trndif
+    return trndir, trntdr, rdndif, trndif
  
 
 def update_transmittivity_reflectivity(swt,smr, smt, lyr,rdif_a, 
@@ -344,7 +344,7 @@ def apply_gaussian_integral(model_config,exp_min, ts,ws, gs, epsilon, lm, lyr,
         smr = smr + mu * rdr * gwt  # accumulator for rdif gaussian integration
         smt = smt + mu * tdr * gwt  # accumulator for tdif gaussian integration
         
-    return smt, smr, tdr, rdr, amg, apg, swt
+    return smt, smr, swt
  
 def calc_correction_fresnel_layer(model_config,ice,illumination,mu0n,mu0,nr,
                                rdif_a, rdif_b, tdif_a, tdif_b, trnlay, lyr,
