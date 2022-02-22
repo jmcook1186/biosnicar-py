@@ -1,5 +1,5 @@
 def adding_doubling_solver(Inputs):
-
+    
     """
     This script is one of the two optional radiativ transfer solvers available in this
     package. This script deals with the adding-doubling method as translated from
@@ -11,6 +11,10 @@ def adding_doubling_solver(Inputs):
     are included.
 
     """
+
+    import matplotlib.pyplot as plt
+    plt.figure(1)
+    plt.plot(Inputs.Fs)
 
     import numpy as np
 
@@ -87,6 +91,7 @@ def adding_doubling_solver(Inputs):
     F_abs = np.zeros(shape=[Inputs.nbr_wvl, Inputs.nbr_lyr])
     F_abs_vis = np.zeros(shape=[Inputs.nbr_lyr])
     F_abs_nir = np.zeros(shape=[Inputs.nbr_lyr])
+
     trndir[:, 0] = 1
     trntdr[:, 0] = 1
     trndif[:, 0] = 1
@@ -142,11 +147,12 @@ def adding_doubling_solver(Inputs):
     # the interface just above a given layer is less than trmin, then no
     # Delta-Eddington computation for that layer is done.
 
+
     for lyr in np.arange(0, Inputs.nbr_lyr, 1):  # loop through layers
 
         # condition: if current layer is above fresnel layer or the
         # top layer is a Fresnel layer
-        if lyr < lyrfrsnl or lyrfrsnl == 0:
+        if lyr < lyrfrsnl:
 
             mu0n = mu0
 
@@ -191,7 +197,7 @@ def adding_doubling_solver(Inputs):
 
         # evaluate rdir, tdir for direct beam
         trnlay[:, lyr] = np.maximum(
-            np.full((Inputs.nbr_wvl,), exp_min), np.exp(-ts / mu0n)
+            np.ones(480)*exp_min, np.exp(-ts / mu0n)
         )  # transmission from TOA to interface
 
         #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
@@ -265,12 +271,12 @@ def adding_doubling_solver(Inputs):
         # ------------------------------------------------------------------------------
         # Fresnel layer
         # ------------------------------------------------------------------------------
+        for wl in np.arange(0, Inputs.nbr_wvl, 1):
 
-        if lyr == lyrfrsnl:
-            refindx = Inputs.refidx_re + 1j * Inputs.refidx_im  # np.complex(Inputs.refidx_re,Inputs.refidx_im)
-            critical_angle = np.arcsin(refindx)
-
-            for wl in np.arange(0, Inputs.nbr_wvl, 1):
+            if lyr == lyrfrsnl:
+                
+                refindx = Inputs.refidx_re + 1j * Inputs.refidx_im  # np.complex(Inputs.refidx_re,Inputs.refidx_im)
+                critical_angle = np.arcsin(refindx)
 
                 if np.arccos(Inputs.mu_not) < critical_angle[wl]:
                     # in this case, no total internal reflection
@@ -302,6 +308,7 @@ def adding_doubling_solver(Inputs):
                 else:  # in this case, total internal reflection occurs
                     Tf_dir_a = 0
                     Rf_dir_a = 1
+
 
                 # precalculated diffuse reflectivities and transmissivities
                 # for incident radiation above and below fresnel layer, using
@@ -391,6 +398,7 @@ def adding_doubling_solver(Inputs):
 
         # Eq. 51  Briegleb and Light 2007
 
+
         trndir[:, lyr + 1] = (
             trndir[:, lyr] * trnlay[:, lyr]
         )  # solar beam transmission from top
@@ -433,6 +441,7 @@ def adding_doubling_solver(Inputs):
     # !                lyr+1
     # !       ---------------------
 
+    
     for lyr in np.arange(
         Inputs.nbr_lyr - 1, -1, -1
     ):  # starts at the bottom and works its way up to the top layer
@@ -460,10 +469,12 @@ def adding_doubling_solver(Inputs):
             rdif_a[:, lyr]
             + tdif_a[:, lyr] * rupdif[:, lyr + 1] * refkp1 * tdif_b[:, lyr]
         )
+    
 
     # fluxes at interface
 
     for lyr in np.arange(0, Inputs.nbr_lyr + 1, 1):
+        
 
         # Eq. 52  Briegleb and Light 2007
         # interface scattering
@@ -501,14 +512,14 @@ def adding_doubling_solver(Inputs):
             - trndir[:, lyr] * rupdir[:, lyr] * (1 - rdndif[:, lyr]) * refk
         )
 
-        if np.min(dfdir[:, lyr]) < puny:
+        if np.max(dfdir[:, lyr]) < puny:
 
             dfdir[:, lyr] = np.zeros((Inputs.nbr_wvl,), dtype=int)  # echmod necessary?
             # dfdif = fdifdn - fdifup
 
         dfdif[:, lyr] = trndif[:, lyr] * (1 - rupdif[:, lyr]) * refk
 
-        if np.min(dfdif[:, lyr]) < puny:
+        if np.max(dfdif[:, lyr]) < puny:
 
             dfdif[:, lyr] = np.zeros((Inputs.nbr_wvl,), dtype=int)  #!echmod necessary?
 
@@ -516,12 +527,25 @@ def adding_doubling_solver(Inputs):
 
     # ----- Calculate fluxes ----
 
-    for n in np.arange(0, Inputs.nbr_lyr + 1, 1):
 
+
+    for n in np.arange(0, Inputs.nbr_lyr + 1, 1):
+        
         F_up[:, n] = fdirup[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi) + fdifup[:, n] * Inputs.Fd
         F_dwn[:, n] = fdirdn[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi) + fdifdn[:, n] * Inputs.Fd
 
     F_net = F_up - F_dwn
+
+    # import matplotlib.pyplot as plt
+    # plt.plot(Inputs.Fs)
+    # plt.show()
+    # plt.figure(1)
+    # plt.plot(Inputs.Fs)
+    # plt.plot(F_dwn[:,0].T)
+    # plt.plot(F_dwn[:,1].T)
+    # plt.plot(F_dwn[:,2].T)
+    # plt.show()
+    # plt.show()
 
     # Absorbed flux in each layer
     F_abs[:, :] = F_net[:, 1:] - F_net[:, :-1]

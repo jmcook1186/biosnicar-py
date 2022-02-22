@@ -180,7 +180,7 @@ def snicar_feeder(Inputs):
 
         # flx_dwn_sfc is the spectral irradiance in W m-2 and is
         # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
-        flx_slr = incoming_file["flx_dwn_sfc"].values
+        flx_slr = incoming_file["flx_frc_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
         flx_slr = flx_slr
         Fs = flx_slr / (mu_not * np.pi)
@@ -207,7 +207,7 @@ def snicar_feeder(Inputs):
         else:
             raise ValueError("Invalid choice of atmospheric profile")
 
-        flx_slr = incoming_file["flx_dwn_sfc"].values
+        flx_slr = incoming_file["flx_frc_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
         flx_slr = flx_slr
         Fd = flx_slr / (mu_not * np.pi)
