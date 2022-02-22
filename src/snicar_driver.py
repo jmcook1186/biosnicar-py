@@ -157,7 +157,7 @@ Inputs.verbosity = 0  # 1 to print real-time updates
 # 3) Choose plot/print options
 # --------------------------------------------------------------------------------------
 
-SHOW_FIGS = True  # toggle to display spectral albedo figure
+SHOW_FIGS = False  # toggle to display spectral albedo figure
 SAVE_FIGS = False  # toggle to save spectral albedo figure to file
 PRINT_BBA = True  # toggle to print broadband albedo to terminal
 PRINT_BAND_RATIOS = True  # toggle to print various band ratios to terminal
@@ -169,10 +169,10 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 # 4) RADIATIVE TRANSFER CONFIGURATION
 # --------------------------------------------------------------------------------------
 
-Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
-Inputs.aprx_typ = 3  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
+Inputs.direct = 1  # 1 = direct-beam, 0 = Diffuse flux
+Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
-Inputs.solzen = 40  # solar zenith angle between 0 (nadir) and 89 (horizon)
+Inputs.solzen = 44  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
 # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
 #    0 = mid-latitude winter
@@ -184,7 +184,7 @@ Inputs.solzen = 40  # solar zenith angle between 0 (nadir) and 89 (horizon)
 #    6 = Top-of-atmosphere
 # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
 # and cloudy-sky spectral fluxes are loaded when direct_beam=0
-Inputs.incoming_i = 4
+Inputs.incoming_i = 0
 
 # --------------------------------------------------------------------------------------
 # 4) SET UP ICE/SNOW LAYERS
@@ -192,23 +192,23 @@ Inputs.incoming_i = 4
 # For granular layers + Fresnel layers, choose add_double
 # --------------------------------------------------------------------------------------
 
-Inputs.toon = True  # toggle toon et al tridiagonal matrix solver
-Inputs.add_double = False  # toggle addintg-doubling solver
+Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
+Inputs.add_double = True  # toggle addintg-doubling solver
 
 
-Inputs.dz = [0.001, 0.2]  # thickness of each vertical layer (unit = m)
+Inputs.dz = [0.1, 0.1]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [0, 0]  # Fresnel layers (set all to 0 if toon = True)
+Inputs.layer_type = [1, 1]  # Fresnel layers (set all to 0 if toon = True)
 Inputs.cdom_layer = [0, 0]  # Only for layer type == 1
-Inputs.rho_layers = [916, 916]  # density of each layer (unit = kg m-3)
+Inputs.rho_layers = [450, 450]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
 # Inputs.R_sfc = np.array([0.1 for i in range(Inputs.nbr_wvl)])
-Inputs.R_sfc = np.genfromtxt(
-    Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
-    delimiter="csv",
-)
+Inputs.R_sfc = [0.25]*480#np.genfromtxt(
+    #Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
+    #delimiter="csv",
+#)
 
 # --------------------------------------------------------------------------------------
 # 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -228,7 +228,7 @@ Inputs.rf_ice = 2
 # 4 = hexagonal prisms
 
 Inputs.grain_shp = [0, 0]  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [100, 100]  # effective grain or bubble radius
+Inputs.grain_rds = [1500, 1500]  # effective grain or bubble radius
 Inputs.rwater = [0, 0]  # radius of optional liquid water coating
 
 # For 4:
@@ -266,7 +266,7 @@ Inputs.c_factor_SA = 0
 
 # Set names of files containing the optical properties of these LAPs:
 # uncoated BC (Bohren and Huffman, 1983)
-Inputs.file_soot1 = "mie_sot_ChC90_dns_1317.nc"
+Inputs.file_soot1 = "bc_ChCB_rn40_dns1270.nc"
 # coated BC (Bohren and Huffman, 1983)
 Inputs.file_soot2 = "miecot_slfsot_ChC90_dns_1317.nc"
 # uncoated brown carbon (Kirchstetter et al. (2004).)
@@ -332,7 +332,7 @@ Inputs.file_glacier_algae = "Cook2020_glacier_algae_4_40.nc"
 # To use cells/mL for algae, set GA_units == 1.
 # The script will loop over the different mixing scenarios
 
-Inputs.mss_cnc_soot1 = [0] * len(Inputs.dz)
+Inputs.mss_cnc_soot1 = [0]* len(Inputs.dz)
 Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_brwnC1 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_brwnC2 = [0] * len(Inputs.dz)

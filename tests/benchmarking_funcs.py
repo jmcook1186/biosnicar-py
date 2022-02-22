@@ -17,9 +17,8 @@ def generate_snicar_params(
     rho = [density] * len(dz)
     reff = [reff] * len(dz)
     layer_type = [layer_type] * len(dz)
-    mss_cnc_glacier_algae = [alg] * len(dz)
-    mss_cnc_soot1 = [0] * len(dz)
-    mss_cnc_soot1[0] = bc
+    mss_cnc_glacier_algae = [0] * len(dz)
+    mss_cnc_soot1 = [bc]*len(dz)
     mss_cnc_dust1 = [0] * len(dz)
     mss_cnc_dust1[0] = dust1
     mss_cnc_dust5 = [0] * len(dz)
@@ -42,8 +41,8 @@ def generate_snicar_params(
     params.direct = 1
     params.aprx_typ = 3
     params.incoming = 4
-    params.toon = 1
-    params.add_double = 0
+    params.toon = 0
+    params.add_double = 1
     params.shp = 0
     params.c_factor = 20
     return params
@@ -285,7 +284,7 @@ def call_snicar(params):
 
     # Set names of files containing the optical properties of these LAPs:
     inputs.file_soot1 = (
-        "mie_sot_ChC90_dns_1317.nc"  # uncoated BC (Bohren and Huffman, 1983)
+        "bc_ChCB_rn40_dns1270.nc"  # uncoated BC (Bohren and Huffman, 1983)
     )
     inputs.file_soot2 = (
         "miecot_slfsot_ChC90_dns_1317.nc"  # coated BC (Bohren and Huffman, 1983)
@@ -341,7 +340,7 @@ def call_snicar(params):
     inputs.file_Cook_Greenland_dust_C = "dust_greenland_Cook_CENTRAL_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
     inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_HIGH_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
     inputs.file_snw_alg = "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"  # Snow Algae (spherical, C nivalis)
-    inputs.file_glacier_algae = "GA_Chevrollier2022_r4.9_L18.8.nc"  # glacier algae in cells/ml or ppb depending on GA_units
+    inputs.file_glacier_algae = "Cook2020_glacier_algae_4_40.nc"  # glacier algae in cells/ml or ppb depending on GA_units
 
     # Add more glacier algae (not functional in current code)
     # (optical properties generated with GO), not included in the current model
