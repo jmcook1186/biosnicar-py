@@ -10,7 +10,7 @@ The console will show the total number of tests collected. As each test is execu
 
 The tests in ./tests are also run automatically as a Github action whenever a pull request is raised against the main branch of the BioSNICAR repository. This is to help contributors and the repo owners to determine whether a PR includes breaking changes. 
 
-The tests are all defined in `test_snicar.py`. Fixtures (featires that are common to all tests) are defined in `conftest.py`. To add, remove or refine the automated tests, update these files. It is strongly recommended that these files are not changed and instead any changed are raised as issues for discussion with the repo owners because of their importance for PR quality control.
+The tests are all defined in `test_snicar.py`. Fixtures (features that are common to all tests) are defined in `conftest.py`. To add, remove or refine the automated tests, update these files. It is strongly recommended that these files are not changed and instead any changed are raised as issues for discussion with the repo owners because of their importance for PR quality control.
 
 
 There are many tests included in `./tests` but they can be divided into two general categories: benchmarking and fuzzing.
@@ -21,9 +21,11 @@ The benchmark tests aim to ensure that the Python implementation in this reposit
 
 The benchmark data was generated on the Umich linux server using the published versions of their model code. The resulting csv was saved to our bioSNICAR repository. The Python model was then run with identical config to produce anoth csv. These files are then compared column-wise and tested for equality. The tolerance for error between the Matlab and Python spectral albedo is 1e-8 by default but can be adjusted by updating `tolerance` in `conftest`.
 
-The script that generates the v3 and v4 equivalent Python data is `benchmarking_driver.py`. It is <b>strongly recommended</b> to run this file after any changes to the BioSNICAR source code to ensure the benchmarking tests are using predictions from the latest version and can catch any breaking changes. This takes about 20 minutes to run and will generate new Python benchmark files.
+The script that generates the v3 and v4 equivalent Python data is `benchmarking_driver.py`. It is <b>strongly recommended</b> to run this file after any changes to the BioSNICAR source code to ensure the benchmarking tests are using predictions from the latest version and can catch any breaking changes. This takes about 20 minutes to run and will generate new Python benchmark files. However, for rapid development the new benchmark data generation can be toggled off in conftest.
 
-`python ./tests/bencmarking_driver.py`
+`python ./tests/benchmarking_driver.py`
+
+
 
 
 ## Fuzzing

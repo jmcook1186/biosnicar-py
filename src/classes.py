@@ -42,9 +42,10 @@ class Ice:
         self.layer_type = inputs["VARIABLES"]["layer_type"]
         self.cdom = inputs["VARIABLES"]["cdom"]
         self.rho = inputs["VARIABLES"]["rho"]
-        self.sfc = np.genfromtxt(
-            inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
-        )
+        self.sfc = [0.25]*480
+        # self.sfc = np.genfromtxt(
+        #     inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
+        # )
         self.rf = inputs["VARIABLES"]["rf"]
         self.shp = inputs["VARIABLES"]["shp"]
         self.rds = inputs["VARIABLES"]["rds"]
@@ -113,7 +114,7 @@ class Illumination:
             str(self.flx_dir + self.stubs[self.incoming] + cloud_stub + coszen_stub + ".nc")
         )
 
-        flx_slr = incoming_file["flx_dwn_sfc"].values
+        flx_slr = incoming_file["flx_frc_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
         self.flx_slr = flx_slr
         out = flx_slr / (self.mu_not * np.pi)

@@ -33,13 +33,14 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
 
         # condition: if current layer is above fresnel layer or the
         # top layer is a Fresnel layer
-        if lyr < lyrfrsnl or lyrfrsnl == 0:
+        if lyr < lyrfrsnl:
 
             mu0n = mu0
 
         else:
             # within or below fl
             mu0n = mu0n
+
 
         rdir,tdir,ts,ws,gs,lm = calc_reflectivity_transmittivity(tau0, ssa0, 
                                                               g0, lyr,
@@ -62,6 +63,7 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
 
 
         if lyr == lyrfrsnl:
+            
              rdif_a, rdif_b, tdif_a, tdif_b, trnlay,\
              rdir, tdir = calc_correction_fresnel_layer(model_config,ice,
                                                     illumination,mu0n,mu0,nr,

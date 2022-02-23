@@ -41,8 +41,7 @@ def test_v3(new_benchmark_toon):
         print("generating benchmark data using params equivalent to snicarv3 (Toon solver)")
         # first setup snicar with vals in config files
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
-        status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
-        ice, impurities, illumination, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
 
         lyrList = [0]
@@ -81,11 +80,11 @@ def test_v3(new_benchmark_toon):
                         for bc in bcList:
                             for dz in dzList:
 
-                                ice.layer_type = [layer_type]*len(ice.layer_type)
-                                ice.rho = [density]*len(ice.rho)
-                                ice.rds = [reff]*len(ice.rds)
-                                illumination.sza = zen
-                                impurities[0].conc[0] = bc
+                                ice.layer_type = [layer_type]*len(dzList[0])
+                                ice.rho = [density]*len(dzList[0])
+                                ice.rds = [reff]*len(dzList[0])
+                                illumination.solzen = zen
+                                impurities[0].conc = [bc]*len(dzList[0])
                                 ice.dz = dz
                                 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
@@ -93,8 +92,7 @@ def test_v3(new_benchmark_toon):
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
                                 outputs = toon_solver(
-                                tau, ssa, g, L_snw, ice, illumination, model_config
-                                )
+                                tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
 
                                 specOut[counter, 0:480] = outputs.albedo
                                 specOut[counter, 480] = outputs.BBA
@@ -113,22 +111,18 @@ def test_v4(new_benchmark_ad):
     
     if new_benchmark_ad:
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
-        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination,rt_config, model_config)
         
-        print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
-
         lyrList = [0,1]
         densList = [400, 500, 600, 700, 800]
         reffList = [200, 400, 600, 800, 1000]
         zenList = [30, 40, 50, 60]
         bcList = [500, 1000, 2000]
-        dzList = [
-            [0.02, 0.04, 0.06, 0.08, 0.1],
-            [0.04, 0.06, 0.08, 0.10, 0.15],
-            [0.05, 0.10, 0.15, 0.2, 0.5],
-            [0.15, 0.2, 0.25, 0.3, 0.5],
-            [0.5, 0.5, 0.5, 1, 10],
-        ]
+        dzList = [[0.02,0.04,0.06, 0.08, 0.1],
+                [0.04,0.06,0.08, 0.10, 0.15],
+                [0.05,0.10,0.15, 0.2, 0.5],
+                [0.15, 0.2, 0.25, 0.3, 0.5],
+                [0.5, 0.5, 0.5, 1, 10]]
 
         ncols = (
         len(lyrList)
@@ -176,7 +170,6 @@ def test_v4(new_benchmark_ad):
                                 tau, ssa, g, L_snw = mix_in_impurities(
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
-
                                 outputs = adding_doubling_solver(
                                 tau, ssa, g, L_snw, ice, illumination, model_config
                                 )
@@ -301,6 +294,8 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
     error = np.array(abs(bb_mat - bb_py))
     assert len(error[error > tol]) == 0
 
+
+
 def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_clean, set_tolerance):
     # check the BBA predicted for each run matches to within tolerance between
     # the two models
@@ -312,8 +307,15 @@ def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_cl
     error = np.array(abs(bb_mat - bb_py))
     assert len(error[error > tol]) == 0
 
+
+
+
+
 def match_matlab_config(ice, illumination, rt_config, model_config):
-    
+    """
+    make sure all vars held constant across tetss are set equal to
+    thse int he matlab version
+    """
     nbr_lyr = 5
     # make sure ice config matches matlab benchmark
     ice.ri = 2
@@ -329,6 +331,10 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     illumination.incoming = 4
     illumination.direct = 1
 
+    # recalculate fluxes
+    ice.calculate_refractive_index()
+    illumination.calculate_irradiance()
+
     impurities = []
 
     # make sure impurities[0] is bc
@@ -341,6 +347,11 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     assert((impurities[0].name=="bc") and (impurities[0].file == "bc_ChCB_rn40_dns1270.nc"))
 
     return ice, illumination, impurities, rt_config, model_config
+
+
+
+
+
 
 
 def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_tolerance):
