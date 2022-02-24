@@ -94,7 +94,6 @@ class Illumination:
         self.direct = inputs["RTM"]["direct"]
         self.solzen = inputs["RTM"]["solzen"]
         self.incoming = inputs["RTM"]["incoming"]
-        self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
         self.flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
         self.stubs = inputs["RTM"]["illumination_file_stubs"]
         self.nbr_wvl = inputs["RTM"]["nbr_wvl"]
@@ -102,7 +101,10 @@ class Illumination:
         self.calculate_irradiance()
 
     def calculate_irradiance(self):
+        # update mu_not from solzen
+        self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
         
+        # calculate irradiance from file
         cloud_stub = "_cld"
         coszen_stub = ""
 

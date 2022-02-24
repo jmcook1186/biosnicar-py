@@ -84,6 +84,7 @@ def test_v3(new_benchmark_toon):
                                 ice.rho = [density]*len(dzList[0])
                                 ice.rds = [reff]*len(dzList[0])
                                 illumination.solzen = zen
+                                illumination.calculate_irradiance()
                                 impurities[0].conc = [bc]*len(dzList[0])
                                 ice.dz = dz
                                 
@@ -150,22 +151,10 @@ def test_v4(new_benchmark_ad):
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
                                 illumination.solzen = zen
-                                illumination.mu_not = np.cos(math.radians(np.rint(zen)))
+                                illumination.calculate_irradiance()
                                 impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
                                 ice.calculate_refractive_index()
                                 illumination.calculate_irradiance()
-
-                                
-                                assert(len(impurities[0].conc)==5)
-                                assert(impurities[0].name=='bc')
-                                assert(impurities[0].cfactor==1)
-                                assert(ice.nbr_lyr==5)
-                                assert(len(impurities)==1)
-                                assert(impurities[0].conc==[bc, bc, bc, bc, bc])
-                                assert(illumination.incoming==4)
-                                assert(illumination.solzen == zen)
-                                assert(ice.shp == [0, 0, 0, 0, 0])
-                                assert(ice.shp_fctr == [0, 0, 0, 0, 0])
 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
@@ -232,22 +221,9 @@ def test_v4_clean(new_benchmark_ad_clean):
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
                                 illumination.solzen = zen
-                                illumination.mu_not = np.cos(math.radians(np.rint(zen)))
+                                illumination.calculate_irradiance()
                                 impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
                                 ice.calculate_refractive_index()
-                                illumination.calculate_irradiance()
-
-                                
-                                assert(len(impurities[0].conc)==5)
-                                assert(impurities[0].name=='bc')
-                                assert(impurities[0].cfactor==1)
-                                assert(ice.nbr_lyr==5)
-                                assert(len(impurities)==1)
-                                assert(impurities[0].conc==[bc, bc, bc, bc, bc])
-                                assert(illumination.incoming==4)
-                                assert(illumination.solzen == zen)
-                                assert(ice.shp == [0, 0, 0, 0, 0])
-                                assert(ice.shp_fctr == [0, 0, 0, 0, 0])
 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
@@ -351,11 +327,6 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     return ice, illumination, impurities, rt_config, model_config
 
 
-
-
-
-
-
 def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_tolerance):
     # check that for each individual wavelenght, the spectral albedo
     # matches to within tolerance between the two models
@@ -403,28 +374,30 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
     plt.savefig("./tests/test_data/py_mat_comparison.png")
 
 
+
 # each parametrize decorator defines a range of values for
 # a specific input parameter
-@pytest.mark.parametrize("direct", [0, 1])
-@pytest.mark.parametrize("aprx_typ", [1, 2, 3])
-@pytest.mark.parametrize("incoming", [0, 1, 2, 3, 4, 5, 6])
-@pytest.mark.parametrize("rf", [0, 1, 2])
-def test_config_fuzzer(direct, aprx_typ, incoming, rf, fuzz):
+@pytest.mark.parametrize("dir", [0, 1])
+@pytest.mark.parametrize("aprx", [1, 2, 3])
+@pytest.mark.parametrize("inc", [0, 1, 2, 3, 4, 5, 6])
+@pytest.mark.parametrize("ref", [0, 1, 2])
+def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     runs for both solvers
     """
     
     if fuzz:
+
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
-        status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
-        ice, impurities, illumination, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
 
-        rt_config.aprx_typ = aprx_typ
-        illumination.direct = direct
-        illumination.incoming = incoming
-        ice.rf = rf 
+        rt_config.aprx_typ = aprx
+        illumination.direct = dir
+        illumination.incoming = inc
+        ice.rf = ref
+        illumination.calculate_irradiance() 
 
         ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
         tau, ssa, g, L_snw = mix_in_impurities(
@@ -446,19 +419,18 @@ def test_config_fuzzer(direct, aprx_typ, incoming, rf, fuzz):
 
 @pytest.mark.parametrize("rds", [1000, 5000, 10000])
 @pytest.mark.parametrize("rho", [400, 600, 800])
-@pytest.mark.parametrize("solzen", [30, 50, 70])
+@pytest.mark.parametrize("zen", [30, 50, 70])
 @pytest.mark.parametrize("cfactor", [1, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer(rds, rho, solzen, cfactor, dust, algae, fuzz):
+def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     """
 
     if fuzz:
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
-        status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
-        ice, impurities, illumination, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
         impurities = []
 
@@ -475,7 +447,8 @@ def test_var_fuzzer(rds, rho, solzen, cfactor, dust, algae, fuzz):
 
         ice.rds = [rds]*len(ice.dz)
         ice.rho = [rho]*len(ice.dz)
-        illumination.solzen = solzen
+        illumination.solzen = zen
+        illumination.calculate_irradiance()
 
 
         ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
