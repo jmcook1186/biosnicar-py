@@ -150,6 +150,7 @@ def test_v4(new_benchmark_ad):
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
                                 illumination.solzen = zen
+                                illumination.mu_not = np.cos(math.radians(np.rint(zen)))
                                 impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
                                 ice.calculate_refractive_index()
                                 illumination.calculate_irradiance()
@@ -231,6 +232,7 @@ def test_v4_clean(new_benchmark_ad_clean):
                                 ice.rho = [density]*len(ice.dz)
                                 ice.rds = [reff]*len(ice.dz)
                                 illumination.solzen = zen
+                                illumination.mu_not = np.cos(math.radians(np.rint(zen)))
                                 impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
                                 ice.calculate_refractive_index()
                                 illumination.calculate_irradiance()
