@@ -101,8 +101,9 @@ class Illumination:
         self.calculate_irradiance()
 
     def calculate_irradiance(self):
+        
         # update mu_not from solzen
-        self.mu_not = int(np.cos(math.radians(np.rint(self.solzen))))
+        self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
         
         # calculate irradiance from file
         cloud_stub = "_cld"
