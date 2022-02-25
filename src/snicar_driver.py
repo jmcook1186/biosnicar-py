@@ -157,7 +157,7 @@ Inputs.verbosity = 0  # 1 to print real-time updates
 # 3) Choose plot/print options
 # --------------------------------------------------------------------------------------
 
-SHOW_FIGS = False  # toggle to display spectral albedo figure
+SHOW_FIGS = True  # toggle to display spectral albedo figure
 SAVE_FIGS = False  # toggle to save spectral albedo figure to file
 PRINT_BBA = True  # toggle to print broadband albedo to terminal
 PRINT_BAND_RATIOS = True  # toggle to print various band ratios to terminal
@@ -427,7 +427,9 @@ if Inputs.solzen > 89:  # pylint: disable=W0143
         "Surface irradiance profiles exist for a solar\
         zenith angle < 90 degrees. Solzen set to 89."
     )
-
+for lyr in range(len(Inputs.dz)):
+    if Inputs.cdom_layer[lyr] == 1 and Inputs.layer_type[lyr] == 0: 
+       raise ValueError("CDOM option only available for solid ice layers")
 # --------------------------------------------------------------------------------------
 # CONFIG  AND CALL SNICAR
 # --------------------------------------------------------------------------------------

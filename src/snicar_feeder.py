@@ -629,7 +629,7 @@ def snicar_feeder(Inputs):
 
             if Inputs.cdom_layer[i]:
                 cdom_refidx_im = np.array(
-                    pd.read_csv(dir_ri_ice + "k_cdom_240_750.csv")
+                    pd.read_csv(Inputs.dir_base + "Data/OP_data/k_cdom_240_750.csv")
                 ).flatten()
 
                 # rescale to SNICAR resolution
