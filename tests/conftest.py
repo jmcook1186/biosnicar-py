@@ -33,7 +33,7 @@ def get_python_data_toon():
 
 @pytest.fixture
 def set_tolerance():
-    return 1e-3
+    return 1e-5
 
 
 @pytest.fixture
@@ -43,16 +43,16 @@ def get_n_spectra():
 
 @pytest.fixture
 def fuzz():
-    return False
+    return True
 
 @pytest.fixture
 def new_benchmark_ad():
-    return False
+    return True
 
 @pytest.fixture
 def new_benchmark_ad_clean():
-    return False
+    return True
 
 @pytest.fixture
 def new_benchmark_toon():
-    return False
+    return True

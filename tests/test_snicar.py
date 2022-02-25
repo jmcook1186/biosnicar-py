@@ -287,8 +287,6 @@ def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_cl
 
 
 
-
-
 def match_matlab_config(ice, illumination, rt_config, model_config):
     """
     make sure all vars held constant across tetss are set equal to
@@ -305,6 +303,9 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     ice.water = [0]*nbr_lyr
     ice.nbr_lyr = nbr_lyr
     ice.layer_type = [0]*nbr_lyr
+    ice.rds = [ice.rds[0]]*nbr_lyr
+    ice.rho = [ice.rho[0]]*nbr_lyr
+    ice.dz = [0.1]*nbr_lyr
 
     illumination.incoming = 4
     illumination.direct = 1
@@ -392,12 +393,12 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
         ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
-
         rt_config.aprx_typ = aprx
         illumination.direct = dir
-        illumination.incoming = inc
         ice.rf = ref
-        illumination.calculate_irradiance() 
+        ice.calculate_refractive_index()
+        illumination.incoming = inc
+        illumination.calculate_irradiance()  
 
         ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
         tau, ssa, g, L_snw = mix_in_impurities(
@@ -407,8 +408,8 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
         tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
         )
 
-        outputs_ad = toon_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+        outputs_ad = adding_doubling_solver(
+        tau, ssa, g, L_snw, ice, illumination, model_config
         )
 
     else:
@@ -459,8 +460,8 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
         tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
         )
 
-        outputs_ad = toon_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+        outputs_ad = adding_doubling_solver(
+        tau, ssa, g, L_snw, ice, illumination, model_config
         )
 
     else:
