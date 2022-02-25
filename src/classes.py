@@ -42,7 +42,7 @@ class Ice:
         self.layer_type = inputs["VARIABLES"]["layer_type"]
         self.cdom = inputs["VARIABLES"]["cdom"]
         self.rho = inputs["VARIABLES"]["rho"]
-        self.sfc = [0.25]*480
+        self.sfc = np.array([0.25]*480)
         # self.sfc = np.genfromtxt(
         #     inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
         # )
@@ -102,7 +102,7 @@ class Illumination:
 
     def calculate_irradiance(self):
         # update mu_not from solzen
-        self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
+        self.mu_not = int(np.cos(math.radians(np.rint(self.solzen))))
         
         # calculate irradiance from file
         cloud_stub = "_cld"
