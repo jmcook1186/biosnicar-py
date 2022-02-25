@@ -192,14 +192,14 @@ Inputs.incoming_i = 0
 # For granular layers + Fresnel layers, choose add_double
 # --------------------------------------------------------------------------------------
 
-Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
+Inputs.toon = True  # toggle toon et al tridiagonal matrix solver
 Inputs.add_double = True  # toggle addintg-doubling solver
 
 
 Inputs.dz = [0.1, 0.1]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [1, 1]  # Fresnel layers (set all to 0 if toon = True)
-Inputs.cdom_layer = [0, 0]  # Only for layer type == 1
+Inputs.layer_type = [1, 0]  # Fresnel layers (set all to 0 if toon = True)
+Inputs.cdom_layer = [0,1]  # Only for layer type == 1
 Inputs.rho_layers = [450, 450]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
@@ -427,7 +427,9 @@ if Inputs.solzen > 89:  # pylint: disable=W0143
         "Surface irradiance profiles exist for a solar\
         zenith angle < 90 degrees. Solzen set to 89."
     )
-
+for lyr in range(len(Inputs.dz)): 
+    if Inputs.cdom_layer[lyr] == 1 and Inputs.layer_type[lyr] == 0:
+        raise ValueError("CDOM option only available for solid ice layers")
 # --------------------------------------------------------------------------------------
 # CONFIG  AND CALL SNICAR
 # --------------------------------------------------------------------------------------
