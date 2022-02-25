@@ -28,7 +28,7 @@ RTM:
 VARIABLES:
   dz: [0.001,0.146]  # thickness of each vertical layer (unit : m)
   layer_type: [1,1]  # Fresnel layers (set all to 0 if toon : True)
-  cdom: [0, 0]  # Only for layer type :: 1
+  cdom: [1, 0]  # Only for layer type :: 1
   rho: [916, 290]  # density of each layer (unit : kg m-3)
   rf: 2
   shp: [0, 0]  # grain shape (He et al. 2016, 2017)
@@ -40,7 +40,7 @@ VARIABLES:
   ar: [0, 0]
 
 PATHS:
-  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"
+  DIR_BASE: "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/"
   WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
