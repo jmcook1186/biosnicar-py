@@ -68,10 +68,8 @@ def get_layer_OPs(ice, impurities, model_config):
         else:  # solid ice layer (ice.layer_type == 1)
 
             if ice.cdom[i]:
-                cdom = pd.read_csv("k_cdom_240_750.csv")
-                cdom_ref_idx_im = np.array(ice.ref_idx_im + cdom).flatten()
-                print(cdom_ref_idx_im.shape)
-
+                cdom = pd.read_csv(model_config.dir_base+"Data/OP_data/k_cdom_240_750.csv")
+                cdom_ref_idx_im = np.array(cdom).flatten()
                 # rescale to SNICAR resolution
                 cdom_ref_idx_im_rescaled = cdom_ref_idx_im[::10]
                 ice.ref_idx_im[3:54] = np.fmax(ice.ref_idx_im[3:54], cdom_ref_idx_im_rescaled)
