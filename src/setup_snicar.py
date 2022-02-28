@@ -6,9 +6,9 @@ import csv
 def setup_snicar():
 
     impurities = build_impurities_array()
-    ice, illumination, rt_config, model_config, plot_config = build_classes()
+    ice, illumination, rt_config, model_config, plot_config, display_config = build_classes()
 
-    return ice, illumination, rt_config, model_config, plot_config, impurities
+    return ice, illumination, rt_config, model_config, plot_config, display_config, impurities
 
 
 def build_classes():
@@ -18,8 +18,9 @@ def build_classes():
     rt_config = RTConfig()
     model_config = ModelConfig()
     plot_config = PlotConfig()
+    display_config = DisplayConfig()
 
-    return ice, illumination, rt_config, model_config, plot_config
+    return ice, illumination, rt_config, model_config, plot_config, display_config
 
 
 def build_impurities_array():

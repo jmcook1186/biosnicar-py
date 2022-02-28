@@ -213,7 +213,7 @@ class PlotConfig:
 
 
 class DisplayConfig:
-    def __init__():
+    def __init__(self):
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
