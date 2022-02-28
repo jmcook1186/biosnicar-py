@@ -28,8 +28,7 @@ class Impurity:
         self.g = self.impurity_properties["asm_prm"].values
 
         assert len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480
-    
- 
+
 
 class Ice:
     def __init__(self):
@@ -38,26 +37,24 @@ class Ice:
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.dz = inputs["VARIABLES"]["dz"]
-        self.layer_type = inputs["VARIABLES"]["layer_type"]
-        self.cdom = inputs["VARIABLES"]["cdom"]
-        self.rho = inputs["VARIABLES"]["rho"]
-        self.sfc = np.array([0.25]*480)
-        # self.sfc = np.genfromtxt(
-        #     inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
-        # )
-        self.rf = inputs["VARIABLES"]["rf"]
-        self.shp = inputs["VARIABLES"]["shp"]
-        self.rds = inputs["VARIABLES"]["rds"]
-        self.water = inputs["VARIABLES"]["water"]
-        self.hex_side = inputs["VARIABLES"]["hex_side"]
-        self.hex_length = inputs["VARIABLES"]["hex_length"]
-        self.shp_fctr = inputs["VARIABLES"]["shp_fctr"]
-        self.ar = inputs["VARIABLES"]["ar"]
+        self.dz = inputs["VARIABLES"]["DZ"]
+        self.layer_type = inputs["VARIABLES"]["LAYER_TYPE"]
+        self.cdom = inputs["VARIABLES"]["CDOM"]
+        self.rho = inputs["VARIABLES"]["RHO"]
+        self.sfc = np.genfromtxt(
+            inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
+        )
+        self.rf = inputs["VARIABLES"]["RF"]
+        self.shp = inputs["VARIABLES"]["SHP"]
+        self.rds = inputs["VARIABLES"]["RDS"]
+        self.water = inputs["VARIABLES"]["WATER"]
+        self.hex_side = inputs["VARIABLES"]["HEX_SIDE"]
+        self.hex_length = inputs["VARIABLES"]["HEX_LENGTH"]
+        self.shp_fctr = inputs["VARIABLES"]["SHP_FCTR"]
+        self.ar = inputs["VARIABLES"]["AR"]
         self.nbr_lyr = len(self.dz)
 
         self.calculate_refractive_index()
-
 
     def calculate_refractive_index(self):
 
@@ -69,7 +66,7 @@ class Ice:
             inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc"
         )
 
-        rf = inputs["VARIABLES"]["rf"]
+        rf = inputs["VARIABLES"]["RF"]
         op_dir_stub = inputs["PATHS"]["OP_DIR_STUBS"][rf]
         ref_idx_name = op_dir_stub[4:9]
 
@@ -84,27 +81,26 @@ class Ice:
         self.op_dir = op_dir_stub
 
 
-
 class Illumination:
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.direct = inputs["RTM"]["direct"]
-        self.solzen = inputs["RTM"]["solzen"]
-        self.incoming = inputs["RTM"]["incoming"]
+        self.direct = inputs["RTM"]["DIRECT"]
+        self.solzen = inputs["RTM"]["SOLZEN"]
+        self.incoming = inputs["RTM"]["INCOMING"]
         self.flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
-        self.stubs = inputs["RTM"]["illumination_file_stubs"]
-        self.nbr_wvl = inputs["RTM"]["nbr_wvl"]
+        self.stubs = inputs["RTM"]["ILLUMINATION_FILE_STUBS"]
+        self.nbr_wvl = inputs["RTM"]["NBR_WVL"]
 
         self.calculate_irradiance()
-
-    def calculate_irradiance(self):
         
+    def calculate_irradiance(self):
+
         # update mu_not from solzen
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
-        
+
         # calculate irradiance from file
         cloud_stub = "_cld"
         coszen_stub = ""
@@ -114,7 +110,13 @@ class Illumination:
             coszen_stub = str("SZA" + str(self.solzen).rjust(2, "0"))
 
         incoming_file = xr.open_dataset(
-            str(self.flx_dir + self.stubs[self.incoming] + cloud_stub + coszen_stub + ".nc")
+            str(
+                self.flx_dir
+                + self.stubs[self.incoming]
+                + cloud_stub
+                + coszen_stub
+                + ".nc"
+            )
         )
 
         flx_slr = incoming_file["flx_frc_sfc"].values
@@ -139,10 +141,9 @@ class RTConfig:
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.aprx_typ = inputs["RTM"]["aprx_typ"]
-        self.delta = inputs["RTM"]["delta"]
-        self.toon = inputs["RTM"]["toon"]
-        self.add_double = inputs["RTM"]["add_double"]
+        self.aprx_typ = inputs["RTM"]["APRX_TYP"]
+        self.delta = inputs["RTM"]["DELTA"]
+
 
 
 class ModelConfig:
@@ -151,10 +152,6 @@ class ModelConfig:
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.show_figs = inputs["CTRL"]["SHOW_FIGS"]
-        self.save_figs = inputs["CTRL"]["SAVE_FIGS"]
-        self.print_bba = inputs["CTRL"]["PRINT_BBA"]
-        self.print_band_ratios = inputs["CTRL"]["PRINT_BAND_RATIOS"]
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
         self.poly_order = inputs["CTRL"]["POLY_ORDER"]
@@ -170,8 +167,8 @@ class ModelConfig:
         self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
         self.wavelengths = np.arange(0.205, 4.999, 0.01)
         self.nbr_wvl = len(self.wavelengths)
-        self.vis_max_idx = inputs["CTRL"]["VIS_MAX_IDX"]
-        self.nir_max_idx = inputs["CTRL"]["NIR_MAX_IDX"]
+        self.vis_max_idx = inputs["RTM"]["VIS_MAX_IDX"]
+        self.nir_max_idx = inputs["RTM"]["NIR_MAX_IDX"]
 
 
 class Outputs:
@@ -197,8 +194,8 @@ class PlotConfig:
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        #self.fig_width = inputs["PLOT"]["FIG_WIDTH"]
-        #self.fig_height = inputs["PLOT"]["FIG_HEIGHT"] 
+        # self.fig_width = inputs["PLOT"]["FIG_WIDTH"]
+        # self.fig_height = inputs["PLOT"]["FIG_HEIGHT"]
         self.figsize = inputs["PLOT"]["FIG_SIZE"]
         self.facecolor = inputs["PLOT"]["FACECOLOR"]
         self.grid = inputs["PLOT"]["GRID"]
@@ -213,3 +210,14 @@ class PlotConfig:
         self.ytick_left = inputs["PLOT"]["YTICK_LEFT"]
         self.show = inputs["PLOT"]["SHOW"]
         self.save = inputs["PLOT"]["SAVE"]
+
+
+class DisplayConfig:
+    def __init__():
+        with open("./src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
+            self.print_bba = inputs["CTRL"]["PRINT_BBA"]
+            self.print_band_ratios = inputs["CTRL"]["PRINT_BAND_RATIOS"]
+
+

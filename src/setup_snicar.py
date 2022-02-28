@@ -36,12 +36,12 @@ def build_impurities_array():
     dir_base = inputs["PATHS"]["DIR_BASE"]
 
     for i, id in enumerate(inputs["IMPURITIES"]):
-        name = inputs["IMPURITIES"][id]["name"]
-        file = inputs["IMPURITIES"][id]["file"]
-        cfactor = inputs["IMPURITIES"][id]["cfactor"]
-        coated = inputs["IMPURITIES"][id]["coated"]
-        unit = inputs["IMPURITIES"][id]["unit"]
-        conc = inputs["IMPURITIES"][id]["conc"]
+        name = inputs["IMPURITIES"][id]["NAME"]
+        file = inputs["IMPURITIES"][id]["FILE"]
+        cfactor = inputs["IMPURITIES"][id]["CFACTOR"]
+        coated = inputs["IMPURITIES"][id]["COATED"]
+        unit = inputs["IMPURITIES"][id]["UNIT"]
+        conc = inputs["IMPURITIES"][id]["CONC"]
         impurities.append(Impurity(dir_base, file, coated, cfactor, unit, name, conc))
 
     return impurities
