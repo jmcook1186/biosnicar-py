@@ -4,7 +4,7 @@ from classes import *
 
 def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
 
-    validate_inputs(ice, illumination)
+    validate_inputs_toon(ice, illumination)
     # ----------------------------------------------------------------------------------
     # PERFORM DELTA TRANSFORMATION IF REQUIRED
     # ----------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
     return outputs
 
 
-def validate_inputs(ice, illumination):
+def validate_inputs_toon(ice, illumination):
 
     """Checks input parameters are valid for Toon solver.
 
