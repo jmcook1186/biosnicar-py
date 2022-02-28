@@ -1,29 +1,42 @@
+from scipy.signal import savgol_filter
 from setup_snicar import *
 from classes import *
 import numpy as np
 
 
-def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, 
-                           model_config):
+def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
 
     """
-    This script is one of the two optional radiative transfer solvers 
-    available in this package. This script deals with the adding-doubling 
-    method as translated from MATLAB code from Chloe Whicker (UMich) - 
-    October 2020. When it becomes available, any use of this adding-doubling 
+    This script is one of the two optional radiative transfer solvers
+    available in this package. This script deals with the adding-doubling
+    method as translated from MATLAB code from Chloe Whicker (UMich) -
+    October 2020. When it becomes available, any use of this adding-doubling
     script should cite Chloe's paper.
 
-    This is the appropriate solver for any configuration where solid ice 
+    This is the appropriate solver for any configuration where solid ice
     layers and fresnel reflection are included.
 
     """
-    
-    # DEFINE CONSTANTS AND ARRAYS
-    tau0, g0, ssa0, epsilon, exp_min, nr, mu0, mu0n, trnlay, rdif_a, rdif_b, tdif_a,\
-    tdif_b, rdir, tdir, lyrfrsnl = define_constants_arrays(tau, g, ssa,
-                                                illumination,
-                                                ice, model_config)
 
+    # DEFINE CONSTANTS AND ARRAYS
+    (
+        tau0,
+        g0,
+        ssa0,
+        epsilon,
+        exp_min,
+        nr,
+        mu0,
+        mu0n,
+        trnlay,
+        rdif_a,
+        rdif_b,
+        tdif_a,
+        tdif_b,
+        rdir,
+        tdir,
+        lyrfrsnl,
+    ) = define_constants_arrays(tau, g, ssa, illumination, ice, model_config)
 
     # proceed down one layer at a time: if the total transmission to
     # the interface just above a given layer is less than trmin, then no
@@ -41,74 +54,101 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination,
             # within or below fl
             mu0n = mu0n
 
-
-        rdir,tdir,ts,ws,gs,lm = calc_reflectivity_transmittivity(tau0, ssa0, 
-                                                              g0, lyr,
-                                                              model_config, 
-                                                              exp_min, rdif_a, 
-                                                              tdif_a, trnlay, 
-                                                              mu0n,epsilon, 
-                                                              rdir, tdir)
+        rdir, tdir, ts, ws, gs, lm = calc_reflectivity_transmittivity(
+            tau0,
+            ssa0,
+            g0,
+            lyr,
+            model_config,
+            exp_min,
+            rdif_a,
+            tdif_a,
+            trnlay,
+            mu0n,
+            epsilon,
+            rdir,
+            tdir,
+        )
         # recalculate rdif,tdif using direct angular integration over rdir,tdir,
         # since Delta-Eddington rdif formula is not well-behaved (it is usually
         # biased low and can even be negative)  use ngmax angles and gaussian
         # integration for most accuracy:
-        smt, smr, swt = apply_gaussian_integral(model_config,exp_min, ts,ws, 
-                                                gs, epsilon,lm, lyr,
-                                                rdif_a, tdif_a)
-        
-        rdif_a, tdif_a,\
-        rdif_b, tdif_b = update_transmittivity_reflectivity(swt,smr, smt, lyr,
-                                    rdif_a, tdif_a,rdif_b, tdif_b)
+        smt, smr, swt = apply_gaussian_integral(
+            model_config, exp_min, ts, ws, gs, epsilon, lm, lyr, rdif_a, tdif_a
+        )
 
+        rdif_a, tdif_a, rdif_b, tdif_b = update_transmittivity_reflectivity(
+            swt, smr, smt, lyr, rdif_a, tdif_a, rdif_b, tdif_b
+        )
 
         if lyr == lyrfrsnl:
-            
-             rdif_a, rdif_b, tdif_a, tdif_b, trnlay,\
-             rdir, tdir = calc_correction_fresnel_layer(model_config,ice,
-                                                    illumination,mu0n,mu0,nr,
-                                                    rdif_a, rdif_b, 
-                                                    tdif_a, tdif_b, 
-                                                    trnlay, lyr,
-                                                    rdir,tdir)
-            
+
+            (
+                rdif_a,
+                rdif_b,
+                tdif_a,
+                tdif_b,
+                trnlay,
+                rdir,
+                tdir,
+            ) = calc_correction_fresnel_layer(
+                model_config,
+                ice,
+                illumination,
+                mu0n,
+                mu0,
+                nr,
+                rdif_a,
+                rdif_b,
+                tdif_a,
+                tdif_b,
+                trnlay,
+                lyr,
+                rdir,
+                tdir,
+            )
+
         trndir, trntdr, rdndif, trndif = calc_reflection_transmission_from_top(
-                                                            lyr, trnlay, 
-                                                            rdif_a, rdir, 
-                                                            tdif_a, rdif_b, 
-                                                            tdir, tdif_b, 
-                                                            model_config, ice)
+            lyr, trnlay, rdif_a, rdir, tdif_a, rdif_b, tdir, tdif_b, model_config, ice
+        )
 
-    
-    rupdif, rupdir = calc_reflection_below(ice, model_config, rdif_a, rdif_b, 
-                                       tdif_a, tdif_b,  trnlay,rdir, tdir)
-    
-    fdirup, fdifup, fdirdn, fdifdn = trans_refl_at_interfaces(model_config,
-                                                               ice,rupdif,
-                                                               rupdir,rdndif,
-                                                               trndir,trndif,
-                                                               trntdr)
-    
-    albedo, F_abs, F_btm_net, F_top_pls,F_abs = calculate_fluxes(model_config,
-                                                                 ice,
-                                                                 illumination,
-                                                                 fdirup, 
-                                                                 fdifup, 
-                                                                 fdirdn, 
-                                                                 fdifdn)
+    rupdif, rupdir = calc_reflection_below(
+        ice, model_config, rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
+    )
 
-    conservation_of_energy_check(illumination,F_abs,F_btm_net,F_top_pls)
-    
-    outputs=get_outputs(illumination,albedo, model_config, L_snw,
-                        F_abs,F_btm_net)
-    
+    fdirup, fdifup, fdirdn, fdifdn = trans_refl_at_interfaces(
+        model_config, ice, rupdif, rupdir, rdndif, trndir, trndif, trntdr
+    )
+
+    albedo, F_abs, F_btm_net, F_top_pls, F_abs = calculate_fluxes(
+        model_config, ice, illumination, fdirup, fdifup, fdirdn, fdifdn
+    )
+
+    conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls)
+
+    outputs = get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net)
+
+    if model_config.smooth:
+        outputs.albedo = apply_smoothing_function(outputs.albedo, model_config)
+
     return outputs
 
 
-
-def calc_reflectivity_transmittivity(tau0, ssa0, g0, lyr, model_config, 
-                                     exp_min, rdif_a, tdif_a, trnlay, mu0n, 
-                                     epsilon, rdir, tdir):
+def calc_reflectivity_transmittivity(
+    tau0,
+    ssa0,
+    g0,
+    lyr,
+    model_config,
+    exp_min,
+    rdif_a,
+    tdif_a,
+    trnlay,
+    mu0n,
+    epsilon,
+    rdir,
+    tdir,
+):
     # calculation over layers with penetrating radiation
     # includes optical thickness, single scattering albedo,
     # asymmetry parameter and total flux
@@ -151,9 +191,7 @@ def calc_reflectivity_transmittivity(tau0, ssa0, g0, lyr, model_config,
 
     #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
     alp = (
-        (0.75 * ws * mu0n)
-        * (1 + gs * (1 - ws))
-        / (1 - lm**2 * mu0n**2 + epsilon)
+        (0.75 * ws * mu0n) * (1 + gs * (1 - ws)) / (1 - lm**2 * mu0n**2 + epsilon)
     )  # alp = alpha(ws,mu0n,gs,lm)
     gam = (0.5 * ws) * (
         (1 + 3 * gs * mu0n**2 * (1 - ws)) / (1 - lm**2 * mu0n**2 + epsilon)
@@ -171,17 +209,18 @@ def calc_reflectivity_transmittivity(tau0, ssa0, g0, lyr, model_config,
         apg * tdif_a[:, lyr] + (amg * rdif_a[:, lyr] - apg + 1) * trnlay[:, lyr]
     )  # layer transmissivity to DIRECT radiation
 
-    return rdir,tdir,ts,ws,gs,lm
+    return rdir, tdir, ts, ws, gs, lm
+
 
 def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     tau0 = tau.T  # read and transpose tau
     g0 = g.T  # read and transpose g
     ssa0 = ssa.T  # read and transpose ssa
-    epsilon = 1e-5  # to deal with singularity    
-    exp_min = (1e-5) # exp(-500)  # min value > 0 to avoid error
+    epsilon = 1e-5  # to deal with singularity
+    exp_min = 1e-5  # exp(-500)  # min value > 0 to avoid error
     nr = np.zeros(shape=480)
     mu0 = illumination.mu_not * np.ones(480)  # cos beam angle = incident beam
-    
+
     # ice-adjusted real refractive index
     temp1 = (
         ice.ref_idx_re**2
@@ -201,27 +240,27 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     # (i.e. this is Snell's Law for refraction at interface between media)
     # mu0n = -1 represents light travelling vertically upwards and mu0n = +1
     # represents light travellign vertically downwards
-    # mu0n = np.sqrt(1-((1-mu0**2)/(ref_indx*ref_indx)))  (original, 
+    # mu0n = np.sqrt(1-((1-mu0**2)/(ref_indx*ref_indx)))  (original,
     # before update for diffuse Fresnel reflection)
     # this version accounts for diffuse fresnel reflection:
     mu0n = np.cos(np.arcsin(np.sin(np.arccos(mu0)) / nr))
-    
+
     # solar beam transm for layer (direct beam only)
     trnlay = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     # layer reflectivity to diffuse radiation from above
     rdif_a = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     # layer reflectivity to diffuse radiation from below
-    rdif_b = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1]) 
+    rdif_b = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     # layer transmission to diffuse radiation from above
-    tdif_a = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1]) 
+    tdif_a = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     # layer transmission to diffuse radiation from below
     tdif_b = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     # layer reflectivity to direct radiation (solar beam + diffuse)
     rdir = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
-    # layer transmission to direct radiation (solar beam + diffuse) 
+    # layer transmission to direct radiation (solar beam + diffuse)
     tdir = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
-    
-    # if there are non zeros in layer type, grab the index of the 
+
+    # if there are non zeros in layer type, grab the index of the
     # first fresnel layer and load in the precalculated diffuse fresnel
     # reflection
     # (precalculated as large no. of gaussian points required for convergence)
@@ -230,15 +269,31 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
 
     else:
         lyrfrsnl = 9999999
-    
-    return tau0, g0, ssa0, epsilon, exp_min, nr, mu0, mu0n, trnlay, rdif_a, rdif_b, tdif_a,\
-            tdif_b, rdir, tdir, lyrfrsnl
+
+    return (
+        tau0,
+        g0,
+        ssa0,
+        epsilon,
+        exp_min,
+        nr,
+        mu0,
+        mu0n,
+        trnlay,
+        rdif_a,
+        rdif_b,
+        tdif_a,
+        tdif_b,
+        rdir,
+        tdir,
+        lyrfrsnl,
+    )
 
 
-def calc_reflection_transmission_from_top(lyr, trnlay, rdif_a, rdir, tdif_a, 
-                                                rdif_b, tdir, tdif_b, 
-                                                model_config, ice):
-    
+def calc_reflection_transmission_from_top(
+    lyr, trnlay, rdif_a, rdir, tdif_a, rdif_b, tdir, tdif_b, model_config, ice
+):
+
     rdndif = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     trntdr = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     trndif = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -247,7 +302,7 @@ def calc_reflection_transmission_from_top(lyr, trnlay, rdif_a, rdir, tdif_a,
     trndif[:, 0] = 1
     rdndif[:, 0] = 0
     trndir[:, 0] = 1
-    
+
     # Eq. 51  Briegleb and Light 2007
     trndir[:, lyr + 1] = (
         trndir[:, lyr] * trnlay[:, lyr]
@@ -272,17 +327,16 @@ def calc_reflection_transmission_from_top(lyr, trnlay, rdif_a, rdir, tdif_a,
     # reflectivity to diffuse radiation for layers above
     rdndif[:, lyr + 1] = rdif_b[:, lyr] + (
         tdif_b[:, lyr] * rdndif[:, lyr] * refkm1 * tdif_a[:, lyr]
-    )  
+    )
     # diffuse transmission to diffuse beam for layers above
-    trndif[:, lyr + 1] = (
-        trndif[:, lyr] * refkm1 * tdif_a[:, lyr]
-    )  
-    
-    return trndir, trntdr, rdndif, trndif
- 
+    trndif[:, lyr + 1] = trndif[:, lyr] * refkm1 * tdif_a[:, lyr]
 
-def update_transmittivity_reflectivity(swt,smr, smt, lyr,rdif_a, 
-                                       tdif_a,rdif_b, tdif_b):
+    return trndir, trntdr, rdndif, trndif
+
+
+def update_transmittivity_reflectivity(
+    swt, smr, smt, lyr, rdif_a, tdif_a, rdif_b, tdif_b
+):
 
     rdif_a[:, lyr] = smr / swt
     tdif_a[:, lyr] = smt / swt
@@ -291,36 +345,40 @@ def update_transmittivity_reflectivity(swt,smr, smt, lyr,rdif_a,
     rdif_b[:, lyr] = rdif_a[:, lyr]
     tdif_b[:, lyr] = tdif_a[:, lyr]
     return rdif_a, tdif_a, rdif_b, tdif_b
- 
- 
-def apply_gaussian_integral(model_config,exp_min, ts,ws, gs, epsilon, lm, lyr,
-                      rdif_a, tdif_a):
+
+
+def apply_gaussian_integral(
+    model_config, exp_min, ts, ws, gs, epsilon, lm, lyr, rdif_a, tdif_a
+):
     # gaussian angles (radians)
-    gauspt = [0.9894009,
-                0.9445750,
-                0.8656312,
-                0.7554044,
-                0.6178762,
-                0.4580168,
-                0.2816036,
-                0.0950125,]
+    gauspt = [
+        0.9894009,
+        0.9445750,
+        0.8656312,
+        0.7554044,
+        0.6178762,
+        0.4580168,
+        0.2816036,
+        0.0950125,
+    ]
     # gaussian weights
-    gauswt = [0.0271525,
-                    0.0622535,
-                    0.0951585,
-                    0.1246290,
-                    0.1495960,
-                    0.1691565,
-                    0.1826034,
-                    0.1894506,
-                ] 
+    gauswt = [
+        0.0271525,
+        0.0622535,
+        0.0951585,
+        0.1246290,
+        0.1495960,
+        0.1691565,
+        0.1826034,
+        0.1894506,
+    ]
     swt = 0
     smr = 0
     smt = 0
     R1 = rdif_a[:, lyr]  # use R1 as temporary var
     T1 = tdif_a[:, lyr]  # use T1 as temporary var
-    
-    for ng in np.arange(0, len(gauspt), 1):  
+
+    for ng in np.arange(0, len(gauspt), 1):
         mu = gauspt[ng]  # solar zenith angles
         gwt = gauswt[ng]  # gaussian weight
         swt = swt + mu * gwt  # sum of weights
@@ -329,9 +387,7 @@ def apply_gaussian_integral(model_config,exp_min, ts,ws, gs, epsilon, lm, lyr,
         )  # transmission
 
         alp = (
-            (0.75 * ws * mu)
-            * (1 + gs * (1 - ws))
-            / (1 - lm**2 * mu**2 + epsilon)
+            (0.75 * ws * mu) * (1 + gs * (1 - ws)) / (1 - lm**2 * mu**2 + epsilon)
         )  # alp = alpha(ws,mu0n,gs,lm)
         gam = (
             (0.5 * ws)
@@ -345,17 +401,30 @@ def apply_gaussian_integral(model_config,exp_min, ts,ws, gs, epsilon, lm, lyr,
         tdr = apg * T1 + amg * R1 * trn - apg * trn + trn
         smr = smr + mu * rdr * gwt  # accumulator for rdif gaussian integration
         smt = smt + mu * tdr * gwt  # accumulator for tdif gaussian integration
-        
+
     return smt, smr, swt
- 
-def calc_correction_fresnel_layer(model_config,ice,illumination,mu0n,mu0,nr,
-                               rdif_a, rdif_b, tdif_a, tdif_b, trnlay, lyr,
-                               rdir,tdir):
-    
-    ref_indx = (ice.ref_idx_re + 1j * ice.ref_idx_im) 
+
+
+def calc_correction_fresnel_layer(
+    model_config,
+    ice,
+    illumination,
+    mu0n,
+    mu0,
+    nr,
+    rdif_a,
+    rdif_b,
+    tdif_a,
+    tdif_b,
+    trnlay,
+    lyr,
+    rdir,
+    tdir,
+):
+
+    ref_indx = ice.ref_idx_re + 1j * ice.ref_idx_im
     critical_angle = np.arcsin(ref_indx)
-    
-    
+
     for wl in np.arange(0, model_config.nbr_wvl, 1):
 
         if np.arccos(illumination.mu_not) < critical_angle[wl]:
@@ -398,12 +467,8 @@ def calc_correction_fresnel_layer(model_config,ice,illumination,mu0n,mu0,nr,
         # Eq. 25  Brigleb and light 2007
         # diffuse reflection of flux arriving from above
 
-        Rf_dif_a = ice.fl_r_dif_a[
-            wl
-        ]  # reflection from diffuse unpolarized radiation
-        Tf_dif_a = (
-            1 - Rf_dif_a
-        )  # transmission from diffuse unpolarized radiation
+        Rf_dif_a = ice.fl_r_dif_a[wl]  # reflection from diffuse unpolarized radiation
+        Tf_dif_a = 1 - Rf_dif_a  # transmission from diffuse unpolarized radiation
 
         # diffuse reflection of flux arriving from below
         Rf_dif_b = ice.fl_r_dif_b[wl]
@@ -414,9 +479,7 @@ def calc_correction_fresnel_layer(model_config,ice,illumination,mu0n,mu0,nr,
         # the fresnel (refractive) layer, always taken to be above
         # the present layer lyr (i.e. be the top interface):
 
-        rintfc = 1 / (
-            1 - Rf_dif_b * rdif_a[wl, lyr]
-        )  # denom interface scattering
+        rintfc = 1 / (1 - Rf_dif_b * rdif_a[wl, lyr])  # denom interface scattering
 
         # layer transmissivity to DIRECT radiation
         # Eq. B7  Briegleb & Light 2007
@@ -431,15 +494,12 @@ def calc_correction_fresnel_layer(model_config,ice,illumination,mu0n,mu0,nr,
 
         # R BAR = layer reflectivity to DIFFUSE radiation (above)
         # Eq. B9  Briegleb & Light 2007
-        rdif_a[wl, lyr] = (
-            Rf_dif_a + Tf_dif_a * rdif_a[wl, lyr] * rintfc * Tf_dif_b
-        )
+        rdif_a[wl, lyr] = Rf_dif_a + Tf_dif_a * rdif_a[wl, lyr] * rintfc * Tf_dif_b
 
         # R BAR = layer reflectivity to DIFFUSE radiation (below)
         # Eq. B10  Briegleb & Light 2007
         rdif_b[wl, lyr] = (
-            rdif_b[wl, lyr]
-            + tdif_b[wl, lyr] * Rf_dif_b * rintfc * tdif_a[wl, lyr]
+            rdif_b[wl, lyr] + tdif_b[wl, lyr] * Rf_dif_b * rintfc * tdif_a[wl, lyr]
         )
 
         # T BAR layer transmissivity to DIFFUSE radiation (above),
@@ -474,15 +534,16 @@ def calc_correction_fresnel_layer(model_config,ice,illumination,mu0n,mu0,nr,
     #                  lyr-1
     #         ---------------------  lyr
     #         \\\\\\\ ocean \\\\\\\
-        
+
     return rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
 
 
-def calc_reflection_below(ice, model_config, rdif_a, rdif_b, 
-                                       tdif_a, tdif_b, trnlay, rdir, tdir):
-    
+def calc_reflection_below(
+    ice, model_config, rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
+):
+
     # ! compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation
-    # ! for layers below by adding succesive layers starting from the 
+    # ! for layers below by adding succesive layers starting from the
     # ! underlying ice and working upwards:
     # !
     # !              layers       interface
@@ -492,44 +553,47 @@ def calc_reflection_below(ice, model_config, rdif_a, rdif_b,
     # !       ---------------------  lyr+1
     # !                lyr+1
     # !       ---------------------
-    
-    # reflectivity to diffuse radiation 
+
+    # reflectivity to diffuse radiation
     rupdif = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
-    rupdif[:, ice.nbr_lyr] = ice.sfc 
-    # reflectivity to direct radiation 
+    rupdif[:, ice.nbr_lyr] = ice.sfc
+    # reflectivity to direct radiation
     rupdir = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
-    rupdir[:, ice.nbr_lyr] = ice.sfc 
+    rupdir[:, ice.nbr_lyr] = ice.sfc
     for lyr in np.arange(
-            ice.nbr_lyr - 1, -1, -1
-        ):  # starts at the bottom and works its way up to the top layer
-    
-            # Eq. B5  Briegleb and Light 2007
-            # interface scattering
-            refkp1 = 1 / (1 - rdif_b[:, lyr] * rupdif[:, lyr + 1])
-    
-            # dir from top layer plus exp tran ref from lower layer, interface
-            # scattered and tran thru top layer from below, plus diff tran ref
-            # from lower layer with interface scattering tran thru top from below
-            rupdir[:, lyr] = (
-                rdir[:, lyr]
-                + (
-                    trnlay[:, lyr] * rupdir[:, lyr + 1]
-                    + (tdir[:, lyr] - trnlay[:, lyr]) * rupdif[:, lyr + 1]
-                )
-                * refkp1
-                * tdif_b[:, lyr]
+        ice.nbr_lyr - 1, -1, -1
+    ):  # starts at the bottom and works its way up to the top layer
+
+        # Eq. B5  Briegleb and Light 2007
+        # interface scattering
+        refkp1 = 1 / (1 - rdif_b[:, lyr] * rupdif[:, lyr + 1])
+
+        # dir from top layer plus exp tran ref from lower layer, interface
+        # scattered and tran thru top layer from below, plus diff tran ref
+        # from lower layer with interface scattering tran thru top from below
+        rupdir[:, lyr] = (
+            rdir[:, lyr]
+            + (
+                trnlay[:, lyr] * rupdir[:, lyr + 1]
+                + (tdir[:, lyr] - trnlay[:, lyr]) * rupdif[:, lyr + 1]
             )
-    
-            # dif from top layer from above, plus dif tran upwards reflected and
-            # interface scattered which tran top from below
-            rupdif[:, lyr] = (
-                rdif_a[:, lyr]
-                + tdif_a[:, lyr] * rupdif[:, lyr + 1] * refkp1 * tdif_b[:, lyr]
-            )
+            * refkp1
+            * tdif_b[:, lyr]
+        )
+
+        # dif from top layer from above, plus dif tran upwards reflected and
+        # interface scattered which tran top from below
+        rupdif[:, lyr] = (
+            rdif_a[:, lyr]
+            + tdif_a[:, lyr] * rupdif[:, lyr + 1] * refkp1 * tdif_b[:, lyr]
+        )
     return rupdif, rupdir
 
-def trans_refl_at_interfaces(model_config,ice,rupdif,rupdir,rdndif,trndir,trndif,trntdr):
-    
+
+def trans_refl_at_interfaces(
+    model_config, ice, rupdif, rupdir, rdndif, trndir, trndif, trntdr
+):
+
     fdirup = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     fdifup = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     fdirdn = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -537,7 +601,7 @@ def trans_refl_at_interfaces(model_config,ice,rupdif,rupdir,rdndif,trndir,trndif
     dfdir = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     dfdif = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     puny = 1e-10  # not sure how should we define this
-    
+
     for lyr in np.arange(0, ice.nbr_lyr + 1, 1):
 
         # Eq. 52  Briegleb and Light 2007
@@ -590,18 +654,18 @@ def trans_refl_at_interfaces(model_config,ice,rupdif,rupdir,rdndif,trndir,trndif
             dfdif[:, lyr] = np.zeros(
                 (model_config.nbr_wvl,), dtype=int
             )  #!echmod necessary?
-            
+
     return fdirup, fdifup, fdirdn, fdifdn
 
-def calculate_fluxes(model_config,ice,illumination,fdirup, 
-                     fdifup, fdirdn, fdifdn):
-    
+
+def calculate_fluxes(model_config, ice, illumination, fdirup, fdifup, fdirdn, fdifdn):
+
     F_up = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     F_dwn = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     F_abs = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr])
     F_abs_vis = np.zeros(shape=[ice.nbr_lyr])
     F_abs_nir = np.zeros(shape=[ice.nbr_lyr])
-    
+
     for n in np.arange(0, ice.nbr_lyr + 1, 1):
 
         F_up[:, n] = (
@@ -625,17 +689,19 @@ def calculate_fluxes(model_config,ice,illumination,fdirup,
     # media = absorbed radiation by underlying surface:
     F_btm_net = -F_net[:, ice.nbr_lyr]
 
-
     for i in np.arange(0, ice.nbr_lyr, 1):  # [0,1,2,3,4]
 
-        F_abs_vis[i] = sum(F_abs[0:model_config.vis_max_idx, i])
-        F_abs_nir[i] = sum(F_abs[model_config.vis_max_idx:model_config.nir_max_idx, i])
+        F_abs_vis[i] = sum(F_abs[0 : model_config.vis_max_idx, i])
+        F_abs_nir[i] = sum(
+            F_abs[model_config.vis_max_idx : model_config.nir_max_idx, i]
+        )
 
     albedo = F_up[:, 0] / F_dwn[:, 0]
-    
+
     return albedo, F_abs, F_btm_net, F_top_pls, F_abs
 
-def conservation_of_energy_check(illumination,F_abs,F_btm_net,F_top_pls):
+
+def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
     # Incident direct+diffuse radiation equals (absorbed+transmitted+bulk_reflected)
     energy_sum = (
         (illumination.mu_not * np.pi * illumination.Fs)
@@ -651,58 +717,66 @@ def conservation_of_energy_check(illumination,F_abs,F_btm_net,F_top_pls):
     else:
         pass
 
-def get_outputs(illumination,albedo,model_config, L_snw,
-                F_abs,F_btm_net):
-    
+
+def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
+
     outputs = Outputs()
-    
+
     # Radiative heating rate:
     F_abs_slr = np.sum(F_abs, axis=0)
     heat_rt = F_abs_slr / (L_snw * 2117)  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
     outputs.heat_rt = heat_rt * 3600  # [K/hr]
-    
-    # Spectral albedo  
-    outputs.albedo = albedo 
-    
+
+    # Spectral albedo
+    outputs.albedo = albedo
+
     # Spectrally-integrated solar, visible, and NIR albedos:
     outputs.BBA = np.sum(illumination.flx_slr * albedo) / np.sum(illumination.flx_slr)
     outputs.BBAVIS = np.sum(
-        illumination.flx_slr[0:model_config.vis_max_idx] * albedo[0:model_config.vis_max_idx]
-        ) / np.sum(illumination.flx_slr[0:model_config.vis_max_idx])
+        illumination.flx_slr[0 : model_config.vis_max_idx]
+        * albedo[0 : model_config.vis_max_idx]
+    ) / np.sum(illumination.flx_slr[0 : model_config.vis_max_idx])
     outputs.BBANIR = np.sum(
-        illumination.flx_slr[model_config.vis_max_idx:model_config.nir_max_idx] * 
-        albedo[model_config.vis_max_idx:model_config.nir_max_idx]
-        ) / np.sum(illumination.flx_slr[model_config.vis_max_idx:model_config.nir_max_idx])
-    
+        illumination.flx_slr[model_config.vis_max_idx : model_config.nir_max_idx]
+        * albedo[model_config.vis_max_idx : model_config.nir_max_idx]
+    ) / np.sum(
+        illumination.flx_slr[model_config.vis_max_idx : model_config.nir_max_idx]
+    )
+
     # Total incident insolation( Wm - 2)
     outputs.total_insolation = np.sum(
-    (illumination.mu_not * np.pi * illumination.Fs) + illumination.Fd
+        (illumination.mu_not * np.pi * illumination.Fs) + illumination.Fd
     )
-    
+
     # Spectrally-integrated absorption by underlying surface:
     outputs.abs_slr_btm = np.sum(F_btm_net, axis=0)
-    outputs.abs_vis_btm = np.sum(F_btm_net[0:model_config.vis_max_idx], axis=0)
-    outputs.abs_nir_btm = np.sum(F_btm_net[model_config.vis_max_idx : model_config.nir_max_idx + 1], axis=0)
-    
+    outputs.abs_vis_btm = np.sum(F_btm_net[0 : model_config.vis_max_idx], axis=0)
+    outputs.abs_nir_btm = np.sum(
+        F_btm_net[model_config.vis_max_idx : model_config.nir_max_idx + 1], axis=0
+    )
+
     # Spectrally-integrated VIS and NIR total snowpack absorption:
-    outputs.abs_vis_tot = np.sum(illumination.flx_slr[0:model_config.vis_max_idx] *
-                                 (1 - albedo[0:model_config.vis_max_idx]))
+    outputs.abs_vis_tot = np.sum(
+        illumination.flx_slr[0 : model_config.vis_max_idx]
+        * (1 - albedo[0 : model_config.vis_max_idx])
+    )
     outputs.abs_nir_tot = np.sum(
-        illumination.flx_slr[model_config.vis_max_idx:model_config.nir_max_idx]
-        * (1 - albedo[model_config.vis_max_idx:model_config.nir_max_idx])
-        )
+        illumination.flx_slr[model_config.vis_max_idx : model_config.nir_max_idx]
+        * (1 - albedo[model_config.vis_max_idx : model_config.nir_max_idx])
+    )
     # Spectrally-integrated absorption by entire snow/ice column
-    outputs.abs_slr_tot = np.sum(F_abs_slr) 
-    
+    outputs.abs_slr_tot = np.sum(F_abs_slr)
+
     # Spectrally-integrated absorption by each layer
     outputs.absorbed_flux_per_layer = F_abs_slr
-         
+
     return outputs
 
 
 
-
-
-
-
-
+def apply_smoothing_function(albedo, model_config):
+    
+    yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
+    albedo = yhat
+    
+    return albedo

@@ -40,7 +40,7 @@ tau, ssa, g, L_snw = mix_in_impurities(
 # now run one or both of the radiative transfer solvers
 outputs = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config)
 
-# outputs=toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
+outputs=toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config)
 # plot_albedo(plot_config,model_config, outputs2.albedo)
 print(outputs.BBA)
 

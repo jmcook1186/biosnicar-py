@@ -1,3 +1,4 @@
+from scipy.signal import savgol_filter
 from setup_snicar import *
 from classes import *
 
@@ -118,6 +119,9 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
         model_config, ice, illumination, F_top_pls, F_top_net, F_btm_net, F_abs, L_snw
     )
 
+    if model_config.smooth:
+        outputs.albedo = apply_smoothing_function(outputs.albedo, model_config)
+
     return outputs
 
 
@@ -131,10 +135,10 @@ def validate_inputs_toon(ice, illumination):
     Args:
         ice: class representing the ice column and containing related physical constants
         illumination: class representing incoming irradiance containing related physical constants
-    
+
     Returns:
         None
-    
+
     Raises:
         ValueError: raised with descriptive error message if invalid input detected
     """
@@ -148,6 +152,7 @@ def validate_inputs_toon(ice, illumination):
         raise ValueError("cdom is only available for solid ice layers")
 
     return
+
 
 def delta_transformation(rt_config, g, ssa, tau):
 
@@ -590,7 +595,7 @@ def get_outputs(
 
     # Spectrally-integrated absorption in each layer:
     outputs.abs_slr = np.sum(F_abs, axis=1)
-    
+
     # energy absorbed by underlying substrate
     outputs.abs_slr_btm = sum(np.squeeze(F_btm_net))
     outputs.abs_vis_btm = sum(np.squeeze(F_btm_net[0 : model_config.vis_max_idx]))
@@ -642,3 +647,11 @@ def get_outputs(
     outputs.absorbed_flux_per_layer = F_abs
 
     return outputs
+
+
+def apply_smoothing_function(albedo, model_config):
+    
+    yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
+    albedo = yhat
+    
+    return albedo
