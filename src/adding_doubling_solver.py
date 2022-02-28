@@ -4,19 +4,59 @@ from classes import *
 import numpy as np
 
 
+""" Radiative transfer solver using the adding-doublign method.
+
+Here the ice/impurity optical properties and illumination conditions
+are used to calculate energy fl;uxes between the ice, atmosphere and
+underlying substrate.
+
+Typically this function would be called from snicar_driver() because
+it takes as inputs intermediates that are calculated elsewhere.
+Specifically, the functions setup_snicar(), get_layer_OPs() and
+mix_in_impurities() are called to generate tau, ssa, g and L_snw,
+which are then passed as inputs to adding_doubling_solver().
+
+The adding-doubling routine implemented here originates in Brieglib 
+and Light (2007) and was coded up in Matlab by Chloe Whicker and Mark 
+Flanner to be published in Whicker (2022: The Cryosphere). Their 
+scripts were the jumping off point for this script and their code is still
+used to benchmark this script against.
+
+The adding-doubling solver implemented here has been shown to do an excellent
+job at simulating solid glacier ice. This solver can either treat ice as a 
+"granular" material with a bulk medium of air with discrete ice grains, or
+as a bulk medium of ice with air inclusions. In the latter case, the upper
+boundary is a Fresnel reflecting surface. Total internal reflection is accounted
+for if the irradiance angles exceed the critical angle.
+
+This is always the appropriate solver to use in any  model configuration where 
+solid ice layers and fresnel reflection are included.
+
+"""
+
 def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
+    """control function for the adding-doubling solver.
+    
+    Makes function calls in sequence to generate, then return, an instance of
+    Outputs class.
+    
+    Args:
+        tau: optical thickness of ice column in m/m
+        ssa: single scattering albedo of ice column (dimensionless)
+        g: asymmetry parameter for ice column
+        L_snw: mass of ice in lg
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        model_config: instance of ModelConfig class
+
+    Returns:
+        outputs: Instance of Outputs class
+    
+    Raises:
+        ValueError if violation of conservation of energy detected
 
     """
-    This script is one of the two optional radiative transfer solvers
-    available in this package. This script deals with the adding-doubling
-    method as translated from MATLAB code from Chloe Whicker (UMich) -
-    October 2020. When it becomes available, any use of this adding-doubling
-    script should cite Chloe's paper.
 
-    This is the appropriate solver for any configuration where solid ice
-    layers and fresnel reflection are included.
-
-    """
 
     # DEFINE CONSTANTS AND ARRAYS
     (
@@ -213,6 +253,39 @@ def calc_reflectivity_transmittivity(
 
 
 def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
+    """defines and instantiates constants required for a-d calculations.
+
+    Defines and instantiates all variables required for calculating energy fluxes
+    using the adding-doubling method.
+
+    Args:
+        tau: optical thickness of ice column in m/m
+        g: asymmetry parameter for ice column
+        ssa: single scattering albedo of ice column (dimensionless)
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        model_config: instance of ModelConfig class
+
+    Returns:
+        tau0: initial optical thickness (m/m)
+        g0: initial asymmetry parameter (dimensionless)
+        ssa0: initial single scatterign albedo (dimensionless)
+        epsilon: small number to avoid singularity
+        exp_min: small number to avoid zero calcs
+        nr: real part of refractive index
+        mu0: cosine of direct beam zenith angle
+        mu0n: adjusted cosine of direct beam zenith angle after refraction
+        trnlay: transmission through layer
+        rdif_a: reflectivity to diffuse irradiance at polarization angle == perpendicular
+        rdif_b: reflectivity to diffuse irradiance at polarization angle == parallel
+        tdif_a: transmissivity to diffuse irradiance at polarization angle == perpendicular
+        tdif_b: transmissivity to diffuse irradiance at polarization angle == parallel
+        rdir: reflectivity to direct beam
+        tdir: transmissivity to direct beam
+        lyrfrsnl: index of uppermost fresnel reflecting layer in ice column  
+    
+    """
+
     tau0 = tau.T  # read and transpose tau
     g0 = g.T  # read and transpose g
     ssa0 = ssa.T  # read and transpose ssa
@@ -293,6 +366,47 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
 def calc_reflection_transmission_from_top(
     lyr, trnlay, rdif_a, rdir, tdif_a, rdif_b, tdir, tdif_b, model_config, ice
 ):
+    """Calculates the reflection and transmission of energy at top surfaces.
+
+    Calculate the solar beam transmission, total transmission, and
+    reflectivity for diffuse radiation from below at interface lyr,
+    the top of the current layer lyr:
+    
+                    layers       interface
+    
+             ---------------------  lyr-1
+                      lyr-1
+             ---------------------  lyr
+                       lyr
+             ---------------------
+       note that we ignore refraction between sea ice and underlying substrate:
+    
+                    layers       interface
+    
+             ---------------------  lyr-1
+                      lyr-1
+             ---------------------  lyr
+             \\\\\\\ R_sfc \\\\\\\
+
+    Args:
+        lyr: integer representing the index of the current layer (0 at top)
+        trnlay: transmissivity of current layer
+        rdif_a: reflectivity to diffuse irradiance at polarization state == perpendicular
+        rdir: reflectivity to direct beam
+        tdif_a: transmissivity to diffuse irradiance at polarization state == perpendicular
+        rdif_b: reflectivity to diffuse irradiance at polarization state == parallel
+        tdir: transmissivity to direct beam
+        tdif_b: transmissivity to diffuse irradiance at polarization state == parallel
+        model_config: instance of ModelConfig class
+        ice: instance of Ice class
+    
+    Returns:
+        trndir: transmission of direct beam
+        trntdr: total transmission of direct beam for all layers above current layer
+        rdndif: downwards diffuse reflectance
+        trndif: diffuse transmission
+
+    """
 
     rdndif = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     trntdr = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -334,22 +448,33 @@ def calc_reflection_transmission_from_top(
     return trndir, trntdr, rdndif, trndif
 
 
-def update_transmittivity_reflectivity(
-    swt, smr, smt, lyr, rdif_a, tdif_a, rdif_b, tdif_b
-):
-
-    rdif_a[:, lyr] = smr / swt
-    tdif_a[:, lyr] = smt / swt
-
-    # homogeneous layer
-    rdif_b[:, lyr] = rdif_a[:, lyr]
-    tdif_b[:, lyr] = tdif_a[:, lyr]
-    return rdif_a, tdif_a, rdif_b, tdif_b
-
 
 def apply_gaussian_integral(
     model_config, exp_min, ts, ws, gs, epsilon, lm, lyr, rdif_a, tdif_a
 ):
+    """Applies gaussian integral to integrate over angles.
+
+    Uses gaussien integration to integrate fluxes hemispherically from
+    N of reference angles where N = len(gauspt) (default is 8).
+
+    Args:
+        model_config: instance of ModelConfig class
+        exp_min: small number for avoiding div/0 error
+        ts: delta-scaled extinction optical depth for lyr
+        ws: delta-scaled single scattering albedo for lyr
+        gs: delta-scaled asymmetry parameter for lyr
+        epsilon: small number to avoid singularity
+        lm: lamda for use in delta scaling
+        lyr: integer representing index of current layer (0==top)
+        rdif_a: rdif_a: reflectance to diffuse energy w polarization state == perpendicular
+        tdif_a: rdif_a: transmittance to diffuse energy w polarization state == perpendicular
+
+    Returns:
+        smt: accumulator for tdif gaussian integration
+        smr: accumulator for rdif gaussian integration
+        swt: sum of gaussian weights
+
+    """
     # gaussian angles (radians)
     gauspt = [
         0.9894009,
@@ -404,6 +529,36 @@ def apply_gaussian_integral(
 
     return smt, smr, swt
 
+def update_transmittivity_reflectivity(
+    swt, smr, smt, lyr, rdif_a, tdif_a, rdif_b, tdif_b
+):
+    """updates transmissivity and reflectivity values after iterations.
+
+    Args:
+        swt: sum of gaussian weights (for integrating over angle)
+        smr: accumulator for rdif gaussian integration
+        smt: accumulator for tdif gaussian integration
+        lyr: integer representign index of current layer (0 == top)
+        rdif_a: reflectance to diffuse energy w polarization state == perpendicular
+        rdif_b: reflectance to diffuse energy w polarization state == parallel
+        tdif_a: transmittance to diffuse energy w polarization state == perpendicular
+        tdif_b: transmittance to diffuse energy w polarization state == parallel
+    
+    Returns:
+        rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular
+        rdif_b: updated reflectance to diffuse energy w polarization state == parallel
+        tdif_a: updated transmittance to diffuse energy w polarization state == perpendicular
+        tdif_b: updated transmittance to diffuse energy w polarization state == parallel
+    """
+    rdif_a[:, lyr] = smr / swt
+    tdif_a[:, lyr] = smt / swt
+
+    # homogeneous layer
+    rdif_b[:, lyr] = rdif_a[:, lyr]
+    tdif_b[:, lyr] = tdif_a[:, lyr]
+    
+    return rdif_a, tdif_a, rdif_b, tdif_b
+
 
 def calc_correction_fresnel_layer(
     model_config,
@@ -421,6 +576,39 @@ def calc_correction_fresnel_layer(
     rdir,
     tdir,
 ):
+    """Calculates correction for Fresnel reflection and total internal reflection.
+
+    Corrects fluxes for Fresnel reflection in cases where total
+    internal reflection does and does not occur (angle > critical_angle). 
+    In TIR case fluxes are precalculated because ~256 gaussian points required 
+    for convergence.
+
+    Args:
+        model_config: instance of ModelConfig class
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        mu0n: incidence angle for direct beam adjusted for refraction
+        mu0: incidence angle of direct beam at upper surface
+        nr: real part of refractive index
+        rdif_a: reflectance to diffuse energy w polarization state == perpendicular
+        rdif_b: reflectance to diffuse energy w polarization state == parallel
+        tdif_a: transmittance to diffuse energy w polarization state == perpendicular
+        tdif_b: transmittance to diffuse energy w polarization state == parallel
+        trnlay: transmission of layer == lyr
+        lyr: current layer (0 ==top)
+        rdir: reflectance to direct beam
+        tdir: transmission of direct beam
+
+
+    Returns:
+        rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular
+        rdif_b: updated reflectance to diffuse energy w polarization state == parallel
+        tdif_a: updated transmittance to diffuse energy w polarization state == perpendicular
+        tdif_b: updated transmittance to diffuse energy w polarization state == parallel
+        trnlay: updated transmission of layer == lyr
+        rdir: updated reflectance to direct beam
+        tdir: updated transmission of direct beam
+    """
 
     ref_indx = ice.ref_idx_re + 1j * ice.ref_idx_im
     critical_angle = np.arcsin(ref_indx)
@@ -512,28 +700,6 @@ def calc_correction_fresnel_layer(
         # update trnlay to include fresnel transmission
         trnlay[wl, lyr] = Tf_dir_a * trnlay[wl, lyr]
 
-        # end lyr = lyrfrsnl condition
-        # end trntdr[lyr, wl] > trmin condition
-
-    #   Calculate the solar beam transmission, total transmission, and
-    #   reflectivity for diffuse radiation from below at interface lyr,
-    #   the top of the current layer lyr:
-    #
-    #                layers       interface
-    #
-    #         ---------------------  lyr-1
-    #                  lyr-1
-    #         ---------------------  lyr
-    #                   lyr
-    #         ---------------------
-    #   note that we ignore refraction between sea ice and underlying ocean:
-    #
-    #                layers       interface
-    #
-    #         ---------------------  lyr-1
-    #                  lyr-1
-    #         ---------------------  lyr
-    #         \\\\\\\ ocean \\\\\\\
 
     return rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
 
@@ -541,18 +707,37 @@ def calc_correction_fresnel_layer(
 def calc_reflection_below(
     ice, model_config, rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
 ):
+    """Calculates dir/diff reflectyivity for layers below surface.
 
-    # ! compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation
-    # ! for layers below by adding succesive layers starting from the
-    # ! underlying ice and working upwards:
-    # !
-    # !              layers       interface
-    # !
-    # !       ---------------------  lyr
-    # !                 lyr
-    # !       ---------------------  lyr+1
-    # !                lyr+1
-    # !       ---------------------
+    Compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation
+    for layers below by adding succesive layers starting from the
+    underlying ice and working upwards:
+    
+                  layers       interface
+    
+           ---------------------  lyr
+                     lyr
+           ---------------------  lyr+1
+                    lyr+1
+           ---------------------
+
+    Args:
+        model_config: instance of ModelConfig class
+        ice: instance of Ice class
+        rdif_a: reflectance to diffuse energy w polarization state == perpendicular
+        rdif_b: reflectance to diffuse energy w polarization state == parallel
+        tdif_a: transmittance to diffuse energy w polarization state == perpendicular
+        tdif_b: transmittance to diffuse energy w polarization state == parallel
+        trnlay: transmission of layer == lyr
+        rdir: reflectance to direct beam
+        tdir: transmission of direct beam
+    
+    Returns:
+        rupdir: upwards flux direct
+        rupdif: upwards flux diffuse
+
+
+    """
 
     # reflectivity to diffuse radiation
     rupdif = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -593,6 +778,26 @@ def calc_reflection_below(
 def trans_refl_at_interfaces(
     model_config, ice, rupdif, rupdir, rdndif, trndir, trndif, trntdr
 ):
+
+    """Calculates transmission and reflection at layer interfaces.
+
+    Args:
+        model_config: instance of ModelConfig class
+        ice: instance of Ice class
+        rupdif: total diffuse radiation reflected upwards
+        rupdir: total direct radiation reflected upwards
+        rdndif: downwards reflection of diffuse radiation
+        trndir: transmission of direct radiation
+        trndif: transmission of diffuse radiation
+        trntdr: total transmission
+    
+    Returns:
+        fdirup: upwards flux of direct radiation
+        fdifup: upwards flux of diffuse radiation
+        fdirdn: downwards flux of direct radiation
+        fdifdn: downwards flux of diffuse radiation
+
+    """
 
     fdirup = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     fdifup = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -659,6 +864,24 @@ def trans_refl_at_interfaces(
 
 
 def calculate_fluxes(model_config, ice, illumination, fdirup, fdifup, fdirdn, fdifdn):
+    """ Calculates total fluxes in each layer and for entire column.
+
+    Args:
+        model_config: instance of ModelConfig class
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        fdirup: upwards flux of direct radiation
+        fdifup: upwards flux od diffuse radiation
+        fdirdn: downwards flux of direct radiation
+        fdifdn: downwards flux of diffuse radiation
+    
+    Returns:
+        albedo: ratio of upwards fluxes to incoming irradiance
+        F_abs: absorbed flux in each layer
+        F_btm_net: net fluxes at bottom surface
+        F_top_pls: upwards flux from upper surface
+
+    """
 
     F_up = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
     F_dwn = np.zeros(shape=[model_config.nbr_wvl, ice.nbr_lyr + 1])
@@ -698,10 +921,25 @@ def calculate_fluxes(model_config, ice, illumination, fdirup, fdifup, fdirdn, fd
 
     albedo = F_up[:, 0] / F_dwn[:, 0]
 
-    return albedo, F_abs, F_btm_net, F_top_pls, F_abs
+    return albedo, F_abs, F_btm_net, F_top_pls
 
 
 def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
+    """Checks there is no conservation of energy violation.
+
+    Args:
+        illumination: instance of Illumination class
+        F_abs: absorbed flux in each layer
+        F_btm_net: net flux at bottom surface
+        F_top_pls: upwards flux from upper boundary
+    
+    Returns:
+        None
+    
+    Raises:
+        ValueError is conservation of energy error is detected
+
+    """
     # Incident direct+diffuse radiation equals (absorbed+transmitted+bulk_reflected)
     energy_sum = (
         (illumination.mu_not * np.pi * illumination.Fs)
@@ -719,7 +957,20 @@ def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
 
 
 def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
+    """Assimilates useful data into instance of Outputs class.
 
+    Args:
+        illumination: instance of Illumination class
+        albedo: ratio of upwwards fluxes and irradiance
+        model_config: instance of ModelConfig class
+        L_snw: mass of ice in each layer
+        F_abs: absorbed flux in each layer
+        F_btm_net: net flux at bottom surface 
+    
+    Returns:
+        outputs: instance of Outputs class
+
+    """
     outputs = Outputs()
 
     # Radiative heating rate:
@@ -775,7 +1026,14 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
 
 
 def apply_smoothing_function(albedo, model_config):
-    
+    """Applies Savitsky-Golay smoothing function to albedo, if toggled.
+
+    Args:
+        albedo: array of albedo values, likely passed as outputs.albedo
+        model_config: instance of ModelConfig
+        
+    """
+
     yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
     albedo = yhat
     

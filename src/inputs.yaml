@@ -1,7 +1,7 @@
 CTRL:
   PRINT_BBA: True
   PRINT_BAND_RATIOS: True
-  SMOOTH: False
+  SMOOTH: True
   WINDOW_SIZE: 9
   POLY_ORDER: 3
 
@@ -21,8 +21,8 @@ RTM:
 
 VARIABLES:
   DZ: [0.001,0.146]  # thickness of each vertical layer (unit : m)
-  LAYER_TYPE: [1,1]  # Fresnel layers (set all to 0 if toon : True)
-  CDOM: [1, 0]  # Only for layer type :: 1
+  LAYER_TYPE: [0,0]  # Fresnel layers (set all to 0 if toon : True)
+  CDOM: [0, 0]  # Only for layer type :: 1
   RHO: [916, 290]  # density of each layer (unit : kg m-3)
   RF: 2
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
@@ -30,7 +30,7 @@ VARIABLES:
   WATER: [0, 0]  # radius of optional liquid water coating
   HEX_SIDE: [ 10000, 10000]
   HEX_LENGTH: [10000, 10000]
-  SHP_FCTOR: [ 0, 0]
+  SHP_FCTR: [ 0, 0]
   AR: [0, 0]
 
 PATHS:
