@@ -5,9 +5,9 @@ import seaborn as sns
 
 
 def setup_axes(plot_config):
-    
+
     rc = {
-        "figure.figsize": (8,6),
+        "figure.figsize": (8, 6),
         "axes.facecolor": str(plot_config.facecolor),
         "axes.grid": plot_config.grid,
         "grid.color": str(plot_config.grid_color),
@@ -24,7 +24,7 @@ def setup_axes(plot_config):
     return rc
 
 
-def plot_albedo(plot_config,model_config, albedo):
+def plot_albedo(plot_config, model_config, albedo):
 
     rc = setup_axes(plot_config)
     plt.style.use("seaborn")
@@ -45,5 +45,13 @@ def plot_albedo(plot_config,model_config, albedo):
 
     if plot_config.show:
         plt.show()
+
+    return
+
+
+
+def display_out_data(outputs):
+
+
 
     return
