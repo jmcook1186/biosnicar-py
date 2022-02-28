@@ -113,6 +113,8 @@ class Ice:
             fl_r_dif_b: precomputed diffuse reflectance "parallel polarized)
             op_dir: directory containing optical properties
 
+        Raises:
+            ValueError if rf out of range
         """
         if self.rf <0 or self.rf > 2:
             raise ValueError("Ice ref index type out of range - between 0 and 2 only")
@@ -141,6 +143,18 @@ class Ice:
 
 
 class Illumination:
+    """Properties of incoming irradiance.
+
+    Instances of Illumination contain all data relating to the incoming irradiance.
+
+    Attributes:
+        direct: Boolean toggling between direct and diffuse irradiance
+        solzen: solar zenith angle in degrees from the vertical
+        incoming: choice of spectral distribution from file 0-6
+        flx_dir: directory containing irradiance files
+        stubs: array of stub strings for selecting irradiance files
+        nbr_wvl: number fo wavelengths (default 480)
+    """
     
     def __init__(self):
 
@@ -157,8 +171,26 @@ class Illumination:
         self.calculate_irradiance()
 
     def calculate_irradiance(self):
+        """Calculates irradiance from initialized attributes.
+
+        Takes mu_not, incoming and file stubs from self and calculates irradiance.
+
+        Args:
+            self
+
+        Returns:
+            flx_slr: incoming flux from file
+            Fd: diffuse irradiance
+            Fs: direct irradiance
+
+
+        Raises:
+            ValueError is incoming is out of range
+        """
+
         if self.incoming <0 or self.incoming > 6: 
             raise ValueError("Irradiance type out of range - between 0 and 6 only")
+        
         # update mu_not from solzen
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
 
@@ -197,6 +229,13 @@ class Illumination:
 
 
 class RTConfig:
+    """Radiative transfer configuration.
+
+    Attributes:
+        aprx_type: choice of two-stream approximation (0-2)
+        delta: Boolean to toggle delta transformation (0/1)
+        
+    """
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
