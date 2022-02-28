@@ -98,8 +98,25 @@ class Ice:
         self.calculate_refractive_index()
     
     def calculate_refractive_index(self):
+        """Calculates ice refractive index from initialized class attributes.
+
+        Takes self.rf and config from inpouts.yaml and uses them to calculate
+        new attributes related to the ice refractive index.
+
+        Args:
+            self
+        
+        Returns:
+            ref_idx_im: imaginary part of refractive index
+            ref_idx_re: real part of refractive index
+            fl_r_dif_a: precomputed diffuse reflectance "perpendicular polarized)
+            fl_r_dif_b: precomputed diffuse reflectance "parallel polarized)
+            op_dir: directory containing optical properties
+
+        """
         if self.rf <0 or self.rf > 2:
             raise ValueError("Ice ref index type out of range - between 0 and 2 only")
+
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -124,6 +141,7 @@ class Ice:
 
 
 class Illumination:
+    
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
