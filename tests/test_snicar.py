@@ -40,14 +40,14 @@ def test_v3(new_benchmark_toon):
     if new_benchmark_toon:
         print("generating benchmark data using params equivalent to snicarv3 (Toon solver)")
         # first setup snicar with vals in config files
-        ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
+        ice, illumination, rt_config, model_config, plot_config, display_config, impurities  = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
 
         lyrList = [0]
         densList = [400, 500, 600, 700, 800]
         reffList = [200, 400, 600, 800, 1000]
-        zenList = [30, 40, 50, 60, 70]
+        zenList = [50, 60, 70]
         bcList = [500, 1000, 1500, 2000]
         dust1 = [0]
         dust5 = [0]
@@ -111,7 +111,7 @@ def test_v3(new_benchmark_toon):
 def test_v4(new_benchmark_ad):
     
     if new_benchmark_ad:
-        ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
+        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination,rt_config, model_config)
         
         lyrList = [0,1]
@@ -179,7 +179,7 @@ def test_v4(new_benchmark_ad):
 def test_v4_clean(new_benchmark_ad_clean):
     
     if new_benchmark_ad_clean:
-        ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
+        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
         
         print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
@@ -390,7 +390,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
     
     if fuzz:
 
-        ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
+        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
         rt_config.aprx_typ = aprx
@@ -430,7 +430,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     """
 
     if fuzz:
-        ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar()
+        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
 
         impurities = []
