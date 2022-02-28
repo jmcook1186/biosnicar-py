@@ -24,7 +24,7 @@ VARIABLES:
   LAYER_TYPE: [0,0]  # Fresnel layers (set all to 0 if toon : True)
   CDOM: [0, 0]  # Only for layer type :: 1
   RHO: [916, 290]  # density of each layer (unit : kg m-3)
-  RF: 0
+  RF: 2
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [12500, 12500]  # effective grain or bubble radius
   WATER: [0, 0]  # radius of optional liquid water coating

@@ -53,7 +53,8 @@ class Ice:
         self.shp_fctr = inputs["VARIABLES"]["SHP_FCTR"]
         self.ar = inputs["VARIABLES"]["AR"]
         self.nbr_lyr = len(self.dz)
-
+        
+        self.calculate_refractive_index()
     
     def calculate_refractive_index(self):
         if self.rf <0 or self.rf > 2:
@@ -94,6 +95,8 @@ class Illumination:
         self.stubs = inputs["RTM"]["ILLUMINATION_FILE_STUBS"]
         self.nbr_wvl = inputs["RTM"]["NBR_WVL"]
         
+        self.calculate_irradiance()
+
     def calculate_irradiance(self):
         if self.incoming <0 or self.incoming > 6: 
             raise ValueError("Irradiance type out of range - between 0 and 6 only")

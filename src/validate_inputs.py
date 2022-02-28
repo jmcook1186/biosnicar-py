@@ -147,7 +147,10 @@ def validate_ice(ice):
     
     if not all(length == equal_len_fields_ice[0] for length in equal_len_fields_ice):
         raise ValueError("variables in ice do not have equal lengths")
-    
+    for i in range(ice.nbr_lyr):
+        if ice.rf != 2 and ice.rds[i] > 1500 and ice.layer_type[i] == 0:
+            raise ValueError("Grain size only available up to 1500um with selected ref index")    
+
     print("ice OK")
     
     return
