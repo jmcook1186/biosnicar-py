@@ -35,8 +35,8 @@ def validate_snow_algae(impurities):
         None
 
     Raises:
-        asserts throw exceptions when units mismatch
-        otherwise warnings in terminal only
+        ValueError when units mismatch
+        
     """
     snw_alg = False
     for i, impurity in enumerate(impurities):
@@ -79,8 +79,8 @@ def validate_glacier_algae(impurities):
         None
 
     Raises:
-        asserts throw exceptions when units mismatch
-        otherwise warnings in terminal only
+        ValueError when units mismatch
+
     """
 
     for i, impurity in enumerate(impurities):
@@ -104,6 +104,18 @@ def validate_glacier_algae(impurities):
 
 
 def validate_illumination(illumination):
+    """Validates illumination. 
+
+    Args:
+        illumination: a list of Impurity objects
+    
+    Returns:
+        None
+
+    Raises:
+        ValueError when SZA or nbr_wvl outside valid range
+
+    """
     
     if (illumination.solzen > 89) or (illumination.solzen < 1):
         raise ValueError("SZA outside valid range")
@@ -118,6 +130,18 @@ def validate_illumination(illumination):
 
 
 def validate_ice(ice):
+    """Validates ice configuration. 
+
+    Args:
+        ice: a class containing ice physical constants
+    
+    Returns:
+        None
+
+    Raises:
+        ValueError when lengths of variables are not equal
+
+    """
     
     equal_len_fields_ice = [len(ice.dz), len(ice.layer_type), len(ice.cdom), len(ice.rho), len(ice.rds), 
     len(ice.shp), len(ice.water), len(ice.hex_side), len(ice.hex_length), len(ice.ar), ice.nbr_lyr]
@@ -128,4 +152,25 @@ def validate_ice(ice):
 
     print("ice OK")
     
+    return
+
+
+def validate_model_config(model_config):
+    """Validates model configuration. 
+
+    Args:
+        model_config: a class containing model config variables
+    
+    Returns:
+        None
+
+    Raises:
+        ValueError when wavelengths are incorrect
+
+    """
+    if len(model_config.wavelengths) != 480:
+        raise ValueError("wavelength range incorrectly configured")
+    if model_config.nbr_wvl != 480:
+        raise ValueError("nbr_wvl does not equal 480")
+
     return
