@@ -16,7 +16,7 @@ def validate_inputs(ice, rt_config, model_config, illumination, impurities):
     validate_snow_algae(impurities)
     validate_illumination(illumination)
     validate_ice(ice)
-
+    validate_glacier_algae(impurities)
     return 
 
 
@@ -25,7 +25,7 @@ def validate_snow_algae(impurities):
     """
     Validates snow algae configuration. 
     This includes warning the user that OPs are from literature and not yet field validated.
-    Most importantly, checks that the units of the mass absorption coefficient and the cell
+    Most importantly, checks that the units of the absorption coefficient and the cell
     concentration match up (m2/cell -> cells/mL, m2/mg -> ppb)
 
     Args:
@@ -38,27 +38,20 @@ def validate_snow_algae(impurities):
         ValueError when units mismatch
         
     """
-    snw_alg = False
+
     for i, impurity in enumerate(impurities):
-        if ("snw_alg" in impurity.name) and (np.sum(impurity.conc) > 0):
-            snw_alg = True
-            if impurity.file=="snw_alg_r025um_chla020_chlb025_cara150_carb140.nc":
-                if impurity.unit != 0: 
-                    raise ValueError("your chosen snow algae file has its MAC in m2/kg, so please express concentration in ppb")
-            elif impurity.file=="Data/OP_data/480band/lap/GA_Chevrollier2022_r4.9_L18.8.nc":
-                if impurity.unit != 1:
-                    raise ValueError("your chosen snow algae file has its MAC in m2/cell, so please express concentration in cells/mL")
+        if impurity.file=="snw_alg_r025um_chla020_chlb025_cara150_carb140.nc" and (np.sum(impurity.conc) > 0):
+            if impurity.unit != 0: 
+                raise ValueError("your chosen snow algae file has its absorption cross section in m2/kg, so please express concentration in ppb")
             else:
-                print("your chosen snow algal OP file is not explicitly validated - please check units carefully")
-    
-    if snw_alg:
-        print("*** WARNING ***")
-        print("You have included snow algae as an impurity")
-        print("be warned the snow algae optical properties")
-        print("are theoretical and yet to be field validated")
-
-        
-
+                print("*** WARNING ***")
+                print("You have included snow algae as an impurity")
+                print("be warned the snow algae optical properties")
+                print("are theoretical and yet to be field validated")
+        elif impurity.file=="Data/OP_data/480band/lap/SA_Chevrollier2022_r8.99.nc" and (np.sum(impurity.conc) > 0):
+            if impurity.unit != 1:
+               raise ValueError("your chosen snow algae file has its absorption cross section in m2/cell, so please express concentration in cells/mL")
+      
     print("snow algae OK")
 
     
@@ -69,7 +62,7 @@ def validate_glacier_algae(impurities):
     """
     Validates snow algae configuration. 
     This includes warning the user that OPs are from literature and not yet field validated.
-    Most importantly, checks that the units of the mass absorption coefficient and the cell
+    Most importantly, checks that the units of the absorption coefficient and the cell
     concentration match up (m2/cell -> cells/mL, m2/mg -> ppb)
 
     Args:
@@ -85,14 +78,17 @@ def validate_glacier_algae(impurities):
 
     for i, impurity in enumerate(impurities):
 
-        if impurity.file=="GA_Chevrollier2022_r4.9_L18.8.nc":
-            if impurity.unit !=0:
-                raise ValueError("your chosen glacier algae file has its MAC in m2/cell, so please express concentration in cells/.mL")
-        elif impurity.file=="Cook2020_glacier_algae_4_40.nc":
+        if impurity.file=="GA_Chevrollier2022_r4.9_L18.8.nc" and (np.sum(impurity.conc) > 0):
             if impurity.unit !=1:
-                raise ValueError("your chosen snow algae file has its MAC in m2/mg, so please express concentration in ppb")
-        else:
-            print("your chosen glacier algal OP file is not explicitly validated - please check units carefully")
+                raise ValueError("your chosen glacier algae file has its absorption coefficient in m2/cell, so please express concentration in cells/mL")
+        elif impurity.file=="Cook2020_glacier_algae_4_40.nc" and (np.sum(impurity.conc) > 0):
+            if impurity.unit !=0:
+                raise ValueError("your chosen glacier algae file has its absorption coefficient in m2/mg, so please express concentration in ppb")
+            else:
+                print("*** WARNING ***")
+                print("You have included glacier algae as an impurity")
+                print("be warned the snow algae optical properties")
+                print("are theoretical and yet to be field validated")
 
        
 
