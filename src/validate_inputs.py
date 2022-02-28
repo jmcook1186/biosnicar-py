@@ -117,7 +117,10 @@ def validate_illumination(illumination):
         raise ValueError("SZA outside valid range")
     
     if illumination.nbr_wvl != 480:
-        raise ValueError("Illumination is has incorrect number of wavelengths")
+        raise ValueError("Illumination has incorrect number of wavelengths")
+
+    if illumination.direct > 1 or illumination.direct < 0: 
+        raise ValueError("Beam type is incorrect: it should be 0 or 1")
     
     print("illumination OK")
 
@@ -144,8 +147,7 @@ def validate_ice(ice):
     
     if not all(length == equal_len_fields_ice[0] for length in equal_len_fields_ice):
         raise ValueError("variables in ice do not have equal lengths")
-
-
+    
     print("ice OK")
     
     return

@@ -12,7 +12,7 @@ RTM:
   APRX_TYP: 2
   DELTA: True
   SOLZEN: 50
-  INCOMING: 6
+  INCOMING: 0
   ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
                           "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
                           "swnb_480bnd_trp"]
@@ -24,7 +24,7 @@ VARIABLES:
   LAYER_TYPE: [0,0]  # Fresnel layers (set all to 0 if toon : True)
   CDOM: [0, 0]  # Only for layer type :: 1
   RHO: [916, 290]  # density of each layer (unit : kg m-3)
-  RF: 2
+  RF: 0
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [12500, 12500]  # effective grain or bubble radius
   WATER: [0, 0]  # radius of optional liquid water coating
