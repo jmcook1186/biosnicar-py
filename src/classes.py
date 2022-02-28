@@ -21,7 +21,7 @@ class Impurity:
         mac: mass absorption coefficient (m2/kg or m2/cell)
         ssa: single scattering albedo
         g: asymmetry parameter
-        
+
     """
 
 
@@ -50,6 +50,28 @@ class Impurity:
 
 
 class Ice:
+    """Snow or ice column physical properties.
+
+    Instances of Ice contain all the physical properties of each vertical layer of the
+    snow or ice column and the underlying surface.
+
+    Attributes:
+        dz: array containing thickness of each layer in m
+        layer_type: array containing type (0 = grains, 1 = solid ice) in each layer
+        cdom: array containing Boolean (1/0) toggling presence of cdom in each layer
+        rho: array containing density of each layer in kg/m3
+        sfc: array with reflectance of underlying surface per wavelength
+        rf: refractive index to use, 0,1,2 or 3 (see docs for definition)
+        shp: grain shape per layer where layer_type==1
+        rds: grain radius (layer_type==0) or bubble radius (layer_type==0) in each layer
+        water: radius of grain+water coating in each layer where layer_type==0
+        hex_side: length of each side of hexagonal face for grain_shp==4
+        hex_length: column length for hexagonal face for grain_shp==4
+        shp_fctr: ratio of nonspherical eff radii to equal vol sphere, in each layer
+        ar: aspect ratio of grains in each layer where layer_type==0
+        nbr_lyr: number of vertical layers
+    """
+
     def __init__(self):
 
         # use config to calculate refractive indices
