@@ -234,7 +234,7 @@ class RTConfig:
     Attributes:
         aprx_type: choice of two-stream approximation (0-2)
         delta: Boolean to toggle delta transformation (0/1)
-        
+
     """
     def __init__(self):
 
@@ -247,6 +247,25 @@ class RTConfig:
 
 
 class ModelConfig:
+    """Model configuration.
+
+    Attributes:
+        smooth: Boolean to toggle savitsky-golay filter to smooth albedo
+        window_size: window size to use for smoothing func
+        poly_order: order of polynomial used to smooth albedo
+        dir_base: base directory
+        dir_wvl: path to wavelengths in csv file
+        sphere_ice_path: directory containing OPs for spherical ice grains
+        hex_ice_path: directory containing OPs for hexagonal ice grains
+        bubbly_ice_path: directory containing OPs for bubbly ice
+        ri_ice_path: path to file containing pure ice refractive index
+        op_dir_stubs: sstring stubs for ice optical property files
+        wavelengths: array of wavelengths in nm (default 0.205 - 4.995 um)
+        nbr_wvl: number of wavelengths (default 480)
+        vis_max_idx: index for upper visible wavelength (default 0.75 um)
+        nir_max_idx: index for upper NIR wavelength (default 4.995 um)
+        
+    """
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
@@ -255,15 +274,12 @@ class ModelConfig:
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
         self.poly_order = inputs["CTRL"]["POLY_ORDER"]
-        self.smooth = inputs["CTRL"]["SMOOTH"]
         self.dir_base = inputs["PATHS"]["DIR_BASE"]
         self.dir_wvl = inputs["PATHS"]["WVL"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.hex_ice_path = inputs["PATHS"]["HEX_ICE"]
         self.bubbly_ice_path = inputs["PATHS"]["BUBBLY_ICE"]
         self.ri_ice_path = inputs["PATHS"]["RI_ICE"]
-        self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
-        self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
         self.wavelengths = np.arange(0.205, 4.999, 0.01)
         self.nbr_wvl = len(self.wavelengths)
@@ -272,6 +288,23 @@ class ModelConfig:
 
 
 class Outputs:
+    """output data from radiative transfer calculations.
+
+    Attributes:
+        heat_rt: heating rate in each layer
+        BBAVIS: broadband albedo in visible range
+        BBANIR: broadband albedo in NIR range
+        BBA: broadband albedo across solar spectrum
+        abs_slr_btm: absorbed solar energy at bottom surface
+        abs_vis_btm: absorbed visible energy at bottom surface
+        abs_nir_btm: absorbed NIR energy at bottom surface
+        albedo: albedo of ice column
+        total_insolation: energy arriving from atmosphere
+        abs_slr_tot: total absorbed energy across solar spectrum
+        abs_vis_tot: total absorbed energy across visible spectrum
+        abs_nir_tot: total absorbed energy across NIR spectrum
+        absorbed_flux_per_layer: total absorbed flux per layer
+    """
     def __init__(self):
         self.heat_rt = None
         self.BBAVIS = None
@@ -289,13 +322,30 @@ class Outputs:
 
 
 class PlotConfig:
+    """Configuration for plotting figures.
+
+    Attributes:
+        figsize: size of figure
+        facecolor: colour of background
+        grid: toggles grid visibility
+        grid_color: color of grid lines
+        xtick_width: frequency of xticks
+        xtick_size: size of ticks on x axis
+        ytick_width: frequency of yticks
+        ytick_size: size of ticks on y axis
+        linewidth: pixel width of line on plot
+        fontsize: size of text labels  
+        xtick_btm: toggles tick positions
+        ytick_left: toggle ytick position
+        show: toggles showing plot on screen
+        save: toggles saving figure to file
+    
+    """
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        # self.fig_width = inputs["PLOT"]["FIG_WIDTH"]
-        # self.fig_height = inputs["PLOT"]["FIG_HEIGHT"]
         self.figsize = inputs["PLOT"]["FIG_SIZE"]
         self.facecolor = inputs["PLOT"]["FACECOLOR"]
         self.grid = inputs["PLOT"]["GRID"]
@@ -313,6 +363,12 @@ class PlotConfig:
 
 
 class DisplayConfig:
+    """Configuration for text displays.
+
+    Attributes:
+        print_bba: toggle to print BBA to console
+        print_band_ratios: toggle to print band ratio values to console 
+    """
     def __init__(self):
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
