@@ -4,6 +4,9 @@ from classes import *
 
 def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
 
+
+    if np.sum(ice.layer_type) > 0:
+        raise ValueError("There are solid ice layers in this model - use AD solver")
     # ----------------------------------------------------------------------------------
     # PERFORM DELTA TRANSFORMATION IF REQUIRED
     # ----------------------------------------------------------------------------------
