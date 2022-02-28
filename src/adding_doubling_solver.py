@@ -160,7 +160,7 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
         model_config, ice, rupdif, rupdir, rdndif, trndir, trndif, trntdr
     )
 
-    albedo, F_abs, F_btm_net, F_top_pls, F_abs = calculate_fluxes(
+    albedo, F_abs, F_btm_net, F_top_pls, = calculate_fluxes(
         model_config, ice, illumination, fdirup, fdifup, fdirdn, fdifdn
     )
 
