@@ -7,7 +7,7 @@ def setup_snicar():
 
     impurities = build_impurities_array()
     ice, illumination, rt_config, model_config, plot_config, display_config = build_classes()
-
+    
     return ice, illumination, rt_config, model_config, plot_config, display_config, impurities
 
 
