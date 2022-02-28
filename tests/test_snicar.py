@@ -273,7 +273,6 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
     assert len(error[error > tol]) == 0
 
 
-
 def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_clean, set_tolerance):
     # check the BBA predicted for each run matches to within tolerance between
     # the two models
@@ -284,7 +283,6 @@ def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_cl
     bb_mat = mat.loc[:, 481]
     error = np.array(abs(bb_mat - bb_py))
     assert len(error[error > tol]) == 0
-
 
 
 def match_matlab_config(ice, illumination, rt_config, model_config):
@@ -314,10 +312,12 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     ice.calculate_refractive_index()
     illumination.calculate_irradiance()
 
-    impurities = []
+    # make sure smoothing function is toggled off
+    model_config.smooth = False
 
     # make sure impurities[0] is bc
     # (same bc used by matlab model)
+    impurities = []
 
     conc = [0]*nbr_lyr
     impurity0 = Impurity(model_config.dir_base, "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc)

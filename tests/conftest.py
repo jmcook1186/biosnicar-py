@@ -47,12 +47,12 @@ def fuzz():
 
 @pytest.fixture
 def new_benchmark_ad():
-    return True
+    return False
 
 @pytest.fixture
 def new_benchmark_ad_clean():
-    return True
+    return False
 
 @pytest.fixture
 def new_benchmark_toon():
-    return True
+    return False
