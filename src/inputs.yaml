@@ -1,46 +1,40 @@
 CTRL:
-  WRITE_CONFIG_TO_TEXTFILE: False
-  verbosity: 0
-  SHOW_FIGS: True
-  SAVE_FIGS: False
   PRINT_BBA: True
   PRINT_BAND_RATIOS: True
   SMOOTH: False
   WINDOW_SIZE: 9
   POLY_ORDER: 3
-  VIS_MAX_IDX: 39
-  NIR_MAX_IDX: 480
-  PLOT_PER_FIGURE: True
+
 
 RTM:
-  direct: 1
-  nbr_wvl: 480
-  aprx_typ: 2
-  delta: True
-  solzen: 50
-  incoming: 6
-  toon: False
-  add_double: True
-  illumination_file_stubs: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
+  DIRECT: 1
+  NBR_WVL: 480
+  APRX_TYP: 2
+  DELTA: True
+  SOLZEN: 50
+  INCOMING: 6
+  ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
                           "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
                           "swnb_480bnd_trp"]
+  VIS_MAX_IDX: 39
+  NIR_MAX_IDX: 480
 
 VARIABLES:
-  dz: [0.001,0.146]  # thickness of each vertical layer (unit : m)
-  layer_type: [1,1]  # Fresnel layers (set all to 0 if toon : True)
-  cdom: [1, 0]  # Only for layer type :: 1
-  rho: [916, 290]  # density of each layer (unit : kg m-3)
-  rf: 2
-  shp: [0, 0]  # grain shape (He et al. 2016, 2017)
-  rds: [12500, 12500]  # effective grain or bubble radius
-  water: [0, 0]  # radius of optional liquid water coating
-  hex_side: [ 10000, 10000]
-  hex_length: [10000, 10000]
-  shp_fctr: [ 0, 0]
-  ar: [0, 0]
+  DZ: [0.001,0.146]  # thickness of each vertical layer (unit : m)
+  LAYER_TYPE: [1,1]  # Fresnel layers (set all to 0 if toon : True)
+  CDOM: [1, 0]  # Only for layer type :: 1
+  RHO: [916, 290]  # density of each layer (unit : kg m-3)
+  RF: 2
+  SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
+  RDS: [12500, 12500]  # effective grain or bubble radius
+  WATER: [0, 0]  # radius of optional liquid water coating
+  HEX_SIDE: [ 10000, 10000]
+  HEX_LENGTH: [10000, 10000]
+  SHP_FCTOR: [ 0, 0]
+  AR: [0, 0]
 
 PATHS:
-  DIR_BASE: "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/"
+  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"
   WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
@@ -54,13 +48,13 @@ PATHS:
 
 
 IMPURITIES:
-  bc:
-    name: "bc"
-    file: "bc_ChCB_rn40_dns1270.nc"
-    cfactor: 1
-    coated: False
-    unit: 0
-    conc: [0 ,0]
+  BC:
+    NAME: "bc"
+    FILE: "bc_ChCB_rn40_dns1270.nc"
+    CFACTOR: 1
+    COATED: False
+    UNIT: 0
+    CONC: [0 ,0]
 
 
 PLOT:
