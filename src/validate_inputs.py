@@ -11,6 +11,14 @@ def validate_inputs(ice, rt_config, model_config, illumination, impurities):
 
 
     Args:
+        ice: instance of Ice class
+        rt_config: instance of RTConfig class
+        model_config: instance of ModelConfig class
+        illumination: instance of Illumination class
+        impurities: list of instances of Impurity class
+    
+    Returns:
+        None
     """
     print("\n** Validating model configuration **")
     validate_snow_algae(impurities)
