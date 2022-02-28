@@ -51,7 +51,30 @@ def plot_albedo(plot_config, model_config, albedo):
 
 
 def display_out_data(outputs):
-
-
+    
+    print("\n** OUTPUT DATA **")
+    print("Broadband albedo: ", np.round(outputs.BBA, 4))
+    
+    I2DBA, I3DBA, NDCI, MCI, II = calculate_band_ratios(outputs.albedo)
+    
+    print("\nBAND RATIO INDEX VALUES")
+    print("2DBA Index: ", I2DBA)
+    print("3DBA index: ", I3DBA)
+    print("NDCI index: ", NDCI)
+    print("MCI index: ", MCI)
+    print("Impurity Index: ", II)
 
     return
+
+
+def calculate_band_ratios(albedo):
+
+    I2DBA = albedo[51] / albedo[46]
+    I3DBA = (albedo[46] - albedo[50]) / albedo[55]
+    NDCI = ((albedo[50] - albedo[48]) - (albedo[55] - albedo[48])) * (
+        (albedo[50] - albedo[48]) / (albedo[55] - albedo[48])
+    )
+    MCI = (albedo[50] - albedo[46]) / (albedo[50] + albedo[46])
+    II = np.log(albedo[36]) / np.log(albedo[66])
+    
+    return I2DBA, I3DBA, NDCI, MCI, II
