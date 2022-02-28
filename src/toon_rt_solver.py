@@ -4,9 +4,7 @@ from classes import *
 
 def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
 
-
-    if np.sum(ice.layer_type) > 0:
-        raise ValueError("There are solid ice layers in this model - use AD solver")
+    validate_inputs(ice, illumination)
     # ----------------------------------------------------------------------------------
     # PERFORM DELTA TRANSFORMATION IF REQUIRED
     # ----------------------------------------------------------------------------------
@@ -122,6 +120,34 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
 
     return outputs
 
+
+def validate_inputs(ice, illumination):
+
+    """Checks input parameters are valid for Toon solver.
+
+    Checks for known invalid data configurations that break the Toon solver.
+    If invalid config is detected a ValueError is raised, halting execution.
+
+    Args:
+        ice: class representing the ice column and containing related physical constants
+        illumination: class representing incoming irradiance containing related physical constants
+    
+    Returns:
+        None
+    
+    Raises:
+        ValueError: raised with descriptive error message if invalid input detected
+    """
+    if np.sum(ice.layer_type) > 0:
+        raise ValueError("There are solid ice layers in this model - use AD solver")
+
+    elif (illumination.solzen < 50) or (illumination.solzen > 89):
+        raise ValueError("Zenith angle out of valid range for Toon solver")
+
+    elif np.sum(ice.cdom) > 0:
+        raise ValueError("cdom is only available for solid ice layers")
+
+    return
 
 def delta_transformation(rt_config, g, ssa, tau):
 
