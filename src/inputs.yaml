@@ -34,7 +34,7 @@ VARIABLES:
   AR: [0, 0]
 
 PATHS:
-  DIR_BASE: "/home/joe/Code/BioSNICAR_GO_PY/"
+  DIR_BASE: "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/"
   WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
@@ -55,8 +55,20 @@ IMPURITIES:
     COATED: False
     UNIT: 0
     CONC: [0 ,0]
-
-
+  SA:
+    NAME: "sa"
+    FILE: "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
+    CFACTOR: 1
+    COATED: False
+    UNIT: 0
+    CONC: [100 ,0]  
+  GA:
+    NAME: "ga"
+    FILE: "Cook2020_glacier_algae_4_40.nc"
+    CFACTOR: 1
+    COATED: False
+    UNIT: 0
+    CONC: [100 ,0]
 PLOT:
     FIG_SIZE: (8,6)
     FACECOLOR: "white"
