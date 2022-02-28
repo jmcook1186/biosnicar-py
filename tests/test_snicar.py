@@ -420,7 +420,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
 
 @pytest.mark.parametrize("rds", [1000, 5000, 10000])
 @pytest.mark.parametrize("rho", [400, 600, 800])
-@pytest.mark.parametrize("zen", [30, 50, 70])
+@pytest.mark.parametrize("zen", [50, 60, 70])
 @pytest.mark.parametrize("cfactor", [1, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])

@@ -68,18 +68,24 @@ def get_layer_OPs(ice, impurities, model_config):
         else:  # solid ice layer (ice.layer_type == 1)
 
             if ice.cdom[i]:
-                cdom = pd.read_csv(model_config.dir_base+"Data/OP_data/k_cdom_240_750.csv")
+                cdom = pd.read_csv(
+                    model_config.dir_base + "Data/OP_data/k_cdom_240_750.csv"
+                )
                 cdom_ref_idx_im = np.array(cdom).flatten()
                 # rescale to SNICAR resolution
                 cdom_ref_idx_im_rescaled = cdom_ref_idx_im[::10]
-                ice.ref_idx_im[3:54] = np.fmax(ice.ref_idx_im[3:54], cdom_ref_idx_im_rescaled)
+                ice.ref_idx_im[3:54] = np.fmax(
+                    ice.ref_idx_im[3:54], cdom_ref_idx_im_rescaled
+                )
 
             rd = f"{ice.rds[i]}".rjust(4, "0")
             file_ice = str(model_config.bubbly_ice_path + "bbl_{}.nc").format(rd)
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
             g_snw[i, :] = file["asm_prm"].values
-            abs_cff_mss_ice[:] = ((4 * np.pi * ice.ref_idx_im) / (model_config.wavelengths * 1e-6)) / 917
+            abs_cff_mss_ice[:] = (
+                (4 * np.pi * ice.ref_idx_im) / (model_config.wavelengths * 1e-6)
+            ) / 917
             vlm_frac_air = (917 - ice.rho[i]) / 917
             mac_snw[i, :] = (
                 (sca_cff_vlm * vlm_frac_air) / ice.rho[i]
@@ -447,7 +453,7 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
             # to m-2 kg-1 : 1 cell = 1ng = 10**(-12) kg
 
             if impurity.unit == 1:
-                
+
                 L_snw[i] = L_snw[i] - L_aer[i, j] * 10 ** (-12)
 
             else:
