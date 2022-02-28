@@ -4,7 +4,7 @@ from classes import *
 import numpy as np
 
 
-""" Radiative transfer solver using the adding-doublign method.
+""" Radiative transfer solver using the adding-doubling method.
 
 Here the ice/impurity optical properties and illumination conditions
 are used to calculate energy fl;uxes between the ice, atmosphere and

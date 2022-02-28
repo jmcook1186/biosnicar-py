@@ -6,6 +6,25 @@ import math
 
 
 class Impurity:
+    """Light absorbing impurity.
+
+    Instances of Impurity are one discrete type of light absorbing impurity with
+    a distinct set of optical properties.
+
+    Attributes:
+        name: name of impurity
+        cfactor: concentration factor used to convert field measurements to model config (default=1)
+        unit: the unit the concentration should be represented in (0 = ppb, 1 = cells/mL)
+        conc: concentration of the impurity in each layer (in units of self.unit)
+        file: name of netCDF file containing optical properties and size distribution
+        impurity_properties: instance of opened file self.file
+        mac: mass absorption coefficient (m2/kg or m2/cell)
+        ssa: single scattering albedo
+        g: asymmetry parameter
+        
+    """
+
+
     def __init__(self, dir_base, file, coated, cfactor, unit, name, conc):
 
         self.name = name
