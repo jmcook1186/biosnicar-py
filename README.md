@@ -1,8 +1,5 @@
 # BioSNICAR
 
-
-<b>NOTICE (Jan 2022): We have done a lot of work refactoring and updating this code recently to make it cleaner, faster and more user-friendly. Some of the docs are currently lagging behind - we are working on this - please bear with us! </b>
-
 <img src="./assets/example-output.jpg" width=500>
 
 ## Introduction
