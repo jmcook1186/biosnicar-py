@@ -105,7 +105,7 @@ def test_AD_solver(new_benchmark_ad):
                                 ice.calculate_refractive_index()
                                 illumination.calculate_irradiance()
 
-                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
@@ -196,7 +196,7 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
                                 impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
                                 ice.calculate_refractive_index()
 
-                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
                                 tau, ssa, g, L_snw = mix_in_impurities(
                                     ssa_snw, g_snw, mac_snw, ice, impurities, model_config
                                 )
@@ -501,7 +501,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
         illumination.incoming = inc
         illumination.calculate_irradiance()  
 
-        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
+        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
         tau, ssa, g, L_snw = mix_in_impurities(
             ssa_snw, g_snw, mac_snw, ice, impurities, model_config
         )
@@ -573,7 +573,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
         illumination.calculate_irradiance()
 
 
-        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, impurities, model_config)
+        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice,model_config)
         tau, ssa, g, L_snw = mix_in_impurities(
             ssa_snw, g_snw, mac_snw, ice, impurities, model_config
         )
