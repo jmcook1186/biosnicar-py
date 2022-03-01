@@ -3,6 +3,7 @@ import xarray as xr
 import yaml
 import numpy as np
 import math
+import os
 
 
 class Impurity:
@@ -24,7 +25,7 @@ class Impurity:
 
     """
 
-    def __init__(self, dir_base, file, coated, cfactor, unit, name, conc):
+    def __init__(self, file, coated, cfactor, unit, name, conc):
 
         self.name = name
         self.cfactor = cfactor
@@ -33,7 +34,7 @@ class Impurity:
         self.file = file
 
         self.impurity_properties = xr.open_dataset(
-            str(dir_base + "/Data/OP_data/480band/lap/" + file)
+            str(os.getcwd() + "/Data/OP_data/480band/lap/" + file)
         )
 
         if coated:
@@ -274,7 +275,7 @@ class ModelConfig:
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
         self.poly_order = inputs["CTRL"]["POLY_ORDER"]
-        self.dir_base = inputs["PATHS"]["DIR_BASE"]
+        self.dir_base = str(os.getcwd() + "/")
         self.dir_wvl = inputs["PATHS"]["WVL"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.hex_ice_path = inputs["PATHS"]["HEX_ICE"]

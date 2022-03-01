@@ -80,7 +80,6 @@ def build_impurities_array():
         inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
     impurities = []
-    dir_base = inputs["PATHS"]["DIR_BASE"]
 
     for i, id in enumerate(inputs["IMPURITIES"]):
         name = inputs["IMPURITIES"][id]["NAME"]
@@ -89,6 +88,6 @@ def build_impurities_array():
         coated = inputs["IMPURITIES"][id]["COATED"]
         unit = inputs["IMPURITIES"][id]["UNIT"]
         conc = inputs["IMPURITIES"][id]["CONC"]
-        impurities.append(Impurity(dir_base, file, coated, cfactor, unit, name, conc))
+        impurities.append(Impurity(file, coated, cfactor, unit, name, conc))
 
     return impurities

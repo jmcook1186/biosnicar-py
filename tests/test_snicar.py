@@ -412,7 +412,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
 
     conc = [0] * nbr_lyr
     impurity0 = Impurity(
-        model_config.dir_base, "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc
+        "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc
     )
     impurities.append(impurity0)
 
@@ -629,7 +629,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
         conc1 = [0] * len(ice.dz)
         conc1[0] = algae
         impurity0 = Impurity(
-            model_config.dir_base,
             "mie_sot_ChC90_dns_1317.nc",
             False,
             cfactor,
@@ -642,7 +641,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
         conc2 = [0] * len(ice.dz)
         conc2[0] = dust
         impurity1 = Impurity(
-            model_config.dir_base,
             "dust_balkanski_central_size1.nc",
             False,
             cfactor,
