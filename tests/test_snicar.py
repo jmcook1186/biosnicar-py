@@ -1,19 +1,21 @@
 import sys
 
+from src.classes import Impurity
+
 # make sure we can import from/src
 sys.path.append("./src")
-import collections as c
+from setup_snicar import *
+from classes import *
+from column_OPs import *
+from toon_rt_solver import toon_solver
+from adding_doubling_solver import adding_doubling_solver
 import random
-from pathlib import Path
-
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import pytest
 
-from snicar_feeder import snicar_feeder
 
-"""
+"""Runs benchmarking and fuzzing tests on BioSNICAR.
+
 To run configure these tests, update the values in conftest.py
 Then navigate to the tests folder and run
 
@@ -36,7 +38,254 @@ To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
 """
 
 
-def test_realistic_BBA(get_matlab_data, get_python_data):
+def test_AD_solver(new_benchmark_ad):
+    """Tests Toon solver against SNICAR_ADv4 benchmark.
+
+    This func generates a new file - py_benchmark_data.csv - that contains
+    spectral and broadband albedo simulated by BioSNICAR for a range of input
+    configurations. The same set of simulations was also run using a previously
+    published version of the SNICAR code written in Matlab by Chloe Whicker at
+    University of Michigan and run on the UMich server. This function
+    only creates the equivalent dataset using BioSNICAR, it doesn't compare the two.
+
+    Equivalence between the Python and Matlab model configuration is controlled by
+    a call to match_matlab_config(). This function can be toggled off by setting
+    new_benchmark_ad to False in conftest.py.
+
+    Args:
+        new_benchmark_ad: Boolean toggling this function on/off
+
+    Returns:
+        None but saves py_benchmark_data.csv to ./tests/test_data/
+
+    """
+
+    if new_benchmark_ad:
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
+        )
+
+        lyrList = [0, 1]
+        densList = [400, 500, 600, 700, 800]
+        reffList = [200, 400, 600, 800, 1000]
+        zenList = [30, 40, 50, 60]
+        bcList = [500, 1000, 2000]
+        dzList = [
+            [0.02, 0.04, 0.06, 0.08, 0.1],
+            [0.04, 0.06, 0.08, 0.10, 0.15],
+            [0.05, 0.10, 0.15, 0.2, 0.5],
+            [0.15, 0.2, 0.25, 0.3, 0.5],
+            [0.5, 0.5, 0.5, 1, 10],
+        ]
+
+        ncols = (
+            len(lyrList)
+            * len(densList)
+            * len(reffList)
+            * len(zenList)
+            * len(bcList)
+            * len(dzList)
+        )
+
+        assert ncols == 3000
+
+        specOut = np.zeros(shape=(ncols, 481))
+        counter = 0
+        for layer_type in lyrList:
+            for density in densList:
+                for reff in reffList:
+                    for zen in zenList:
+                        for bc in bcList:
+                            for dz in dzList:
+
+                                ice.dz = dz
+                                ice.nbr_lyr = 5
+                                ice.layer_type = [layer_type] * len(ice.dz)
+                                ice.rho = [density] * len(ice.dz)
+                                ice.rds = [reff] * len(ice.dz)
+                                illumination.solzen = zen
+                                illumination.calculate_irradiance()
+                                impurities[0].conc = [
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                ]  # bc in all layers
+                                ice.calculate_refractive_index()
+                                illumination.calculate_irradiance()
+
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(
+                                    ice, model_config
+                                )
+                                tau, ssa, g, L_snw = mix_in_impurities(
+                                    ssa_snw,
+                                    g_snw,
+                                    mac_snw,
+                                    ice,
+                                    impurities,
+                                    model_config,
+                                )
+                                outputs = adding_doubling_solver(
+                                    tau, ssa, g, L_snw, ice, illumination, model_config
+                                )
+
+                                specOut[counter, 0:480] = outputs.albedo
+                                specOut[counter, 480] = outputs.BBA
+                                counter += 1
+
+        np.savetxt("./tests/test_data/py_benchmark_data.csv", specOut, delimiter=",")
+
+    else:
+        pass
+
+    return
+
+
+def test_AD_solver_clean(new_benchmark_ad_clean):
+    """Tests Toon solver against SNICAR_ADv4 benchmark for impurity-free ice.
+
+    This func generates a new file - py_benchmark_data_clean.csv - that contains
+    spectral and broadband albedo simulated by BioSNICAR for a range of input
+    configurations. The same set of simulations was also run using a previously
+    published version of the SNICAR code written in Matlab by Chloe Whicker at
+    University of Michigan and run on the UMich server. This function
+    only creates the equivalent dataset using BioSNICAR, it doesn't compare the two.
+    The difference between this function and test_v4 is that no impurities are included
+    in the model configuration.
+
+    Equivalence between the Python and Matlab model configuration is controlled by
+    a call to match_matlab_config(). This function can be toggled off by setting
+    new_benchmark_clean to False in conftest.py.
+
+    Args:
+        new_benchmark_clean: Boolean toggling this function on/off
+
+    Returns:
+        None but saves py_benchmark_data_clean.csv to ./tests/test_data/
+
+    """
+
+    if new_benchmark_ad_clean:
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
+        )
+
+        print(
+            "generating benchmark data using params equivalent to snicarv4 (AD solver)"
+        )
+
+        lyrList = [0, 1]
+        densList = [400, 500, 600, 700, 800]
+        reffList = [200, 400, 600, 800, 1000]
+        zenList = [30, 40, 50, 60]
+        bcList = [0]
+        dzList = [
+            [0.02, 0.04, 0.06, 0.08, 0.1],
+            [0.04, 0.06, 0.08, 0.10, 0.15],
+            [0.05, 0.10, 0.15, 0.2, 0.5],
+            [0.15, 0.2, 0.25, 0.3, 0.5],
+            [0.5, 0.5, 0.5, 1, 10],
+        ]
+
+        ncols = (
+            len(lyrList)
+            * len(densList)
+            * len(reffList)
+            * len(zenList)
+            * len(bcList)
+            * len(dzList)
+        )
+
+        specOut = np.zeros(shape=(ncols, 481))
+        counter = 0
+        for layer_type in lyrList:
+            for density in densList:
+                for reff in reffList:
+                    for zen in zenList:
+                        for bc in bcList:
+                            for dz in dzList:
+
+                                ice.dz = dz
+                                ice.nbr_lyr = 5
+                                ice.layer_type = [layer_type] * len(ice.dz)
+                                ice.rho = [density] * len(ice.dz)
+                                ice.rds = [reff] * len(ice.dz)
+                                illumination.solzen = zen
+                                illumination.calculate_irradiance()
+                                impurities[0].conc = [
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                ]  # bc in all layers
+                                ice.calculate_refractive_index()
+
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(
+                                    ice, model_config
+                                )
+                                tau, ssa, g, L_snw = mix_in_impurities(
+                                    ssa_snw,
+                                    g_snw,
+                                    mac_snw,
+                                    ice,
+                                    impurities,
+                                    model_config,
+                                )
+
+                                outputs = adding_doubling_solver(
+                                    tau, ssa, g, L_snw, ice, illumination, model_config
+                                )
+
+                                specOut[counter, 0:480] = outputs.albedo
+                                specOut[counter, 480] = outputs.BBA
+                                counter += 1
+
+        np.savetxt(
+            "./tests/test_data/py_benchmark_data_clean.csv", specOut, delimiter=","
+        )
+
+    else:
+        pass
+
+    return
+
+
+def test_realistic_bba_ad(get_matlab_data, get_python_data):
+    """Tests that BBA values are never >1 or <0.
+
+    Simple test that ensures broadband albedo predicted by model never
+    goes outside valid range of 0-1.
+
+    Args:
+        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
+        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if the two datasets differ in length
+        tests fail if any BBA values in matlab data are <0 or >1
+        tests fail if any BBA values in python data are <0 or >1
+    """
     # are the values predicted by the model always physical (i.e. between 0-1)
     # do the files have the right shape and size?
 
@@ -52,8 +301,24 @@ def test_realistic_BBA(get_matlab_data, get_python_data):
 
 
 def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance):
-    # check the BBA predicted for each run matches to within tolerance between
-    # the two models
+    """Tests that BBA values match between BioSNICAR data and the benchmark.
+
+    Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark
+    dataset and the newly generated BioSNICAR dataset for the AD solver.
+
+    Args:
+        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
+        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
+        set_tolerance: threshold error for BBAs to be considered equal
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if the difference between any pair of BBA values exceeds set_tolerance
+
+    """
+
     mat = get_matlab_data
     py = get_python_data
     tol = set_tolerance
@@ -63,35 +328,173 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
     assert len(error[error > tol]) == 0
 
 
-def test_compare_pySPEC_to_matSPEC(get_matlab_data, get_python_data, set_tolerance):
-    # check that for each individual wavelenght, the spectral albedo
-    # matches to within tolerance between the two models
+def test_compare_pyBBA_to_matBBA_clean(
+    get_matlab_data_clean, get_python_data_clean, set_tolerance
+):
+    """Tests that BBA values match between BioSNICAR data and the benchmark for clean ice.
+
+    Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark
+    dataset and the newly generated BioSNICAR dataset for the AD solver with no impurities.
+
+    Args:
+        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
+        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
+        set_tolerance: threshold error for BBAs to be considered equal
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if the difference between any pair of BBA values exceeds set_tolerance
+
+    """
+
+    mat = get_matlab_data_clean
+    py = get_python_data_clean
+    tol = set_tolerance
+    bb_py = py.loc[:, 481]
+    bb_mat = mat.loc[:, 481]
+    error = np.array(abs(bb_mat - bb_py))
+    assert len(error[error > tol]) == 0
+
+
+def match_matlab_config(ice, illumination, rt_config, model_config):
+    """Ensures model config is equal to the Matlab version used to generate benchmark data.
+
+    This function resets values in instances of Ice, Illumination and ModelConfig to ensure
+    equivalence between BioSNICAR and the Matlab code used to generate the benchmark data.
+    Also ensures all vars have correct length, and re-executes the class functions in Ice and
+    Illumination that update refractive indices and at-surface irradiance.
+
+    Args:
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        rt_config: instance of RTConfig class
+        model_config: instance of ModelConfig class
+
+    Returns:
+        ice: updated instance of Ice class
+        illumination: updated instance of Illumination class
+        impurities: array of instances of Impurity class
+        rt_config: updated instance of RTConfig class
+        model_config: updated instance of ModelConfig class
+
+
+    """
+    nbr_lyr = 5
+    # make sure ice config matches matlab benchmark
+    ice.ri = 2
+    ice.shp = [0] * nbr_lyr
+    ice.shp_fctr = [0] * nbr_lyr
+    ice.ar = [0] * nbr_lyr
+    ice.sfc = np.array([0.25] * model_config.nbr_wvl)
+    ice.cdom = [0] * nbr_lyr
+    ice.water = [0] * nbr_lyr
+    ice.nbr_lyr = nbr_lyr
+    ice.layer_type = [0] * nbr_lyr
+    ice.rds = [ice.rds[0]] * nbr_lyr
+    ice.rho = [ice.rho[0]] * nbr_lyr
+    ice.dz = [0.1] * nbr_lyr
+
+    illumination.incoming = 4
+    illumination.direct = 1
+
+    # recalculate fluxes
+    ice.calculate_refractive_index()
+    illumination.calculate_irradiance()
+
+    # make sure smoothing function is toggled off
+    model_config.smooth = False
+
+    # make sure impurities[0] is bc
+    # (same bc used by matlab model)
+    impurities = []
+
+    conc = [0] * nbr_lyr
+    impurity0 = Impurity(
+        model_config.dir_base, "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc
+    )
+    impurities.append(impurity0)
+
+    assert (impurities[0].name == "bc") and (
+        impurities[0].file == "bc_ChCB_rn40_dns1270.nc"
+    )
+
+    return ice, illumination, impurities, rt_config, model_config
+
+
+def test_compare_pyspec_to_matspec_ad(get_matlab_data, get_python_data, set_tolerance):
+    """Tests that spectral albedo values match between BioSNICAR data and the AD benchmark.
+
+    Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark
+    dataset and the newly generated BioSNICAR dataset for the AD solver. Albedo is compared
+    wavelength by wavelength for each column in the datasets.
+
+    Args:
+        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
+        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
+        set_tolerance: threshold error for BBAs to be considered equal
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if the difference between any pair of albedo values exceeds set_tolerance
+
+    """
+
     mat = get_matlab_data
     py = get_python_data
     tol = set_tolerance
     bb_spec = py.loc[:, :480]
     bb_spec = mat.loc[:, :480]
     error = np.array(abs(bb_spec - bb_spec))
-    assert len(error[error > 1e-8]) == 0
+    assert len(error[error > tol]) == 0
 
 
-def test_compare_pySPEC_to_matSPEC_TOON(
-    get_matlab_data_toon, get_python_data_toon, set_tolerance
+def test_compare_pyspec_to_matspec_clean(
+    get_matlab_data_clean, get_python_data_clean, set_tolerance
 ):
-    # check that for each individual wavelenght, the spectral albedo
-    # matches to within tolerance between the two models
-    mat = get_matlab_data_toon
-    py = get_python_data_toon
+    """Tests that spectral albedo values match between BioSNICAR data and the Toon benchmark.
+
+    Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark
+    dataset and the newly generated BioSNICAR dataset for the AD solver with no impurities.
+    Albedo is compared wavelength by wavelength for each column in the datasets.
+
+    Args:
+        get_matlab_data_clean: matlab-snicar-generated csv file of spectral and broadband albedo
+        get_python_data_clean: BioSNICAR generated csv file of spectral and broadband albedo
+        set_tolerance: threshold error for BBAs to be considered equal
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if the difference between any pair of albedo values exceeds set_tolerance
+
+    """
+
+    mat = get_matlab_data_clean
+    py = get_python_data_clean
     tol = set_tolerance
     bb_spec = py.loc[:, :480]
     bb_spec = mat.loc[:, :480]
     error = np.array(abs(bb_spec - bb_spec))
-    assert len(error[error > 1e-8]) == 0
+    assert len(error[error > tol]) == 0
 
 
 def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spectra):
-    # grabs n spectra and plots the python and matlab versions
-    # for visual comparison
+    """Plots random selection of N spectra pairs and saves to /tests/test_data.
+
+    Args:
+        get_matlab_data: matlab-generated csv file of spectral and broadband albedo
+        get_python_data: python-generated csv file of spectral and broadband albedo
+        get_n_spectra: number of pairs of spectral albedo to plot
+
+    Returns:
+        None but saves py_mat_comparison.png to /tests/test_data/
+    """
+
     mat = get_matlab_data
     py = get_python_data
     n_spec = get_n_spectra
@@ -107,53 +510,69 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
     plt.ylabel("Albedo")
     plt.title("solid lines = Python\ncrosses = Matlab")
 
-    plt.savefig("py_mat_comparison.png")
+    plt.savefig("./tests/test_data/py_mat_comparison.png")
 
 
-# each parametrize decorator defines a range of values for
-# a specific input parameter
-@pytest.mark.parametrize("direct", [0, 1])
-@pytest.mark.parametrize("aprx_typ", [0, 1])
-@pytest.mark.parametrize("incoming", [0, 1, 2, 3, 4, 5, 6])
-@pytest.mark.parametrize("shp", [0, 1, 2, 3, 4])
-@pytest.mark.parametrize("rf", [0, 1, 2])
-@pytest.mark.parametrize("lyr", [0, 1])
-def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
+@pytest.mark.parametrize("dir", [0, 1])
+@pytest.mark.parametrize("aprx", [1, 2, 3])
+@pytest.mark.parametrize("inc", [0, 1, 2, 3, 4, 5, 6])
+@pytest.mark.parametrize("ref", [0, 1, 2])
+def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
+    """Checks model runs correctly with range of input value combinations.
+
+    Fuzzer checks that model functions correctly across range of configurations.
+    This fuzzer spoecifically checks rtm config and illumination parameters. The
+    range of values is set in the parameterize decorators on this function and can
+    be adjusted to test for specific failures or to increase test coverage. The
+    defaults are designed to balance coverage with execution time. This func can be
+    toggled off by setting fuzz to fase in conftest.py
+
+    Args:
+        dir: Boolean toggling between direct and diffuse irradiance
+        aprx: choice of two-stream approximation
+        inc: choice of spectral distribution of incoming irradiance
+        ref: chocie of refractive indices (Warren 1984, Warren 2008, Picard 2016)
+        fuzz: boolean toggling this fuxxing func on/off
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if snicar throws an exception with a particular configuration
     """
-    ensures code runs and gives valid BBA with combinations of input vals
-    """
-    rds = 1000
-    rho = 400
-    solzen = 40
-    c_factor = 0
-    dust = 0
-    algae = 0
-    dz = 0.2
-    bc = 0
-    toon = False
-    ad = True
 
     if fuzz:
-        params = set_params(
-            direct,
-            aprx_typ,
-            incoming,
-            shp,
-            rf,
-            rho,
-            rds,
-            lyr,
-            dz,
-            algae,
-            bc,
-            dust,
-            c_factor,
-            solzen,
-            toon,
-            ad,
+
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
         )
-        albedo, BBA = call_snicar(params)
-        assert (BBA > 0) and (BBA < 1)
+
+        rt_config.aprx_typ = aprx
+        illumination.direct = dir
+        ice.rf = ref
+        ice.calculate_refractive_index()
+        illumination.incoming = inc
+        illumination.calculate_irradiance()
+
+        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+        tau, ssa, g, L_snw = mix_in_impurities(
+            ssa_snw, g_snw, mac_snw, ice, impurities, model_config
+        )
+        outputs_toon = toon_solver(
+            tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+        )
+
+        outputs_ad = adding_doubling_solver(
+            tau, ssa, g, L_snw, ice, illumination, model_config
+        )
 
     else:
         pass
@@ -163,554 +582,94 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
 
 @pytest.mark.parametrize("rds", [1000, 5000, 10000])
 @pytest.mark.parametrize("rho", [400, 600, 800])
-@pytest.mark.parametrize("solzen", [10, 40, 60])
-@pytest.mark.parametrize("c_factor", [0, 30])
+@pytest.mark.parametrize("zen", [50, 60, 70])
+@pytest.mark.parametrize("cfactor", [1, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer_AD(rds, rho, solzen, c_factor, dust, algae, fuzz):
-    """
-    ensures code runs and gives valid BBA with combinations of input vals
-    """
+def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
+    """Checks model runs correctly with range of input value combinations.
 
-    dz = 0.2
-    bc = 0
-    direct = 1
-    aprx_typ = 1
-    incoming = 4
-    shp = 0
-    rf = 2
-    lyr = 1
-    toon = False
-    ad = True
+    Fuzzer checks that model functions correctly across range of configurations.
+    This fuzzer spoecifically checks input parameters including ice physical properties.
+    The range of values is set in the parameterize decorators on this function and can
+    be adjusted to test for specific failures or to increase test coverage. The
+    defaults are designed to balance coverage with execution time. This func can be
+    toggled off by setting fuzz to fase in conftest.py
+
+    Args:
+        rds: effective grain radius (um) of ice grains (lyr_typ==0) or air bubbles (lyr_typ==1)
+        rho: density of ice layer (kg/m3)
+        zen: zenith angle of direct beam (degrees from vertical)
+        cfactor: concentrating factor used to convert field-measured to modelled LAP concentration
+        dust: concentration of mineral dust in each layer of the model (ppb)
+        algae: concentration of glacir algae in each layer of the model (ppb)
+
+    Returns:
+        None
+
+    Raises:
+        tests fail if snicar throws an exception with a particular configuration
+    """
 
     if fuzz:
-        params = set_params(
-            direct,
-            aprx_typ,
-            incoming,
-            shp,
-            rf,
-            rho,
-            rds,
-            lyr,
-            dz,
-            algae,
-            bc,
-            dust,
-            c_factor,
-            solzen,
-            toon,
-            ad,
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
         )
-        albedo, BBA = call_snicar(params)
-        assert (BBA > 0) and (BBA < 1)
 
-    else:
-        pass
+        impurities = []
 
-    return
-
-
-@pytest.mark.parametrize("rds", [1000, 5000])
-@pytest.mark.parametrize("rho", [400, 600])
-@pytest.mark.parametrize("solzen", [30, 40])
-@pytest.mark.parametrize("c_factor", [0, 30])
-@pytest.mark.parametrize("dust", [0, 50000])
-@pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
-    """
-    ensures code runs and gives valid BBA with combinations of input vals
-    note that toon solver has a smaller valid range of solzens than
-    the a-d solver
-    """
-
-    dz = 0.2
-    bc = 0
-    direct = 1
-    aprx_typ = 3
-    incoming = 4
-    shp = 0
-    rf = 2
-    lyr = (1,)
-    toon = True
-    ad = False
-
-    if fuzz:
-        params = set_params(
-            direct,
-            aprx_typ,
-            incoming,
-            shp,
-            rf,
-            rho,
-            rds,
-            lyr,
-            dz,
-            algae,
-            bc,
-            dust,
-            c_factor,
-            solzen,
-            toon,
-            ad,
-        )
-        albedo, BBA = call_snicar(params)
-        assert (BBA > 0) and (BBA < 1)
-
-    else:
-        pass
-
-    return
-
-
-def set_params(
-    direct,
-    aprx_typ,
-    incoming,
-    shp,
-    rf,
-    rho,
-    rds,
-    lyr,
-    dz,
-    algae,
-    bc,
-    dust,
-    c_factor,
-    solzen,
-    toon,
-    ad,
-):
-
-    params = c.namedtuple(
-        "params",
-        [
-            "direct",
-            "aprx_typ",
-            "incoming",
-            "shp",
-            "rf",
-            "rho",
-            "rds",
-            "lyr",
-            "dz",
-            "algae",
+        conc1 = [0] * len(ice.dz)
+        conc1[0] = algae
+        impurity0 = Impurity(
+            model_config.dir_base,
+            "mie_sot_ChC90_dns_1317.nc",
+            False,
+            cfactor,
+            0,
             "bc",
-            "c_factor",
-            "solzen",
-            "alg",
+            conc1,
+        )
+        impurities.append(impurity0)
+
+        conc2 = [0] * len(ice.dz)
+        conc2[0] = dust
+        impurity1 = Impurity(
+            model_config.dir_base,
+            "dust_balkanski_central_size1.nc",
+            False,
+            cfactor,
+            0,
             "dust1",
-            "toon",
-            "add_double",
-        ],
-    )
+            conc2,
+        )
+        impurities.append(impurity1)
 
-    params.direct = direct
-    params.aprx_typ = aprx_typ
-    params.incoming = incoming
-    params.rf = rf
-    params.shp = shp
-    params.rho = [rho, rho]
-    params.rds = [rds, rds]
-    params.lyr = [lyr, lyr]
-    params.dz = [0.001, dz]
-    params.algae = [algae, 0]
-    params.bc = [bc, 0]
-    params.dust = [dust, 0]
-    params.c_factor_GA = c_factor
-    params.solzen = solzen
-    params.toon = toon
-    params.add_double = ad
+        ice.rds = [rds] * len(ice.dz)
+        ice.rho = [rho] * len(ice.dz)
+        illumination.solzen = zen
+        illumination.calculate_irradiance()
 
-    return params
+        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+        tau, ssa, g, L_snw = mix_in_impurities(
+            ssa_snw, g_snw, mac_snw, ice, impurities, model_config
+        )
+        outputs_toon = toon_solver(
+            tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+        )
 
+        outputs_ad = adding_doubling_solver(
+            tau, ssa, g, L_snw, ice, illumination, model_config
+        )
 
-def call_snicar(params):
+    else:
+        pass
 
-    inputs = c.namedtuple(
-        "inputs",
-        [
-            "dir_base",
-            "verbosity",
-            "rf_ice",
-            "incoming_i",
-            "direct",
-            "layer_type",
-            "cdom_layer",
-            "aprx_typ",
-            "delta",
-            "solzen",
-            "toon",
-            "add_double",
-            "R_sfc",
-            "dz",
-            "rho_layers",
-            "grain_rds",
-            "side_length",
-            "depth",
-            "rwater",
-            "nbr_lyr",
-            "nbr_aer",
-            "grain_shp",
-            "shp_fctr",
-            "grain_ar",
-            "GA_units",
-            "SA_units",
-            "c_factor_GA",
-            "c_factor_SA",
-            "mss_cnc_soot1",
-            "mss_cnc_soot2",
-            "mss_cnc_brwnC1",
-            "mss_cnc_brwnC2",
-            "mss_cnc_dust1",
-            "mss_cnc_dust2",
-            "mss_cnc_dust3",
-            "mss_cnc_dust4",
-            "mss_cnc_dust5",
-            "mss_cnc_ash1",
-            "mss_cnc_ash2",
-            "mss_cnc_ash3",
-            "mss_cnc_ash4",
-            "mss_cnc_ash5",
-            "mss_cnc_ash_st_helens",
-            "mss_cnc_Skiles_dust1",
-            "mss_cnc_Skiles_dust2",
-            "mss_cnc_Skiles_dust3",
-            "mss_cnc_Skiles_dust4",
-            "mss_cnc_Skiles_dust5",
-            "mss_cnc_GreenlandCentral1",
-            "mss_cnc_GreenlandCentral2",
-            "mss_cnc_GreenlandCentral3",
-            "mss_cnc_GreenlandCentral4",
-            "mss_cnc_GreenlandCentral5",
-            "mss_cnc_Cook_Greenland_dust_L",
-            "mss_cnc_Cook_Greenland_dust_C",
-            "mss_cnc_Cook_Greenland_dust_H",
-            "mss_cnc_snw_alg",
-            "mss_cnc_glacier_algae",
-            "file_soot1",
-            "file_soot2",
-            "file_brwnC1",
-            "file_brwnC2",
-            "file_dust1",
-            "file_dust2",
-            "file_dust3",
-            "file_dust4",
-            "file_dust5",
-            "file_ash1",
-            "file_ash2",
-            "file_ash3",
-            "file_ash4",
-            "file_ash5",
-            "file_ash_st_helens",
-            "file_Skiles_dust1",
-            "file_Skiles_dust2",
-            "file_Skiles_dust3",
-            "file_Skiles_dust4",
-            "file_Skiles_dust5",
-            "file_GreenlandCentral1",
-            "file_GreenlandCentral2",
-            "file_GreenlandCentral3",
-            "file_GreenlandCentral4",
-            "file_GreenlandCentral5",
-            "file_Cook_Greenland_dust_L",
-            "file_Cook_Greenland_dust_C",
-            "file_Cook_Greenland_dust_H",
-            "file_snw_alg",
-            "file_glacier_algae",
-            "tau",
-            "g",
-            "SSA",
-            "mu_not",
-            "nbr_wvl",
-            "wvl",
-            "Fs",
-            "Fd",
-            "L_snw",
-            "flx_slr",
-        ],
-    )
-
-    ##############################
-    ## 2) Set working directory
-    ##############################
-
-    # set dir_base to the location of the BioSNICAR_GO_PY folder
-    dir_base_path = Path(__file__).parent.parent
-    inputs.dir_base = str(dir_base_path) + "/"
-    savepath = inputs.dir_base  # base path for saving figures
-    write_config_to_textfile = False  # toggle to save config to file
-    inputs.verbosity = 0  # 1 to print real-time updates
-
-    ################################
-    ## 3) Choose plot/print options
-    ################################
-
-    show_figs = False  # toggle to display spectral albedo figure
-    save_figs = False  # toggle to save spectral albedo figure to file
-    print_BBA = False  # toggle to print broadband albedo to terminal
-    print_band_ratios = False  # toggle to print various band ratios to terminal
-    smooth = False  # apply optional smoothing function (Savitzky-Golay filter)
-    window_size = 9  # if applying smoothing filter, define window size
-    poly_order = 3  # if applying smoothing filter, define order of polynomial
-
-    #######################################
-    ## 4) RADIATIVE TRANSFER CONFIGURATION
-    #######################################
-
-    inputs.direct = (
-        params.direct
-    )  # 1= direct-beam incident flux, 0= Diffuse incident flux
-    inputs.aprx_typ = (
-        params.aprx_typ
-    )  # 1= Eddington, 2= Quadrature, 3= Hemispheric Mean
-    inputs.delta = 1  # 1= Apply delta approximation, 0= No delta
-    inputs.solzen = (
-        params.solzen
-    )  # if direct give solar zenith angle between 0 and 89 degrees (from 0 = nadir, 90 = horizon)
-
-    # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
-    #    0 = mid-latitude winter
-    #    1 = mid-latitude summer
-    #    2 = sub-Arctic winter
-    #    3 = sub-Arctic summer
-    #    4 = Summit,Greenland (sub-Arctic summer, surface pressure of 796hPa)
-    #    5 = High Mountain (summer, surface pressure of 556 hPa)
-    #    6 = Top-of-atmosphere
-    # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
-    # and cloudy-sky spectral fluxes are loaded when direct_beam=0
-    inputs.incoming_i = params.incoming
-
-    ###############################################################
-    ## 4) SET UP ICE/SNOW LAYERS
-    # For granular layers only, choose toon
-    # For granular layers + Fresnel layers below, choose add_double
-    ###############################################################
-
-    inputs.toon = params.toon  # toggle toon et al tridiagonal matrix solver
-    inputs.add_double = params.add_double  # toggle adding-doubling solver
-
-    inputs.dz = params.dz  # thickness of each vertical layer (unit = m)
-    inputs.nbr_lyr = len(params.dz)  # number of snow layers
-    inputs.layer_type = (
-        params.lyr
-    )  # Fresnel layers for the add_double option, set all to 0 for the toon option
-    inputs.cdom_layer = [0, 0]  # Only for layer type == 1, CDOM data from L Halbach
-    inputs.rho_layers = params.rho  # density of each layer (unit = kg m-3)
-    inputs.nbr_wvl = 480
-    # inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
-    rain_polished_ice_spectrum_file = (
-        dir_base_path.joinpath("Data")
-        .joinpath("OP_data")
-        .joinpath("480band")
-        .joinpath("rain_polished_ice_spectrum.csv")
-    )
-
-    inputs.R_sfc = np.genfromtxt(
-        str(rain_polished_ice_spectrum_file),
-        delimiter="csv",
-    )  # import underlying ice from file
-
-    ###############################################################################
-    ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
-    # For hexagonal plates or columns of any size choose GeometricOptics
-    # For sphere, spheroids, koch snowflake with optional water coating choose Mie
-    ###############################################################################
-
-    inputs.rf_ice = 2  # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
-
-    # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
-    # For 0,1,2,3:
-    inputs.grain_shp = [params.shp] * len(
-        params.dz
-    )  # grain shape(He et al. 2016, 2017)
-    inputs.grain_rds = params.rds  # effective grain radius of snow/bubbly ice
-    inputs.rwater = [0] * len(params.dz)  # radius of optional liquid water coating
-
-    # For 4:
-    inputs.side_length = [10000, 10000]
-    inputs.depth = [10000, 10000]
-
-    # Shape factor = ratio of nonspherical grain effective radii to that of equal-volume sphere
-    ### only activated when sno_shp > 1 (i.e. nonspherical)
-    ### 0=use recommended default value (He et al. 2017)
-    ### use user-specified value (between 0 and 1)
-    inputs.shp_fctr = [0] * len(params.dz)
-
-    # Aspect ratio (ratio of width to length)
-    inputs.grain_ar = [0] * len(params.dz)
-
-    #######################################
-    ## 5) SET LAP CHARACTERISTICS
-    #######################################
-
-    # Define total number of different LAPs/aerosols in model
-    inputs.nbr_aer = 30
-
-    # define units for algae absorption cross section input file
-    # 0 = m2/kg for MAC, ppb for mss_cnc (this is default)
-    # 1 = m2/cell for MAC, cell/mL for mss_cnc
-    inputs.GA_units = 1  # glacier algae
-    inputs.SA_units = 1  # snow algae
-
-    # determine C_factor (can be None or a number)
-    # this is the concentrating factor that accounts for
-    # resolution difference in field samples and model layers
-    inputs.c_factor_GA = params.c_factor
-    inputs.c_factor_SA = 0
-
-    # Set names of files containing the optical properties of these LAPs:
-    inputs.file_soot1 = (
-        "mie_sot_ChC90_dns_1317.nc"  # uncoated BC (Bohren and Huffman, 1983)
-    )
-    inputs.file_soot2 = (
-        "miecot_slfsot_ChC90_dns_1317.nc"  # coated BC (Bohren and Huffman, 1983)
-    )
-    inputs.file_brwnC1 = (
-        "brC_Kirch_BCsd.nc"  # uncoated brown carbon (Kirchstetter et al. (2004).)
-    )
-    inputs.file_brwnC2 = "brC_Kirch_BCsd_slfcot.nc"  # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-    inputs.file_dust1 = "dust_balkanski_central_size1.nc"  # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
-    inputs.file_dust2 = "dust_balkanski_central_size2.nc"  # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
-    inputs.file_dust3 = "dust_balkanski_central_size3.nc"  # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
-    inputs.file_dust4 = "dust_balkanski_central_size4.nc"  # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-    inputs.file_dust5 = "dust_balkanski_central_size5.nc"  # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
-    inputs.file_ash1 = "volc_ash_eyja_central_size1.nc"  # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
-    inputs.file_ash2 = "volc_ash_eyja_central_size2.nc"  # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
-    inputs.file_ash3 = "volc_ash_eyja_central_size3.nc"  # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
-    inputs.file_ash4 = "volc_ash_eyja_central_size4.nc"  # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
-    inputs.file_ash5 = "volc_ash_eyja_central_size5.nc"  # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
-    inputs.file_ash_st_helens = (
-        "volc_ash_mtsthelens_20081011.nc"  # ashes from Mount Saint Helen's
-    )
-    inputs.file_Skiles_dust1 = (
-        "dust_skiles_size1.nc"  # Colorado dust 1 (Skiles et al 2017)
-    )
-    inputs.file_Skiles_dust2 = (
-        "dust_skiles_size2.nc"  # Colorado dust 2 (Skiles et al 2017)
-    )
-    inputs.file_Skiles_dust3 = (
-        "dust_skiles_size3.nc"  # Colorado dust 3 (Skiles et al 2017)
-    )
-    inputs.file_Skiles_dust4 = (
-        "dust_skiles_size4.nc"  # Colorado dust 4 (Skiles et al 2017)
-    )
-    inputs.file_Skiles_dust5 = (
-        "dust_skiles_size5.nc"  # Colorado dust 5 (Skiles et al 2017)
-    )
-    inputs.file_GreenlandCentral1 = (
-        "dust_greenland_central_size1.nc"  # Greenland dust 1 (Polashenski et al 2015)
-    )
-    inputs.file_GreenlandCentral2 = (
-        "dust_greenland_central_size2.nc"  # Greenland dust 2 (Polashenski et al 2015)
-    )
-    inputs.file_GreenlandCentral3 = (
-        "dust_greenland_central_size3.nc"  # Greenland dust 3 (Polashenski et al 2015)
-    )
-    inputs.file_GreenlandCentral4 = (
-        "dust_greenland_central_size4.nc"  # Greenland dust 4 (Polashenski et al 2015)
-    )
-    inputs.file_GreenlandCentral5 = (
-        "dust_greenland_central_size5.nc"  # Greenlanddust 5 (Polashenski et al 2015)
-    )
-    inputs.file_Cook_Greenland_dust_L = "dust_greenland_Cook_LOW_20190911.nc"  # GRIS dust (Cook et al. 2019 "LOW") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.file_Cook_Greenland_dust_C = "dust_greenland_Cook_CENTRAL_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_HIGH_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.file_snw_alg = "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"  # Snow Algae (spherical, C nivalis)
-    inputs.file_glacier_algae = "Cook2020_glacier_algae_4_40.nc"  # glacier algae in cells/ml or ppb depending on GA_units
-
-    # Add more glacier algae (not functional in current code)
-    # (optical properties generated with GO), not included in the current model
-    # algae1_r = 6 # algae radius
-    # algae1_l = 60 # algae length
-    # file_glacier_algae1 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae1_r,algae1_l))
-    # algae2_r = 2 # algae radius
-    # algae2_l = 10 # algae length
-    # file_glacier_algae2 = str(dir_go_lap_files + 'RealPhenol_algae_geom_{}_{}.nc'.format(algae2_r,algae2_l))
-
-    inputs.mss_cnc_soot1 = params.bc  # uncoated black carbon (Bohren and Huffman, 1983)
-    inputs.mss_cnc_soot2 = [0] * len(
-        params.dz
-    )  # coated black carbon (Bohren and Huffman, 1983)
-    inputs.mss_cnc_brwnC1 = [0] * len(
-        params.dz
-    )  # uncoated brown carbon (Kirchstetter et al. (2004).)
-    inputs.mss_cnc_brwnC2 = [0] * len(
-        params.dz
-    )  # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
-    inputs.mss_cnc_dust1 = (
-        params.dust
-    )  # dust size 1 (r=0.05-0.5um) (Balkanski et al 2007)
-    inputs.mss_cnc_dust2 = [0] * len(
-        params.dz
-    )  # dust size 2 (r=0.5-1.25um) (Balkanski et al 2007)
-    inputs.mss_cnc_dust3 = [0] * len(
-        params.dz
-    )  # dust size 3 (r=1.25-2.5um) (Balkanski et al 2007)
-    inputs.mss_cnc_dust4 = [0] * len(
-        params.dz
-    )  # dust size 4 (r=2.5-5.0um)  (Balkanski et al 2007)
-    inputs.mss_cnc_dust5 = [0] * len(
-        params.dz
-    )  # dust size 5 (r=5.0-50um)  (Balkanski et al 2007)
-    inputs.mss_cnc_ash1 = [0] * len(
-        params.dz
-    )  # volcanic ash size 1 (r=0.05-0.5um) (Flanner et al 2014)
-    inputs.mss_cnc_ash2 = [0] * len(
-        params.dz
-    )  # volcanic ash size 2 (r=0.5-1.25um) (Flanner et al 2014)
-    inputs.mss_cnc_ash3 = [0] * len(
-        params.dz
-    )  # volcanic ash size 3 (r=1.25-2.5um) (Flanner et al 2014)
-    inputs.mss_cnc_ash4 = [0] * len(
-        params.dz
-    )  # volcanic ash size 4 (r=2.5-5.0um) (Flanner et al 2014)
-    inputs.mss_cnc_ash5 = [0] * len(
-        params.dz
-    )  # volcanic ash size 5 (r=5.0-50um) (Flanner et al 2014)
-    inputs.mss_cnc_ash_st_helens = [0] * len(params.dz)  # ash from Mount Saint Helen's
-    inputs.mss_cnc_Skiles_dust1 = [0] * len(
-        params.dz
-    )  # Colorado dust size 1 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust2 = [0] * len(
-        params.dz
-    )  # Colorado dust size 2 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust3 = [0] * len(
-        params.dz
-    )  # Colorado dust size 3 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust4 = [0] * len(
-        params.dz
-    )  # Colorado dust size 4 (Skiles et al 2017)
-    inputs.mss_cnc_Skiles_dust5 = [0] * len(
-        params.dz
-    )  # Colorado dust size 5 (Skiles et al 2017)
-    inputs.mss_cnc_GreenlandCentral1 = [0] * len(
-        params.dz
-    )  # Greenland Central dust size 1 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral2 = [0] * len(
-        params.dz
-    )  # Greenland Central dust size 2 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral3 = [0] * len(
-        params.dz
-    )  # Greenland Central dust size 3 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral4 = [0] * len(
-        params.dz
-    )  # Greenland Central dust size 4 (Polashenski et al 2015)
-    inputs.mss_cnc_GreenlandCentral5 = [0] * len(
-        params.dz
-    )  # Greenland Central dust size 5 (Polashenski et al 2015)
-    inputs.mss_cnc_Cook_Greenland_dust_L = [0] * len(params.dz)
-    inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(params.dz)
-    inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(params.dz)
-    inputs.mss_cnc_snw_alg = [0] * len(
-        params.dz
-    )  # Snow Algae (spherical, C nivalis) (Cook et al. 2017)
-    inputs.mss_cnc_glacier_algae = (
-        params.algae
-    )  # glacier algae type1 (Cook et al. 2020)
-
-    nbr_aer = 30
-
-    outputs = snicar_feeder(inputs)
-
-    return outputs.albedo, outputs.BBA
+    return

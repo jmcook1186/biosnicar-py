@@ -1,34 +1,23 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon May 21 08:38:44 2018
 
-@author: Joseph Cook, joe.cook@sheffield.ac.uk
+"""Calculates optical properties of large hexagonal ice grains.
 
 This file calculates the optial properties (single scattering albedo, assymetry
 parameter, mass absorption coefficient and extinction, scattering and absorption cross
 sections) for ice grains shaped as arbitrarily large hexagonal plates or columns.
 The optical propertiesare then saved into netCDF files in the correct format for
-loading into the BioSNICAR_GO model provided in the BioSNICAR_GO repository.
+loading into BioSNICAR.
 
 The main function calc_optical_params() is based upon the equations of
 Diedenhoven et al (2014) who provided a python script as supplementary material
-for their paper:
-
-"A flexible parameterization for shortwave optical properties of ice crystals" by
-Bastiaan van Diedenhoven; Andrew S. Ackerman; Brian Cairns; Ann M. Fridlind
-accepted for publication in J. Atmos. Sci. (2013)
-
-The original code can be downloaded from:
+for their paper. The original code can be downloaded from:
 https://www.researchgate.net/publication/259821840_ice_OP_parameterization
 
 The optical properties are calculated using a parameterization of geometric optics
 calculations (Macke et al., JAS, 1996).
 
-The script is divided into three functions. The first is a preprocessing function
-that ensures the wavelengths and real/imaginary parts of the refractive index for ice is
-provided in the correct waveband and correct spectral resolution to interface with the
-BioSNICAR_GO model. The refractive indices are taken from Warren and Brandt 2008.
+
+
+
 
 There are no user defined inouts for the preprocessing function, it can simply be
 run as
@@ -55,15 +44,9 @@ user can define the range of side lengths and depths to be looped over.
 NOTE: The extinction coefficient in the current implementation is 2 for all size
 parameters as assumed in the conventional geometric optics approximation.
 
-UPDATE March 2019: Now includes option to output a three-band version, with bands
-relevant for integrating BioSNICAR into MAR (modele atmospherique regionale).
-These bands are 300-799 nm, 800-1199nm, 1201-2500nm. The optical properties are averaged
-over these wavelength ranges and output as three floats to a separate optical property
-library: GO_files/Ice_Optical_Properties_3band. To use this option set ThreeBand to
-True in the functions calculate_optical_params() and netcdf_updater()
+
 
 """
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -75,30 +58,44 @@ DATAPATH = "/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc"
 RI_SOURCE = 2
 
 
-def preprocess_RI(RIsource, datapath):
+def preprocess_RI(ri_source, path_to_ri):
 
-    """
-    grabs appropriates wavelengths, real and imaginary parts of ice
+    """Preprocessing of wavelength and RI data.
+
+    Preprocessing function that ensures the wavelengths and real/imaginary 
+    parts of the refractive index for ice is provided in the correct waveband and correct 
+    spectral resolution to interface with BioSNICAR. The refractive indices are taken 
+    from Warren and Brandt 2008.
+
+    Grabs appropriates wavelengths, real and imaginary parts of ice
     refractive index. The source of the refractive index data is
-    controlled by var "RIsource" where 0 = Warren 1984, 1 = Warren 2008
+    controlled by var "ri_source" where 0 = Warren 1984, 1 = Warren 2008
     and 2 = Picard 2016.
 
     These are then passed as numpy arrays to the Geometrical Optics function.
 
+    Args:
+        ri_source: choice of refractive index
+        path_to_ri: path to directory containing RI data
+
+    Returns:
+        reals: numpy array of real parts of RI by wavelength
+        imags: numpy array of imaginary parts of RI by wavelength
+        wavelengths: numpy array of wavelengths (um)
     """
 
-    refidx = xr.open_dataset(datapath)
+    refidx = xr.open_dataset(path_to_ri)
     wavelengths = refidx["wvl"].values
 
-    if RIsource == 0:
+    if ri_source == 0:
         reals = refidx["re_Wrn84"].values
         imags = refidx["im_Wrn84"].values
 
-    elif RIsource == 1:
+    elif ri_source == 1:
         reals = refidx["re_Wrn08"].values
         imags = refidx["im_Wrn08"].values
 
-    elif RIsource == 2:
+    elif ri_source == 2:
         reals = refidx["re_Pic16"].values
         imags = refidx["im_Pic16"].values
 
@@ -113,14 +110,36 @@ def calc_optical_params(
     wavelengths,
     plots=False,
     report_dims=False,
-    ThreeBand=False,
 ):
+    """Calculates single scattering optical properties.
 
-    SSA_list = []
-    Assy_list = []
-    absXS_list = []
-    MAC_list = []
-    X_list = []
+    Van Diedenhoven's parameterisation is used to calculate
+    the single scatterign optical properties of hexagonal
+    ice columns of given dimensions.
+
+    Args:
+        side_length: length of side of hexagonal face (um)
+        depth: length of hexagonal column (um)
+        reals: numpy array of real parts of RI by wavelength
+        imags: numpy array of imaginary parts of RI by wavelength
+        wavelengths: numpy array of wavelenmgths (um)
+        plots: Boolean to toggle plotting OPs
+        report_dims: Boolean to toggle printing OP data to terminal
+
+    Returns:
+        g_list: assymetry parameter
+        ssa_list: single scattering albedo
+        mac_list: mass absorption coefficient
+        depth: length of hexagional column (um)
+        side_length: length of side of hexagonal face (um)
+        diameter: diameter across hexaginal face.
+
+    """
+
+    ssa_list = []
+    g_list = []
+    abs_xs_list = []
+    mac_list = []
 
     V = 1.5 * np.sqrt(3) * side_length**2 * depth  # volume
     Area_total = (
@@ -286,22 +305,22 @@ def calc_optical_params(
             absXS / V * 914
         )  # divide by volume*mass to give mass absorption coefficient
 
-        SSA_list.append(w)
-        Assy_list.append(g_tot)
-        absXS_list.append(absXS)
-        MAC_list.append(MAC)
+        ssa_list.append(w)
+        g_list.append(g_tot)
+        abs_xs_list.append(absXS)
+        mac_list.append(MAC)
 
     if plots:
         plt.figure(1)
-        plt.plot(wavelengths, SSA_list), plt.ylabel("SSA"), plt.xlabel(
+        plt.plot(wavelengths, ssa_list), plt.ylabel("SSA"), plt.xlabel(
             "Wavelength (um)"
         ), plt.grid(b=None)
         plt.figure(2)
-        plt.plot(wavelengths, Assy_list), plt.ylabel("Assymetry Parameter"), plt.xlabel(
+        plt.plot(wavelengths, g_list), plt.ylabel("Assymetry Parameter"), plt.xlabel(
             "Wavelength (um)"
         ), plt.grid(b=None)
         plt.figure(3)
-        plt.plot(wavelengths, MAC_list), plt.ylabel(
+        plt.plot(wavelengths, mac_list), plt.ylabel(
             "Mass Absorption Cross Section"
         ), plt.xlabel("Wavelength (um)"), plt.grid(b=None)
 
@@ -311,34 +330,50 @@ def calc_optical_params(
         print("aspect ratio = ", ar)
         print("ice crystal volume = ", np.round(V * 1e-12, 2), " (cm^3)")
 
-    return Assy_list, SSA_list, MAC_list, depth, side_length, diameter
+    return g_list, ssa_list, mac_list, depth, side_length, diameter
 
 
 def net_cdf_updater(
-    RIsource, savepath, Assy_list, SSA_list, MAC_list, depth, side_length, density
+    ri_source, savepath, g_list, ssa_list, mac_list, depth, side_length, density
 ):
+    """Updates a template NetCDF file with new OP data.
 
-    filepathIN = savepath
-    MAC_IN = np.squeeze(MAC_list)
-    SSA_IN = np.squeeze(SSA_list)
-    Assy_IN = np.squeeze(Assy_list)
+    Args:
+        ri_source: chocie of refractive index file
+        savepath: path to save output data
+        g_list: asymmetry parameter
+        ssa_list: single scattering albedo
+        mac_list: mass absorption coefficient
+        depth: length of hexagional column (um)
+        side_length: length of side of hexagonal face (um)
+        density: density of material in kg/m3.
 
-    if RIsource == 0:
+    Returns:
+        None but saves NetCDF file to savepath
+
+    """
+
+    filepath_in = savepath
+    mac_in = np.squeeze(mac_list)
+    ssa_in = np.squeeze(ssa_list)
+    g_in = np.squeeze(g_list)
+
+    if ri_source == 0:
         stb1 = "ice_Wrn84/"
         stb2 = "ice_Wrn84_"
 
-    elif RIsource == 1:
+    elif ri_source == 1:
         stb1 = "ice_Wrn08/"
         stb2 = "ice_Wrn08_"
 
-    elif RIsource == 2:
+    elif ri_source == 2:
         stb1 = "ice_Pic16/"
         stb2 = "ice_Pic16_"
 
     icefile = pd.DataFrame()
-    icefile["asm_prm"] = Assy_IN
-    icefile["ss_alb"] = SSA_IN
-    icefile["ext_cff_mss"] = MAC_IN
+    icefile["asm_prm"] = g_in
+    icefile["ss_alb"] = ssa_in
+    icefile["ext_cff_mss"] = mac_in
     icefile = icefile.to_xarray()
     icefile.attrs["medium_type"] = "air"
     icefile.attrs[
@@ -352,7 +387,7 @@ def net_cdf_updater(
         "origin"
     ] = "Optical properties derived from geometrical optics calculations"
     icefile.to_netcdf(
-        str(filepathIN + stb1 + stb2 + "{}_{}.nc".format(str(side_length), str(depth)))
+        str(filepath_in + stb1 + stb2 + "{}_{}.nc".format(str(side_length), str(depth)))
     )
 
     return
@@ -368,9 +403,9 @@ for side_length in np.arange(2000, 11000, 1000):
     for depth in np.arange(2000, 31000, 1000):
 
         (
-            Assy_list,
-            SSA_list,
-            MAC_list,
+            g_list,
+            ssa_list,
+            mac_list,
             depth,
             side_length,
             diameter,
@@ -379,5 +414,5 @@ for side_length in np.arange(2000, 11000, 1000):
         )
 
         net_cdf_updater(
-            RI_SOURCE, SAVEPATH, Assy_list, SSA_list, MAC_list, depth, side_length, 917
+            RI_SOURCE, SAVEPATH, g_list, ssa_list, mac_list, depth, side_length, 917
         )

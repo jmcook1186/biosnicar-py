@@ -1,9 +1,6 @@
 # BioSNICAR
 
-
-<b>NOTICE (Jan 2022): We have done a lot of work refactoring and updating this code recently to make it cleaner, faster and more user-friendly. Some of the docs are currently lagging behind - we are working on this - please bear with us! </b>
-
-<img src="./Assets/example-output.jpg" width=500>
+<img src="./assets/example-output.jpg" width=500>
 
 ## Introduction
 
@@ -31,9 +28,14 @@ The model driver and all the core source code can be found in `/src`. From the t
 
 This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console. 
 
-Most users will want to experiment with changing input parameters. This is achieved by opening `snicar_driver.py` and adjusting the parameter values therein. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. The user also has the option to change the model meta-config, which controls behaviour such as printing band ratio values to the console, savign the model config to external text file, toggling plotting on and off, etc. Most users should have no reason to modify any other file in this repository except for the clearly marked values in `snicar_driver.py`.
+Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for the those in `inputs.yaml`.
 
-More complex applications of the model code, for example model inversions, snicar-as-a-function, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
+More complex applications of the model code, for example model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
+
+We have also maintained a separate version of the BioSNICAR codebase that uses a "functional" prorgamming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. The two branches are entirely equivalent int heir simulations but very different in their programmign style. The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
+
+## Choosing Inputs
+It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to `inputs.md` for explanations of each parameter. 
 
 ## Theoretical Background
 
@@ -58,17 +60,20 @@ However, BioSNICAR includes a bio-optical model that allows for the calculations
 The following directory tree shows the correct structure for this model code. This is how the files are structured when this repository is cloned or downloaded. This can be used as a reference for understanding the software or as a guide if things get muddled during modification of the source code.
 
 ```
-BioSNICAR_GO_PY
-├── Assets
+├── assets
+│   ├── example-output.jpg
 │   ├── model_schematic.odp
 │   ├── model_structure2.jpg
 │   ├── model_structure.jpg
 │   ├── py_mat_comparison.png
 │   └── SSA_derivation.pdf
-├── BioOptical_Model
+|
+├── bio_optical_model
 │   ├── biooptical_driver.py
-│   └── biooptical_Funcs.py
-├── BioSNICAR_py.yaml
+│   ├── biooptical_Funcs.py
+│   ├── __pycache__
+│   └── update_netCDFS.py
+|
 ├── Data
 │   ├── additional_data
 │   │   ├── Albedo_master.csv
@@ -111,7 +116,8 @@ BioSNICAR_GO_PY
 │   │   ├── k_ice_480.csv
 │   │   ├── Refractive_Index_Ice_Warren_1984.csv
 │   │   ├── Refractive_Index_Liquid_Water_Segelstein_1981.csv
-│   │   └── water_RI.csv
+│   │   ├── water_RI.csv
+│   │   └── wavelengths.csv
 │   └── pigments
 │       ├── alloxanthin.csv
 │       ├── antheraxanthin.csv
@@ -137,37 +143,42 @@ BioSNICAR_GO_PY
 │   ├── config.yaml
 │   ├── driver.py
 │   ├── __init__.py
-│   ├── Lou_inverse_model.py
+│   ├── __pycache__
 │   ├── README.md
-│   ├── snicar_inverter.py
 │   └── utils.py
+|
+├── LICENSE
 ├── README.md
+├── requirements.txt
 ├── src
 │   ├── adding_doubling_solver.py
 │   ├── bubble_reff_calculator.py
+│   ├── classes.py
+│   ├── column_OPs.py
+│   ├── display.py
 │   ├── geometric_optics_ice.py
 │   ├── __init__.py
+│   ├── inputs.yaml
 │   ├── mie_coated_water_spheres.py
+│   ├── __pycache__
+│   ├── setup_snicar.py
 │   ├── snicar_driver.py
-│   ├── snicar_feeder.py
 │   ├── toon_rt_solver.py
-│   └── update_netCDFS.py
+│   └── validate_inputs.py
 └── tests
-    ├── benchmarking_funcs.py
     ├── conftest.py
-    ├── constants.txt
     ├── __init__.py
-    ├── mat_full_testsuite_20211104.csv
-    ├── matlab_benchmark_data.csv
     ├── matlab_benchmark_script.m
-    ├── py_benchmark_data.csv
-    ├── py_benchmark_script.py
-    ├── py_mat_comparison.png
+    ├── __pycache__
     ├── README.md
-    ├── test_snicar.py
-    ├── testsuite_20211104_lyr0.csv
-    ├── testsuite_20211104_lyr1.csv
-    └── variables.txt
+    ├── snicarAD_v4.m
+    ├── test_data
+    │   ├── matlab_benchmark_data_clean.csv
+    │   ├── matlab_benchmark_data.csv
+    │   ├── py_benchmark_data_clean.csv
+    │   ├── py_benchmark_data.csv
+    │   └── py_mat_comparison.png
+    └── test_snicar.py
 ```
 
 

@@ -1,4 +1,5 @@
-"""
+"""Calculates effective radius of air bubbles.
+
 This script is for taking specific surface area for bubbly ice an calculating the
 effective radius of the bubbles assuming a lognormal bubble size distribution.
 
@@ -9,13 +10,9 @@ r_eff = 3/(P_i * SSA) where P_i is density of ice (917 kg m-3)
 gives the effective radius of a discrete grain of given SSA, for a collection of bubbles
 in a bulk medium of ice a more nuanced calculation is required.
 
-The derivation of the calculations are explained in the pdf ./Assets/SSA_derivation.pdf
+The derivation of the calculations are explained in the pdf ./assets/SSA_derivation.pdf
 from Chloe Whicker (UMich).
 
-For initial experiments in simulating GrIS glacier ice beneath the weathered crust
-I have taken SSA values measured in ice cores of bubbly glacier ice from the
-Allan Hills (Antarctica)
-by CT-scanning by Dadic et al (2013), in the absence of data from Greenland.
 """
 
 import numpy as np
@@ -54,7 +51,7 @@ for i in np.arange(0, len(rho), 1):
         D_eff[i] = (6 * V_air) / (rho[i] * ssa[i])  # D_eff in meters
 
 # Number of bubbles
-No = (6 * V_air) / (np.pi * D_eff ** 3) * np.exp(3 * SIGMA_TILDE_G ** 2)
+No = (6 * V_air) / (np.pi * D_eff**3) * np.exp(3 * SIGMA_TILDE_G**2)
 
 # convert effective diameter in meters to effective radius in microns
 r_eff_micron = D_eff / 2 * 1e6
