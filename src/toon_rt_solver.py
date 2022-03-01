@@ -4,7 +4,24 @@ from classes import *
 
 
 def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
+    """Driver func for toon radiative transfer solver.
 
+    Makes function calls relating to radiative transfer solver in sequence and returns outputs.
+    
+    Args:
+        tau: optical thickness
+        ssa: single scattering albedo
+        g: asymmetry parameter
+        L_snw: mass of ice in each layer
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        model_config: instance of ModelConfig class
+        rt_config: instance of RTConfig class
+
+    Returns:
+        outputs: instance of Outputs class
+
+    """
     validate_inputs_toon(ice, illumination)
     # ----------------------------------------------------------------------------------
     # PERFORM DELTA TRANSFORMATION IF REQUIRED
@@ -155,6 +172,20 @@ def validate_inputs_toon(ice, illumination):
 
 
 def delta_transformation(rt_config, g, ssa, tau):
+    """Applied Delta transformation.
+
+    Args:
+        rt_config: instance of RTConfig class
+        g: asymmetry parameter
+        ssa: single scatterign albedo
+        tau: optical thickness
+
+    Returns:
+        g_star: delta scaled asymmetry parameter
+        ssa_star: delta scaled singloe scattering albedo
+        tau_star: delta scaled optical thickness
+
+    """
 
     if rt_config.delta:
 
@@ -172,7 +203,17 @@ def delta_transformation(rt_config, g, ssa, tau):
 
 
 def calculate_optical_depth_of_column(ice, model_config, tau_star):
+    """Calculates colum,n optical thickness.
 
+    Args:
+        ice: instance of Ice class 
+        model_config: instance of ModelConfig class
+        tau_star: delta scaled optical thickness
+    
+    Returns:
+        tau_clm: optical thickness of column
+    
+    """
     tau_clm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
 
     for i in np.arange(1, ice.nbr_lyr, 1):
@@ -183,6 +224,17 @@ def calculate_optical_depth_of_column(ice, model_config, tau_star):
 
 
 def boundary_condition(ice, illumination, tau_clm, tau_star):
+    """Calculates reflectance from underlying surface.
+
+    Args:
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        tau_clm: optical thickness of column
+        tau_star: delta_scaled optical thickness
+    
+    Returns:
+        S_sfc: reflectance from underlying surface
+    """
     s_sfc = (
         ice.sfc
         * illumination.mu_not
@@ -197,7 +249,8 @@ def boundary_condition(ice, illumination, tau_clm, tau_star):
 
 
 def two_stream_approximation(rt_config, ssa_star, g_star, illumination):
-    """
+    """Applies two-stream approximation.
+
     Three 2-stream approximations are available: Eddington,
     Quadrature and hemispheric mean. The equations for each
     approximation are provided in Toon et al. (1989) Table 1.
@@ -206,7 +259,20 @@ def two_stream_approximation(rt_config, ssa_star, g_star, illumination):
     phase function is equal to 1  + g  in the forward scattering
     hemisphere and to 1  - g  in the backward scattering hemisphere.
     The asymmetry parameter is g. The hemispheric mean is only
-    useful for infrared wavelengths
+    useful for infrared wavelengths.
+
+    Args:
+        rt_config: instance of RTConfig class
+        ssa_star: delta scaled signle scattering albedo
+        g_star: delta scaled asymmetry parameter
+    
+    Returns:
+        gamma1: coefficient for matrix solution
+        gamma2: coefficient for matrix solution
+        gamma3: coefficient for matrix solution
+        gamma4: coefficient for matrix solution
+        mu_one: adjusted incidence angle
+
     """
 
     if rt_config.aprx_typ == 1:
@@ -237,6 +303,21 @@ def two_stream_approximation(rt_config, ssa_star, g_star, illumination):
 
 
 def calculate_matrix_coefficients(gamma1, gamma2, tau_star):
+    """calculates coefficients required for matrix calculation.
+
+    Args:
+        gamma1: coefficient for matrix solution
+        gamma2: coefficient for matrix solution
+        tau_star: delta scaled optical thickness
+    
+    Returns:
+        lam: coefficient for matrix solution
+        GAMMA: coefficient for matrix solution
+        e1: coefficient for matrix solution
+        e2: coefficient for matrix solution
+        e3: coefficient for matrix solution
+        e4: coefficient for matrix solution
+    """
 
     lam = np.sqrt(abs((gamma1**2) - (gamma2**2)))
     GAMMA = gamma2 / (gamma1 + lam)
@@ -264,7 +345,28 @@ def c_functions(
     gamma3,
     gamma4,
 ):
+    """Calculate fluxes through column.
 
+    Args:
+        ice: instance of Ice class
+        model_config: instance of ModelConfig class
+        illumination: instance of Illumination class
+        ssa_star: delta scaled single scatterign albedo
+        tau_star: delta scaled optical thickness
+        tau_clm: column optical thickness
+        lam: coefficient for matrix solution
+        gamma1: coefficient for matrix solution
+        gamma2: coefficient for matrix solution
+        gamma3: coefficient for matrix solution
+        gamma4: coefficient for matrix solution
+    
+    Returns:
+        C_pls_btm: upwards flux from bottom of layer
+        C_mns_btm: downwards flux from bottom of layer
+        C_pls_top: upwards flux from top of layer
+        C_mns_top: downwards flux from top of layer
+
+    """
     C_pls_btm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     C_mns_btm = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     C_pls_top = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
@@ -342,7 +444,25 @@ def matrix_solver(
     e3,
     e4,
 ):
+    """Execute matrix calculation.
 
+    Args:
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        model_config: instance of ModelConfig class
+        s_sfc: reflectance of underlying surface
+        C_pls_btm: upwards flux from bottom of layer
+        C_mns_btm: downwards flux from bottom of layer
+        C_pls_top: upwards flux from top of layer
+        C_mns_top: downwards flux from top of layer
+        e1: coefficient for matrix solution
+        e2: coefficient for matrix solution
+        e3: coefficient for matrix solution
+        e4: coefficient for matrix solution
+    
+    Returns:
+        Y: intermediate representing t-0boundary fluxes
+    """
     # Toon equations 41-43.
     # Boundary values for i=1 and i=2 * nbr_lyr, specifics for i=odd and i=even
     # Set up lists
@@ -452,7 +572,34 @@ def layer_fluxes(
     e4,
     mu_one,
 ):
+    """Calculate total fluxes.
+    
+    Args:
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        model_config: instance of ModelConfig class
+        tau_clm: optical thickness of column
+        lam: intermediate coefficient
+        GAMMA: intermediate coefficient
+        tau_star: delta scaled optical thickness
+        C_pls_btm: upwards flux from bottom of layer
+        C_mns_btm: downwards flux from bottom of layer
+        C_pls_top: upwards flux from top of layer
+        C_mns_top: downwards flux from top of layer
+        e1: coefficient for matrix solution
+        e2: coefficient for matrix solution
+        e3: coefficient for matrix solution
+        e4: coefficient for matrix solution
+        mu_one: adjusted indicence angle
 
+    Returns:
+        F_net: net flux in each layer
+        F_top_pls: net upwards flux from upper surface of each layer
+        F_btm_net: net flux at bottom surface
+        F_top_net: net fluxes at upper surface
+        intensity: mean intensity at base of each layer
+
+    """
     direct = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     F_net = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     F_btm_net = np.zeros([1, model_config.nbr_wvl])
@@ -532,6 +679,18 @@ def layer_fluxes(
 
 
 def absorbed_fluxes(ice, model_config, F_net, F_top_net):
+    """Calculates energy absorbed in each layer.
+
+    Args:
+        ice: instance of Ice class
+        model_config: instance of ModelConfig class
+        F_net: net flux in each layer
+        F_top_net: net flux at upper model boundary
+    
+    Returns:
+        F_abs: absorbed flux in each layer
+
+    """
 
     F_abs = np.zeros([ice.nbr_lyr, model_config.nbr_wvl])
     # absorbed flux in each layer (negative if there is net emission (bnd_typ = 4))
@@ -545,7 +704,21 @@ def absorbed_fluxes(ice, model_config, F_net, F_top_net):
 
 
 def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
+    """Checks there is no conservation of energy violation.
 
+    Args:
+        illumination: instance of Illumination class
+        F_abs: absorbed flux in each layer
+        F_btm_net: net flux at bottom surface
+        F_top_pls: upwards flux from upper boundary
+
+    Returns:
+        None
+
+    Raises:
+        ValueError is conservation of energy error is detected
+
+    """
     energy_sum = (
         (illumination.mu_not * np.pi * illumination.Fs)
         + illumination.Fd
@@ -566,7 +739,20 @@ def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
 def get_outputs(
     model_config, ice, illumination, F_top_pls, F_top_net, F_btm_net, F_abs, L_snw
 ):
+    """Assimilates useful data into instance of Outputs class.
 
+    Args:
+        illumination: instance of Illumination class
+        albedo: ratio of upwwards fluxes and irradiance
+        model_config: instance of ModelConfig class
+        L_snw: mass of ice in each layer
+        F_abs: absorbed flux in each layer
+        F_btm_net: net flux at bottom surface
+
+    Returns:
+        outputs: instance of Outputs class
+
+    """
     intensity_top = np.zeros(model_config.nbr_wvl)
     abs_vis = np.zeros(ice.nbr_lyr)
     abs_nir = np.zeros(ice.nbr_lyr)
