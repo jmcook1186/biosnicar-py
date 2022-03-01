@@ -43,8 +43,7 @@ def plot_albedo(plot_config, model_config, albedo):
     if plot_config.save:
         plt.savefig(str(savepath + "spectral_albedo.png"))
 
-    if plot_config.show:
-        plt.show()
+    plt.show()
 
     return
 

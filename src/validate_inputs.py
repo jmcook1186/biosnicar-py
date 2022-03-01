@@ -52,10 +52,10 @@ def validate_snow_algae(impurities):
         ):
             if impurity.unit != 0:
                 raise ValueError(
-                    "your chosen snow algae file has its absorption cross section in m2/kg, so please express concentration in ppb"
+                    "\nyour chosen snow algae file has its absorption cross section in m2/kg, so please express concentration in ppb"
                 )
             else:
-                print("*** WARNING ***")
+                print("\n*** WARNING ***")
                 print("You have included snow algae as an impurity")
                 print("be warned the snow algae optical properties")
                 print("are theoretical and yet to be field validated")
@@ -65,7 +65,7 @@ def validate_snow_algae(impurities):
         ):
             if impurity.unit != 1:
                 raise ValueError(
-                    "your chosen snow algae file has its absorption cross section in m2/cell, so please express concentration in cells/mL"
+                    "\nyour chosen snow algae file has its absorption cross section in m2/cell, so please express concentration in cells/mL"
                 )
 
     print("snow algae OK")
@@ -98,17 +98,17 @@ def validate_glacier_algae(impurities):
         ):
             if impurity.unit != 1:
                 raise ValueError(
-                    "your chosen glacier algae file has its absorption coefficient in m2/cell, so please express concentration in cells/mL"
+                    "\nyour chosen glacier algae file has its absorption coefficient in m2/cell, so please express concentration in cells/mL"
                 )
         elif impurity.file == "Cook2020_glacier_algae_4_40.nc" and (
             np.sum(impurity.conc) > 0
         ):
             if impurity.unit != 0:
                 raise ValueError(
-                    "your chosen glacier algae file has its absorption coefficient in m2/mg, so please express concentration in ppb"
+                    "\nyour chosen glacier algae file has its absorption coefficient in m2/mg, so please express concentration in ppb"
                 )
             else:
-                print("*** WARNING ***")
+                print("\n*** WARNING ***")
                 print("You have included glacier algae as an impurity")
                 print("be warned the snow algae optical properties")
                 print("are theoretical and yet to be field validated")

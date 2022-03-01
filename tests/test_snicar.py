@@ -67,7 +67,6 @@ def test_AD_solver(new_benchmark_ad):
             rt_config,
             model_config,
             plot_config,
-            display_config,
             impurities,
         ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
@@ -182,7 +181,6 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
             rt_config,
             model_config,
             plot_config,
-            display_config,
             impurities,
         ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
@@ -551,7 +549,6 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
             rt_config,
             model_config,
             plot_config,
-            display_config,
             impurities,
         ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
@@ -621,7 +618,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
             rt_config,
             model_config,
             plot_config,
-            display_config,
             impurities,
         ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(

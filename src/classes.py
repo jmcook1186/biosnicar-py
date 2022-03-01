@@ -77,21 +77,21 @@ class Ice:
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.dz = inputs["VARIABLES"]["DZ"]
-        self.layer_type = inputs["VARIABLES"]["LAYER_TYPE"]
-        self.cdom = inputs["VARIABLES"]["CDOM"]
-        self.rho = inputs["VARIABLES"]["RHO"]
+        self.dz = inputs["ICE"]["DZ"]
+        self.layer_type = inputs["ICE"]["LAYER_TYPE"]
+        self.cdom = inputs["ICE"]["CDOM"]
+        self.rho = inputs["ICE"]["RHO"]
         self.sfc = np.genfromtxt(
             inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
         )
-        self.rf = inputs["VARIABLES"]["RF"]
-        self.shp = inputs["VARIABLES"]["SHP"]
-        self.rds = inputs["VARIABLES"]["RDS"]
-        self.water = inputs["VARIABLES"]["WATER"]
-        self.hex_side = inputs["VARIABLES"]["HEX_SIDE"]
-        self.hex_length = inputs["VARIABLES"]["HEX_LENGTH"]
-        self.shp_fctr = inputs["VARIABLES"]["SHP_FCTR"]
-        self.ar = inputs["VARIABLES"]["AR"]
+        self.rf = inputs["ICE"]["RF"]
+        self.shp = inputs["ICE"]["SHP"]
+        self.rds = inputs["ICE"]["RDS"]
+        self.water = inputs["ICE"]["WATER"]
+        self.hex_side = inputs["ICE"]["HEX_SIDE"]
+        self.hex_length = inputs["ICE"]["HEX_LENGTH"]
+        self.shp_fctr = inputs["ICE"]["SHP_FCTR"]
+        self.ar = inputs["ICE"]["AR"]
         self.nbr_lyr = len(self.dz)
 
         self.calculate_refractive_index()
@@ -126,7 +126,7 @@ class Ice:
             inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc"
         )
 
-        rf = inputs["VARIABLES"]["RF"]
+        rf = inputs["ICE"]["RF"]
         op_dir_stub = inputs["PATHS"]["OP_DIR_STUBS"][rf]
         ref_idx_name = op_dir_stub[4:9]
 
@@ -360,21 +360,6 @@ class PlotConfig:
         self.fontsize = inputs["PLOT"]["FONTSIZE"]
         self.xtick_btm = inputs["PLOT"]["XTICK_BTM"]
         self.ytick_left = inputs["PLOT"]["YTICK_LEFT"]
-        self.show = inputs["PLOT"]["SHOW"]
         self.save = inputs["PLOT"]["SAVE"]
 
 
-class DisplayConfig:
-    """Configuration for text displays.
-
-    Attributes:
-        print_bba: toggle to print BBA to console
-        print_band_ratios: toggle to print band ratio values to console
-    """
-
-    def __init__(self):
-        with open("./src/inputs.yaml", "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
-
-            self.print_bba = inputs["CTRL"]["PRINT_BBA"]
-            self.print_band_ratios = inputs["CTRL"]["PRINT_BAND_RATIOS"]

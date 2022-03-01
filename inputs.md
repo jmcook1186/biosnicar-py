@@ -33,6 +33,7 @@ Interpolation window width used in Savisky-Golay filter if `SMOOTH==True`.
 
 #### Values:
 Positive integer. Technically valid between 2-480 but practical between ~5-20.
+
 #### Default:
 9
 
@@ -44,7 +45,7 @@ Order of polynomial interpolation function used in Savisky-Golay filter if `SMOO
 #### Values:
 Positive integer. Technically any valid but practical between ~5-20.
 #### Default:
-3
+`3`
 
 ## RTM
 ### `DIRECT`:
@@ -52,9 +53,9 @@ Positive integer. Technically any valid but practical between ~5-20.
 Toggles between incoming irradiance being diffuse or direct. It's effect is to change a string stub that generates the filepath used to load in iorradiance from file. If direct irradiance is toggled the model reads in a file whose name contains "_clr_" and a solar zenith angle. 
 
 #### Values:
-'0' for diffuse irradiance. `1` for direwct irradiance.
+`0` for diffuse irradiance. `1` for direct irradiance.
 #### Default:
-1
+`1`
 
 ### `NBR_WVL`:
 #### Definition
@@ -62,8 +63,9 @@ Number of individual wavelengths considered by the model. Under normal circumsta
 
 #### Values:
 positive integer
+
 #### Default:
-480
+`480`
 
 ### `APRX_TYP`:
 #### Definition:
@@ -72,12 +74,12 @@ Chooses two-stream approximation type. There are three choices: Eddington, Quadr
 These choices are only available for the Toon solver - the adding-doubling solver uses hemispheric mean automatically.
 
 #### Values:
-0: Eddington
-1: Quadrature
-2: Hemispheric mean
+`0: Eddington`
+`1: Quadrature`
+`2: Hemispheric mean`
 
 #### Default:
-2
+`2`
 
 ### `DELTA`:
 #### Definition:
@@ -86,11 +88,11 @@ Toggles whether or not the delta function approximation is applied. The delta fu
 This choice is only available for the Toon solver - the adding-doubling applies the delta function automatically.
 
 #### Values:
-True: Delta function
-False: No delta function
+`True: Delta function`
+`False: No delta function`
     
 #### Default:
-True
+`True`
 
 
 ### `SOLZEN`:
@@ -102,26 +104,27 @@ Positive integer degrees.
 For the Ton solver there are known instabilities for solzen outside the range 50-89. For the AD solver any positive integer between 1-89 is valid.
     
 #### Default:
-50
+`50`
 
 ### `INCOMING`:
 #### Definition:
 Chooses spectal profile for incoming irradiance from one of seven presets. These are:
-    
+```    
 0 = mid-latitude winter
-<br>
+
 1 = mid-latitude summer
-<br>
+
 2 = sub-Arctic winter
-<br>
+
 3 = sub-Arctic summer
-<br>
+
 4 = Summit,Greenland (sub-Arctic summer, surface pressure of 796hPa)
-<br>
+
 5 = High Mountain (summer, surface pressure of 556 hPa)
-<br>
+
 6 = Top-of-atmosphere
-<br>
+
+```
 Note that clear-sky spectral fluxes are loaded when direct_beam=1,
 and cloudy-sky spectral fluxes are loaded when direct_beam=0
 
@@ -129,7 +132,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0
 Positive integer between 0 and 6
     
 #### Default:
-4
+`4`
 
 
 ### `ILLUMINATION_FILE_STUBS`:
@@ -139,8 +142,8 @@ These file stubs are used to select the correct file to open for the incoming ir
 #### Values:
 The file stubs are strings and they are constant - do not change.
 
-### Default:
-["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw", "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn", "swnb_480bnd_trp"]
+#### Default:
+```["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw", "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn", "swnb_480bnd_trp"]```
 
 
 ### `VIS_MAX_IDX`:
@@ -150,8 +153,8 @@ The index in `wavelengths` of the upper wavelength in the visible range.
 #### Values:
 Technically any positive integer between 1 and 480 is valid, but practically values close to 39 are appropriate as this corresponds to `wavelength` == 0.7um.
 
-### Default:
-39 
+#### Default:
+`39 `
 
 ### `NIR_MAX_IDX`:
 #### Definition:
@@ -160,8 +163,8 @@ The index in `wavelengths` of the upper wavelength in the near-infrared range.
 #### Values:
 Technically any positive integer between 1 and 480 is valid, but practically values close to 480 are appropriate as this corresponds to `wavelength` == 4.995 um.
 
-### Default:
-480 
+#### Default:
+`480 `
 
 
 ## ICE
@@ -170,10 +173,10 @@ Technically any positive integer between 1 and 480 is valid, but practically val
 Thickness of each layer in the model in units of meters.
 
 #### Values:
-array with length == nbr_lyr. Each element is the thickness of a layer in meters. `dz[0]` is the top layer.
+array with `length == nbr_lyr`. Each element is the thickness of a layer in meters. `dz[0]` is the top layer.
 
-### Default:
-[0.1, 0.1] 
+#### Default:
+`[0.1, 0.1] `
 
 ### `LAYER_TYPE`
 #### Definition:
@@ -182,10 +185,11 @@ There are two layer tupes available in the model: granular or solid ice. Granula
 The toon solver can only accept granular layers. The adding-doubling solver accepts either type including a mix of both in any order.
 
 #### Values:
-0 for granular ice, 1 for solid ice
+`0` for granular ice
+`1` for solid ice
 
-### Default:
-[0, 0] 
+#### Default:
+`[0, 0] `
 
 
 ### `RHO`
@@ -195,25 +199,26 @@ Ice density in each layer measured in kg/m3.
 #### Values:
 Positive integers up to 917 (density of pure ice).
 
-### Default:
-[400, 400] 
+#### Default:
+`[400, 400]`
 
 ### `RF`
 #### Definition:
 Choice of refractive index for ice. The refractive index of pure ice has been measured several times over the past 5 decades. Here we toggle between several of those datasets. The options are:
-<br>
+
+```
 0: Warren et al. (1984)
-<br>
+
 1: Warren et al. (2008)
-<br>
+
 2: Picard et al. (2016)
-<br>
+```
 
 #### Values:
 Positive integer between 0 and 2.
 
-### Default:
-2 
+#### Default:
+`2` 
 
 ### `CDOM`
 #### Definition:
@@ -222,31 +227,32 @@ Chromophoric dissolved organic matter (CDOM) is coloured organic matter that can
 #### Values:
 0 for no CDOM, 1 for CDOM
 
-### Default:
-[0, 0] 
+#### Default:
+`[0, 0] `
 
 
 ### `SHP`
 #### Definition:
 Shape of ice grains. Adjustments for grain shape can onyl be made when layer_type ==0. The available shapes are:
-<br>
+```
 0 = sphere
-<br>
+
 1 = spheroid
-<br>
+
 2 = hexagonal plate
-<br>
+
 3 = koch snowflake
-<br>
+
 4 = hexagonal prisms
+```
 <br>
 The adjustments to the loaded optical properties for spheroids, hexagonal plates and Koch snowflakes are according to Fu et al. 2007 and He et al. 2016. Hexagonal columns are calculated offline using geometric optics calculations and loaded in as separate files.
 
 #### Values:
 Positive integer between 0 and 4
 
-### Default:
-[0, 0] 
+#### Default:
+`[0, 0]`
 
 ### `RDS`
 #### Definition:
@@ -255,8 +261,8 @@ Effective radius of ice grains if `layer_type==0` and effective radius of air bu
 #### Values:
 Positive integer between 30 and 20000 (if `rf==2`).
 
-### Default:
-[1000, 1000] 
+#### Default:
+`[1000, 1000]`
 
 ### `WATER`
 #### Definition:
@@ -265,8 +271,8 @@ Thickness of liquid water coating around ice grains. Only valid when `shp==0` an
 #### Values:
 Positive integer.
 
-### Default:
-[0, 0] 
+#### Default:
+`[0, 0]`
 
 ### `HEX_SIDE`
 #### Definition:
@@ -275,8 +281,8 @@ Length of one of the six sides of the hexagonal face of the iuce grain when `shp
 #### Values:
 Positive integer.
 
-### Default:
-[10000, 10000] 
+#### Default:
+`[10000, 10000]` 
 
 ### `HEX_LENGTH`
 #### Definition:
@@ -285,8 +291,8 @@ Length of the long axis of the ice grain when `shp==4`. The available size combi
 #### Values:
 Positive integer.
 
-### Default:
-[10000, 10000] 
+#### Default:
+`[10000, 10000]`
 
 ### `SHP_FCTR`
 #### Definition:
@@ -295,8 +301,8 @@ Ratio of nonspherical grain effective radii to that of an equal volume sphere. T
 #### Values:
 Float between 0-1.
 
-### Default:
-[0, 0] 
+#### Default:
+`[0, 0]`
 
 
 ### `AR`
@@ -306,8 +312,8 @@ Aspect ratio of grain, i.e. ratio of width to length.
 #### Values:
 Positive float or integer.
 
-### Default:
-[0, 0] 
+#### Default:
+`[0, 0]` 
 
 ## IMPURITIES
 Impurities are provided as instances of the Impurity class. The clas has fixed attributes that must be populated in order for the impurity to be included in the mdoel. These attributes are: `NAME`, `FILE`, `CFACTOR`, `COATED`, `UNIT`, and `CONC`. These are user defined in `inputs.yaml`. There is no upper or lower limit to the number of different impurities that can be added - the user can simple continue to stack additional impurities in the `IMPURITIES` section of `inputs.yaml`. The basic structure of an impurity as defined in `inputs.yaml` is as follows:
@@ -367,12 +373,19 @@ The file is the precise filename in `/Data/OP_data/480band/lap/` that contains t
 ### `UNIT`
 All these impurities have their mass absorption coefficients in units of ppb, and therefore their concentration (`CONC`) should be expressed normalised to mass in the model - i.e. in ng/g or ppb. This is achieved by setting `UNIT ==0`. There are two exceptions to this: `"SA_Chevrollier2022_r8.99.nc"` and `"GA_Chevrollier2022_r4.9_L18.8.nc"`. These are empirically measured optical properties for snbow and glacier algae whose absorption coefficient is expressed in m2/cell. Their concentration (`CONC`) should therefore be expressed in cells/mL. This is achieved by setting `UNIT==1`. There are validity checks in place to ensure these values are set correctly.
 
+
+
 ### `CONC`
 
 Array containing the concentration in each layer in the model in units defined by `UNIT`. 
 
 ### `CFACTOR`
-The `CFACTOR` attribute is a multiplier that accounts for field measurments having a coarse vertical resolution but the model havign fine vertical resolution. This is mostly applicable toi glacier algae that are known to accumulate on the upper surface of the ice, but field samples generally are onyl able to remove the top approx. 2cm for cell counting. this leads to an underestimate of the concentration int he upper mm by including ~2cm of dilute clean ice below. `CFACTOR` accounts for this problem. It is a simple multiplier so it must be set to 1 by default.
+The `CFACTOR` attribute is a multiplier that accounts for field measurments having a coarse vertical resolution but the model havign fine vertical resolution. This is mostly applicable toi glacier algae that are known to accumulate on the upper surface of the ice, but field samples generally are onyl able to remove the top approx. 2cm for cell counting. this leads to an underestimate of the concentration int he upper mm by including ~2cm of dilute clean ice below. `CFACTOR` accounts for this problem. It is a simple multiplier so it must be set to `1` by default.
 
 ### `COATED`
 Boolean that toggles sulfate coating on or off. This is only applicable to black and brown carbon where there are files for both coated an uncoated versions. The parameter is requird because a different field in the optical property file is loaded for coated compared to uncoated impurities, so that the mass normalization takes into account the mass of both the impurity and its coating.
+
+
+## PLOT
+These parameters control how the output albedo plot is formatted. Recommend leaving them all at their default values. The user may, however, want to toggle figure saving on and off, in which case update the value of `SAVE`.
+

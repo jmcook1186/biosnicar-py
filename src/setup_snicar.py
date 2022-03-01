@@ -26,7 +26,6 @@ def setup_snicar():
         rt_config,
         model_config,
         plot_config,
-        display_config,
     ) = build_classes()
 
     return (
@@ -35,7 +34,6 @@ def setup_snicar():
         rt_config,
         model_config,
         plot_config,
-        display_config,
         impurities,
     )
 
@@ -60,9 +58,8 @@ def build_classes():
     rt_config = RTConfig()
     model_config = ModelConfig()
     plot_config = PlotConfig()
-    display_config = DisplayConfig()
 
-    return ice, illumination, rt_config, model_config, plot_config, display_config
+    return ice, illumination, rt_config, model_config, plot_config
 
 
 def build_impurities_array():
