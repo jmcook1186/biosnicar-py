@@ -4,6 +4,20 @@ import csv
 
 
 def setup_snicar():
+    """Builds impurity array and instances of all classes according to config in yaml file.
+
+    Args:
+        None
+    
+    Returns:
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        rt_config: instance of RTConfig class
+        model_config: instance of ModelConfig class
+        plot_config: instance of PlotConfig class
+        display_config: instance of DisplayConfig class
+    
+    """
 
     impurities = build_impurities_array()
     ice, illumination, rt_config, model_config, plot_config, display_config = build_classes()
@@ -12,6 +26,19 @@ def setup_snicar():
 
 
 def build_classes():
+    """Instantiates classes according to config in yaml file.
+
+    Args:
+        None
+    
+    Returns:
+        ice: instance of Ice class
+        illumination: instance of Illumination class
+        rt_config: instance of RTConfig class
+        model_config: instance of ModelConfig class
+        plot_config: instance of PlotConfig class
+        display_config: instance of DisplayConfig class
+    """
 
     ice = Ice()
     illumination = Illumination()
@@ -25,9 +52,16 @@ def build_classes():
 
 def build_impurities_array():
 
-    """
+    """Creates an array of instances of Impurity.
+
     creates an array of impurities - each one an instance of Impurity with
-    properties defined in impurity_config.yaml
+    properties defined in yaml file.
+
+    Args:
+        None
+    
+    Returns:
+        impurities: array of instances of Impurity
     """
 
     with open("./src/inputs.yaml", "r") as ymlfile:
