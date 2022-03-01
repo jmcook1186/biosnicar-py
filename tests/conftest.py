@@ -22,7 +22,6 @@ def get_python_data_clean():
     return pd.read_csv("./tests/test_data/py_benchmark_data_clean.csv", header=None).transpose()
 
 
-
 @pytest.fixture
 def set_tolerance():
     return 1e-5

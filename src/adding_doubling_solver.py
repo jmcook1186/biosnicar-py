@@ -4,7 +4,7 @@ from classes import *
 import numpy as np
 
 
-""" Radiative transfer solver using the adding-doubling method.
+"""Radiative transfer solver using the adding-doubling method.
 
 Here the ice/impurity optical properties and illumination conditions
 are used to calculate energy fl;uxes between the ice, atmosphere and
@@ -189,6 +189,28 @@ def calc_reflectivity_transmittivity(
     rdir,
     tdir,
 ):
+    """Calculates reflectivity and transmissivity.
+
+    Sets up new variables, applies delta transformation and makes
+    initial calculations of reflectivity and transmissivity in each
+    layer.
+
+    Args:
+        tau0: initial optical thickness 
+        ssa0: initial single scattering albedo
+        g0: initial asymmetry parameter
+        lyr: index of current layer
+        model_config: instance of ModelConfig class
+        exp_min: small number to avoid /zero error
+        rdif_a: reflectivity to diffuse irradiance at polarization angle == perpendicular
+        tdif_a: transmissivity to diffuse irradiance at polarization angle == perpendicular
+        trnlay: transmission through layer
+        mu0n: incident beam angle adjusted for refraction
+        epsilon: small number to avoid singularity
+        rdir: reflectivity to direct beam
+        tdir: transmissivity to direct beam
+
+    """
     # calculation over layers with penetrating radiation
     # includes optical thickness, single scattering albedo,
     # asymmetry parameter and total flux
