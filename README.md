@@ -58,17 +58,20 @@ However, BioSNICAR includes a bio-optical model that allows for the calculations
 The following directory tree shows the correct structure for this model code. This is how the files are structured when this repository is cloned or downloaded. This can be used as a reference for understanding the software or as a guide if things get muddled during modification of the source code.
 
 ```
-BioSNICAR_GO_PY
-├── Assets
+├── assets
+│   ├── example-output.jpg
 │   ├── model_schematic.odp
 │   ├── model_structure2.jpg
 │   ├── model_structure.jpg
 │   ├── py_mat_comparison.png
 │   └── SSA_derivation.pdf
-├── BioOptical_Model
+|
+├── bio_optical_model
 │   ├── biooptical_driver.py
-│   └── biooptical_Funcs.py
-├── BioSNICAR_py.yaml
+│   ├── biooptical_Funcs.py
+│   ├── __pycache__
+│   └── update_netCDFS.py
+|
 ├── Data
 │   ├── additional_data
 │   │   ├── Albedo_master.csv
@@ -111,7 +114,8 @@ BioSNICAR_GO_PY
 │   │   ├── k_ice_480.csv
 │   │   ├── Refractive_Index_Ice_Warren_1984.csv
 │   │   ├── Refractive_Index_Liquid_Water_Segelstein_1981.csv
-│   │   └── water_RI.csv
+│   │   ├── water_RI.csv
+│   │   └── wavelengths.csv
 │   └── pigments
 │       ├── alloxanthin.csv
 │       ├── antheraxanthin.csv
@@ -137,37 +141,42 @@ BioSNICAR_GO_PY
 │   ├── config.yaml
 │   ├── driver.py
 │   ├── __init__.py
-│   ├── Lou_inverse_model.py
+│   ├── __pycache__
 │   ├── README.md
-│   ├── snicar_inverter.py
 │   └── utils.py
+|
+├── LICENSE
 ├── README.md
+├── requirements.txt
 ├── src
 │   ├── adding_doubling_solver.py
 │   ├── bubble_reff_calculator.py
+│   ├── classes.py
+│   ├── column_OPs.py
+│   ├── display.py
 │   ├── geometric_optics_ice.py
 │   ├── __init__.py
+│   ├── inputs.yaml
 │   ├── mie_coated_water_spheres.py
+│   ├── __pycache__
+│   ├── setup_snicar.py
 │   ├── snicar_driver.py
-│   ├── snicar_feeder.py
 │   ├── toon_rt_solver.py
-│   └── update_netCDFS.py
+│   └── validate_inputs.py
 └── tests
-    ├── benchmarking_funcs.py
     ├── conftest.py
-    ├── constants.txt
     ├── __init__.py
-    ├── mat_full_testsuite_20211104.csv
-    ├── matlab_benchmark_data.csv
     ├── matlab_benchmark_script.m
-    ├── py_benchmark_data.csv
-    ├── py_benchmark_script.py
-    ├── py_mat_comparison.png
+    ├── __pycache__
     ├── README.md
-    ├── test_snicar.py
-    ├── testsuite_20211104_lyr0.csv
-    ├── testsuite_20211104_lyr1.csv
-    └── variables.txt
+    ├── snicarAD_v4.m
+    ├── test_data
+    │   ├── matlab_benchmark_data_clean.csv
+    │   ├── matlab_benchmark_data.csv
+    │   ├── py_benchmark_data_clean.csv
+    │   ├── py_benchmark_data.csv
+    │   └── py_mat_comparison.png
+    └── test_snicar.py
 ```
 
 
