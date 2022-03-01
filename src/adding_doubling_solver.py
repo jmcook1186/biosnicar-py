@@ -34,12 +34,13 @@ solid ice layers and fresnel reflection are included.
 
 """
 
+
 def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
     """control function for the adding-doubling solver.
-    
+
     Makes function calls in sequence to generate, then return, an instance of
     Outputs class.
-    
+
     Args:
         tau: optical thickness of ice column in m/m
         ssa: single scattering albedo of ice column (dimensionless)
@@ -51,12 +52,11 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
 
     Returns:
         outputs: Instance of Outputs class
-    
+
     Raises:
         ValueError if violation of conservation of energy detected
 
     """
-
 
     # DEFINE CONSTANTS AND ARRAYS
     (
@@ -196,7 +196,7 @@ def calc_reflectivity_transmittivity(
     layer.
 
     Args:
-        tau0: initial optical thickness 
+        tau0: initial optical thickness
         ssa0: initial single scattering albedo
         g0: initial asymmetry parameter
         lyr: index of current layer
@@ -304,8 +304,8 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
         tdif_b: transmissivity to diffuse irradiance at polarization angle == parallel
         rdir: reflectivity to direct beam
         tdir: transmissivity to direct beam
-        lyrfrsnl: index of uppermost fresnel reflecting layer in ice column  
-    
+        lyrfrsnl: index of uppermost fresnel reflecting layer in ice column
+
     """
 
     tau0 = tau.T  # read and transpose tau
@@ -470,7 +470,6 @@ def calc_reflection_transmission_from_top(
     return trndir, trntdr, rdndif, trndif
 
 
-
 def apply_gaussian_integral(
     model_config, exp_min, ts, ws, gs, epsilon, lm, lyr, rdif_a, tdif_a
 ):
@@ -551,6 +550,7 @@ def apply_gaussian_integral(
 
     return smt, smr, swt
 
+
 def update_transmittivity_reflectivity(
     swt, smr, smt, lyr, rdif_a, tdif_a, rdif_b, tdif_b
 ):
@@ -565,7 +565,7 @@ def update_transmittivity_reflectivity(
         rdif_b: reflectance to diffuse energy w polarization state == parallel
         tdif_a: transmittance to diffuse energy w polarization state == perpendicular
         tdif_b: transmittance to diffuse energy w polarization state == parallel
-    
+
     Returns:
         rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular
         rdif_b: updated reflectance to diffuse energy w polarization state == parallel
@@ -578,7 +578,7 @@ def update_transmittivity_reflectivity(
     # homogeneous layer
     rdif_b[:, lyr] = rdif_a[:, lyr]
     tdif_b[:, lyr] = tdif_a[:, lyr]
-    
+
     return rdif_a, tdif_a, rdif_b, tdif_b
 
 
@@ -601,8 +601,8 @@ def calc_correction_fresnel_layer(
     """Calculates correction for Fresnel reflection and total internal reflection.
 
     Corrects fluxes for Fresnel reflection in cases where total
-    internal reflection does and does not occur (angle > critical_angle). 
-    In TIR case fluxes are precalculated because ~256 gaussian points required 
+    internal reflection does and does not occur (angle > critical_angle).
+    In TIR case fluxes are precalculated because ~256 gaussian points required
     for convergence.
 
     Args:
@@ -722,7 +722,6 @@ def calc_correction_fresnel_layer(
         # update trnlay to include fresnel transmission
         trnlay[wl, lyr] = Tf_dir_a * trnlay[wl, lyr]
 
-
     return rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
 
 
@@ -734,9 +733,9 @@ def calc_reflection_below(
     Compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation
     for layers below by adding succesive layers starting from the
     underlying ice and working upwards:
-    
+
                   layers       interface
-    
+
            ---------------------  lyr
                      lyr
            ---------------------  lyr+1
@@ -753,7 +752,7 @@ def calc_reflection_below(
         trnlay: transmission of layer == lyr
         rdir: reflectance to direct beam
         tdir: transmission of direct beam
-    
+
     Returns:
         rupdir: upwards flux direct
         rupdif: upwards flux diffuse
@@ -812,7 +811,7 @@ def trans_refl_at_interfaces(
         trndir: transmission of direct radiation
         trndif: transmission of diffuse radiation
         trntdr: total transmission
-    
+
     Returns:
         fdirup: upwards flux of direct radiation
         fdifup: upwards flux of diffuse radiation
@@ -886,7 +885,7 @@ def trans_refl_at_interfaces(
 
 
 def calculate_fluxes(model_config, ice, illumination, fdirup, fdifup, fdirdn, fdifdn):
-    """ Calculates total fluxes in each layer and for entire column.
+    """Calculates total fluxes in each layer and for entire column.
 
     Args:
         model_config: instance of ModelConfig class
@@ -896,7 +895,7 @@ def calculate_fluxes(model_config, ice, illumination, fdirup, fdifup, fdirdn, fd
         fdifup: upwards flux od diffuse radiation
         fdirdn: downwards flux of direct radiation
         fdifdn: downwards flux of diffuse radiation
-    
+
     Returns:
         albedo: ratio of upwards fluxes to incoming irradiance
         F_abs: absorbed flux in each layer
@@ -954,10 +953,10 @@ def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
         F_abs: absorbed flux in each layer
         F_btm_net: net flux at bottom surface
         F_top_pls: upwards flux from upper boundary
-    
+
     Returns:
         None
-    
+
     Raises:
         ValueError is conservation of energy error is detected
 
@@ -987,8 +986,8 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
         model_config: instance of ModelConfig class
         L_snw: mass of ice in each layer
         F_abs: absorbed flux in each layer
-        F_btm_net: net flux at bottom surface 
-    
+        F_btm_net: net flux at bottom surface
+
     Returns:
         outputs: instance of Outputs class
 
@@ -1046,17 +1045,16 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
     return outputs
 
 
-
 def apply_smoothing_function(albedo, model_config):
     """Applies Savitsky-Golay smoothing function to albedo, if toggled.
 
     Args:
         albedo: array of albedo values, likely passed as outputs.albedo
         model_config: instance of ModelConfig
-        
+
     """
 
     yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
     albedo = yhat
-    
+
     return albedo

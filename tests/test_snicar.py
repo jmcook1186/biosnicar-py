@@ -37,6 +37,7 @@ To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
 
 """
 
+
 def test_AD_solver(new_benchmark_ad):
     """Tests Toon solver against SNICAR_ADv4 benchmark.
 
@@ -46,44 +47,56 @@ def test_AD_solver(new_benchmark_ad):
     published version of the SNICAR code written in Matlab by Chloe Whicker at
     University of Michigan and run on the UMich server. This function
     only creates the equivalent dataset using BioSNICAR, it doesn't compare the two.
-    
+
     Equivalence between the Python and Matlab model configuration is controlled by
     a call to match_matlab_config(). This function can be toggled off by setting
     new_benchmark_ad to False in conftest.py.
 
     Args:
         new_benchmark_ad: Boolean toggling this function on/off
-    
+
     Returns:
         None but saves py_benchmark_data.csv to ./tests/test_data/
-    
+
     """
-    
+
     if new_benchmark_ad:
-        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
-        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination,rt_config, model_config)
-        
-        lyrList = [0,1]
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            display_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
+        )
+
+        lyrList = [0, 1]
         densList = [400, 500, 600, 700, 800]
         reffList = [200, 400, 600, 800, 1000]
         zenList = [30, 40, 50, 60]
         bcList = [500, 1000, 2000]
-        dzList = [[0.02,0.04,0.06, 0.08, 0.1],
-                [0.04,0.06,0.08, 0.10, 0.15],
-                [0.05,0.10,0.15, 0.2, 0.5],
-                [0.15, 0.2, 0.25, 0.3, 0.5],
-                [0.5, 0.5, 0.5, 1, 10]]
+        dzList = [
+            [0.02, 0.04, 0.06, 0.08, 0.1],
+            [0.04, 0.06, 0.08, 0.10, 0.15],
+            [0.05, 0.10, 0.15, 0.2, 0.5],
+            [0.15, 0.2, 0.25, 0.3, 0.5],
+            [0.5, 0.5, 0.5, 1, 10],
+        ]
 
         ncols = (
-        len(lyrList)
-        * len(densList)
-        * len(reffList)
-        * len(zenList)
-        * len(bcList)
-        * len(dzList)
+            len(lyrList)
+            * len(densList)
+            * len(reffList)
+            * len(zenList)
+            * len(bcList)
+            * len(dzList)
         )
 
-        assert(ncols==3000)
+        assert ncols == 3000
 
         specOut = np.zeros(shape=(ncols, 481))
         counter = 0
@@ -93,32 +106,45 @@ def test_AD_solver(new_benchmark_ad):
                     for zen in zenList:
                         for bc in bcList:
                             for dz in dzList:
-                                
+
                                 ice.dz = dz
                                 ice.nbr_lyr = 5
-                                ice.layer_type = [layer_type]*len(ice.dz)
-                                ice.rho = [density]*len(ice.dz)
-                                ice.rds = [reff]*len(ice.dz)
+                                ice.layer_type = [layer_type] * len(ice.dz)
+                                ice.rho = [density] * len(ice.dz)
+                                ice.rds = [reff] * len(ice.dz)
                                 illumination.solzen = zen
                                 illumination.calculate_irradiance()
-                                impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
+                                impurities[0].conc = [
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                ]  # bc in all layers
                                 ice.calculate_refractive_index()
                                 illumination.calculate_irradiance()
 
-                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(
+                                    ice, model_config
+                                )
                                 tau, ssa, g, L_snw = mix_in_impurities(
-                                    ssa_snw, g_snw, mac_snw, ice, impurities, model_config
+                                    ssa_snw,
+                                    g_snw,
+                                    mac_snw,
+                                    ice,
+                                    impurities,
+                                    model_config,
                                 )
                                 outputs = adding_doubling_solver(
-                                tau, ssa, g, L_snw, ice, illumination, model_config
+                                    tau, ssa, g, L_snw, ice, illumination, model_config
                                 )
 
                                 specOut[counter, 0:480] = outputs.albedo
                                 specOut[counter, 480] = outputs.BBA
-                                counter +=1
+                                counter += 1
 
         np.savetxt("./tests/test_data/py_benchmark_data.csv", specOut, delimiter=",")
-    
+
     else:
         pass
 
@@ -136,26 +162,38 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
     only creates the equivalent dataset using BioSNICAR, it doesn't compare the two.
     The difference between this function and test_v4 is that no impurities are included
     in the model configuration.
-    
+
     Equivalence between the Python and Matlab model configuration is controlled by
     a call to match_matlab_config(). This function can be toggled off by setting
     new_benchmark_clean to False in conftest.py.
 
     Args:
         new_benchmark_clean: Boolean toggling this function on/off
-    
+
     Returns:
         None but saves py_benchmark_data_clean.csv to ./tests/test_data/
-    
-    """
-    
-    if new_benchmark_ad_clean:
-        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
-        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
-        
-        print("generating benchmark data using params equivalent to snicarv4 (AD solver)")
 
-        lyrList = [0,1]
+    """
+
+    if new_benchmark_ad_clean:
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            display_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
+        )
+
+        print(
+            "generating benchmark data using params equivalent to snicarv4 (AD solver)"
+        )
+
+        lyrList = [0, 1]
         densList = [400, 500, 600, 700, 800]
         reffList = [200, 400, 600, 800, 1000]
         zenList = [30, 40, 50, 60]
@@ -169,12 +207,12 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
         ]
 
         ncols = (
-        len(lyrList)
-        * len(densList)
-        * len(reffList)
-        * len(zenList)
-        * len(bcList)
-        * len(dzList)
+            len(lyrList)
+            * len(densList)
+            * len(reffList)
+            * len(zenList)
+            * len(bcList)
+            * len(dzList)
         )
 
         specOut = np.zeros(shape=(ncols, 481))
@@ -185,32 +223,47 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
                     for zen in zenList:
                         for bc in bcList:
                             for dz in dzList:
-                                
+
                                 ice.dz = dz
                                 ice.nbr_lyr = 5
-                                ice.layer_type = [layer_type]*len(ice.dz)
-                                ice.rho = [density]*len(ice.dz)
-                                ice.rds = [reff]*len(ice.dz)
+                                ice.layer_type = [layer_type] * len(ice.dz)
+                                ice.rho = [density] * len(ice.dz)
+                                ice.rds = [reff] * len(ice.dz)
                                 illumination.solzen = zen
                                 illumination.calculate_irradiance()
-                                impurities[0].conc = [bc, bc, bc, bc, bc] #bc in all layers
+                                impurities[0].conc = [
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                    bc,
+                                ]  # bc in all layers
                                 ice.calculate_refractive_index()
 
-                                ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+                                ssa_snw, g_snw, mac_snw = get_layer_OPs(
+                                    ice, model_config
+                                )
                                 tau, ssa, g, L_snw = mix_in_impurities(
-                                    ssa_snw, g_snw, mac_snw, ice, impurities, model_config
+                                    ssa_snw,
+                                    g_snw,
+                                    mac_snw,
+                                    ice,
+                                    impurities,
+                                    model_config,
                                 )
 
                                 outputs = adding_doubling_solver(
-                                tau, ssa, g, L_snw, ice, illumination, model_config
+                                    tau, ssa, g, L_snw, ice, illumination, model_config
                                 )
 
                                 specOut[counter, 0:480] = outputs.albedo
                                 specOut[counter, 480] = outputs.BBA
-                                counter +=1
+                                counter += 1
 
-        np.savetxt("./tests/test_data/py_benchmark_data_clean.csv", specOut, delimiter=",")
-    
+        np.savetxt(
+            "./tests/test_data/py_benchmark_data_clean.csv", specOut, delimiter=","
+        )
+
     else:
         pass
 
@@ -226,10 +279,10 @@ def test_realistic_bba_ad(get_matlab_data, get_python_data):
     Args:
         get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
         get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
-    
+
     Returns:
         None
-    
+
     Raises:
         tests fail if the two datasets differ in length
         tests fail if any BBA values in matlab data are <0 or >1
@@ -259,10 +312,10 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
         get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
         get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
         set_tolerance: threshold error for BBAs to be considered equal
-    
+
     Returns:
         None
-    
+
     Raises:
         tests fail if the difference between any pair of BBA values exceeds set_tolerance
 
@@ -277,7 +330,9 @@ def test_compare_pyBBA_to_matBBA(get_matlab_data, get_python_data, set_tolerance
     assert len(error[error > tol]) == 0
 
 
-def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_clean, set_tolerance):
+def test_compare_pyBBA_to_matBBA_clean(
+    get_matlab_data_clean, get_python_data_clean, set_tolerance
+):
     """Tests that BBA values match between BioSNICAR data and the benchmark for clean ice.
 
     Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark
@@ -287,10 +342,10 @@ def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_cl
         get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
         get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
         set_tolerance: threshold error for BBAs to be considered equal
-    
+
     Returns:
         None
-    
+
     Raises:
         tests fail if the difference between any pair of BBA values exceeds set_tolerance
 
@@ -303,7 +358,6 @@ def test_compare_pyBBA_to_matBBA_clean(get_matlab_data_clean, get_python_data_cl
     bb_mat = mat.loc[:, 481]
     error = np.array(abs(bb_mat - bb_py))
     assert len(error[error > tol]) == 0
-
 
 
 def match_matlab_config(ice, illumination, rt_config, model_config):
@@ -319,9 +373,9 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
         illumination: instance of Illumination class
         rt_config: instance of RTConfig class
         model_config: instance of ModelConfig class
-    
+
     Returns:
-        ice: updated instance of Ice class 
+        ice: updated instance of Ice class
         illumination: updated instance of Illumination class
         impurities: array of instances of Impurity class
         rt_config: updated instance of RTConfig class
@@ -332,17 +386,17 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     nbr_lyr = 5
     # make sure ice config matches matlab benchmark
     ice.ri = 2
-    ice.shp = [0]*nbr_lyr
-    ice.shp_fctr = [0]*nbr_lyr
-    ice.ar = [0]*nbr_lyr
-    ice.sfc = np.array([0.25]*model_config.nbr_wvl)
-    ice.cdom = [0]*nbr_lyr
-    ice.water = [0]*nbr_lyr
+    ice.shp = [0] * nbr_lyr
+    ice.shp_fctr = [0] * nbr_lyr
+    ice.ar = [0] * nbr_lyr
+    ice.sfc = np.array([0.25] * model_config.nbr_wvl)
+    ice.cdom = [0] * nbr_lyr
+    ice.water = [0] * nbr_lyr
     ice.nbr_lyr = nbr_lyr
-    ice.layer_type = [0]*nbr_lyr
-    ice.rds = [ice.rds[0]]*nbr_lyr
-    ice.rho = [ice.rho[0]]*nbr_lyr
-    ice.dz = [0.1]*nbr_lyr
+    ice.layer_type = [0] * nbr_lyr
+    ice.rds = [ice.rds[0]] * nbr_lyr
+    ice.rho = [ice.rho[0]] * nbr_lyr
+    ice.dz = [0.1] * nbr_lyr
 
     illumination.incoming = 4
     illumination.direct = 1
@@ -358,11 +412,15 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     # (same bc used by matlab model)
     impurities = []
 
-    conc = [0]*nbr_lyr
-    impurity0 = Impurity(model_config.dir_base, "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc)
+    conc = [0] * nbr_lyr
+    impurity0 = Impurity(
+        model_config.dir_base, "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc
+    )
     impurities.append(impurity0)
 
-    assert((impurities[0].name=="bc") and (impurities[0].file == "bc_ChCB_rn40_dns1270.nc"))
+    assert (impurities[0].name == "bc") and (
+        impurities[0].file == "bc_ChCB_rn40_dns1270.nc"
+    )
 
     return ice, illumination, impurities, rt_config, model_config
 
@@ -371,17 +429,17 @@ def test_compare_pyspec_to_matspec_ad(get_matlab_data, get_python_data, set_tole
     """Tests that spectral albedo values match between BioSNICAR data and the AD benchmark.
 
     Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark
-    dataset and the newly generated BioSNICAR dataset for the AD solver. Albedo is compared 
+    dataset and the newly generated BioSNICAR dataset for the AD solver. Albedo is compared
     wavelength by wavelength for each column in the datasets.
 
     Args:
         get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo
         get_python_data: BioSNICAR generated csv file of spectral and broadband albedo
         set_tolerance: threshold error for BBAs to be considered equal
-    
+
     Returns:
         None
-    
+
     Raises:
         tests fail if the difference between any pair of albedo values exceeds set_tolerance
 
@@ -396,25 +454,23 @@ def test_compare_pyspec_to_matspec_ad(get_matlab_data, get_python_data, set_tole
     assert len(error[error > tol]) == 0
 
 
-
-
 def test_compare_pyspec_to_matspec_clean(
     get_matlab_data_clean, get_python_data_clean, set_tolerance
 ):
     """Tests that spectral albedo values match between BioSNICAR data and the Toon benchmark.
 
     Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark
-    dataset and the newly generated BioSNICAR dataset for the AD solver with no impurities. 
+    dataset and the newly generated BioSNICAR dataset for the AD solver with no impurities.
     Albedo is compared wavelength by wavelength for each column in the datasets.
 
     Args:
         get_matlab_data_clean: matlab-snicar-generated csv file of spectral and broadband albedo
         get_python_data_clean: BioSNICAR generated csv file of spectral and broadband albedo
         set_tolerance: threshold error for BBAs to be considered equal
-    
+
     Returns:
         None
-    
+
     Raises:
         tests fail if the difference between any pair of albedo values exceeds set_tolerance
 
@@ -435,8 +491,8 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
     Args:
         get_matlab_data: matlab-generated csv file of spectral and broadband albedo
         get_python_data: python-generated csv file of spectral and broadband albedo
-        get_n_spectra: number of pairs of spectral albedo to plot 
-    
+        get_n_spectra: number of pairs of spectral albedo to plot
+
     Returns:
         None but saves py_mat_comparison.png to /tests/test_data/
     """
@@ -459,8 +515,6 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
     plt.savefig("./tests/test_data/py_mat_comparison.png")
 
 
-
-
 @pytest.mark.parametrize("dir", [0, 1])
 @pytest.mark.parametrize("aprx", [1, 2, 3])
 @pytest.mark.parametrize("inc", [0, 1, 2, 3, 4, 5, 6])
@@ -481,36 +535,46 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
         inc: choice of spectral distribution of incoming irradiance
         ref: chocie of refractive indices (Warren 1984, Warren 2008, Picard 2016)
         fuzz: boolean toggling this fuxxing func on/off
-    
+
     Returns:
         None
-    
+
     Raises:
         tests fail if snicar throws an exception with a particular configuration
     """
-    
+
     if fuzz:
 
-        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
-        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            display_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
+        )
 
         rt_config.aprx_typ = aprx
         illumination.direct = dir
         ice.rf = ref
         ice.calculate_refractive_index()
         illumination.incoming = inc
-        illumination.calculate_irradiance()  
+        illumination.calculate_irradiance()
 
         ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
         tau, ssa, g, L_snw = mix_in_impurities(
             ssa_snw, g_snw, mac_snw, ice, impurities, model_config
         )
         outputs_toon = toon_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+            tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
         )
 
         outputs_ad = adding_doubling_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config
+            tau, ssa, g, L_snw, ice, illumination, model_config
         )
 
     else:
@@ -529,14 +593,14 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
-    This fuzzer spoecifically checks input parameters including ice physical properties. 
+    This fuzzer spoecifically checks input parameters including ice physical properties.
     The range of values is set in the parameterize decorators on this function and can
     be adjusted to test for specific failures or to increase test coverage. The
     defaults are designed to balance coverage with execution time. This func can be
     toggled off by setting fuzz to fase in conftest.py
 
     Args:
-        rds: effective grain radius (um) of ice grains (lyr_typ==0) or air bubbles (lyr_typ==1) 
+        rds: effective grain radius (um) of ice grains (lyr_typ==0) or air bubbles (lyr_typ==1)
         rho: density of ice layer (kg/m3)
         zen: zenith angle of direct beam (degrees from vertical)
         cfactor: concentrating factor used to convert field-measured to modelled LAP concentration
@@ -545,51 +609,71 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
 
     Returns:
         None
-    
+
     Raises:
         tests fail if snicar throws an exception with a particular configuration
     """
 
     if fuzz:
-        ice, illumination, rt_config, model_config, plot_config, display_config, impurities = setup_snicar()
-        ice, illumination, impurities, rt_config, model_config = match_matlab_config(ice, illumination, rt_config, model_config)
+        (
+            ice,
+            illumination,
+            rt_config,
+            model_config,
+            plot_config,
+            display_config,
+            impurities,
+        ) = setup_snicar()
+        ice, illumination, impurities, rt_config, model_config = match_matlab_config(
+            ice, illumination, rt_config, model_config
+        )
 
         impurities = []
 
-        conc1 = [0]*len(ice.dz)
+        conc1 = [0] * len(ice.dz)
         conc1[0] = algae
-        impurity0 = Impurity(model_config.dir_base, "mie_sot_ChC90_dns_1317.nc", False, cfactor, 0, "bc", conc1)
+        impurity0 = Impurity(
+            model_config.dir_base,
+            "mie_sot_ChC90_dns_1317.nc",
+            False,
+            cfactor,
+            0,
+            "bc",
+            conc1,
+        )
         impurities.append(impurity0)
 
-        conc2 = [0]*len(ice.dz)
+        conc2 = [0] * len(ice.dz)
         conc2[0] = dust
-        impurity1 = Impurity(model_config.dir_base, "dust_balkanski_central_size1.nc", False, cfactor, 0, "dust1", conc2)
+        impurity1 = Impurity(
+            model_config.dir_base,
+            "dust_balkanski_central_size1.nc",
+            False,
+            cfactor,
+            0,
+            "dust1",
+            conc2,
+        )
         impurities.append(impurity1)
 
-
-        ice.rds = [rds]*len(ice.dz)
-        ice.rho = [rho]*len(ice.dz)
+        ice.rds = [rds] * len(ice.dz)
+        ice.rho = [rho] * len(ice.dz)
         illumination.solzen = zen
         illumination.calculate_irradiance()
 
-
-        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice,model_config)
+        ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
         tau, ssa, g, L_snw = mix_in_impurities(
             ssa_snw, g_snw, mac_snw, ice, impurities, model_config
         )
         outputs_toon = toon_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
+            tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
         )
 
         outputs_ad = adding_doubling_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config
+            tau, ssa, g, L_snw, ice, illumination, model_config
         )
 
     else:
         pass
 
-
     return
-
-
-

@@ -14,12 +14,16 @@ def get_matlab_data_clean():
 
 @pytest.fixture
 def get_python_data():
-    return pd.read_csv("./tests/test_data/py_benchmark_data.csv", header=None).transpose()
+    return pd.read_csv(
+        "./tests/test_data/py_benchmark_data.csv", header=None
+    ).transpose()
 
 
 @pytest.fixture
 def get_python_data_clean():
-    return pd.read_csv("./tests/test_data/py_benchmark_data_clean.csv", header=None).transpose()
+    return pd.read_csv(
+        "./tests/test_data/py_benchmark_data_clean.csv", header=None
+    ).transpose()
 
 
 @pytest.fixture
@@ -36,11 +40,12 @@ def get_n_spectra():
 def fuzz():
     return True
 
+
 @pytest.fixture
 def new_benchmark_ad():
     return False
 
+
 @pytest.fixture
 def new_benchmark_ad_clean():
     return False
-

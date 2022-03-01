@@ -650,8 +650,8 @@ def get_outputs(
 
 
 def apply_smoothing_function(albedo, model_config):
-    
+
     yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
     albedo = yhat
-    
+
     return albedo

@@ -24,7 +24,6 @@ class Impurity:
 
     """
 
-
     def __init__(self, dir_base, file, coated, cfactor, unit, name, conc):
 
         self.name = name
@@ -94,9 +93,9 @@ class Ice:
         self.shp_fctr = inputs["VARIABLES"]["SHP_FCTR"]
         self.ar = inputs["VARIABLES"]["AR"]
         self.nbr_lyr = len(self.dz)
-        
+
         self.calculate_refractive_index()
-    
+
     def calculate_refractive_index(self):
         """Calculates ice refractive index from initialized class attributes.
 
@@ -105,7 +104,7 @@ class Ice:
 
         Args:
             self
-        
+
         Returns:
             ref_idx_im: imaginary part of refractive index
             ref_idx_re: real part of refractive index
@@ -116,7 +115,7 @@ class Ice:
         Raises:
             ValueError if rf out of range
         """
-        if self.rf <0 or self.rf > 2:
+        if self.rf < 0 or self.rf > 2:
             raise ValueError("Ice ref index type out of range - between 0 and 2 only")
 
         with open("./src/inputs.yaml", "r") as ymlfile:
@@ -155,7 +154,7 @@ class Illumination:
         stubs: array of stub strings for selecting irradiance files
         nbr_wvl: number fo wavelengths (default 480)
     """
-    
+
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
@@ -167,7 +166,7 @@ class Illumination:
         self.flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
         self.stubs = inputs["RTM"]["ILLUMINATION_FILE_STUBS"]
         self.nbr_wvl = inputs["RTM"]["NBR_WVL"]
-        
+
         self.calculate_irradiance()
 
     def calculate_irradiance(self):
@@ -188,9 +187,9 @@ class Illumination:
             ValueError is incoming is out of range
         """
 
-        if self.incoming <0 or self.incoming > 6: 
+        if self.incoming < 0 or self.incoming > 6:
             raise ValueError("Irradiance type out of range - between 0 and 6 only")
-        
+
         # update mu_not from solzen
         self.mu_not = np.cos(math.radians(np.rint(self.solzen)))
 
@@ -236,6 +235,7 @@ class RTConfig:
         delta: Boolean to toggle delta transformation (0/1)
 
     """
+
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
@@ -243,7 +243,6 @@ class RTConfig:
 
         self.aprx_typ = inputs["RTM"]["APRX_TYP"]
         self.delta = inputs["RTM"]["DELTA"]
-
 
 
 class ModelConfig:
@@ -264,8 +263,9 @@ class ModelConfig:
         nbr_wvl: number of wavelengths (default 480)
         vis_max_idx: index for upper visible wavelength (default 0.75 um)
         nir_max_idx: index for upper NIR wavelength (default 4.995 um)
-        
+
     """
+
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
@@ -305,6 +305,7 @@ class Outputs:
         abs_nir_tot: total absorbed energy across NIR spectrum
         absorbed_flux_per_layer: total absorbed flux per layer
     """
+
     def __init__(self):
         self.heat_rt = None
         self.BBAVIS = None
@@ -334,13 +335,14 @@ class PlotConfig:
         ytick_width: frequency of yticks
         ytick_size: size of ticks on y axis
         linewidth: pixel width of line on plot
-        fontsize: size of text labels  
+        fontsize: size of text labels
         xtick_btm: toggles tick positions
         ytick_left: toggle ytick position
         show: toggles showing plot on screen
         save: toggles saving figure to file
-    
+
     """
+
     def __init__(self):
 
         with open("./src/inputs.yaml", "r") as ymlfile:
@@ -367,13 +369,12 @@ class DisplayConfig:
 
     Attributes:
         print_bba: toggle to print BBA to console
-        print_band_ratios: toggle to print band ratio values to console 
+        print_band_ratios: toggle to print band ratio values to console
     """
+
     def __init__(self):
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
             self.print_bba = inputs["CTRL"]["PRINT_BBA"]
             self.print_band_ratios = inputs["CTRL"]["PRINT_BAND_RATIOS"]
-
-

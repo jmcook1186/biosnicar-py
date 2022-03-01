@@ -8,7 +8,7 @@ def setup_snicar():
 
     Args:
         None
-    
+
     Returns:
         ice: instance of Ice class
         illumination: instance of Illumination class
@@ -16,13 +16,28 @@ def setup_snicar():
         model_config: instance of ModelConfig class
         plot_config: instance of PlotConfig class
         display_config: instance of DisplayConfig class
-    
+
     """
 
     impurities = build_impurities_array()
-    ice, illumination, rt_config, model_config, plot_config, display_config = build_classes()
-    
-    return ice, illumination, rt_config, model_config, plot_config, display_config, impurities
+    (
+        ice,
+        illumination,
+        rt_config,
+        model_config,
+        plot_config,
+        display_config,
+    ) = build_classes()
+
+    return (
+        ice,
+        illumination,
+        rt_config,
+        model_config,
+        plot_config,
+        display_config,
+        impurities,
+    )
 
 
 def build_classes():
@@ -30,7 +45,7 @@ def build_classes():
 
     Args:
         None
-    
+
     Returns:
         ice: instance of Ice class
         illumination: instance of Illumination class
@@ -59,7 +74,7 @@ def build_impurities_array():
 
     Args:
         None
-    
+
     Returns:
         impurities: array of instances of Impurity
     """

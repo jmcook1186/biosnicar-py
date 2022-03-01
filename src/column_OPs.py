@@ -13,14 +13,14 @@ def get_layer_OPs(ice, model_config):
 
     Takes configuration from ice and model_config and uses the data
     to calculate the optical properties of the ice column. There are
-    separate routes for layers with granular ice and solid ice. 
+    separate routes for layers with granular ice and solid ice.
     Function calls are made to add liquid water coatings or adjust
     the optical properties for aspherical grains where toggled.
 
     Args:
         ice: instance of Ice class
         model_config: instance of ModelConfig class
-    
+
     Returns:
         ssa_snw: single scatterign albedo of each layer
         g_snw: asymmetry parameter of each layer
@@ -120,7 +120,7 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
     Feature originally added by Niklas Bohn. Where value of water exceeds value of rds
     for a given layer it is interpreted as having a liquid water film. in this case
     Mie calculations for a coated sphere are executed with the outer coating havign radius
-    water - rds. 
+    water - rds.
 
     Args:
         ice: instance of Ice class
@@ -129,7 +129,7 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
         g_snw: asymmetry parameter for each layer
         mac_snw: mass absorption coefficient of each layer
         i: layer counter
-    
+
     Returns:
         ssa_snw: updated single scattering albedo for each layer
         g_snw: updated asymmetry parameter for each layer
@@ -168,21 +168,21 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
 def correct_for_asphericity(ice, g_snw, i):
     """Adjusts asymmetry parameter for aspherical grains.
 
-    Implements work from Fu et al. 2007 and He et al. 2017. 
+    Implements work from Fu et al. 2007 and He et al. 2017.
     Asymmetry parameter is adjusted to account for asphericity
-    for the defined shape of each layer. 
-    
+    for the defined shape of each layer.
+
     Ice grain shape can be
     0 = sphere,
     1 = spheroid,
     2 = hexagonal plate,
     3 = koch snowflake,
     4 = hexagonal prisms
-    
+
     Args:
         ice: instance of Ice class
         g_snw: asymmetry parameter for each layer
-        i: layer counter 
+        i: layer counter
 
     Returns:
         g_snw: updated asymmetry parameter for layer
@@ -456,10 +456,10 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
 
     Takes the optical properties of the clean ice column and adjusts them for
     the presence of light absorbing particles in the ice. Each impurity is an
-    instance of the Impurity class whose attributes include the path to the 
+    instance of the Impurity class whose attributes include the path to the
     specific optical properties for that impurity. Its concentration is generally
     provided in ppb, but concentration of algae can also be given in cells/mL.
-    
+
     There is also a cfactor attribute that is used as a multiplier in this
     function. This is a "concentrating factor" that can be applied to account
     for the coarse resolution of field sampling compared to the fine resolution
@@ -467,12 +467,12 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
 
     Args:
         ssa_snw: single scattering albedo of eahc layer
-        g_snw: asymmetry parameter for each layer 
+        g_snw: asymmetry parameter for each layer
         mac_snw: mass absorption coefficient of each layer
         ice: instance of Ice class
         impurities: array containing instances of Impurity class
         model_config: instance of ModelConfig class
-    
+
     Returns:
         tau: updated optical thickness
         ssa: updated single scattering albedo
