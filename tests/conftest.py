@@ -11,10 +11,6 @@ def get_matlab_data():
 def get_matlab_data_clean():
     return pd.read_csv("./tests/test_data/matlab_benchmark_data_clean.csv", header=None)
 
-@pytest.fixture
-def get_matlab_data_toon():
-    return pd.read_csv("./tests/test_data/matlab_benchmark_data_toon.csv", header=None)
-
 
 @pytest.fixture
 def get_python_data():
@@ -25,10 +21,6 @@ def get_python_data():
 def get_python_data_clean():
     return pd.read_csv("./tests/test_data/py_benchmark_data_clean.csv", header=None).transpose()
 
-
-@pytest.fixture
-def get_python_data_toon():
-    return pd.read_csv("./tests/test_data/py_benchmark_data_toon.csv", header=None).transpose()
 
 
 @pytest.fixture
@@ -53,6 +45,3 @@ def new_benchmark_ad():
 def new_benchmark_ad_clean():
     return False
 
-@pytest.fixture
-def new_benchmark_toon():
-    return False
