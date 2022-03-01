@@ -34,7 +34,7 @@ class Impurity:
         self.file = file
 
         self.impurity_properties = xr.open_dataset(
-            str(os.getcwd() + "/Data/OP_data/480band/lap/" + file)
+            str(os.getcwd() + "/" + "/Data/OP_data/480band/lap/" + file)
         )
 
         if coated:
@@ -83,7 +83,7 @@ class Ice:
         self.cdom = inputs["ICE"]["CDOM"]
         self.rho = inputs["ICE"]["RHO"]
         self.sfc = np.genfromtxt(
-            inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["SFC"], delimiter="csv"
+            os.getcwd() + "/" + inputs["PATHS"]["SFC"], delimiter="csv"
         )
         self.rf = inputs["ICE"]["RF"]
         self.shp = inputs["ICE"]["SHP"]
@@ -164,7 +164,7 @@ class Illumination:
         self.direct = inputs["RTM"]["DIRECT"]
         self.solzen = inputs["RTM"]["SOLZEN"]
         self.incoming = inputs["RTM"]["INCOMING"]
-        self.flx_dir = inputs["PATHS"]["DIR_BASE"] + inputs["PATHS"]["FLX_DIR"]
+        self.flx_dir = os.getcwd() + "/" + inputs["PATHS"]["FLX_DIR"]
         self.stubs = inputs["RTM"]["ILLUMINATION_FILE_STUBS"]
         self.nbr_wvl = inputs["RTM"]["NBR_WVL"]
 
