@@ -866,7 +866,7 @@ def trans_refl_at_interfaces(
             - trndir[:, lyr] * rupdir[:, lyr] * (1 - rdndif[:, lyr]) * refk
         )
 
-        if np.min(dfdir[:, lyr]) < puny:
+        if np.max(dfdir[:, lyr]) < puny:
 
             dfdir[:, lyr] = np.zeros(
                 (model_config.nbr_wvl,), dtype=int
@@ -875,7 +875,7 @@ def trans_refl_at_interfaces(
 
         dfdif[:, lyr] = trndif[:, lyr] * (1 - rupdif[:, lyr]) * refk
 
-        if np.min(dfdif[:, lyr]) < puny:
+        if np.max(dfdif[:, lyr]) < puny:
 
             dfdif[:, lyr] = np.zeros(
                 (model_config.nbr_wvl,), dtype=int
@@ -922,6 +922,17 @@ def calculate_fluxes(model_config, ice, illumination, fdirup, fdifup, fdirdn, fd
         )
 
     F_net = F_up - F_dwn
+
+    # import matplotlib.pyplot as plt
+    # plt.plot(Inputs.Fs)
+    # plt.show()
+    # plt.figure(1)
+    # plt.plot(Inputs.Fs)
+    # plt.plot(F_dwn[:,0].T)
+    # plt.plot(F_dwn[:,1].T)
+    # plt.plot(F_dwn[:,2].T)
+    # plt.show()
+    # plt.show()
 
     # Absorbed flux in each layer
     F_abs[:, :] = F_net[:, 1:] - F_net[:, :-1]
