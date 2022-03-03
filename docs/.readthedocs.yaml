@@ -17,8 +17,14 @@ build:
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
-   configuration: docs/conf.py
+  builder: html
+  configuration: docs/conf.py
+  fail_on_warning: false
 
+
+submodules:
+  include: all
+  recursive: true
 # If using Sphinx, optionally build your docs in additional formats such as PDF
 # formats:
 #    - pdf
