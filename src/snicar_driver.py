@@ -3,13 +3,13 @@
 
 import sys
 sys.path.append("./src")
-from setup_snicar import *
-from classes import *
-from column_OPs import *
-from toon_rt_solver import toon_solver
-from adding_doubling_solver import adding_doubling_solver
-from validate_inputs import *
-from display import *
+from src.setup_snicar import *
+from src.classes import *
+from src.column_OPs import *
+from src.toon_rt_solver import toon_solver
+from src.adding_doubling_solver import adding_doubling_solver
+from src.validate_inputs import *
+from src.display import *
 
 
 # first build classes from config file and validate their contents

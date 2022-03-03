@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy.interpolate import pchip
-import mie_coated_water_spheres as wcs
-from classes import *
+import src.mie_coated_water_spheres as wcs
+from src.classes import *
 
 
 def get_layer_OPs(ice, model_config):
