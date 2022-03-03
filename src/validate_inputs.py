@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import sys
 sys.path.append("./src")
-from src.classes import *
+from classes import *
 
 def validate_inputs(ice, rt_config, model_config, illumination, impurities):
 

@@ -3,7 +3,7 @@ import sys
 sys.path.append("./src")
 from scipy.signal import savgol_filter
 from setup_snicar import *
-from src.classes import *
+from classes import *
 import numpy as np
 
 

@@ -1,9 +1,9 @@
 #!/usr/bin/python
 import sys
 sys.path.append("./src")
-from src.scipy.signal import savgol_filter
-from src.setup_snicar import *
-from src.classes import *
+from scipy.signal import savgol_filter
+from setup_snicar import *
+from classes import *
 
 
 def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
