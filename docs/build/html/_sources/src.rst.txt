@@ -1,6 +1,5 @@
-/src
+src
 ====
-
 
 src.adding\_doubling\_solver module
 -----------------------------------
@@ -10,9 +9,7 @@ src.adding\_doubling\_solver module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 src.bubble\_reff\_calculator module
 -----------------------------------
@@ -22,22 +19,18 @@ src.bubble\_reff\_calculator module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-v
+
 
 
 src.classes module
 ------------------
 
-.. automodule:: src.classes
+.. autoclass:: src.classes
    :members:
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 src.column\_OPs module
 ----------------------
@@ -47,9 +40,6 @@ src.column\_OPs module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
 
 
 src.display module
@@ -60,9 +50,7 @@ src.display module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 src.geometric\_optics\_ice module
 ---------------------------------
@@ -72,9 +60,7 @@ src.geometric\_optics\_ice module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 src.mie\_coated\_water\_spheres module
 --------------------------------------
@@ -84,9 +70,7 @@ src.mie\_coated\_water\_spheres module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 
 src.setup\_snicar module
@@ -97,9 +81,7 @@ src.setup\_snicar module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 src.toon\_rt\_solver module
 ---------------------------
@@ -109,9 +91,7 @@ src.toon\_rt\_solver module
    :undoc-members:
    :show-inheritance:
 
-|br|
-|br|
-|br|
+
 
 src.validate\_inputs module
 ---------------------------
@@ -122,6 +102,3 @@ src.validate\_inputs module
    :show-inheritance:
 
 
-.. |br| raw:: html
-
-      <br>

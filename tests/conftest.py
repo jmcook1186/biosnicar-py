@@ -49,3 +49,7 @@ def new_benchmark_ad():
 @pytest.fixture
 def new_benchmark_ad_clean():
     return True
+
+
+if __name__ == '__main__':
+    pass

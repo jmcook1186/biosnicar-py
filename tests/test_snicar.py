@@ -671,3 +671,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
         pass
 
     return
+
+
+if __name__ == '__main__':
+    pass
