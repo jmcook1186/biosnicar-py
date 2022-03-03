@@ -13,6 +13,7 @@ Contents
    theoretical-background
    how-to-use
    inputs
+   testing
    modules
 
    
