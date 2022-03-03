@@ -1,40 +1,121 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>Input Configuration Guide for BioSNICAR &#8212; BioSNICAR 2.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/haiku.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Input Configuration Guide for BioSNICAR &mdash; BioSNICAR 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="BioSNICAR_GO_PY FUNCTIONS" href="modules.html" />
     <link rel="prev" title="How to Use" href="how-to-use.html" /> 
-  </head><body>
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>BioSNICAR 2.0 documentation</span></a></h1>
-        <h2 class="heading"><span>Input Configuration Guide for BioSNICAR</span></h2>
-      </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
-      
-        <p>
-        «&#160;&#160;<a href="how-to-use.html">How to Use</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        </p>
+</head>
 
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> BioSNICAR
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="theoretical-background.html">Theoretical Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-use.html">How to Use</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Input Configuration Guide for BioSNICAR</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#paths">PATHS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ctrl">CTRL</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#smooth">SMOOTH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#window-size">WINDOW_SIZE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#poly-order">POLY_ORDER</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rtm">RTM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#direct">DIRECT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nbr-wvl">NBR_WVL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aprx-typ">APRX_TYP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delta">DELTA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#solzen">SOLZEN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#incoming">INCOMING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#illumination-file-stubs">ILLUMINATION_FILE_STUBS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vis-max-idx">VIS_MAX_IDX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nir-max-idx">NIR_MAX_IDX</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ice">ICE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dz">DZ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#layer-type">LAYER_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rho">RHO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rf">RF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cdom">CDOM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shp">SHP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rds">RDS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#water">WATER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hex-side">HEX_SIDE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hex-length">HEX_LENGTH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shp-fctr">SHP_FCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ar">AR</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#impurities">IMPURITIES</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#name">NAME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file">FILE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unit">UNIT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conc">CONC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cfactor">CFACTOR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coated">COATED</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#plot">PLOT</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">BioSNICAR_GO_PY FUNCTIONS</a></li>
+</ul>
+
+        </div>
       </div>
-      <div class="content" role="main">
-        
-        
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BioSNICAR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Input Configuration Guide for BioSNICAR</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/inputs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="input-configuration-guide-for-biosnicar">
-<h1>Input Configuration Guide for BioSNICAR<a class="headerlink" href="#input-configuration-guide-for-biosnicar" title="Permalink to this headline">¶</a></h1>
+<h1>Input Configuration Guide for BioSNICAR<a class="headerlink" href="#input-configuration-guide-for-biosnicar" title="Permalink to this headline"></a></h1>
 <p>BioSNICAR is configured by updating the values in the config file inputs.yaml. This file is divided into subsections for variables that corrspond to specific parts of the model. These are:</p>
 <ol class="arabic simple">
 <li><p><strong>CTRL</strong> variables that control how the program executes (“metaconfig”)</p></li>
@@ -46,14 +127,14 @@
 </ol>
 <p>The user sets the desired values in inputs.yaml and then there is no need to interact with any other script in the repository apart from simpyl runnign the driver python ./src/snicar_driver.py. However, the value chpices are quite nuanced and require some explanation. In this document, the meaning of each field in inputs.yaml is defined along with any constraints and defaults.</p>
 <section id="paths">
-<h2>PATHS<a class="headerlink" href="#paths" title="Permalink to this headline">¶</a></h2>
+<h2>PATHS<a class="headerlink" href="#paths" title="Permalink to this headline"></a></h2>
 <p>The paths to speficic files are defined here. The user should not change these paths. The root directory is automatically detected. All other paths are relative to the base directory and do not need to be updated.</p>
 </section>
 <section id="ctrl">
-<h2>CTRL<a class="headerlink" href="#ctrl" title="Permalink to this headline">¶</a></h2>
+<h2>CTRL<a class="headerlink" href="#ctrl" title="Permalink to this headline"></a></h2>
 <p>Parameters related to the model execution.</p>
 <section id="smooth">
-<h3>SMOOTH<a class="headerlink" href="#smooth" title="Permalink to this headline">¶</a></h3>
+<h3>SMOOTH<a class="headerlink" href="#smooth" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Boolean that toggles smoothing of the predicted albedo. If SMOOTH==True a Savistky-Golay smoothign function is applied to the spectral albedo, with a window size and polynomial order defined by WINDOW_SIZE and POLY_ORDER respectively.</p>
 <p><strong>Values</strong></p>
@@ -62,7 +143,7 @@
 <p>False</p>
 </section>
 <section id="window-size">
-<h3>WINDOW_SIZE<a class="headerlink" href="#window-size" title="Permalink to this headline">¶</a></h3>
+<h3>WINDOW_SIZE<a class="headerlink" href="#window-size" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Interpolation window width used in Savisky-Golay filter if SMOOTH==True.</p>
 <p><strong>Values</strong></p>
@@ -71,7 +152,7 @@
 <p>9</p>
 </section>
 <section id="poly-order">
-<h3>POLY_ORDER<a class="headerlink" href="#poly-order" title="Permalink to this headline">¶</a></h3>
+<h3>POLY_ORDER<a class="headerlink" href="#poly-order" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Order of polynomial interpolation function used in Savisky-Golay filter if SMOOTH==True.</p>
 <p><strong>Values</strong></p>
@@ -81,9 +162,9 @@
 </section>
 </section>
 <section id="rtm">
-<h2>RTM<a class="headerlink" href="#rtm" title="Permalink to this headline">¶</a></h2>
+<h2>RTM<a class="headerlink" href="#rtm" title="Permalink to this headline"></a></h2>
 <section id="direct">
-<h3>DIRECT<a class="headerlink" href="#direct" title="Permalink to this headline">¶</a></h3>
+<h3>DIRECT<a class="headerlink" href="#direct" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Toggles between incoming irradiance being diffuse or direct. It’s effect is to change a string stub that generates the filepath used to load in iorradiance from file. If direct irradiance is toggled the model reads in a file whose name contains “_clr_” and a solar zenith angle.</p>
 <p><strong>Values</strong></p>
@@ -93,7 +174,7 @@
 <p>1</p>
 </section>
 <section id="nbr-wvl">
-<h3>NBR_WVL<a class="headerlink" href="#nbr-wvl" title="Permalink to this headline">¶</a></h3>
+<h3>NBR_WVL<a class="headerlink" href="#nbr-wvl" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Number of individual wavelengths considered by the model. Under normal circumstances the wavelength range is from 0.205 um to 4.995 um in steps of 10 nm, giving 480 individual wavelengths.</p>
 <p><strong>Values</strong></p>
@@ -102,7 +183,7 @@
 <p>480</p>
 </section>
 <section id="aprx-typ">
-<h3>APRX_TYP<a class="headerlink" href="#aprx-typ" title="Permalink to this headline">¶</a></h3>
+<h3>APRX_TYP<a class="headerlink" href="#aprx-typ" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Chooses two-stream approximation type. There are three choices:  Eddington, Quadrature and Hemispheric mean. Each is a way to integrate over angle to give a single upwards and downwards flux. The hemispheric mean is derived by assuming the phase function to equal 1 + g (where g= asymmetry parameter) in the forward scattering hemisphere and 1-g in the backward scattering hemisphere. The hemispheric mean is useful for resolving instabilities in the infrared wavelengths. The equations for each of these approximations is provided in Toon et al. (1989) Table 1.</p>
 <p>These choices are only available for the Toon solver - the adding-doubling solver uses hemispheric mean automatically.</p>
@@ -114,7 +195,7 @@
 <p>2</p>
 </section>
 <section id="delta">
-<h3>DELTA<a class="headerlink" href="#delta" title="Permalink to this headline">¶</a></h3>
+<h3>DELTA<a class="headerlink" href="#delta" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Toggles whether or not the delta function approximation is applied. The delta function truncates the forward scattering peak in the phase function and compensates by adjusting the voluem scattering coefficient, as described [here](https**//ui.adsabs.harvard.edu/abs/1970JAtS…27..943P/abstract).</p>
 <p>This choice is only available for the Toon solver - the adding-doubling applies the delta function automatically.</p>
@@ -125,7 +206,7 @@ False:  No delta function</p>
 <p>True</p>
 </section>
 <section id="solzen">
-<h3>SOLZEN<a class="headerlink" href="#solzen" title="Permalink to this headline">¶</a></h3>
+<h3>SOLZEN<a class="headerlink" href="#solzen" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Solar zenith angle. This refers to the angular position of the solar disc relative to vertical (nadir = 0, horizon = 90) expressed in degrees.</p>
 <p><strong>Values</strong></p>
@@ -135,7 +216,7 @@ For the Ton solver there are known instabilities for solzen outside the range 50
 <p>50</p>
 </section>
 <section id="incoming">
-<h3>INCOMING<a class="headerlink" href="#incoming" title="Permalink to this headline">¶</a></h3>
+<h3>INCOMING<a class="headerlink" href="#incoming" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Chooses spectal profile for incoming irradiance from one of seven presets. These are:</p>
 <ul class="simple">
@@ -155,7 +236,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>4</p>
 </section>
 <section id="illumination-file-stubs">
-<h3>ILLUMINATION_FILE_STUBS<a class="headerlink" href="#illumination-file-stubs" title="Permalink to this headline">¶</a></h3>
+<h3>ILLUMINATION_FILE_STUBS<a class="headerlink" href="#illumination-file-stubs" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>These file stubs are used to select the correct file to open for the incoming irradiance depending on the value of incoming and solzen.</p>
 <p><strong>Values</strong></p>
@@ -172,7 +253,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 </div>
 </section>
 <section id="vis-max-idx">
-<h3>VIS_MAX_IDX<a class="headerlink" href="#vis-max-idx" title="Permalink to this headline">¶</a></h3>
+<h3>VIS_MAX_IDX<a class="headerlink" href="#vis-max-idx" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>The index in wavelengths of the upper wavelength in the visible range.</p>
 <p><strong>Values</strong></p>
@@ -181,7 +262,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>39</p>
 </section>
 <section id="nir-max-idx">
-<h3>NIR_MAX_IDX<a class="headerlink" href="#nir-max-idx" title="Permalink to this headline">¶</a></h3>
+<h3>NIR_MAX_IDX<a class="headerlink" href="#nir-max-idx" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>The index in wavelengths of the upper wavelength in the near-infrared range.</p>
 <p><strong>Values</strong></p>
@@ -191,9 +272,9 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 </section>
 </section>
 <section id="ice">
-<h2>ICE<a class="headerlink" href="#ice" title="Permalink to this headline">¶</a></h2>
+<h2>ICE<a class="headerlink" href="#ice" title="Permalink to this headline"></a></h2>
 <section id="dz">
-<h3>DZ<a class="headerlink" href="#dz" title="Permalink to this headline">¶</a></h3>
+<h3>DZ<a class="headerlink" href="#dz" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Thickness of each layer in the model in units of meters.</p>
 <p><strong>Values</strong></p>
@@ -202,7 +283,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[0.1, 0.1]</p>
 </section>
 <section id="layer-type">
-<h3>LAYER_TYPE<a class="headerlink" href="#layer-type" title="Permalink to this headline">¶</a></h3>
+<h3>LAYER_TYPE<a class="headerlink" href="#layer-type" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>There are two layer tupes available in the model** granular or solid ice. Granular ice corresponds to a bulk medium of air with discrete ice grains. Solid ice refers to ice being the bulk medium with air inclusions. Solid ice layers have Fresnel reflection at their upper surfaces.</p>
 <p>The toon solver can only accept granular layers. The adding-doubling solver accepts either type including a mix of both in any order.</p>
@@ -215,7 +296,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[0, 0]</p>
 </section>
 <section id="rho">
-<h3>RHO<a class="headerlink" href="#rho" title="Permalink to this headline">¶</a></h3>
+<h3>RHO<a class="headerlink" href="#rho" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Ice density in each layer measured in kg/m3.</p>
 <p><strong>Values</strong></p>
@@ -224,7 +305,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[400, 400]</p>
 </section>
 <section id="rf">
-<h3>RF<a class="headerlink" href="#rf" title="Permalink to this headline">¶</a></h3>
+<h3>RF<a class="headerlink" href="#rf" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Choice of refractive index for ice. The refractive index of pure ice has been measured several times over the past 5 decades. Here we toggle between several of those datasets. The options are:</p>
 <ul class="simple">
@@ -238,7 +319,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>2</p>
 </section>
 <section id="cdom">
-<h3>CDOM<a class="headerlink" href="#cdom" title="Permalink to this headline">¶</a></h3>
+<h3>CDOM<a class="headerlink" href="#cdom" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Chromophoric dissolved organic matter (CDOM) is coloured organic matter that can be found in glacier meltwater. This variable toggles its presence on or off in each layer. This is an experimental feature that only allows a single concentration and it can only be added to solid ice layers (layer_type=1). The CDOM absorption data come from an upcoming paper by Halbach et al. Toggling CDOM on means adjustign the imaginary refractive index of the ice for the presence of CDOM, assuming it to well mixed through the ice layer.</p>
 <p><strong>Values</strong></p>
@@ -247,7 +328,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[0, 0]</p>
 </section>
 <section id="shp">
-<h3>SHP<a class="headerlink" href="#shp" title="Permalink to this headline">¶</a></h3>
+<h3>SHP<a class="headerlink" href="#shp" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Shape of ice grains. Adjustments for grain shape can only be made when layer_type == 0. The available shapes are:</p>
 <ul class="simple">
@@ -264,7 +345,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[0, 0]</p>
 </section>
 <section id="rds">
-<h3>RDS<a class="headerlink" href="#rds" title="Permalink to this headline">¶</a></h3>
+<h3>RDS<a class="headerlink" href="#rds" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Effective radius of ice grains if layer_type==0 and effective radius of air bubbles if layer_type==1. The valid range varies according to choice of RF - we have a larger database for Picard et al. 2016 refractive indices than the other because it is our default. Please check the /Data/OP_data/480band/ directory for available radii.</p>
 <p><strong>Values</strong></p>
@@ -273,7 +354,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[1000, 1000]</p>
 </section>
 <section id="water">
-<h3>WATER<a class="headerlink" href="#water" title="Permalink to this headline">¶</a></h3>
+<h3>WATER<a class="headerlink" href="#water" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Thickness of liquid water coating around ice grains. Only valid when shp==0 and layer_type==0. The value given should be the total radius of the grain and its water coating. For example for a 100 um grain with a 10 um water coating, the value of WATER should be 110. Providing a value that is less than the value provided for rds effectively toggles this off. The water coatings are quite expensive calculations as they run a Mir scattering code on the fly. Therefore they are off by default.</p>
 <p><strong>Values</strong></p>
@@ -282,7 +363,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[0, 0]</p>
 </section>
 <section id="hex-side">
-<h3>HEX_SIDE<a class="headerlink" href="#hex-side" title="Permalink to this headline">¶</a></h3>
+<h3>HEX_SIDE<a class="headerlink" href="#hex-side" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Length of one of the six sides of the hexagonal face of the iuce grain when shp==4. The available size combinations can be seen by browsing /Data/OP_data/480band/ice_hexagonal_columns.</p>
 <p><strong>Values</strong></p>
@@ -291,7 +372,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[10000, 10000]</p>
 </section>
 <section id="hex-length">
-<h3>HEX_LENGTH<a class="headerlink" href="#hex-length" title="Permalink to this headline">¶</a></h3>
+<h3>HEX_LENGTH<a class="headerlink" href="#hex-length" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Length of the long axis of the ice grain when shp==4. The available size combinations can be seen by browsing /Data/OP_data/480band/ice_hexagonal_columns.</p>
 <p><strong>Values</strong></p>
@@ -300,7 +381,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[10000, 10000]</p>
 </section>
 <section id="shp-fctr">
-<h3>SHP_FCTR<a class="headerlink" href="#shp-fctr" title="Permalink to this headline">¶</a></h3>
+<h3>SHP_FCTR<a class="headerlink" href="#shp-fctr" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Ratio of nonspherical grain effective radii to that of an equal volume sphere. This is only active when shp&gt;1 i.e. the grains are non-spherical.</p>
 <p><strong>Values</strong></p>
@@ -309,7 +390,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 <p>[0, 0]</p>
 </section>
 <section id="ar">
-<h3>AR<a class="headerlink" href="#ar" title="Permalink to this headline">¶</a></h3>
+<h3>AR<a class="headerlink" href="#ar" title="Permalink to this headline"></a></h3>
 <p><strong>Definition</strong></p>
 <p>Aspect ratio of grain, i.e. ratio of width to length.</p>
 <p><strong>Values</strong></p>
@@ -319,7 +400,7 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 </section>
 </section>
 <section id="impurities">
-<h2>IMPURITIES<a class="headerlink" href="#impurities" title="Permalink to this headline">¶</a></h2>
+<h2>IMPURITIES<a class="headerlink" href="#impurities" title="Permalink to this headline"></a></h2>
 <p>Impurities are provided as instances of the Impurity class. The clas has fixed attributes that must be populated in order for the impurity to be included in the mdoel. These attributes are: NAME, FILE, CFACTOR, COATED, UNIT, and CONC. These are user defined in inputs.yaml. There is no upper or lower limit to the number of different impurities that can be added - the user can simple continue to stack additional impurities in the IMPURITIES section of inputs.yaml. The basic structure of an impurity as defined in inputs.yaml is as follows:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">IMPURITIES</span>
   <span class="n">BC</span><span class="p">:</span>
@@ -332,11 +413,11 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 </pre></div>
 </div>
 <section id="name">
-<h3>NAME<a class="headerlink" href="#name" title="Permalink to this headline">¶</a></h3>
+<h3>NAME<a class="headerlink" href="#name" title="Permalink to this headline"></a></h3>
 <p>The impurity name is simply a user defined tag to recognise the instance of the impurity. It can be anything the user chooses but we suggest a simple descriptive word or acronym.</p>
 </section>
 <section id="file">
-<h3>FILE<a class="headerlink" href="#file" title="Permalink to this headline">¶</a></h3>
+<h3>FILE<a class="headerlink" href="#file" title="Permalink to this headline"></a></h3>
 <p>The file is the precise filename in /Data/OP_data/480band/lap/ that contains the optical properties of the impurity to be included. The available options are quite comprehensive, including:</p>
 <ul class="simple">
 <li><p><strong>bc_ChCB_rn40_dns1270.nc:</strong>  uncoated black carbon (Bohren and Huffman, 1983)</p></li>
@@ -374,43 +455,57 @@ and cloudy-sky spectral fluxes are loaded when direct_beam=0</p>
 </ul>
 </section>
 <section id="unit">
-<h3>UNIT<a class="headerlink" href="#unit" title="Permalink to this headline">¶</a></h3>
+<h3>UNIT<a class="headerlink" href="#unit" title="Permalink to this headline"></a></h3>
 <p>All these impurities have their mass absorption coefficients in units of ppb, and therefore their concentration (CONC) should be expressed normalised to mass in the model - i.e. in ng/g or ppb. This is achieved by setting UNIT ==0. There are two exceptions to this:  “SA_Chevrollier2022_r8.99.nc” and “GA_Chevrollier2022_r4.9_L18.8.nc”. These are empirically measured optical properties for snbow and glacier algae whose absorption coefficient is expressed in m2/cell. Their concentration (CONC) should therefore be expressed in cells/mL. This is achieved by setting UNIT==1. There are validity checks in place to ensure these values are set correctly.</p>
 </section>
 <section id="conc">
-<h3>CONC<a class="headerlink" href="#conc" title="Permalink to this headline">¶</a></h3>
+<h3>CONC<a class="headerlink" href="#conc" title="Permalink to this headline"></a></h3>
 <p>Array containing the concentration in each layer in the model in units defined by UNIT.</p>
 </section>
 <section id="cfactor">
-<h3>CFACTOR<a class="headerlink" href="#cfactor" title="Permalink to this headline">¶</a></h3>
+<h3>CFACTOR<a class="headerlink" href="#cfactor" title="Permalink to this headline"></a></h3>
 <p>The CFACTOR attribute is a multiplier that accounts for field measurments having a coarse vertical resolution but the model havign fine vertical resolution. This is mostly applicable toi glacier algae that are known to accumulate on the upper surface of the ice, but field samples generally are onyl able to remove the top approx. 2cm for cell counting. this leads to an underestimate of the concentration int he upper mm by including ~2cm of dilute clean ice below. CFACTOR accounts for this problem. It is a simple multiplier so it must be set to 1 by default.</p>
 </section>
 <section id="coated">
-<h3>COATED<a class="headerlink" href="#coated" title="Permalink to this headline">¶</a></h3>
+<h3>COATED<a class="headerlink" href="#coated" title="Permalink to this headline"></a></h3>
 <p>Boolean that toggles sulfate coating on or off. This is only applicable to black and brown carbon where there are files for both coated an uncoated versions. The parameter is requird because a different field in the optical property file is loaded for coated compared to uncoated impurities, so that the mass normalization takes into account the mass of both the impurity and its coating.</p>
 </section>
 </section>
 <section id="plot">
-<h2>PLOT<a class="headerlink" href="#plot" title="Permalink to this headline">¶</a></h2>
+<h2>PLOT<a class="headerlink" href="#plot" title="Permalink to this headline"></a></h2>
 <p>These parameters control how the output albedo plot is formatted. Recommend leaving them all at their default values. The user may, however, want to toggle figure saving on and off, in which case update the value of SAVE.</p>
 </section>
 </section>
 
 
-      </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
-      
-        <p>
-        «&#160;&#160;<a href="how-to-use.html">How to Use</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        </p>
-
-      </div>
-
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2022, Joseph Cook.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="how-to-use.html" class="btn btn-neutral float-left" title="How to Use" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="BioSNICAR_GO_PY FUNCTIONS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  </body>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Cook.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

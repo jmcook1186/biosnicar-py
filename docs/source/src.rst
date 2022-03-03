@@ -1,101 +1,123 @@
-src package
-===========
-
-Submodules
-----------
+src
+====
 
 src.adding\_doubling\_solver module
 -----------------------------------
 
-.. automodule:: src.adding_doubling_solver
+.. autofunction:: src.adding_doubling_solver
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
 
 src.bubble\_reff\_calculator module
 -----------------------------------
 
-.. automodule:: src.bubble_reff_calculator
+.. autofunction:: src.bubble_reff_calculator
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+v
+
 
 src.classes module
 ------------------
 
-.. automodule:: src.classes
+.. autofunction:: src.classes
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
 
 src.column\_OPs module
 ----------------------
 
-.. automodule:: src.column_OPs
+.. autofunction:: src.column_OPs
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
+
 
 src.display module
 ------------------
 
-.. automodule:: src.display
+.. autofunction:: src.display
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
 
 src.geometric\_optics\_ice module
 ---------------------------------
 
-.. automodule:: src.geometric_optics_ice
+.. autofunction:: src.geometric_optics_ice
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
 
 src.mie\_coated\_water\_spheres module
 --------------------------------------
 
-.. automodule:: src.mie_coated_water_spheres
+.. autofunction:: src.mie_coated_water_spheres
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
+
 
 src.setup\_snicar module
 ------------------------
 
-.. automodule:: src.setup_snicar
+.. autofunction:: src.setup_snicar
    :members:
    :undoc-members:
    :show-inheritance:
 
-src.snicar\_driver module
--------------------------
-
-.. automodule:: src.snicar_driver
-   :members:
-   :undoc-members:
-   :show-inheritance:
+|br|
+|br|
+|br|
 
 src.toon\_rt\_solver module
 ---------------------------
 
-.. automodule:: src.toon_rt_solver
+.. autofunction:: src.toon_rt_solver
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
 
 src.validate\_inputs module
 ---------------------------
 
-.. automodule:: src.validate_inputs
+.. autofunction:: src.validate_inputs
    :members:
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
 
-.. automodule:: src
-   :members:
-   :undoc-members:
-   :show-inheritance:

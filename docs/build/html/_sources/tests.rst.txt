@@ -1,29 +1,20 @@
-tests package
-=============
+tests
+======
 
-Submodules
-----------
-
-tests.conftest module
----------------------
+tests.conftest
+--------------
 
 .. automodule:: tests.conftest
    :members:
    :undoc-members:
    :show-inheritance:
 
-tests.test\_snicar module
--------------------------
+
+
+tests.test\_snicar
+------------------
 
 .. automodule:: tests.test_snicar
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tests
    :members:
    :undoc-members:
    :show-inheritance:

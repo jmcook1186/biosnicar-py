@@ -8,7 +8,7 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    
    theoretical-background
    how-to-use

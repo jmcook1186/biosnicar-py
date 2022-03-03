@@ -1,5 +1,5 @@
-BioSNICAR_GO_PY
-===============
+BioSNICAR Functions
+====================
 
 .. toctree::
    :maxdepth: 4

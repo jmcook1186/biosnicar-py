@@ -1,8 +1,6 @@
-src package
-===========
+/src
+====
 
-Submodules
-----------
 
 src.adding\_doubling\_solver module
 -----------------------------------
@@ -12,6 +10,10 @@ src.adding\_doubling\_solver module
    :undoc-members:
    :show-inheritance:
 
+|br|
+|br|
+|br|
+
 src.bubble\_reff\_calculator module
 -----------------------------------
 
@@ -19,6 +21,11 @@ src.bubble\_reff\_calculator module
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+v
+
 
 src.classes module
 ------------------
@@ -28,6 +35,10 @@ src.classes module
    :undoc-members:
    :show-inheritance:
 
+|br|
+|br|
+|br|
+
 src.column\_OPs module
 ----------------------
 
@@ -35,6 +46,11 @@ src.column\_OPs module
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
+
 
 src.display module
 ------------------
@@ -44,6 +60,10 @@ src.display module
    :undoc-members:
    :show-inheritance:
 
+|br|
+|br|
+|br|
+
 src.geometric\_optics\_ice module
 ---------------------------------
 
@@ -51,6 +71,10 @@ src.geometric\_optics\_ice module
    :members:
    :undoc-members:
    :show-inheritance:
+
+|br|
+|br|
+|br|
 
 src.mie\_coated\_water\_spheres module
 --------------------------------------
@@ -60,6 +84,11 @@ src.mie\_coated\_water\_spheres module
    :undoc-members:
    :show-inheritance:
 
+|br|
+|br|
+|br|
+
+
 src.setup\_snicar module
 ------------------------
 
@@ -68,13 +97,9 @@ src.setup\_snicar module
    :undoc-members:
    :show-inheritance:
 
-src.snicar\_driver module
--------------------------
-
-.. automodule:: src.snicar_driver
-   :members:
-   :undoc-members:
-   :show-inheritance:
+|br|
+|br|
+|br|
 
 src.toon\_rt\_solver module
 ---------------------------
@@ -84,6 +109,10 @@ src.toon\_rt\_solver module
    :undoc-members:
    :show-inheritance:
 
+|br|
+|br|
+|br|
+
 src.validate\_inputs module
 ---------------------------
 
@@ -92,10 +121,7 @@ src.validate\_inputs module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
 
-.. automodule:: src
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. |br| raw:: html
+
+      <br>

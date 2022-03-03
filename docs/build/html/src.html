@@ -1,51 +1,97 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>src package &#8212; BioSNICAR 2.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/haiku.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>/src &mdash; BioSNICAR 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="tests package" href="tests.html" />
-    <link rel="prev" title="BioSNICAR_GO_PY" href="modules.html" /> 
-  </head><body>
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>BioSNICAR 2.0 documentation</span></a></h1>
-        <h2 class="heading"><span>src package</span></h2>
-      </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
-      
-        <p>
-        «&#160;&#160;<a href="modules.html">BioSNICAR_GO_PY</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="tests.html">tests package</a>&#160;&#160;»
-        </p>
+    <link rel="next" title="tests" href="tests.html" />
+    <link rel="prev" title="BioSNICAR Functions" href="modules.html" /> 
+</head>
 
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> BioSNICAR
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="theoretical-background.html">Theoretical Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputs.html">Input Configuration Guide for BioSNICAR</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">BioSNICAR Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">/src</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.adding_doubling_solver">src.adding_doubling_solver module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.bubble_reff_calculator">src.bubble_reff_calculator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.classes">src.classes module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.column_OPs">src.column_OPs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.display">src.display module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#src-geometric-optics-ice-module">src.geometric_optics_ice module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.mie_coated_water_spheres">src.mie_coated_water_spheres module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.setup_snicar">src.setup_snicar module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.toon_rt_solver">src.toon_rt_solver module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.validate_inputs">src.validate_inputs module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
       </div>
-      <div class="content" role="main">
-        
-        
-  <section id="src-package">
-<h1>src package<a class="headerlink" href="#src-package" title="Permalink to this headline">¶</a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</section>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BioSNICAR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">BioSNICAR Functions</a> &raquo;</li>
+      <li>/src</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/src.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="src">
+<h1>/src<a class="headerlink" href="#src" title="Permalink to this headline"></a></h1>
 <section id="module-src.adding_doubling_solver">
-<span id="src-adding-doubling-solver-module"></span><h2>src.adding_doubling_solver module<a class="headerlink" href="#module-src.adding_doubling_solver" title="Permalink to this headline">¶</a></h2>
+<span id="src-adding-doubling-solver-module"></span><h2>src.adding_doubling_solver module<a class="headerlink" href="#module-src.adding_doubling_solver" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.adding_doubling_solver">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">adding_doubling_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#adding_doubling_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.adding_doubling_solver" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">adding_doubling_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#adding_doubling_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.adding_doubling_solver" title="Permalink to this definition"></a></dt>
 <dd><p>control function for the adding-doubling solver.</p>
 <p>Makes function calls in sequence to generate, then return, an instance of
 Outputs class.</p>
@@ -75,7 +121,7 @@ Outputs class.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.apply_gaussian_integral">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">apply_gaussian_integral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#apply_gaussian_integral"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.apply_gaussian_integral" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">apply_gaussian_integral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#apply_gaussian_integral"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.apply_gaussian_integral" title="Permalink to this definition"></a></dt>
 <dd><p>Applies gaussian integral to integrate over angles.</p>
 <p>Uses gaussien integration to integrate fluxes hemispherically from
 N of reference angles where N = len(gauspt) (default is 8).</p>
@@ -107,7 +153,7 @@ swt: sum of gaussian weights</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.apply_smoothing_function">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">apply_smoothing_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#apply_smoothing_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.apply_smoothing_function" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">apply_smoothing_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#apply_smoothing_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.apply_smoothing_function" title="Permalink to this definition"></a></dt>
 <dd><p>Applies Savitsky-Golay smoothing function to albedo, if toggled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -121,7 +167,7 @@ swt: sum of gaussian weights</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.calc_correction_fresnel_layer">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_correction_fresnel_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu0n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_correction_fresnel_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_correction_fresnel_layer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_correction_fresnel_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu0n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_correction_fresnel_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_correction_fresnel_layer" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates correction for Fresnel reflection and total internal reflection.</p>
 <p>Corrects fluxes for Fresnel reflection in cases where total
 internal reflection does and does not occur (angle &gt; critical_angle).
@@ -163,7 +209,7 @@ tdir: updated transmission of direct beam</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.calc_reflection_below">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_reflection_below</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_reflection_below"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_reflection_below" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_reflection_below</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_reflection_below"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_reflection_below" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates dir/diff reflectyivity for layers below surface.</p>
 <p>Compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation
 for layers below by adding succesive layers starting from the
@@ -205,7 +251,7 @@ rupdif: upwards flux diffuse</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.calc_reflection_transmission_from_top">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_reflection_transmission_from_top</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_reflection_transmission_from_top"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_reflection_transmission_from_top" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_reflection_transmission_from_top</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_reflection_transmission_from_top"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_reflection_transmission_from_top" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the reflection and transmission of energy at top surfaces.</p>
 <p>Calculate the solar beam transmission, total transmission, and
 reflectivity for diffuse radiation from below at interface lyr,
@@ -264,7 +310,7 @@ trndif: diffuse transmission</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.calc_reflectivity_transmittivity">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_reflectivity_transmittivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu0n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_reflectivity_transmittivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_reflectivity_transmittivity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calc_reflectivity_transmittivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trnlay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu0n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calc_reflectivity_transmittivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calc_reflectivity_transmittivity" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates reflectivity and transmissivity.</p>
 <p>Sets up new variables, applies delta transformation and makes
 initial calculations of reflectivity and transmissivity in each
@@ -292,7 +338,7 @@ layer.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.calculate_fluxes">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calculate_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdirup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdifup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdirdn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdifdn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calculate_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calculate_fluxes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">calculate_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdirup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdifup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdirdn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdifdn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#calculate_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.calculate_fluxes" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates total fluxes in each layer and for entire column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -320,7 +366,7 @@ F_top_pls: upwards flux from upper surface</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.conservation_of_energy_check">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">conservation_of_energy_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_pls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#conservation_of_energy_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.conservation_of_energy_check" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">conservation_of_energy_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_pls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#conservation_of_energy_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.conservation_of_energy_check" title="Permalink to this definition"></a></dt>
 <dd><p>Checks there is no conservation of energy violation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -342,7 +388,7 @@ F_top_pls: upwards flux from upper surface</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.define_constants_arrays">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">define_constants_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#define_constants_arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.define_constants_arrays" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">define_constants_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#define_constants_arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.define_constants_arrays" title="Permalink to this definition"></a></dt>
 <dd><p>defines and instantiates constants required for a-d calculations.</p>
 <p>Defines and instantiates all variables required for calculating energy fluxes
 using the adding-doubling method.</p>
@@ -383,7 +429,7 @@ lyrfrsnl: index of uppermost fresnel reflecting layer in ice column</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.get_outputs">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">get_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#get_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.get_outputs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">get_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#get_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.get_outputs" title="Permalink to this definition"></a></dt>
 <dd><p>Assimilates useful data into instance of Outputs class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -407,7 +453,7 @@ lyrfrsnl: index of uppermost fresnel reflecting layer in ice column</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.trans_refl_at_interfaces">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">trans_refl_at_interfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rupdif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rupdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdndif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trndir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trndif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trntdr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#trans_refl_at_interfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.trans_refl_at_interfaces" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">trans_refl_at_interfaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rupdif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rupdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdndif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trndir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trndif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trntdr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#trans_refl_at_interfaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.trans_refl_at_interfaces" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates transmission and reflection at layer interfaces.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -436,7 +482,7 @@ fdifdn: downwards flux of diffuse radiation</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.adding_doubling_solver.update_transmittivity_reflectivity">
-<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">update_transmittivity_reflectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">swt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#update_transmittivity_reflectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.update_transmittivity_reflectivity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.adding_doubling_solver.</span></span><span class="sig-name descname"><span class="pre">update_transmittivity_reflectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">swt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lyr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdif_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdif_b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/adding_doubling_solver.html#update_transmittivity_reflectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.adding_doubling_solver.update_transmittivity_reflectivity" title="Permalink to this definition"></a></dt>
 <dd><p>updates transmissivity and reflectivity values after iterations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -463,9 +509,12 @@ tdif_b: updated transmittance to diffuse energy w polarization state == parallel
 </dl>
 </dd></dl>
 
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.bubble_reff_calculator">
-<span id="src-bubble-reff-calculator-module"></span><h2>src.bubble_reff_calculator module<a class="headerlink" href="#module-src.bubble_reff_calculator" title="Permalink to this headline">¶</a></h2>
+<span id="src-bubble-reff-calculator-module"></span><h2>src.bubble_reff_calculator module<a class="headerlink" href="#module-src.bubble_reff_calculator" title="Permalink to this headline"></a></h2>
 <p>Calculates effective radius of air bubbles.</p>
 <p>This script is for taking specific surface area for bubbly ice an calculating the
 effective radius of the bubbles assuming a lognormal bubble size distribution.</p>
@@ -475,103 +524,106 @@ effective radius of the bubbles assuming a lognormal bubble size distribution.</
 in a bulk medium of ice a more nuanced calculation is required.</p>
 <p>The derivation of the calculations are explained in the pdf ./assets/SSA_derivation.pdf
 from Chloe Whicker (UMich).</p>
+<p><br>
+<br>
+v</p>
 </section>
 <section id="module-src.classes">
-<span id="src-classes-module"></span><h2>src.classes module<a class="headerlink" href="#module-src.classes" title="Permalink to this headline">¶</a></h2>
+<span id="src-classes-module"></span><h2>src.classes module<a class="headerlink" href="#module-src.classes" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.Ice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Ice</span></span><a class="reference internal" href="_modules/src/classes.html#Ice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Ice" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Ice</span></span><a class="reference internal" href="_modules/src/classes.html#Ice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Ice" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Snow or ice column physical properties.</p>
 <p>Instances of Ice contain all the physical properties of each vertical layer of the
 snow or ice column and the underlying surface.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.dz">
-<span class="sig-name descname"><span class="pre">dz</span></span><a class="headerlink" href="#src.classes.Ice.dz" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dz</span></span><a class="headerlink" href="#src.classes.Ice.dz" title="Permalink to this definition"></a></dt>
 <dd><p>array containing thickness of each layer in m</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.layer_type">
-<span class="sig-name descname"><span class="pre">layer_type</span></span><a class="headerlink" href="#src.classes.Ice.layer_type" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">layer_type</span></span><a class="headerlink" href="#src.classes.Ice.layer_type" title="Permalink to this definition"></a></dt>
 <dd><p>array containing type (0 = grains, 1 = solid ice) in each layer</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.cdom">
-<span class="sig-name descname"><span class="pre">cdom</span></span><a class="headerlink" href="#src.classes.Ice.cdom" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cdom</span></span><a class="headerlink" href="#src.classes.Ice.cdom" title="Permalink to this definition"></a></dt>
 <dd><p>array containing Boolean (1/0) toggling presence of cdom in each layer</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.rho">
-<span class="sig-name descname"><span class="pre">rho</span></span><a class="headerlink" href="#src.classes.Ice.rho" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rho</span></span><a class="headerlink" href="#src.classes.Ice.rho" title="Permalink to this definition"></a></dt>
 <dd><p>array containing density of each layer in kg/m3</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.sfc">
-<span class="sig-name descname"><span class="pre">sfc</span></span><a class="headerlink" href="#src.classes.Ice.sfc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sfc</span></span><a class="headerlink" href="#src.classes.Ice.sfc" title="Permalink to this definition"></a></dt>
 <dd><p>array with reflectance of underlying surface per wavelength</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.rf">
-<span class="sig-name descname"><span class="pre">rf</span></span><a class="headerlink" href="#src.classes.Ice.rf" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rf</span></span><a class="headerlink" href="#src.classes.Ice.rf" title="Permalink to this definition"></a></dt>
 <dd><p>refractive index to use, 0,1,2 or 3 (see docs for definition)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.shp">
-<span class="sig-name descname"><span class="pre">shp</span></span><a class="headerlink" href="#src.classes.Ice.shp" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">shp</span></span><a class="headerlink" href="#src.classes.Ice.shp" title="Permalink to this definition"></a></dt>
 <dd><p>grain shape per layer where layer_type==1</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.rds">
-<span class="sig-name descname"><span class="pre">rds</span></span><a class="headerlink" href="#src.classes.Ice.rds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rds</span></span><a class="headerlink" href="#src.classes.Ice.rds" title="Permalink to this definition"></a></dt>
 <dd><p>grain radius (layer_type==0) or bubble radius (layer_type==0) in each layer</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.water">
-<span class="sig-name descname"><span class="pre">water</span></span><a class="headerlink" href="#src.classes.Ice.water" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">water</span></span><a class="headerlink" href="#src.classes.Ice.water" title="Permalink to this definition"></a></dt>
 <dd><p>radius of grain+water coating in each layer where layer_type==0</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.hex_side">
-<span class="sig-name descname"><span class="pre">hex_side</span></span><a class="headerlink" href="#src.classes.Ice.hex_side" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hex_side</span></span><a class="headerlink" href="#src.classes.Ice.hex_side" title="Permalink to this definition"></a></dt>
 <dd><p>length of each side of hexagonal face for grain_shp==4</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.hex_length">
-<span class="sig-name descname"><span class="pre">hex_length</span></span><a class="headerlink" href="#src.classes.Ice.hex_length" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hex_length</span></span><a class="headerlink" href="#src.classes.Ice.hex_length" title="Permalink to this definition"></a></dt>
 <dd><p>column length for hexagonal face for grain_shp==4</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.shp_fctr">
-<span class="sig-name descname"><span class="pre">shp_fctr</span></span><a class="headerlink" href="#src.classes.Ice.shp_fctr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">shp_fctr</span></span><a class="headerlink" href="#src.classes.Ice.shp_fctr" title="Permalink to this definition"></a></dt>
 <dd><p>ratio of nonspherical eff radii to equal vol sphere, in each layer</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.ar">
-<span class="sig-name descname"><span class="pre">ar</span></span><a class="headerlink" href="#src.classes.Ice.ar" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ar</span></span><a class="headerlink" href="#src.classes.Ice.ar" title="Permalink to this definition"></a></dt>
 <dd><p>aspect ratio of grains in each layer where layer_type==0</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Ice.nbr_lyr">
-<span class="sig-name descname"><span class="pre">nbr_lyr</span></span><a class="headerlink" href="#src.classes.Ice.nbr_lyr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">nbr_lyr</span></span><a class="headerlink" href="#src.classes.Ice.nbr_lyr" title="Permalink to this definition"></a></dt>
 <dd><p>number of vertical layers</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="src.classes.Ice.calculate_refractive_index">
-<span class="sig-name descname"><span class="pre">calculate_refractive_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/classes.html#Ice.calculate_refractive_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Ice.calculate_refractive_index" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_refractive_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/classes.html#Ice.calculate_refractive_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Ice.calculate_refractive_index" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates ice refractive index from initialized class attributes.</p>
 <p>Takes self.rf and config from inpouts.yaml and uses them to calculate
 new attributes related to the ice refractive index.</p>
@@ -599,49 +651,49 @@ op_dir: directory containing optical properties</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.Illumination">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Illumination</span></span><a class="reference internal" href="_modules/src/classes.html#Illumination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Illumination" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Illumination</span></span><a class="reference internal" href="_modules/src/classes.html#Illumination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Illumination" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Properties of incoming irradiance.</p>
 <p>Instances of Illumination contain all data relating to the incoming irradiance.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Illumination.direct">
-<span class="sig-name descname"><span class="pre">direct</span></span><a class="headerlink" href="#src.classes.Illumination.direct" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">direct</span></span><a class="headerlink" href="#src.classes.Illumination.direct" title="Permalink to this definition"></a></dt>
 <dd><p>Boolean toggling between direct and diffuse irradiance</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Illumination.solzen">
-<span class="sig-name descname"><span class="pre">solzen</span></span><a class="headerlink" href="#src.classes.Illumination.solzen" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solzen</span></span><a class="headerlink" href="#src.classes.Illumination.solzen" title="Permalink to this definition"></a></dt>
 <dd><p>solar zenith angle in degrees from the vertical</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Illumination.incoming">
-<span class="sig-name descname"><span class="pre">incoming</span></span><a class="headerlink" href="#src.classes.Illumination.incoming" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">incoming</span></span><a class="headerlink" href="#src.classes.Illumination.incoming" title="Permalink to this definition"></a></dt>
 <dd><p>choice of spectral distribution from file 0-6</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Illumination.flx_dir">
-<span class="sig-name descname"><span class="pre">flx_dir</span></span><a class="headerlink" href="#src.classes.Illumination.flx_dir" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">flx_dir</span></span><a class="headerlink" href="#src.classes.Illumination.flx_dir" title="Permalink to this definition"></a></dt>
 <dd><p>directory containing irradiance files</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Illumination.stubs">
-<span class="sig-name descname"><span class="pre">stubs</span></span><a class="headerlink" href="#src.classes.Illumination.stubs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">stubs</span></span><a class="headerlink" href="#src.classes.Illumination.stubs" title="Permalink to this definition"></a></dt>
 <dd><p>array of stub strings for selecting irradiance files</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Illumination.nbr_wvl">
-<span class="sig-name descname"><span class="pre">nbr_wvl</span></span><a class="headerlink" href="#src.classes.Illumination.nbr_wvl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">nbr_wvl</span></span><a class="headerlink" href="#src.classes.Illumination.nbr_wvl" title="Permalink to this definition"></a></dt>
 <dd><p>number fo wavelengths (default 480)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="src.classes.Illumination.calculate_irradiance">
-<span class="sig-name descname"><span class="pre">calculate_irradiance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/classes.html#Illumination.calculate_irradiance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Illumination.calculate_irradiance" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_irradiance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/classes.html#Illumination.calculate_irradiance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Illumination.calculate_irradiance" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates irradiance from initialized attributes.</p>
 <p>Takes mu_not, incoming and file stubs from self and calculates irradiance.</p>
 <dl class="field-list simple">
@@ -666,62 +718,62 @@ Fs: direct irradiance</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.Impurity">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Impurity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coated</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfactor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/classes.html#Impurity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Impurity" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Impurity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coated</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfactor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/classes.html#Impurity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Impurity" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Light absorbing impurity.</p>
 <p>Instances of Impurity are one discrete type of light absorbing impurity with
 a distinct set of optical properties.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#src.classes.Impurity.name" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#src.classes.Impurity.name" title="Permalink to this definition"></a></dt>
 <dd><p>name of impurity</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.cfactor">
-<span class="sig-name descname"><span class="pre">cfactor</span></span><a class="headerlink" href="#src.classes.Impurity.cfactor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cfactor</span></span><a class="headerlink" href="#src.classes.Impurity.cfactor" title="Permalink to this definition"></a></dt>
 <dd><p>concentration factor used to convert field measurements to model config (default=1)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.unit">
-<span class="sig-name descname"><span class="pre">unit</span></span><a class="headerlink" href="#src.classes.Impurity.unit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">unit</span></span><a class="headerlink" href="#src.classes.Impurity.unit" title="Permalink to this definition"></a></dt>
 <dd><p>the unit the concentration should be represented in (0 = ppb, 1 = cells/mL)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.conc">
-<span class="sig-name descname"><span class="pre">conc</span></span><a class="headerlink" href="#src.classes.Impurity.conc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">conc</span></span><a class="headerlink" href="#src.classes.Impurity.conc" title="Permalink to this definition"></a></dt>
 <dd><p>concentration of the impurity in each layer (in units of self.unit)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.file">
-<span class="sig-name descname"><span class="pre">file</span></span><a class="headerlink" href="#src.classes.Impurity.file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">file</span></span><a class="headerlink" href="#src.classes.Impurity.file" title="Permalink to this definition"></a></dt>
 <dd><p>name of netCDF file containing optical properties and size distribution</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.impurity_properties">
-<span class="sig-name descname"><span class="pre">impurity_properties</span></span><a class="headerlink" href="#src.classes.Impurity.impurity_properties" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">impurity_properties</span></span><a class="headerlink" href="#src.classes.Impurity.impurity_properties" title="Permalink to this definition"></a></dt>
 <dd><p>instance of opened file self.file</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.mac">
-<span class="sig-name descname"><span class="pre">mac</span></span><a class="headerlink" href="#src.classes.Impurity.mac" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mac</span></span><a class="headerlink" href="#src.classes.Impurity.mac" title="Permalink to this definition"></a></dt>
 <dd><p>mass absorption coefficient (m2/kg or m2/cell)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.ssa">
-<span class="sig-name descname"><span class="pre">ssa</span></span><a class="headerlink" href="#src.classes.Impurity.ssa" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ssa</span></span><a class="headerlink" href="#src.classes.Impurity.ssa" title="Permalink to this definition"></a></dt>
 <dd><p>single scattering albedo</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Impurity.g">
-<span class="sig-name descname"><span class="pre">g</span></span><a class="headerlink" href="#src.classes.Impurity.g" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">g</span></span><a class="headerlink" href="#src.classes.Impurity.g" title="Permalink to this definition"></a></dt>
 <dd><p>asymmetry parameter</p>
 </dd></dl>
 
@@ -729,90 +781,90 @@ a distinct set of optical properties.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.ModelConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">ModelConfig</span></span><a class="reference internal" href="_modules/src/classes.html#ModelConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.ModelConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">ModelConfig</span></span><a class="reference internal" href="_modules/src/classes.html#ModelConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.ModelConfig" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Model configuration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.smooth">
-<span class="sig-name descname"><span class="pre">smooth</span></span><a class="headerlink" href="#src.classes.ModelConfig.smooth" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">smooth</span></span><a class="headerlink" href="#src.classes.ModelConfig.smooth" title="Permalink to this definition"></a></dt>
 <dd><p>Boolean to toggle savitsky-golay filter to smooth albedo</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.window_size">
-<span class="sig-name descname"><span class="pre">window_size</span></span><a class="headerlink" href="#src.classes.ModelConfig.window_size" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">window_size</span></span><a class="headerlink" href="#src.classes.ModelConfig.window_size" title="Permalink to this definition"></a></dt>
 <dd><p>window size to use for smoothing func</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.poly_order">
-<span class="sig-name descname"><span class="pre">poly_order</span></span><a class="headerlink" href="#src.classes.ModelConfig.poly_order" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">poly_order</span></span><a class="headerlink" href="#src.classes.ModelConfig.poly_order" title="Permalink to this definition"></a></dt>
 <dd><p>order of polynomial used to smooth albedo</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.dir_base">
-<span class="sig-name descname"><span class="pre">dir_base</span></span><a class="headerlink" href="#src.classes.ModelConfig.dir_base" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dir_base</span></span><a class="headerlink" href="#src.classes.ModelConfig.dir_base" title="Permalink to this definition"></a></dt>
 <dd><p>base directory</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.dir_wvl">
-<span class="sig-name descname"><span class="pre">dir_wvl</span></span><a class="headerlink" href="#src.classes.ModelConfig.dir_wvl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dir_wvl</span></span><a class="headerlink" href="#src.classes.ModelConfig.dir_wvl" title="Permalink to this definition"></a></dt>
 <dd><p>path to wavelengths in csv file</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.sphere_ice_path">
-<span class="sig-name descname"><span class="pre">sphere_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.sphere_ice_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sphere_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.sphere_ice_path" title="Permalink to this definition"></a></dt>
 <dd><p>directory containing OPs for spherical ice grains</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.hex_ice_path">
-<span class="sig-name descname"><span class="pre">hex_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.hex_ice_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hex_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.hex_ice_path" title="Permalink to this definition"></a></dt>
 <dd><p>directory containing OPs for hexagonal ice grains</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.bubbly_ice_path">
-<span class="sig-name descname"><span class="pre">bubbly_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.bubbly_ice_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">bubbly_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.bubbly_ice_path" title="Permalink to this definition"></a></dt>
 <dd><p>directory containing OPs for bubbly ice</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.ri_ice_path">
-<span class="sig-name descname"><span class="pre">ri_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.ri_ice_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ri_ice_path</span></span><a class="headerlink" href="#src.classes.ModelConfig.ri_ice_path" title="Permalink to this definition"></a></dt>
 <dd><p>path to file containing pure ice refractive index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.op_dir_stubs">
-<span class="sig-name descname"><span class="pre">op_dir_stubs</span></span><a class="headerlink" href="#src.classes.ModelConfig.op_dir_stubs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">op_dir_stubs</span></span><a class="headerlink" href="#src.classes.ModelConfig.op_dir_stubs" title="Permalink to this definition"></a></dt>
 <dd><p>sstring stubs for ice optical property files</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.wavelengths">
-<span class="sig-name descname"><span class="pre">wavelengths</span></span><a class="headerlink" href="#src.classes.ModelConfig.wavelengths" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">wavelengths</span></span><a class="headerlink" href="#src.classes.ModelConfig.wavelengths" title="Permalink to this definition"></a></dt>
 <dd><p>array of wavelengths in nm (default 0.205 - 4.995 um)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.nbr_wvl">
-<span class="sig-name descname"><span class="pre">nbr_wvl</span></span><a class="headerlink" href="#src.classes.ModelConfig.nbr_wvl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">nbr_wvl</span></span><a class="headerlink" href="#src.classes.ModelConfig.nbr_wvl" title="Permalink to this definition"></a></dt>
 <dd><p>number of wavelengths (default 480)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.vis_max_idx">
-<span class="sig-name descname"><span class="pre">vis_max_idx</span></span><a class="headerlink" href="#src.classes.ModelConfig.vis_max_idx" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">vis_max_idx</span></span><a class="headerlink" href="#src.classes.ModelConfig.vis_max_idx" title="Permalink to this definition"></a></dt>
 <dd><p>index for upper visible wavelength (default 0.75 um)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.ModelConfig.nir_max_idx">
-<span class="sig-name descname"><span class="pre">nir_max_idx</span></span><a class="headerlink" href="#src.classes.ModelConfig.nir_max_idx" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">nir_max_idx</span></span><a class="headerlink" href="#src.classes.ModelConfig.nir_max_idx" title="Permalink to this definition"></a></dt>
 <dd><p>index for upper NIR wavelength (default 4.995 um)</p>
 </dd></dl>
 
@@ -820,84 +872,84 @@ a distinct set of optical properties.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.Outputs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Outputs</span></span><a class="reference internal" href="_modules/src/classes.html#Outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Outputs" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">Outputs</span></span><a class="reference internal" href="_modules/src/classes.html#Outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.Outputs" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>output data from radiative transfer calculations.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.heat_rt">
-<span class="sig-name descname"><span class="pre">heat_rt</span></span><a class="headerlink" href="#src.classes.Outputs.heat_rt" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">heat_rt</span></span><a class="headerlink" href="#src.classes.Outputs.heat_rt" title="Permalink to this definition"></a></dt>
 <dd><p>heating rate in each layer</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.BBAVIS">
-<span class="sig-name descname"><span class="pre">BBAVIS</span></span><a class="headerlink" href="#src.classes.Outputs.BBAVIS" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">BBAVIS</span></span><a class="headerlink" href="#src.classes.Outputs.BBAVIS" title="Permalink to this definition"></a></dt>
 <dd><p>broadband albedo in visible range</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.BBANIR">
-<span class="sig-name descname"><span class="pre">BBANIR</span></span><a class="headerlink" href="#src.classes.Outputs.BBANIR" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">BBANIR</span></span><a class="headerlink" href="#src.classes.Outputs.BBANIR" title="Permalink to this definition"></a></dt>
 <dd><p>broadband albedo in NIR range</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.BBA">
-<span class="sig-name descname"><span class="pre">BBA</span></span><a class="headerlink" href="#src.classes.Outputs.BBA" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">BBA</span></span><a class="headerlink" href="#src.classes.Outputs.BBA" title="Permalink to this definition"></a></dt>
 <dd><p>broadband albedo across solar spectrum</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.abs_slr_btm">
-<span class="sig-name descname"><span class="pre">abs_slr_btm</span></span><a class="headerlink" href="#src.classes.Outputs.abs_slr_btm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">abs_slr_btm</span></span><a class="headerlink" href="#src.classes.Outputs.abs_slr_btm" title="Permalink to this definition"></a></dt>
 <dd><p>absorbed solar energy at bottom surface</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.abs_vis_btm">
-<span class="sig-name descname"><span class="pre">abs_vis_btm</span></span><a class="headerlink" href="#src.classes.Outputs.abs_vis_btm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">abs_vis_btm</span></span><a class="headerlink" href="#src.classes.Outputs.abs_vis_btm" title="Permalink to this definition"></a></dt>
 <dd><p>absorbed visible energy at bottom surface</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.abs_nir_btm">
-<span class="sig-name descname"><span class="pre">abs_nir_btm</span></span><a class="headerlink" href="#src.classes.Outputs.abs_nir_btm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">abs_nir_btm</span></span><a class="headerlink" href="#src.classes.Outputs.abs_nir_btm" title="Permalink to this definition"></a></dt>
 <dd><p>absorbed NIR energy at bottom surface</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.albedo">
-<span class="sig-name descname"><span class="pre">albedo</span></span><a class="headerlink" href="#src.classes.Outputs.albedo" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">albedo</span></span><a class="headerlink" href="#src.classes.Outputs.albedo" title="Permalink to this definition"></a></dt>
 <dd><p>albedo of ice column</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.total_insolation">
-<span class="sig-name descname"><span class="pre">total_insolation</span></span><a class="headerlink" href="#src.classes.Outputs.total_insolation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">total_insolation</span></span><a class="headerlink" href="#src.classes.Outputs.total_insolation" title="Permalink to this definition"></a></dt>
 <dd><p>energy arriving from atmosphere</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.abs_slr_tot">
-<span class="sig-name descname"><span class="pre">abs_slr_tot</span></span><a class="headerlink" href="#src.classes.Outputs.abs_slr_tot" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">abs_slr_tot</span></span><a class="headerlink" href="#src.classes.Outputs.abs_slr_tot" title="Permalink to this definition"></a></dt>
 <dd><p>total absorbed energy across solar spectrum</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.abs_vis_tot">
-<span class="sig-name descname"><span class="pre">abs_vis_tot</span></span><a class="headerlink" href="#src.classes.Outputs.abs_vis_tot" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">abs_vis_tot</span></span><a class="headerlink" href="#src.classes.Outputs.abs_vis_tot" title="Permalink to this definition"></a></dt>
 <dd><p>total absorbed energy across visible spectrum</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.abs_nir_tot">
-<span class="sig-name descname"><span class="pre">abs_nir_tot</span></span><a class="headerlink" href="#src.classes.Outputs.abs_nir_tot" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">abs_nir_tot</span></span><a class="headerlink" href="#src.classes.Outputs.abs_nir_tot" title="Permalink to this definition"></a></dt>
 <dd><p>total absorbed energy across NIR spectrum</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.Outputs.absorbed_flux_per_layer">
-<span class="sig-name descname"><span class="pre">absorbed_flux_per_layer</span></span><a class="headerlink" href="#src.classes.Outputs.absorbed_flux_per_layer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">absorbed_flux_per_layer</span></span><a class="headerlink" href="#src.classes.Outputs.absorbed_flux_per_layer" title="Permalink to this definition"></a></dt>
 <dd><p>total absorbed flux per layer</p>
 </dd></dl>
 
@@ -905,90 +957,90 @@ a distinct set of optical properties.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.PlotConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">PlotConfig</span></span><a class="reference internal" href="_modules/src/classes.html#PlotConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.PlotConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">PlotConfig</span></span><a class="reference internal" href="_modules/src/classes.html#PlotConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.PlotConfig" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Configuration for plotting figures.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.figsize">
-<span class="sig-name descname"><span class="pre">figsize</span></span><a class="headerlink" href="#src.classes.PlotConfig.figsize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">figsize</span></span><a class="headerlink" href="#src.classes.PlotConfig.figsize" title="Permalink to this definition"></a></dt>
 <dd><p>size of figure</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.facecolor">
-<span class="sig-name descname"><span class="pre">facecolor</span></span><a class="headerlink" href="#src.classes.PlotConfig.facecolor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">facecolor</span></span><a class="headerlink" href="#src.classes.PlotConfig.facecolor" title="Permalink to this definition"></a></dt>
 <dd><p>colour of background</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.grid">
-<span class="sig-name descname"><span class="pre">grid</span></span><a class="headerlink" href="#src.classes.PlotConfig.grid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">grid</span></span><a class="headerlink" href="#src.classes.PlotConfig.grid" title="Permalink to this definition"></a></dt>
 <dd><p>toggles grid visibility</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.grid_color">
-<span class="sig-name descname"><span class="pre">grid_color</span></span><a class="headerlink" href="#src.classes.PlotConfig.grid_color" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">grid_color</span></span><a class="headerlink" href="#src.classes.PlotConfig.grid_color" title="Permalink to this definition"></a></dt>
 <dd><p>color of grid lines</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.xtick_width">
-<span class="sig-name descname"><span class="pre">xtick_width</span></span><a class="headerlink" href="#src.classes.PlotConfig.xtick_width" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xtick_width</span></span><a class="headerlink" href="#src.classes.PlotConfig.xtick_width" title="Permalink to this definition"></a></dt>
 <dd><p>frequency of xticks</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.xtick_size">
-<span class="sig-name descname"><span class="pre">xtick_size</span></span><a class="headerlink" href="#src.classes.PlotConfig.xtick_size" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xtick_size</span></span><a class="headerlink" href="#src.classes.PlotConfig.xtick_size" title="Permalink to this definition"></a></dt>
 <dd><p>size of ticks on x axis</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.ytick_width">
-<span class="sig-name descname"><span class="pre">ytick_width</span></span><a class="headerlink" href="#src.classes.PlotConfig.ytick_width" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ytick_width</span></span><a class="headerlink" href="#src.classes.PlotConfig.ytick_width" title="Permalink to this definition"></a></dt>
 <dd><p>frequency of yticks</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.ytick_size">
-<span class="sig-name descname"><span class="pre">ytick_size</span></span><a class="headerlink" href="#src.classes.PlotConfig.ytick_size" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ytick_size</span></span><a class="headerlink" href="#src.classes.PlotConfig.ytick_size" title="Permalink to this definition"></a></dt>
 <dd><p>size of ticks on y axis</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.linewidth">
-<span class="sig-name descname"><span class="pre">linewidth</span></span><a class="headerlink" href="#src.classes.PlotConfig.linewidth" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">linewidth</span></span><a class="headerlink" href="#src.classes.PlotConfig.linewidth" title="Permalink to this definition"></a></dt>
 <dd><p>pixel width of line on plot</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.fontsize">
-<span class="sig-name descname"><span class="pre">fontsize</span></span><a class="headerlink" href="#src.classes.PlotConfig.fontsize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fontsize</span></span><a class="headerlink" href="#src.classes.PlotConfig.fontsize" title="Permalink to this definition"></a></dt>
 <dd><p>size of text labels</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.xtick_btm">
-<span class="sig-name descname"><span class="pre">xtick_btm</span></span><a class="headerlink" href="#src.classes.PlotConfig.xtick_btm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">xtick_btm</span></span><a class="headerlink" href="#src.classes.PlotConfig.xtick_btm" title="Permalink to this definition"></a></dt>
 <dd><p>toggles tick positions</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.ytick_left">
-<span class="sig-name descname"><span class="pre">ytick_left</span></span><a class="headerlink" href="#src.classes.PlotConfig.ytick_left" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ytick_left</span></span><a class="headerlink" href="#src.classes.PlotConfig.ytick_left" title="Permalink to this definition"></a></dt>
 <dd><p>toggle ytick position</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.show">
-<span class="sig-name descname"><span class="pre">show</span></span><a class="headerlink" href="#src.classes.PlotConfig.show" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">show</span></span><a class="headerlink" href="#src.classes.PlotConfig.show" title="Permalink to this definition"></a></dt>
 <dd><p>toggles showing plot on screen</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.PlotConfig.save">
-<span class="sig-name descname"><span class="pre">save</span></span><a class="headerlink" href="#src.classes.PlotConfig.save" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">save</span></span><a class="headerlink" href="#src.classes.PlotConfig.save" title="Permalink to this definition"></a></dt>
 <dd><p>toggles saving figure to file</p>
 </dd></dl>
 
@@ -996,29 +1048,32 @@ a distinct set of optical properties.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="src.classes.RTConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">RTConfig</span></span><a class="reference internal" href="_modules/src/classes.html#RTConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.RTConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.classes.</span></span><span class="sig-name descname"><span class="pre">RTConfig</span></span><a class="reference internal" href="_modules/src/classes.html#RTConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.classes.RTConfig" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Radiative transfer configuration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.RTConfig.aprx_type">
-<span class="sig-name descname"><span class="pre">aprx_type</span></span><a class="headerlink" href="#src.classes.RTConfig.aprx_type" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">aprx_type</span></span><a class="headerlink" href="#src.classes.RTConfig.aprx_type" title="Permalink to this definition"></a></dt>
 <dd><p>choice of two-stream approximation (0-2)</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.classes.RTConfig.delta">
-<span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#src.classes.RTConfig.delta" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#src.classes.RTConfig.delta" title="Permalink to this definition"></a></dt>
 <dd><p>Boolean to toggle delta transformation (0/1)</p>
 </dd></dl>
 
 </dd></dl>
 
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.column_OPs">
-<span id="src-column-ops-module"></span><h2>src.column_OPs module<a class="headerlink" href="#module-src.column_OPs" title="Permalink to this headline">¶</a></h2>
+<span id="src-column-ops-module"></span><h2>src.column_OPs module<a class="headerlink" href="#module-src.column_OPs" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.column_OPs.add_water_coating">
-<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">add_water_coating</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mac_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#add_water_coating"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.add_water_coating" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">add_water_coating</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mac_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#add_water_coating"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.add_water_coating" title="Permalink to this definition"></a></dt>
 <dd><p>Recalculates layer optical properties where grains are coated in liquid water.</p>
 <p>Feature originally added by Niklas Bohn. Where value of water exceeds value of rds
 for a given layer it is interpreted as having a liquid water film. in this case
@@ -1051,7 +1106,7 @@ mac_snw: updated mass absorption coefficient for each layer</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.column_OPs.correct_for_asphericity">
-<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">correct_for_asphericity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#correct_for_asphericity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.correct_for_asphericity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">correct_for_asphericity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#correct_for_asphericity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.correct_for_asphericity" title="Permalink to this definition"></a></dt>
 <dd><p>Adjusts asymmetry parameter for aspherical grains.</p>
 <p>Implements work from Fu et al. 2007 and He et al. 2017.
 Asymmetry parameter is adjusted to account for asphericity
@@ -1081,7 +1136,7 @@ for the defined shape of each layer.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.column_OPs.get_layer_OPs">
-<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">get_layer_OPs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#get_layer_OPs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.get_layer_OPs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">get_layer_OPs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#get_layer_OPs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.get_layer_OPs" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates optical properties (tauy, ssa, g) of ice column.</p>
 <p>Takes configuration from ice and model_config and uses the data
 to calculate the optical properties of the ice column. There are
@@ -1108,7 +1163,7 @@ mac_snw: mass absorption coefficient of each layer</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.column_OPs.mix_in_impurities">
-<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">mix_in_impurities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssa_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mac_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#mix_in_impurities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.mix_in_impurities" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.column_OPs.</span></span><span class="sig-name descname"><span class="pre">mix_in_impurities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssa_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mac_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/column_OPs.html#mix_in_impurities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.column_OPs.mix_in_impurities" title="Permalink to this definition"></a></dt>
 <dd><p>Updates optical properties for the presence of light absorbing particles.</p>
 <p>Takes the optical properties of the clean ice column and adjusts them for
 the presence of light absorbing particles in the ice. Each impurity is an
@@ -1142,40 +1197,49 @@ L_snw: mass of ice ine ach layer</p>
 </dl>
 </dd></dl>
 
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.display">
-<span id="src-display-module"></span><h2>src.display module<a class="headerlink" href="#module-src.display" title="Permalink to this headline">¶</a></h2>
+<span id="src-display-module"></span><h2>src.display module<a class="headerlink" href="#module-src.display" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.display.calculate_band_ratios">
-<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">calculate_band_ratios</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#calculate_band_ratios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.calculate_band_ratios" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">calculate_band_ratios</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#calculate_band_ratios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.calculate_band_ratios" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.display.display_out_data">
-<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">display_out_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#display_out_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.display_out_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">display_out_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#display_out_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.display_out_data" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.display.plot_albedo">
-<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">plot_albedo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#plot_albedo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.plot_albedo" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">plot_albedo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#plot_albedo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.plot_albedo" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.display.setup_axes">
-<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">setup_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#setup_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.setup_axes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.display.</span></span><span class="sig-name descname"><span class="pre">setup_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/display.html#setup_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.display.setup_axes" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="src-geometric-optics-ice-module">
-<h2>src.geometric_optics_ice module<a class="headerlink" href="#src-geometric-optics-ice-module" title="Permalink to this headline">¶</a></h2>
+<h2>src.geometric_optics_ice module<a class="headerlink" href="#src-geometric-optics-ice-module" title="Permalink to this headline"></a></h2>
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.mie_coated_water_spheres">
-<span id="src-mie-coated-water-spheres-module"></span><h2>src.mie_coated_water_spheres module<a class="headerlink" href="#module-src.mie_coated_water_spheres" title="Permalink to this headline">¶</a></h2>
+<span id="src-mie-coated-water-spheres-module"></span><h2>src.mie_coated_water_spheres module<a class="headerlink" href="#module-src.mie_coated_water_spheres" title="Permalink to this headline"></a></h2>
 <p>Copyright (C) 2020  Niklas Bohn (GFZ, &lt;<a class="reference external" href="mailto:nbohn&#37;&#52;&#48;gfz-potsdam&#46;de">nbohn<span>&#64;</span>gfz-potsdam<span>&#46;</span>de</a>&gt;),
 German Research Centre for Geosciences (GFZ, &lt;<a class="reference external" href="https://www.gfz-potsdam.de">https://www.gfz-potsdam.de</a>&gt;)</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.mie_coated_water_spheres.fill_nans_scipy1">
-<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">fill_nans_scipy1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">padata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pkind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#fill_nans_scipy1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.fill_nans_scipy1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">fill_nans_scipy1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">padata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pkind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#fill_nans_scipy1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.fill_nans_scipy1" title="Permalink to this definition"></a></dt>
 <dd><p>Interpolates data to fill nan values.</p>
 <p>Args:
 padata: source data with np.NaN values
@@ -1192,7 +1256,7 @@ pkind:  kind of interpolation (see scipy.interpolate.interp1d docs)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.mie_coated_water_spheres.miecoated">
-<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">miecoated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#miecoated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.miecoated" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">miecoated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#miecoated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.miecoated" title="Permalink to this definition"></a></dt>
 <dd><p>Mie Efficiencies of coated spheres.</p>
 <p>Calculates Mie efficiencies for given complex refractive-index
 ratios m1=m1’+im1”, m2= m2’+im2” of kernel
@@ -1227,7 +1291,7 @@ qratio: qb/qsca</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.mie_coated_water_spheres.miecoated_ab3">
-<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">miecoated_ab3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#miecoated_ab3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.miecoated_ab3" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">miecoated_ab3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#miecoated_ab3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.miecoated_ab3" title="Permalink to this definition"></a></dt>
 <dd><p>Computation of Mie Coefficients.</p>
 <p>Computes a_n, b_n, of orders n=1 to nmax, complex
 refractive index m=m’+im”, and size parameters
@@ -1253,7 +1317,7 @@ using the bottom equation on p. 483 for chi_prime (Matzler 2002).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.mie_coated_water_spheres.miecoated_driver">
-<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">miecoated_driver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rwater</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn_ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rf_ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn_water</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wvl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#miecoated_driver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.miecoated_driver" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.mie_coated_water_spheres.</span></span><span class="sig-name descname"><span class="pre">miecoated_driver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rwater</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn_ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rf_ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn_water</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wvl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/mie_coated_water_spheres.html#miecoated_driver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.mie_coated_water_spheres.miecoated_driver" title="Permalink to this definition"></a></dt>
 <dd><p>Driver for miecoated.</p>
 <p>Originally written by Christian Matzler
 (see Matzler, 2002). The driver convolves the efficiency factors with the particle
@@ -1281,12 +1345,15 @@ albedo</p></li>
 </dl>
 </dd></dl>
 
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.setup_snicar">
-<span id="src-setup-snicar-module"></span><h2>src.setup_snicar module<a class="headerlink" href="#module-src.setup_snicar" title="Permalink to this headline">¶</a></h2>
+<span id="src-setup-snicar-module"></span><h2>src.setup_snicar module<a class="headerlink" href="#module-src.setup_snicar" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.setup_snicar.build_classes">
-<span class="sig-prename descclassname"><span class="pre">src.setup_snicar.</span></span><span class="sig-name descname"><span class="pre">build_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/setup_snicar.html#build_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.setup_snicar.build_classes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.setup_snicar.</span></span><span class="sig-name descname"><span class="pre">build_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/setup_snicar.html#build_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.setup_snicar.build_classes" title="Permalink to this definition"></a></dt>
 <dd><p>Instantiates classes according to config in yaml file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1308,7 +1375,7 @@ display_config: instance of DisplayConfig class</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.setup_snicar.build_impurities_array">
-<span class="sig-prename descclassname"><span class="pre">src.setup_snicar.</span></span><span class="sig-name descname"><span class="pre">build_impurities_array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/setup_snicar.html#build_impurities_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.setup_snicar.build_impurities_array" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.setup_snicar.</span></span><span class="sig-name descname"><span class="pre">build_impurities_array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/setup_snicar.html#build_impurities_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.setup_snicar.build_impurities_array" title="Permalink to this definition"></a></dt>
 <dd><p>Creates an array of instances of Impurity.</p>
 <p>creates an array of impurities - each one an instance of Impurity with
 properties defined in yaml file.</p>
@@ -1327,7 +1394,7 @@ properties defined in yaml file.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.setup_snicar.setup_snicar">
-<span class="sig-prename descclassname"><span class="pre">src.setup_snicar.</span></span><span class="sig-name descname"><span class="pre">setup_snicar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/setup_snicar.html#setup_snicar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.setup_snicar.setup_snicar" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.setup_snicar.</span></span><span class="sig-name descname"><span class="pre">setup_snicar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/setup_snicar.html#setup_snicar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.setup_snicar.setup_snicar" title="Permalink to this definition"></a></dt>
 <dd><p>Builds impurity array and instances of all classes according to config in yaml file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1347,15 +1414,15 @@ display_config: instance of DisplayConfig class</p>
 </dl>
 </dd></dl>
 
-</section>
-<section id="src-snicar-driver-module">
-<h2>src.snicar_driver module<a class="headerlink" href="#src-snicar-driver-module" title="Permalink to this headline">¶</a></h2>
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.toon_rt_solver">
-<span id="src-toon-rt-solver-module"></span><h2>src.toon_rt_solver module<a class="headerlink" href="#module-src.toon_rt_solver" title="Permalink to this headline">¶</a></h2>
+<span id="src-toon-rt-solver-module"></span><h2>src.toon_rt_solver module<a class="headerlink" href="#module-src.toon_rt_solver" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.absorbed_fluxes">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">absorbed_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_net</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#absorbed_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.absorbed_fluxes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">absorbed_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_net</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#absorbed_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.absorbed_fluxes" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates energy absorbed in each layer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1377,12 +1444,12 @@ display_config: instance of DisplayConfig class</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.apply_smoothing_function">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">apply_smoothing_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#apply_smoothing_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.apply_smoothing_function" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">apply_smoothing_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">albedo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#apply_smoothing_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.apply_smoothing_function" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.boundary_condition">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">boundary_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_clm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#boundary_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.boundary_condition" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">boundary_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_clm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#boundary_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.boundary_condition" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates reflectance from underlying surface.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1404,7 +1471,7 @@ display_config: instance of DisplayConfig class</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.c_functions">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">c_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_clm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#c_functions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.c_functions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">c_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_clm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#c_functions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.c_functions" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate fluxes through column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1436,7 +1503,7 @@ C_mns_top: downwards flux from top of layer</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.calculate_matrix_coefficients">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">calculate_matrix_coefficients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#calculate_matrix_coefficients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.calculate_matrix_coefficients" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">calculate_matrix_coefficients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#calculate_matrix_coefficients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.calculate_matrix_coefficients" title="Permalink to this definition"></a></dt>
 <dd><p>calculates coefficients required for matrix calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1462,7 +1529,7 @@ e4: coefficient for matrix solution</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.calculate_optical_depth_of_column">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">calculate_optical_depth_of_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#calculate_optical_depth_of_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.calculate_optical_depth_of_column" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">calculate_optical_depth_of_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#calculate_optical_depth_of_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.calculate_optical_depth_of_column" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates colum,n optical thickness.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1483,7 +1550,7 @@ e4: coefficient for matrix solution</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.conservation_of_energy_check">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">conservation_of_energy_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_pls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#conservation_of_energy_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.conservation_of_energy_check" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">conservation_of_energy_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_pls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#conservation_of_energy_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.conservation_of_energy_check" title="Permalink to this definition"></a></dt>
 <dd><p>Checks there is no conservation of energy violation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1505,7 +1572,7 @@ e4: coefficient for matrix solution</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.delta_transformation">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">delta_transformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#delta_transformation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.delta_transformation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">delta_transformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#delta_transformation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.delta_transformation" title="Permalink to this definition"></a></dt>
 <dd><p>Applied Delta transformation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1529,7 +1596,7 @@ tau_star: delta scaled optical thickness</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.get_outputs">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">get_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_pls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#get_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.get_outputs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">get_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_pls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_top_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_btm_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_abs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#get_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.get_outputs" title="Permalink to this definition"></a></dt>
 <dd><p>Assimilates useful data into instance of Outputs class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1553,7 +1620,7 @@ tau_star: delta scaled optical thickness</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.layer_fluxes">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">layer_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_clm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GAMMA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_one</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#layer_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.layer_fluxes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">layer_fluxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_clm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GAMMA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_one</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#layer_fluxes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.layer_fluxes" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate total fluxes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1591,7 +1658,7 @@ intensity: mean intensity at base of each layer</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.matrix_solver">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">matrix_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_sfc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#matrix_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.matrix_solver" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">matrix_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_sfc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_btm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_pls_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_mns_top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#matrix_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.matrix_solver" title="Permalink to this definition"></a></dt>
 <dd><p>Execute matrix calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1621,7 +1688,7 @@ intensity: mean intensity at base of each layer</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.toon_solver">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">toon_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#toon_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.toon_solver" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">toon_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_snw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#toon_solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.toon_solver" title="Permalink to this definition"></a></dt>
 <dd><p>Driver func for toon radiative transfer solver.</p>
 <p>Makes function calls relating to radiative transfer solver in sequence and returns outputs.</p>
 <dl class="field-list simple">
@@ -1648,7 +1715,7 @@ intensity: mean intensity at base of each layer</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.two_stream_approximation">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">two_stream_approximation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#two_stream_approximation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.two_stream_approximation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">two_stream_approximation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_star</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#two_stream_approximation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.two_stream_approximation" title="Permalink to this definition"></a></dt>
 <dd><p>Applies two-stream approximation.</p>
 <p>Three 2-stream approximations are available: Eddington,
 Quadrature and hemispheric mean. The equations for each
@@ -1681,7 +1748,7 @@ mu_one: adjusted incidence angle</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.toon_rt_solver.validate_inputs_toon">
-<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">validate_inputs_toon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#validate_inputs_toon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.validate_inputs_toon" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.toon_rt_solver.</span></span><span class="sig-name descname"><span class="pre">validate_inputs_toon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/toon_rt_solver.html#validate_inputs_toon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.toon_rt_solver.validate_inputs_toon" title="Permalink to this definition"></a></dt>
 <dd><p>Checks input parameters are valid for Toon solver.</p>
 <p>Checks for known invalid data configurations that break the Toon solver.
 If invalid config is detected a ValueError is raised, halting execution.</p>
@@ -1701,12 +1768,15 @@ If invalid config is detected a ValueError is raised, halting execution.</p>
 </dl>
 </dd></dl>
 
+<p><br>
+<br>
+<br></p>
 </section>
 <section id="module-src.validate_inputs">
-<span id="src-validate-inputs-module"></span><h2>src.validate_inputs module<a class="headerlink" href="#module-src.validate_inputs" title="Permalink to this headline">¶</a></h2>
+<span id="src-validate-inputs-module"></span><h2>src.validate_inputs module<a class="headerlink" href="#module-src.validate_inputs" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.validate_inputs.validate_glacier_algae">
-<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_glacier_algae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_glacier_algae"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_glacier_algae" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_glacier_algae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_glacier_algae"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_glacier_algae" title="Permalink to this definition"></a></dt>
 <dd><p>Validates snow algae configuration.
 This includes warning the user that OPs are from literature and not yet field validated.
 Most importantly, checks that the units of the absorption coefficient and the cell
@@ -1726,7 +1796,7 @@ concentration match up (m2/cell -&gt; cells/mL, m2/mg -&gt; ppb)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.validate_inputs.validate_ice">
-<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_ice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_ice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_ice" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_ice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_ice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_ice" title="Permalink to this definition"></a></dt>
 <dd><p>Validates ice configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1743,7 +1813,7 @@ concentration match up (m2/cell -&gt; cells/mL, m2/mg -&gt; ppb)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.validate_inputs.validate_illumination">
-<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_illumination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_illumination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_illumination" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_illumination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_illumination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_illumination" title="Permalink to this definition"></a></dt>
 <dd><p>Validates illumination.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1760,7 +1830,7 @@ concentration match up (m2/cell -&gt; cells/mL, m2/mg -&gt; ppb)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.validate_inputs.validate_inputs">
-<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_inputs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rt_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">illumination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_inputs" title="Permalink to this definition"></a></dt>
 <dd><p>Checks all config to make sure all inputs are valid by calling out to:
 validate_snow_algae()
 validate_ilumination()
@@ -1783,7 +1853,7 @@ validate_ice()</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.validate_inputs.validate_model_config">
-<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_model_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_model_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_model_config" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_model_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_model_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_model_config" title="Permalink to this definition"></a></dt>
 <dd><p>Validates model configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1800,7 +1870,7 @@ validate_ice()</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.validate_inputs.validate_snow_algae">
-<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_snow_algae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_snow_algae"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_snow_algae" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.validate_inputs.</span></span><span class="sig-name descname"><span class="pre">validate_snow_algae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">impurities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/validate_inputs.html#validate_snow_algae"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.validate_inputs.validate_snow_algae" title="Permalink to this definition"></a></dt>
 <dd><p>Validates snow algae configuration.
 This includes warning the user that OPs are from literature and not yet field validated.
 Most importantly, checks that the units of the absorption coefficient and the cell
@@ -1819,28 +1889,37 @@ concentration match up (m2/cell -&gt; cells/mL, m2/mg -&gt; ppb)</p>
 </dd></dl>
 
 </section>
-<section id="module-src">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>
-</section>
 </section>
 
 
-      </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
-      
-        <p>
-        «&#160;&#160;<a href="modules.html">BioSNICAR_GO_PY</a>
-        &#160;&#160;::&#160;&#160;
-        <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="tests.html">tests package</a>&#160;&#160;»
-        </p>
-
-      </div>
-
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2022, Joseph Cook.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="BioSNICAR Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tests.html" class="btn btn-neutral float-right" title="tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  </body>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Cook.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>
