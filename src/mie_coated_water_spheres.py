@@ -1,8 +1,11 @@
+#!/usr/bin/python
+
 """
 Copyright (C) 2020  Niklas Bohn (GFZ, <nbohn@gfz-potsdam.de>),
 German Research Centre for Geosciences (GFZ, <https://www.gfz-potsdam.de>)
 """
-
+import sys
+sys.path.append("./src")
 import numpy as np
 import pandas as pd
 import xarray as xr

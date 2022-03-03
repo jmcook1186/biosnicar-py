@@ -1,4 +1,6 @@
-from pathlib import Path
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 import xarray as xr
 import yaml
 import numpy as np

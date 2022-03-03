@@ -4,7 +4,7 @@ tests
 tests.conftest
 --------------
 
-.. automodule:: tests.conftest
+.. autofunction:: tests.conftest
    :members:
    :undoc-members:
    :show-inheritance:
@@ -14,7 +14,7 @@ tests.conftest
 tests.test\_snicar
 ------------------
 
-.. automodule:: tests.test_snicar
+.. autofunction:: tests.test_snicar
    :members:
    :undoc-members:
    :show-inheritance:

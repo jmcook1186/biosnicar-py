@@ -66,7 +66,10 @@
            <div itemprop="articleBody">
              
   <h1>Source code for src.adding_doubling_solver</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">savgol_filter</span>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;./src&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">savgol_filter</span>
 <span class="kn">from</span> <span class="nn">setup_snicar</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">classes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -460,23 +463,7 @@
 
 <span class="sd">    Calculate the solar beam transmission, total transmission, and</span>
 <span class="sd">    reflectivity for diffuse radiation from below at interface lyr,</span>
-<span class="sd">    the top of the current layer lyr:</span>
-<span class="sd">    </span>
-<span class="sd">                    layers       interface</span>
-<span class="sd">    </span>
-<span class="sd">             ---------------------  lyr-1</span>
-<span class="sd">                      lyr-1</span>
-<span class="sd">             ---------------------  lyr</span>
-<span class="sd">                       lyr</span>
-<span class="sd">             ---------------------</span>
-<span class="sd">       note that we ignore refraction between sea ice and underlying substrate:</span>
-<span class="sd">    </span>
-<span class="sd">                    layers       interface</span>
-<span class="sd">    </span>
-<span class="sd">             ---------------------  lyr-1</span>
-<span class="sd">                      lyr-1</span>
-<span class="sd">             ---------------------  lyr</span>
-<span class="sd">             \\\\\\\ R_sfc \\\\\\\</span>
+<span class="sd">    the top of the current layer lyr.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lyr: integer representing the index of the current layer (0 at top)</span>
@@ -800,15 +787,7 @@
 
 <span class="sd">    Compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation</span>
 <span class="sd">    for layers below by adding succesive layers starting from the</span>
-<span class="sd">    underlying ice and working upwards:</span>
-
-<span class="sd">                  layers       interface</span>
-
-<span class="sd">           ---------------------  lyr</span>
-<span class="sd">                     lyr</span>
-<span class="sd">           ---------------------  lyr+1</span>
-<span class="sd">                    lyr+1</span>
-<span class="sd">           ---------------------</span>
+<span class="sd">    underlying ice and working upwards.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model_config: instance of ModelConfig class</span>
@@ -824,7 +803,6 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        rupdir: upwards flux direct</span>
 <span class="sd">        rupdif: upwards flux diffuse</span>
-
 
 <span class="sd">    &quot;&quot;&quot;</span>
 

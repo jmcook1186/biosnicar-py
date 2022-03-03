@@ -25,7 +25,7 @@ src.bubble\_reff\_calculator module
 src.classes module
 ------------------
 
-.. autoclass:: src.classes
+.. automodule:: src.classes
    :members:
    :undoc-members:
    :show-inheritance:

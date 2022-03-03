@@ -1,3 +1,6 @@
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 from scipy.signal import savgol_filter
 from setup_snicar import *
 from classes import *

@@ -1,6 +1,9 @@
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 import yaml
 from classes import *
-import csv
+
 
 
 def setup_snicar():

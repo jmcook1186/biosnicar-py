@@ -1,3 +1,6 @@
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 from scipy.signal import savgol_filter
 from setup_snicar import *
 from classes import *
@@ -392,23 +395,7 @@ def calc_reflection_transmission_from_top(
 
     Calculate the solar beam transmission, total transmission, and
     reflectivity for diffuse radiation from below at interface lyr,
-    the top of the current layer lyr:
-    
-                    layers       interface
-    
-             ---------------------  lyr-1
-                      lyr-1
-             ---------------------  lyr
-                       lyr
-             ---------------------
-       note that we ignore refraction between sea ice and underlying substrate:
-    
-                    layers       interface
-    
-             ---------------------  lyr-1
-                      lyr-1
-             ---------------------  lyr
-             \\\\\\\ R_sfc \\\\\\\
+    the top of the current layer lyr.
 
     Args:
         lyr: integer representing the index of the current layer (0 at top)
@@ -732,15 +719,7 @@ def calc_reflection_below(
 
     Compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation
     for layers below by adding succesive layers starting from the
-    underlying ice and working upwards:
-
-                  layers       interface
-
-           ---------------------  lyr
-                     lyr
-           ---------------------  lyr+1
-                    lyr+1
-           ---------------------
+    underlying ice and working upwards.
 
     Args:
         model_config: instance of ModelConfig class
@@ -756,7 +735,6 @@ def calc_reflection_below(
     Returns:
         rupdir: upwards flux direct
         rupdif: upwards flux diffuse
-
 
     """
 

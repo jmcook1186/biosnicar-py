@@ -1,3 +1,6 @@
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 from classes import *
 import matplotlib.pyplot as plt
 import numpy as np
