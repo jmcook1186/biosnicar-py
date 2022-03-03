@@ -1,6 +1,8 @@
 # Minimal makefile for Sphinx documentation
 #
-
+github:
+	@make html
+	@cp -a build/html/. ../docs
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
