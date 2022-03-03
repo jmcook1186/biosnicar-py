@@ -17,10 +17,7 @@ The optical properties are calculated using a parameterization of geometric opti
 calculations (Macke et al., JAS, 1996).
 
 
-
-
-
-There are no user defined inouts for the preprocessing function, it can simply be
+There are no user defined inputs for the preprocessing function, it can simply be
 run as
 
 reals, imags, wavelengths = preprocess()
@@ -56,8 +53,8 @@ import pandas as pd
 import xarray as xr
 
 # Set paths
-SAVEPATH = "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/480band/"
-DATAPATH = "/home/joe/Code/BioSNICAR_GO_PY/Data/rfidx_ice.nc"
+SAVEPATH = "./Data/GO_files/480band/"
+DATAPATH = "./Data/rfidx_ice.nc"
 RI_SOURCE = 2
 
 
@@ -400,25 +397,25 @@ def net_cdf_updater(
 # FUNCTON CALLS
 # --------------------------------------------------------------------------------------
 
-reals, imags, wavelengths = preprocess_RI(RI_SOURCE, DATAPATH)
+# reals, imags, wavelengths = preprocess_RI(RI_SOURCE, DATAPATH)
 
-for side_length in np.arange(2000, 11000, 1000):
-    for depth in np.arange(2000, 31000, 1000):
+# for side_length in np.arange(2000, 11000, 1000):
+#     for depth in np.arange(2000, 31000, 1000):
 
-        (
-            g_list,
-            ssa_list,
-            mac_list,
-            depth,
-            side_length,
-            diameter,
-        ) = calc_optical_params(
-            side_length, depth, reals, imags, wavelengths, plots=False, report_dims=True
-        )
+#         (
+#             g_list,
+#             ssa_list,
+#             mac_list,
+#             depth,
+#             side_length,
+#             diameter,
+#         ) = calc_optical_params(
+#             side_length, depth, reals, imags, wavelengths, plots=False, report_dims=True
+#         )
 
-        net_cdf_updater(
-            RI_SOURCE, SAVEPATH, g_list, ssa_list, mac_list, depth, side_length, 917
-        )
+#         net_cdf_updater(
+#             RI_SOURCE, SAVEPATH, g_list, ssa_list, mac_list, depth, side_length, 917
+#         )
 
 
 if __name__ == '__main__':

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.geometric_optics_ice &mdash; BioSNICAR 2.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BioSNICAR
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../theoretical-background.html">Theoretical Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-to-use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../inputs.html">Input Configuration Guide for BioSNICAR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">BioSNICAR Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BioSNICAR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>src.geometric_optics_ice</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.geometric_optics_ice</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+
+<span class="sd">&quot;&quot;&quot;Calculates optical properties of large hexagonal ice grains.</span>
+
+<span class="sd">This file calculates the optial properties (single scattering albedo, assymetry</span>
+<span class="sd">parameter, mass absorption coefficient and extinction, scattering and absorption cross</span>
+<span class="sd">sections) for ice grains shaped as arbitrarily large hexagonal plates or columns.</span>
+<span class="sd">The optical propertiesare then saved into netCDF files in the correct format for</span>
+<span class="sd">loading into BioSNICAR.</span>
+
+<span class="sd">The main function calc_optical_params() is based upon the equations of</span>
+<span class="sd">Diedenhoven et al (2014) who provided a python script as supplementary material</span>
+<span class="sd">for their paper. The original code can be downloaded from:</span>
+<span class="sd">https://www.researchgate.net/publication/259821840_ice_OP_parameterization</span>
+
+<span class="sd">The optical properties are calculated using a parameterization of geometric optics</span>
+<span class="sd">calculations (Macke et al., JAS, 1996).</span>
+
+
+<span class="sd">There are no user defined inputs for the preprocessing function, it can simply be</span>
+<span class="sd">run as</span>
+
+<span class="sd">reals, imags, wavelengths = preprocess()</span>
+
+<span class="sd">The calc_optical_params() fnction takes several inputs. reals, imags and wavelengths</span>
+<span class="sd">are output by preprocess() and side_length and depth are user defined. These are the two</span>
+<span class="sd">parameters that control the dimensions of the ice crystals. Side_length is the length</span>
+<span class="sd">in microns of one side of the hexagnal face of the crystal, depth is the column length</span>
+<span class="sd">also in microns describing the z dimension. The code then calculates volume, apotherm,</span>
+<span class="sd">aspect ratio, area etc inside the function. The optical parameters are returned.</span>
+<span class="sd">Optional plots and printed values for the optical params are provided by setting</span>
+<span class="sd">plots to true and the dimensions of the crystals can be reported by setting</span>
+<span class="sd">report_dims to true in the function call.</span>
+
+<span class="sd">The final function, net_cdf_updater() is used to dump the optical parameters and</span>
+<span class="sd">metadata into a netcdf file and save it into the working directory to be used as</span>
+<span class="sd">a lookup library for the two-stream radiative transfer model BoSNICAR_GO.</span>
+
+<span class="sd">The function calls are provided at the bottom of this script in a loop, where the</span>
+<span class="sd">user can define the range of side lengths and depths to be looped over.</span>
+
+<span class="sd">NOTE: The extinction coefficient in the current implementation is 2 for all size</span>
+<span class="sd">parameters as assumed in the conventional geometric optics approximation.</span>
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;./src&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="c1"># Set paths</span>
+<span class="n">SAVEPATH</span> <span class="o">=</span> <span class="s2">&quot;./Data/GO_files/480band/&quot;</span>
+<span class="n">DATAPATH</span> <span class="o">=</span> <span class="s2">&quot;./Data/rfidx_ice.nc&quot;</span>
+<span class="n">RI_SOURCE</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<div class="viewcode-block" id="preprocess_RI"><a class="viewcode-back" href="../../src.html#src.geometric_optics_ice.preprocess_RI">[docs]</a><span class="k">def</span> <span class="nf">preprocess_RI</span><span class="p">(</span><span class="n">ri_source</span><span class="p">,</span> <span class="n">path_to_ri</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Preprocessing of wavelength and RI data.</span>
+
+<span class="sd">    Preprocessing function that ensures the wavelengths and real/imaginary </span>
+<span class="sd">    parts of the refractive index for ice is provided in the correct waveband and correct </span>
+<span class="sd">    spectral resolution to interface with BioSNICAR. The refractive indices are taken </span>
+<span class="sd">    from Warren and Brandt 2008.</span>
+
+<span class="sd">    Grabs appropriates wavelengths, real and imaginary parts of ice</span>
+<span class="sd">    refractive index. The source of the refractive index data is</span>
+<span class="sd">    controlled by var &quot;ri_source&quot; where 0 = Warren 1984, 1 = Warren 2008</span>
+<span class="sd">    and 2 = Picard 2016.</span>
+
+<span class="sd">    These are then passed as numpy arrays to the Geometrical Optics function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ri_source: choice of refractive index</span>
+<span class="sd">        path_to_ri: path to directory containing RI data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        reals: numpy array of real parts of RI by wavelength</span>
+<span class="sd">        imags: numpy array of imaginary parts of RI by wavelength</span>
+<span class="sd">        wavelengths: numpy array of wavelengths (um)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">refidx</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">path_to_ri</span><span class="p">)</span>
+    <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;wvl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">ri_source</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">reals</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;re_Wrn84&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">imags</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;im_Wrn84&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">elif</span> <span class="n">ri_source</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">reals</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;re_Wrn08&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">imags</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;im_Wrn08&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">elif</span> <span class="n">ri_source</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">reals</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;re_Pic16&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">imags</span> <span class="o">=</span> <span class="n">refidx</span><span class="p">[</span><span class="s2">&quot;im_Pic16&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">reals</span><span class="p">,</span> <span class="n">imags</span><span class="p">,</span> <span class="n">wavelengths</span></div>
+
+
+<div class="viewcode-block" id="calc_optical_params"><a class="viewcode-back" href="../../src.html#src.geometric_optics_ice.calc_optical_params">[docs]</a><span class="k">def</span> <span class="nf">calc_optical_params</span><span class="p">(</span>
+    <span class="n">side_length</span><span class="p">,</span>
+    <span class="n">depth</span><span class="p">,</span>
+    <span class="n">reals</span><span class="p">,</span>
+    <span class="n">imags</span><span class="p">,</span>
+    <span class="n">wavelengths</span><span class="p">,</span>
+    <span class="n">plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">report_dims</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates single scattering optical properties.</span>
+
+<span class="sd">    Van Diedenhoven&#39;s parameterisation is used to calculate</span>
+<span class="sd">    the single scatterign optical properties of hexagonal</span>
+<span class="sd">    ice columns of given dimensions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        side_length: length of side of hexagonal face (um)</span>
+<span class="sd">        depth: length of hexagonal column (um)</span>
+<span class="sd">        reals: numpy array of real parts of RI by wavelength</span>
+<span class="sd">        imags: numpy array of imaginary parts of RI by wavelength</span>
+<span class="sd">        wavelengths: numpy array of wavelenmgths (um)</span>
+<span class="sd">        plots: Boolean to toggle plotting OPs</span>
+<span class="sd">        report_dims: Boolean to toggle printing OP data to terminal</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        g_list: assymetry parameter</span>
+<span class="sd">        ssa_list: single scattering albedo</span>
+<span class="sd">        mac_list: mass absorption coefficient</span>
+<span class="sd">        depth: length of hexagional column (um)</span>
+<span class="sd">        side_length: length of side of hexagonal face (um)</span>
+<span class="sd">        diameter: diameter across hexaginal face.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ssa_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">g_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">abs_xs_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mac_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">V</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">side_length</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">depth</span>  <span class="c1"># volume</span>
+    <span class="n">Area_total</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">3</span> <span class="o">*</span> <span class="n">side_length</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">side_length</span> <span class="o">+</span> <span class="n">depth</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># total surface area</span>
+    <span class="n">Area</span> <span class="o">=</span> <span class="n">Area_total</span> <span class="o">/</span> <span class="mi">4</span>  <span class="c1"># projected area</span>
+    <span class="n">apothem</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">Area</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+        <span class="n">depth</span> <span class="o">*</span> <span class="mi">6</span>
+    <span class="p">)</span>  <span class="c1"># apothem is distance from centre point to midpoint of a side for hexagon</span>
+    <span class="n">diameter</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">apothem</span>  <span class="c1"># midpoint of one side to midpoint of opposite side</span>
+
+    <span class="n">ar</span> <span class="o">=</span> <span class="n">depth</span> <span class="o">/</span> <span class="n">side_length</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">),</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="n">mr</span> <span class="o">=</span> <span class="n">reals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">mi</span> <span class="o">=</span> <span class="n">imags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">wl</span> <span class="o">=</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># ------------------------------------------------</span>
+        <span class="c1"># ---------- input tables (see Figs. 4 and 7) ----</span>
+        <span class="c1"># ------------------------------------------------</span>
+        <span class="c1"># SSA parameterization</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.457593</span><span class="p">,</span> <span class="mf">20.9738</span><span class="p">]</span>  <span class="c1"># for ar=1</span>
+
+        <span class="c1"># SSA correction for AR != 1 (Table 2)</span>
+        <span class="n">nc1</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">nc2</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">c_ij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc1</span> <span class="o">*</span> <span class="n">nc2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nc1</span><span class="p">,</span> <span class="n">nc2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="c1">#   ---------- Plates ----------</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.000527060</span><span class="p">,</span> <span class="mf">0.309748</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.58028</span><span class="p">]</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00867596</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.650188</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.34949</span><span class="p">]</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0382627</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.198214</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.674495</span><span class="p">]</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0108558</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0356019</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.141318</span><span class="p">]</span>
+        <span class="c1">#   --------- Columns ----------</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.000125752</span><span class="p">,</span> <span class="mf">0.387729</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.38400</span><span class="p">]</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00797282</span><span class="p">,</span> <span class="mf">0.456133</span><span class="p">,</span> <span class="mf">1.29446</span><span class="p">]</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00122800</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.137621</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.05868</span><span class="p">]</span>
+        <span class="n">c_ij</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.000212673</span><span class="p">,</span> <span class="mf">0.0364655</span><span class="p">,</span> <span class="mf">0.339646</span><span class="p">]</span>
+
+        <span class="c1"># diffraction g parameterization</span>
+        <span class="n">b_gdiffr</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.822315</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.20125</span><span class="p">,</span> <span class="mf">0.996653</span><span class="p">]</span>
+
+        <span class="c1"># raytracing g parameterization ar=1</span>
+        <span class="n">p_a_eq_1</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.780550</span><span class="p">,</span> <span class="mf">0.00510997</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0878268</span><span class="p">,</span> <span class="mf">0.111549</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.282453</span><span class="p">]</span>
+
+        <span class="c1"># ---- g correction for AR != 1 (Also applied to AR=1 as plate) (Table 3)</span>
+        <span class="n">nq1</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">nq2</span> <span class="o">=</span> <span class="mi">7</span>
+        <span class="n">q_ij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nq1</span> <span class="o">*</span> <span class="n">nq2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nq1</span><span class="p">,</span> <span class="n">nq2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="c1">#   ---------- Plates ----------</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.00133106</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000782076</span><span class="p">,</span> <span class="mf">0.00205422</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0408343</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00162734</span><span class="p">,</span> <span class="mf">0.0240927</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.525289</span><span class="p">,</span> <span class="mf">0.418336</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.818352</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.443151</span><span class="p">,</span> <span class="mf">1.53726</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.40399</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00852515</span><span class="p">,</span> <span class="mf">1.88625</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.64651</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.123100</span><span class="p">,</span> <span class="mf">0.983854</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.29188</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.0376917</span><span class="p">,</span> <span class="mf">0.187708</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.235359</span><span class="p">]</span>
+        <span class="c1">#   ---------- Columns ----------</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.00189096</span><span class="p">,</span> <span class="mf">0.000637430</span><span class="p">,</span> <span class="mf">0.00157383</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00981029</span><span class="p">,</span> <span class="mf">0.0409220</span><span class="p">,</span> <span class="mf">0.00908004</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.732647</span><span class="p">,</span> <span class="mf">0.0539796</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.665773</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.59927</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.500870</span><span class="p">,</span> <span class="mf">1.86375</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.54047</span><span class="p">,</span> <span class="mf">0.692547</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.05390</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.707187</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.374173</span><span class="p">,</span> <span class="mf">1.01287</span><span class="p">]</span>
+        <span class="n">q_ij</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.125276</span><span class="p">,</span> <span class="mf">0.0721572</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.186466</span><span class="p">]</span>
+
+        <span class="c1"># --------- refractive index correction of asymmetry parameter</span>
+        <span class="n">c_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">c_g</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.96025050</span><span class="p">,</span> <span class="mf">0.42918060</span><span class="p">]</span>
+        <span class="n">c_g</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.94179149</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.21600979</span><span class="p">]</span>
+        <span class="c1"># ---- correction for absorption</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.00014</span><span class="p">,</span> <span class="mf">0.666094</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.535922</span><span class="p">,</span> <span class="o">-</span><span class="mf">11.7454</span><span class="p">,</span> <span class="mf">72.3600</span><span class="p">,</span> <span class="o">-</span><span class="mf">109.940</span><span class="p">]</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.213038</span><span class="p">,</span> <span class="mf">0.204016</span><span class="p">]</span>
+
+        <span class="c1"># -------- selector for plates or columns</span>
+        <span class="k">if</span> <span class="n">ar</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">col_pla</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># columns</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_pla</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># plates &amp; compacts</span>
+
+        <span class="c1"># ------------------------------------------------</span>
+        <span class="c1"># ------------ Size parameters -------------------</span>
+        <span class="c1"># ------------------------------------------------</span>
+
+        <span class="c1"># --- absorption size parameter (Fig. 4, box 1)</span>
+        <span class="n">Chi_abs</span> <span class="o">=</span> <span class="n">mi</span> <span class="o">/</span> <span class="n">wl</span> <span class="o">*</span> <span class="n">V</span> <span class="o">/</span> <span class="n">Area</span>
+
+        <span class="c1"># ----- scattering size parameter (Fig. 7, box 1)</span>
+        <span class="n">Chi_scat</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Area</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="n">wl</span>
+
+        <span class="c1"># ------------------------------------------------</span>
+        <span class="c1"># ------------ SINGLE SCATTERING ALBEDO ----------</span>
+        <span class="c1"># ------------------------------------------------</span>
+
+        <span class="k">if</span> <span class="n">Chi_abs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">w_1</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">Chi_abs</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">)</span>  <span class="c1"># for AR=1 (Fig. 4, box 2)</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc2</span><span class="p">):</span>
+                <span class="n">l</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">c_ij</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">col_pla</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="o">**</span> <span class="n">i</span>  <span class="c1"># (Fig. 4, box 3)</span>
+            <span class="n">D_w</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Chi_abs</span><span class="p">)</span> <span class="o">-</span> <span class="n">l</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="o">/</span> <span class="p">(</span><span class="n">Chi_abs</span> <span class="o">*</span> <span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+            <span class="p">)</span>  <span class="c1"># (Fig. 4, box 3)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">w_1</span> <span class="o">+</span> <span class="n">D_w</span>  <span class="c1"># (Fig. 4, box 4)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># ------------------------------------------------</span>
+        <span class="c1"># --------------- ASYMMETRY PARAMETER ------------</span>
+        <span class="c1"># ------------------------------------------------</span>
+
+        <span class="c1"># diffraction g</span>
+        <span class="n">g_diffr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">b_gdiffr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">b_gdiffr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Chi_scat</span><span class="p">))</span> <span class="o">+</span> <span class="n">b_gdiffr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">)</span>  <span class="c1"># (Fig. 7, box 2)</span>
+        <span class="n">g_diffr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">g_diffr</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+
+        <span class="c1"># raytracing g at 862 nm</span>
+        <span class="n">g_1</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_a_eq_1</span><span class="p">)):</span>
+            <span class="n">g_1</span> <span class="o">+=</span> <span class="n">p_a_eq_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta</span><span class="o">**</span><span class="n">i</span>  <span class="c1"># (Fig. 7, box 3)</span>
+
+        <span class="n">p_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nq1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nq2</span><span class="p">):</span>
+            <span class="n">p_delta</span> <span class="o">+=</span> <span class="n">q_ij</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">col_pla</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="o">**</span> <span class="n">i</span>  <span class="c1"># (Fig. 7, box 4)</span>
+        <span class="n">Dg</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nq1</span><span class="p">):</span>
+            <span class="n">Dg</span> <span class="o">+=</span> <span class="n">p_delta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta</span><span class="o">**</span><span class="n">i</span>  <span class="c1"># (Fig. 7, box 4)</span>
+        <span class="n">g_rt</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">g_1</span> <span class="o">+</span> <span class="n">Dg</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span>  <span class="c1"># (Fig. 7, box 5)</span>
+
+        <span class="c1"># --------- refractive index correction of asymmetry parameter (Fig. 7, box 6)</span>
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="n">c_g</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col_pla</span><span class="p">]</span> <span class="o">+</span> <span class="n">c_g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col_pla</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+        <span class="n">mr1</span> <span class="o">=</span> <span class="mf">1.3038</span>  <span class="c1"># reference value @ 862 nm band</span>
+        <span class="n">C_m</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">mr1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mr1</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">mr</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mr</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># abs function added according to corrigendum to the original paper</span>
+
+        <span class="c1"># ---- correction for absorption (Fig. 7, box 7)</span>
+        <span class="k">if</span> <span class="n">Chi_abs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">C_w0</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)):</span>
+                <span class="n">C_w0</span> <span class="o">+=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">**</span> <span class="n">i</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="p">[</span><span class="n">col_pla</span><span class="p">]</span>
+            <span class="n">C_w1</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="mf">1.0</span>
+            <span class="n">C_w</span> <span class="o">=</span> <span class="n">C_w0</span> <span class="o">*</span> <span class="n">C_w1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">C_w</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># raytracing g at required wavelength</span>
+        <span class="n">g_rt_corr</span> <span class="o">=</span> <span class="n">g_rt</span> <span class="o">*</span> <span class="n">C_m</span> <span class="o">*</span> <span class="n">C_w</span>  <span class="c1"># (Fig. 7, box 9)</span>
+
+        <span class="c1"># ----- Calculate total asymmetry parameter and check g_tot &lt;= 1 (Fig. 7, box 9)</span>
+        <span class="n">g_tot</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_rt_corr</span> <span class="o">+</span> <span class="n">g_diffr</span><span class="p">)</span>
+        <span class="n">g_tot</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">g_tot</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+
+        <span class="n">absXS</span> <span class="o">=</span> <span class="n">Area</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">mi</span> <span class="o">*</span> <span class="n">V</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">Area</span> <span class="o">*</span> <span class="n">wl</span><span class="p">)))</span>
+        <span class="n">MAC</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">absXS</span> <span class="o">/</span> <span class="n">V</span> <span class="o">*</span> <span class="mi">914</span>
+        <span class="p">)</span>  <span class="c1"># divide by volume*mass to give mass absorption coefficient</span>
+
+        <span class="n">ssa_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">g_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_tot</span><span class="p">)</span>
+        <span class="n">abs_xs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">absXS</span><span class="p">)</span>
+        <span class="n">mac_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MAC</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plots</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">ssa_list</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;SSA&quot;</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span>
+            <span class="s2">&quot;Wavelength (um)&quot;</span>
+        <span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">g_list</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Assymetry Parameter&quot;</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span>
+            <span class="s2">&quot;Wavelength (um)&quot;</span>
+        <span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">mac_list</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span>
+            <span class="s2">&quot;Mass Absorption Cross Section&quot;</span>
+        <span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Wavelength (um)&quot;</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">report_dims</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Width of hexagonal plane = &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">diameter</span> <span class="o">/</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot; (cm)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;depth of hexagonal column = &quot;</span><span class="p">,</span> <span class="n">depth</span> <span class="o">/</span> <span class="mi">10000</span><span class="p">,</span> <span class="s2">&quot; (cm)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;aspect ratio = &quot;</span><span class="p">,</span> <span class="n">ar</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ice crystal volume = &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">V</span> <span class="o">*</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot; (cm^3)&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">g_list</span><span class="p">,</span> <span class="n">ssa_list</span><span class="p">,</span> <span class="n">mac_list</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">side_length</span><span class="p">,</span> <span class="n">diameter</span></div>
+
+
+<div class="viewcode-block" id="net_cdf_updater"><a class="viewcode-back" href="../../src.html#src.geometric_optics_ice.net_cdf_updater">[docs]</a><span class="k">def</span> <span class="nf">net_cdf_updater</span><span class="p">(</span>
+    <span class="n">ri_source</span><span class="p">,</span> <span class="n">savepath</span><span class="p">,</span> <span class="n">g_list</span><span class="p">,</span> <span class="n">ssa_list</span><span class="p">,</span> <span class="n">mac_list</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">side_length</span><span class="p">,</span> <span class="n">density</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Updates a template NetCDF file with new OP data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ri_source: chocie of refractive index file</span>
+<span class="sd">        savepath: path to save output data</span>
+<span class="sd">        g_list: asymmetry parameter</span>
+<span class="sd">        ssa_list: single scattering albedo</span>
+<span class="sd">        mac_list: mass absorption coefficient</span>
+<span class="sd">        depth: length of hexagional column (um)</span>
+<span class="sd">        side_length: length of side of hexagonal face (um)</span>
+<span class="sd">        density: density of material in kg/m3.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None but saves NetCDF file to savepath</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">filepath_in</span> <span class="o">=</span> <span class="n">savepath</span>
+    <span class="n">mac_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">mac_list</span><span class="p">)</span>
+    <span class="n">ssa_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">ssa_list</span><span class="p">)</span>
+    <span class="n">g_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">g_list</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ri_source</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">stb1</span> <span class="o">=</span> <span class="s2">&quot;ice_Wrn84/&quot;</span>
+        <span class="n">stb2</span> <span class="o">=</span> <span class="s2">&quot;ice_Wrn84_&quot;</span>
+
+    <span class="k">elif</span> <span class="n">ri_source</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">stb1</span> <span class="o">=</span> <span class="s2">&quot;ice_Wrn08/&quot;</span>
+        <span class="n">stb2</span> <span class="o">=</span> <span class="s2">&quot;ice_Wrn08_&quot;</span>
+
+    <span class="k">elif</span> <span class="n">ri_source</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">stb1</span> <span class="o">=</span> <span class="s2">&quot;ice_Pic16/&quot;</span>
+        <span class="n">stb2</span> <span class="o">=</span> <span class="s2">&quot;ice_Pic16_&quot;</span>
+
+    <span class="n">icefile</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">icefile</span><span class="p">[</span><span class="s2">&quot;asm_prm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g_in</span>
+    <span class="n">icefile</span><span class="p">[</span><span class="s2">&quot;ss_alb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ssa_in</span>
+    <span class="n">icefile</span><span class="p">[</span><span class="s2">&quot;ext_cff_mss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mac_in</span>
+    <span class="n">icefile</span> <span class="o">=</span> <span class="n">icefile</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;medium_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;air&quot;</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+        <span class="s2">&quot;description&quot;</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;Optical properties for ice grain: hexagonal column of side</span>
+<span class="s2">    length </span><span class="si">{</span><span class="n">side_length</span><span class="si">}</span><span class="s2">um and length </span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">um&quot;&quot;&quot;</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;psd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;monodisperse&quot;</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;side_length_um&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">depth</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;density_kg_m3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+        <span class="s2">&quot;origin&quot;</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Optical properties derived from geometrical optics calculations&quot;</span>
+    <span class="n">icefile</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">filepath_in</span> <span class="o">+</span> <span class="n">stb1</span> <span class="o">+</span> <span class="n">stb2</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.nc&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">side_length</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">depth</span><span class="p">)))</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span></div>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># FUNCTON CALLS</span>
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+<span class="c1"># reals, imags, wavelengths = preprocess_RI(RI_SOURCE, DATAPATH)</span>
+
+<span class="c1"># for side_length in np.arange(2000, 11000, 1000):</span>
+<span class="c1">#     for depth in np.arange(2000, 31000, 1000):</span>
+
+<span class="c1">#         (</span>
+<span class="c1">#             g_list,</span>
+<span class="c1">#             ssa_list,</span>
+<span class="c1">#             mac_list,</span>
+<span class="c1">#             depth,</span>
+<span class="c1">#             side_length,</span>
+<span class="c1">#             diameter,</span>
+<span class="c1">#         ) = calc_optical_params(</span>
+<span class="c1">#             side_length, depth, reals, imags, wavelengths, plots=False, report_dims=True</span>
+<span class="c1">#         )</span>
+
+<span class="c1">#         net_cdf_updater(</span>
+<span class="c1">#             RI_SOURCE, SAVEPATH, g_list, ssa_list, mac_list, depth, side_length, 917</span>
+<span class="c1">#         )</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Cook.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

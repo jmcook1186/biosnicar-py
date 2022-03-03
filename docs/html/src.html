@@ -48,7 +48,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-src.classes">src.classes module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.column_OPs">src.column_OPs module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.display">src.display module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#src-geometric-optics-ice-module">src.geometric_optics_ice module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.geometric_optics_ice">src.geometric_optics_ice module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.mie_coated_water_spheres">src.mie_coated_water_spheres module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.setup_snicar">src.setup_snicar module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.toon_rt_solver">src.toon_rt_solver module</a></li>
@@ -1176,8 +1176,126 @@ L_snw: mass of ice ine ach layer</p>
 <dd></dd></dl>
 
 </section>
-<section id="src-geometric-optics-ice-module">
-<h2>src.geometric_optics_ice module<a class="headerlink" href="#src-geometric-optics-ice-module" title="Permalink to this headline"></a></h2>
+<section id="module-src.geometric_optics_ice">
+<span id="src-geometric-optics-ice-module"></span><h2>src.geometric_optics_ice module<a class="headerlink" href="#module-src.geometric_optics_ice" title="Permalink to this headline"></a></h2>
+<p>Calculates optical properties of large hexagonal ice grains.</p>
+<p>This file calculates the optial properties (single scattering albedo, assymetry
+parameter, mass absorption coefficient and extinction, scattering and absorption cross
+sections) for ice grains shaped as arbitrarily large hexagonal plates or columns.
+The optical propertiesare then saved into netCDF files in the correct format for
+loading into BioSNICAR.</p>
+<p>The main function calc_optical_params() is based upon the equations of
+Diedenhoven et al (2014) who provided a python script as supplementary material
+for their paper. The original code can be downloaded from:
+<a class="reference external" href="https://www.researchgate.net/publication/259821840_ice_OP_parameterization">https://www.researchgate.net/publication/259821840_ice_OP_parameterization</a></p>
+<p>The optical properties are calculated using a parameterization of geometric optics
+calculations (Macke et al., JAS, 1996).</p>
+<p>There are no user defined inputs for the preprocessing function, it can simply be
+run as</p>
+<p>reals, imags, wavelengths = preprocess()</p>
+<p>The calc_optical_params() fnction takes several inputs. reals, imags and wavelengths
+are output by preprocess() and side_length and depth are user defined. These are the two
+parameters that control the dimensions of the ice crystals. Side_length is the length
+in microns of one side of the hexagnal face of the crystal, depth is the column length
+also in microns describing the z dimension. The code then calculates volume, apotherm,
+aspect ratio, area etc inside the function. The optical parameters are returned.
+Optional plots and printed values for the optical params are provided by setting
+plots to true and the dimensions of the crystals can be reported by setting
+report_dims to true in the function call.</p>
+<p>The final function, net_cdf_updater() is used to dump the optical parameters and
+metadata into a netcdf file and save it into the working directory to be used as
+a lookup library for the two-stream radiative transfer model BoSNICAR_GO.</p>
+<p>The function calls are provided at the bottom of this script in a loop, where the
+user can define the range of side lengths and depths to be looped over.</p>
+<p>NOTE: The extinction coefficient in the current implementation is 2 for all size
+parameters as assumed in the conventional geometric optics approximation.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.geometric_optics_ice.calc_optical_params">
+<span class="sig-prename descclassname"><span class="pre">src.geometric_optics_ice.</span></span><span class="sig-name descname"><span class="pre">calc_optical_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">side_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/geometric_optics_ice.html#calc_optical_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.geometric_optics_ice.calc_optical_params" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates single scattering optical properties.</p>
+<p>Van Diedenhoven’s parameterisation is used to calculate
+the single scatterign optical properties of hexagonal
+ice columns of given dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>side_length</strong> – length of side of hexagonal face (um)</p></li>
+<li><p><strong>depth</strong> – length of hexagonal column (um)</p></li>
+<li><p><strong>reals</strong> – numpy array of real parts of RI by wavelength</p></li>
+<li><p><strong>imags</strong> – numpy array of imaginary parts of RI by wavelength</p></li>
+<li><p><strong>wavelengths</strong> – numpy array of wavelenmgths (um)</p></li>
+<li><p><strong>plots</strong> – Boolean to toggle plotting OPs</p></li>
+<li><p><strong>report_dims</strong> – Boolean to toggle printing OP data to terminal</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>assymetry parameter
+ssa_list: single scattering albedo
+mac_list: mass absorption coefficient
+depth: length of hexagional column (um)
+side_length: length of side of hexagonal face (um)
+diameter: diameter across hexaginal face.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>g_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.geometric_optics_ice.net_cdf_updater">
+<span class="sig-prename descclassname"><span class="pre">src.geometric_optics_ice.</span></span><span class="sig-name descname"><span class="pre">net_cdf_updater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ri_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssa_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mac_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/geometric_optics_ice.html#net_cdf_updater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.geometric_optics_ice.net_cdf_updater" title="Permalink to this definition"></a></dt>
+<dd><p>Updates a template NetCDF file with new OP data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ri_source</strong> – chocie of refractive index file</p></li>
+<li><p><strong>savepath</strong> – path to save output data</p></li>
+<li><p><strong>g_list</strong> – asymmetry parameter</p></li>
+<li><p><strong>ssa_list</strong> – single scattering albedo</p></li>
+<li><p><strong>mac_list</strong> – mass absorption coefficient</p></li>
+<li><p><strong>depth</strong> – length of hexagional column (um)</p></li>
+<li><p><strong>side_length</strong> – length of side of hexagonal face (um)</p></li>
+<li><p><strong>density</strong> – density of material in kg/m3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None but saves NetCDF file to savepath</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.geometric_optics_ice.preprocess_RI">
+<span class="sig-prename descclassname"><span class="pre">src.geometric_optics_ice.</span></span><span class="sig-name descname"><span class="pre">preprocess_RI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ri_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_ri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/geometric_optics_ice.html#preprocess_RI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.geometric_optics_ice.preprocess_RI" title="Permalink to this definition"></a></dt>
+<dd><p>Preprocessing of wavelength and RI data.</p>
+<p>Preprocessing function that ensures the wavelengths and real/imaginary
+parts of the refractive index for ice is provided in the correct waveband and correct
+spectral resolution to interface with BioSNICAR. The refractive indices are taken
+from Warren and Brandt 2008.</p>
+<p>Grabs appropriates wavelengths, real and imaginary parts of ice
+refractive index. The source of the refractive index data is
+controlled by var “ri_source” where 0 = Warren 1984, 1 = Warren 2008
+and 2 = Picard 2016.</p>
+<p>These are then passed as numpy arrays to the Geometrical Optics function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ri_source</strong> – choice of refractive index</p></li>
+<li><p><strong>path_to_ri</strong> – path to directory containing RI data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>numpy array of real parts of RI by wavelength
+imags: numpy array of imaginary parts of RI by wavelength
+wavelengths: numpy array of wavelengths (um)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>reals</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-src.mie_coated_water_spheres">
 <span id="src-mie-coated-water-spheres-module"></span><h2>src.mie_coated_water_spheres module<a class="headerlink" href="#module-src.mie_coated_water_spheres" title="Permalink to this headline"></a></h2>
