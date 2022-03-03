@@ -57,3 +57,6 @@ No = (6 * V_air) / (np.pi * D_eff**3) * np.exp(3 * SIGMA_TILDE_G**2)
 r_eff_micron = D_eff / 2 * 1e6
 
 print(np.round(r_eff_micron, 0))
+
+if __name__ == '__main__':
+    pass

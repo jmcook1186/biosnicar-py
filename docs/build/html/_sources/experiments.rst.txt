@@ -1,0 +1,37 @@
+experiments package
+===================
+
+Submodules
+----------
+
+experiments.call\_snicar module
+-------------------------------
+
+.. automodule:: experiments.call_snicar
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+experiments.driver module
+-------------------------
+
+.. automodule:: experiments.driver
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+experiments.utils module
+------------------------
+
+.. automodule:: experiments.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: experiments
+   :members:
+   :undoc-members:
+   :show-inheritance:

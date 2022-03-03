@@ -206,3 +206,8 @@ def validate_model_config(model_config):
         raise ValueError("nbr_wvl does not equal 480")
 
     return
+
+
+
+if __name__ == '__main__':
+    pass

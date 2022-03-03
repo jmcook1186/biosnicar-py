@@ -563,3 +563,7 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     g[g > 0.99] = 0.99
 
     return tau, ssa, g, L_snw
+
+
+if __name__ == '__main__':
+    pass

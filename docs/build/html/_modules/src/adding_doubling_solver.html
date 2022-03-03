@@ -1,0 +1,1124 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.adding_doubling_solver &#8212; BioSNICAR 2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/haiku.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>BioSNICAR 2.0 documentation</span></a></h1>
+        <h2 class="heading"><span>src.adding_doubling_solver</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <h1>Source code for src.adding_doubling_solver</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">savgol_filter</span>
+<span class="kn">from</span> <span class="nn">setup_snicar</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">classes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="sd">&quot;&quot;&quot;Radiative transfer solver using the adding-doubling method.</span>
+
+<span class="sd">Here the ice/impurity optical properties and illumination conditions</span>
+<span class="sd">are used to calculate energy fl;uxes between the ice, atmosphere and</span>
+<span class="sd">underlying substrate.</span>
+
+<span class="sd">Typically this function would be called from snicar_driver() because</span>
+<span class="sd">it takes as inputs intermediates that are calculated elsewhere.</span>
+<span class="sd">Specifically, the functions setup_snicar(), get_layer_OPs() and</span>
+<span class="sd">mix_in_impurities() are called to generate tau, ssa, g and L_snw,</span>
+<span class="sd">which are then passed as inputs to adding_doubling_solver().</span>
+
+<span class="sd">The adding-doubling routine implemented here originates in Brieglib </span>
+<span class="sd">and Light (2007) and was coded up in Matlab by Chloe Whicker and Mark </span>
+<span class="sd">Flanner to be published in Whicker (2022: The Cryosphere). Their </span>
+<span class="sd">scripts were the jumping off point for this script and their code is still</span>
+<span class="sd">used to benchmark this script against.</span>
+
+<span class="sd">The adding-doubling solver implemented here has been shown to do an excellent</span>
+<span class="sd">job at simulating solid glacier ice. This solver can either treat ice as a </span>
+<span class="sd">&quot;granular&quot; material with a bulk medium of air with discrete ice grains, or</span>
+<span class="sd">as a bulk medium of ice with air inclusions. In the latter case, the upper</span>
+<span class="sd">boundary is a Fresnel reflecting surface. Total internal reflection is accounted</span>
+<span class="sd">for if the irradiance angles exceed the critical angle.</span>
+
+<span class="sd">This is always the appropriate solver to use in any  model configuration where </span>
+<span class="sd">solid ice layers and fresnel reflection are included.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="adding_doubling_solver"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.adding_doubling_solver">[docs]</a><span class="k">def</span> <span class="nf">adding_doubling_solver</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;control function for the adding-doubling solver.</span>
+
+<span class="sd">    Makes function calls in sequence to generate, then return, an instance of</span>
+<span class="sd">    Outputs class.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tau: optical thickness of ice column in m/m</span>
+<span class="sd">        ssa: single scattering albedo of ice column (dimensionless)</span>
+<span class="sd">        g: asymmetry parameter for ice column</span>
+<span class="sd">        L_snw: mass of ice in lg</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        outputs: Instance of Outputs class</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError if violation of conservation of energy detected</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># DEFINE CONSTANTS AND ARRAYS</span>
+    <span class="p">(</span>
+        <span class="n">tau0</span><span class="p">,</span>
+        <span class="n">g0</span><span class="p">,</span>
+        <span class="n">ssa0</span><span class="p">,</span>
+        <span class="n">epsilon</span><span class="p">,</span>
+        <span class="n">exp_min</span><span class="p">,</span>
+        <span class="n">nr</span><span class="p">,</span>
+        <span class="n">mu0</span><span class="p">,</span>
+        <span class="n">mu0n</span><span class="p">,</span>
+        <span class="n">trnlay</span><span class="p">,</span>
+        <span class="n">rdif_a</span><span class="p">,</span>
+        <span class="n">rdif_b</span><span class="p">,</span>
+        <span class="n">tdif_a</span><span class="p">,</span>
+        <span class="n">tdif_b</span><span class="p">,</span>
+        <span class="n">rdir</span><span class="p">,</span>
+        <span class="n">tdir</span><span class="p">,</span>
+        <span class="n">lyrfrsnl</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">define_constants_arrays</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span><span class="p">)</span>
+
+    <span class="c1"># proceed down one layer at a time: if the total transmission to</span>
+    <span class="c1"># the interface just above a given layer is less than trmin, then no</span>
+    <span class="c1"># Delta-Eddington computation for that layer is done.</span>
+
+    <span class="k">for</span> <span class="n">lyr</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># loop through layers</span>
+
+        <span class="c1"># condition: if current layer is above fresnel layer or the</span>
+        <span class="c1"># top layer is a Fresnel layer</span>
+        <span class="k">if</span> <span class="n">lyr</span> <span class="o">&lt;</span> <span class="n">lyrfrsnl</span><span class="p">:</span>
+
+            <span class="n">mu0n</span> <span class="o">=</span> <span class="n">mu0</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># within or below fl</span>
+            <span class="n">mu0n</span> <span class="o">=</span> <span class="n">mu0n</span>
+
+        <span class="n">rdir</span><span class="p">,</span> <span class="n">tdir</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ws</span><span class="p">,</span> <span class="n">gs</span><span class="p">,</span> <span class="n">lm</span> <span class="o">=</span> <span class="n">calc_reflectivity_transmittivity</span><span class="p">(</span>
+            <span class="n">tau0</span><span class="p">,</span>
+            <span class="n">ssa0</span><span class="p">,</span>
+            <span class="n">g0</span><span class="p">,</span>
+            <span class="n">lyr</span><span class="p">,</span>
+            <span class="n">model_config</span><span class="p">,</span>
+            <span class="n">exp_min</span><span class="p">,</span>
+            <span class="n">rdif_a</span><span class="p">,</span>
+            <span class="n">tdif_a</span><span class="p">,</span>
+            <span class="n">trnlay</span><span class="p">,</span>
+            <span class="n">mu0n</span><span class="p">,</span>
+            <span class="n">epsilon</span><span class="p">,</span>
+            <span class="n">rdir</span><span class="p">,</span>
+            <span class="n">tdir</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># recalculate rdif,tdif using direct angular integration over rdir,tdir,</span>
+        <span class="c1"># since Delta-Eddington rdif formula is not well-behaved (it is usually</span>
+        <span class="c1"># biased low and can even be negative)  use ngmax angles and gaussian</span>
+        <span class="c1"># integration for most accuracy:</span>
+        <span class="n">smt</span><span class="p">,</span> <span class="n">smr</span><span class="p">,</span> <span class="n">swt</span> <span class="o">=</span> <span class="n">apply_gaussian_integral</span><span class="p">(</span>
+            <span class="n">model_config</span><span class="p">,</span> <span class="n">exp_min</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ws</span><span class="p">,</span> <span class="n">gs</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">lm</span><span class="p">,</span> <span class="n">lyr</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">tdif_a</span>
+        <span class="p">)</span>
+
+        <span class="n">rdif_a</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_b</span> <span class="o">=</span> <span class="n">update_transmittivity_reflectivity</span><span class="p">(</span>
+            <span class="n">swt</span><span class="p">,</span> <span class="n">smr</span><span class="p">,</span> <span class="n">smt</span><span class="p">,</span> <span class="n">lyr</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_b</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lyr</span> <span class="o">==</span> <span class="n">lyrfrsnl</span><span class="p">:</span>
+
+            <span class="p">(</span>
+                <span class="n">rdif_a</span><span class="p">,</span>
+                <span class="n">rdif_b</span><span class="p">,</span>
+                <span class="n">tdif_a</span><span class="p">,</span>
+                <span class="n">tdif_b</span><span class="p">,</span>
+                <span class="n">trnlay</span><span class="p">,</span>
+                <span class="n">rdir</span><span class="p">,</span>
+                <span class="n">tdir</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">calc_correction_fresnel_layer</span><span class="p">(</span>
+                <span class="n">model_config</span><span class="p">,</span>
+                <span class="n">ice</span><span class="p">,</span>
+                <span class="n">illumination</span><span class="p">,</span>
+                <span class="n">mu0n</span><span class="p">,</span>
+                <span class="n">mu0</span><span class="p">,</span>
+                <span class="n">nr</span><span class="p">,</span>
+                <span class="n">rdif_a</span><span class="p">,</span>
+                <span class="n">rdif_b</span><span class="p">,</span>
+                <span class="n">tdif_a</span><span class="p">,</span>
+                <span class="n">tdif_b</span><span class="p">,</span>
+                <span class="n">trnlay</span><span class="p">,</span>
+                <span class="n">lyr</span><span class="p">,</span>
+                <span class="n">rdir</span><span class="p">,</span>
+                <span class="n">tdir</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">trndir</span><span class="p">,</span> <span class="n">trntdr</span><span class="p">,</span> <span class="n">rdndif</span><span class="p">,</span> <span class="n">trndif</span> <span class="o">=</span> <span class="n">calc_reflection_transmission_from_top</span><span class="p">(</span>
+            <span class="n">lyr</span><span class="p">,</span> <span class="n">trnlay</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">rdir</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdir</span><span class="p">,</span> <span class="n">tdif_b</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">ice</span>
+        <span class="p">)</span>
+
+    <span class="n">rupdif</span><span class="p">,</span> <span class="n">rupdir</span> <span class="o">=</span> <span class="n">calc_reflection_below</span><span class="p">(</span>
+        <span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">tdif_b</span><span class="p">,</span> <span class="n">trnlay</span><span class="p">,</span> <span class="n">rdir</span><span class="p">,</span> <span class="n">tdir</span>
+    <span class="p">)</span>
+
+    <span class="n">fdirup</span><span class="p">,</span> <span class="n">fdifup</span><span class="p">,</span> <span class="n">fdirdn</span><span class="p">,</span> <span class="n">fdifdn</span> <span class="o">=</span> <span class="n">trans_refl_at_interfaces</span><span class="p">(</span>
+        <span class="n">model_config</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">rupdif</span><span class="p">,</span> <span class="n">rupdir</span><span class="p">,</span> <span class="n">rdndif</span><span class="p">,</span> <span class="n">trndir</span><span class="p">,</span> <span class="n">trndif</span><span class="p">,</span> <span class="n">trntdr</span>
+    <span class="p">)</span>
+
+    <span class="n">albedo</span><span class="p">,</span> <span class="n">F_abs</span><span class="p">,</span> <span class="n">F_btm_net</span><span class="p">,</span> <span class="n">F_top_pls</span> <span class="o">=</span> <span class="n">calculate_fluxes</span><span class="p">(</span>
+        <span class="n">model_config</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">fdirup</span><span class="p">,</span> <span class="n">fdifup</span><span class="p">,</span> <span class="n">fdirdn</span><span class="p">,</span> <span class="n">fdifdn</span>
+    <span class="p">)</span>
+
+    <span class="n">conservation_of_energy_check</span><span class="p">(</span><span class="n">illumination</span><span class="p">,</span> <span class="n">F_abs</span><span class="p">,</span> <span class="n">F_btm_net</span><span class="p">,</span> <span class="n">F_top_pls</span><span class="p">)</span>
+
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">get_outputs</span><span class="p">(</span><span class="n">illumination</span><span class="p">,</span> <span class="n">albedo</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">F_abs</span><span class="p">,</span> <span class="n">F_btm_net</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">model_config</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">albedo</span> <span class="o">=</span> <span class="n">apply_smoothing_function</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">albedo</span><span class="p">,</span> <span class="n">model_config</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">outputs</span></div>
+
+
+<div class="viewcode-block" id="calc_reflectivity_transmittivity"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.calc_reflectivity_transmittivity">[docs]</a><span class="k">def</span> <span class="nf">calc_reflectivity_transmittivity</span><span class="p">(</span>
+    <span class="n">tau0</span><span class="p">,</span>
+    <span class="n">ssa0</span><span class="p">,</span>
+    <span class="n">g0</span><span class="p">,</span>
+    <span class="n">lyr</span><span class="p">,</span>
+    <span class="n">model_config</span><span class="p">,</span>
+    <span class="n">exp_min</span><span class="p">,</span>
+    <span class="n">rdif_a</span><span class="p">,</span>
+    <span class="n">tdif_a</span><span class="p">,</span>
+    <span class="n">trnlay</span><span class="p">,</span>
+    <span class="n">mu0n</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="p">,</span>
+    <span class="n">rdir</span><span class="p">,</span>
+    <span class="n">tdir</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates reflectivity and transmissivity.</span>
+
+<span class="sd">    Sets up new variables, applies delta transformation and makes</span>
+<span class="sd">    initial calculations of reflectivity and transmissivity in each</span>
+<span class="sd">    layer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tau0: initial optical thickness</span>
+<span class="sd">        ssa0: initial single scattering albedo</span>
+<span class="sd">        g0: initial asymmetry parameter</span>
+<span class="sd">        lyr: index of current layer</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        exp_min: small number to avoid /zero error</span>
+<span class="sd">        rdif_a: reflectivity to diffuse irradiance at polarization angle == perpendicular</span>
+<span class="sd">        tdif_a: transmissivity to diffuse irradiance at polarization angle == perpendicular</span>
+<span class="sd">        trnlay: transmission through layer</span>
+<span class="sd">        mu0n: incident beam angle adjusted for refraction</span>
+<span class="sd">        epsilon: small number to avoid singularity</span>
+<span class="sd">        rdir: reflectivity to direct beam</span>
+<span class="sd">        tdir: transmissivity to direct beam</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># calculation over layers with penetrating radiation</span>
+    <span class="c1"># includes optical thickness, single scattering albedo,</span>
+    <span class="c1"># asymmetry parameter and total flux</span>
+    <span class="n">tautot</span> <span class="o">=</span> <span class="n">tau0</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="n">wtot</span> <span class="o">=</span> <span class="n">ssa0</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="n">gtot</span> <span class="o">=</span> <span class="n">g0</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="n">ftot</span> <span class="o">=</span> <span class="n">g0</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">g0</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+
+    <span class="c1"># coefficient for delta eddington solution for all layers</span>
+    <span class="c1"># Eq. 50: Briegleb and Light 2007</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wtot</span> <span class="o">*</span> <span class="n">ftot</span><span class="p">))</span> <span class="o">*</span> <span class="n">tautot</span>  <span class="c1"># layer delta-scaled extinction optical depth</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ftot</span><span class="p">)</span> <span class="o">*</span> <span class="n">wtot</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+        <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">wtot</span> <span class="o">*</span> <span class="n">ftot</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># layer delta-scaled single scattering albedo</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gtot</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">gtot</span><span class="p">)</span>  <span class="c1"># layer delta-scaled asymmetry parameter</span>
+    <span class="n">lm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span> <span class="o">*</span> <span class="n">gs</span><span class="p">))</span>  <span class="c1"># lambda</span>
+    <span class="n">ue</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span> <span class="o">*</span> <span class="n">gs</span><span class="p">)</span> <span class="o">/</span> <span class="n">lm</span>
+    <span class="p">)</span>  <span class="c1"># u equation, term in diffuse reflectivity and transmissivity</span>
+    <span class="n">extins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,),</span> <span class="n">exp_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">lm</span> <span class="o">*</span> <span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># extinction, MAX function lyr keeps from getting an error</span>
+    <span class="c1"># if the exp(-lm*ts) is &lt; 1e-5</span>
+    <span class="n">ne</span> <span class="o">=</span> <span class="p">(</span><span class="n">ue</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">extins</span> <span class="o">-</span> <span class="p">(</span>
+        <span class="n">ue</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">extins</span>  <span class="c1"># N equation, term in diffuse reflectivity and transmissivity</span>
+
+    <span class="c1"># ! first calculation of rdif, tdif using Delta-Eddington formulas</span>
+    <span class="c1"># Eq.: Briegleb 1992  alpha and gamma for direct radiation</span>
+
+    <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">ue</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">extins</span> <span class="o">-</span> <span class="n">extins</span><span class="p">)</span> <span class="o">/</span> <span class="n">ne</span>
+    <span class="p">)</span>  <span class="c1"># R BAR = layer reflectivity to DIFFUSE radiation</span>
+    <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">ue</span> <span class="o">/</span> <span class="n">ne</span>  <span class="c1"># T BAR layer transmissivity to DIFFUSE radiation</span>
+
+    <span class="c1"># evaluate rdir, tdir for direct beam</span>
+    <span class="n">trnlay</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,),</span> <span class="n">exp_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">ts</span> <span class="o">/</span> <span class="n">mu0n</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># transmission from TOA to interface</span>
+
+    <span class="c1">#  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation</span>
+    <span class="n">alp</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">ws</span> <span class="o">*</span> <span class="n">mu0n</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">gs</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mu0n</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># alp = alpha(ws,mu0n,gs,lm)</span>
+    <span class="n">gam</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">gs</span> <span class="o">*</span> <span class="n">mu0n</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mu0n</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># gam = gamma(ws,mu0n,gs,lm)</span>
+
+    <span class="c1"># apg = alpha plus gamma</span>
+    <span class="c1"># amg = alpha minus gamma</span>
+    <span class="n">apg</span> <span class="o">=</span> <span class="n">alp</span> <span class="o">+</span> <span class="n">gam</span>
+    <span class="n">amg</span> <span class="o">=</span> <span class="n">alp</span> <span class="o">-</span> <span class="n">gam</span>
+
+    <span class="n">rdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">apg</span> <span class="o">*</span> <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">+</span> <span class="n">amg</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">trnlay</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="p">)</span>  <span class="c1"># layer reflectivity to DIRECT radiation</span>
+    <span class="n">tdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">apg</span> <span class="o">*</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">amg</span> <span class="o">*</span> <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">-</span> <span class="n">apg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">trnlay</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="p">)</span>  <span class="c1"># layer transmissivity to DIRECT radiation</span>
+
+    <span class="k">return</span> <span class="n">rdir</span><span class="p">,</span> <span class="n">tdir</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ws</span><span class="p">,</span> <span class="n">gs</span><span class="p">,</span> <span class="n">lm</span></div>
+
+
+<div class="viewcode-block" id="define_constants_arrays"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.define_constants_arrays">[docs]</a><span class="k">def</span> <span class="nf">define_constants_arrays</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;defines and instantiates constants required for a-d calculations.</span>
+
+<span class="sd">    Defines and instantiates all variables required for calculating energy fluxes</span>
+<span class="sd">    using the adding-doubling method.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tau: optical thickness of ice column in m/m</span>
+<span class="sd">        g: asymmetry parameter for ice column</span>
+<span class="sd">        ssa: single scattering albedo of ice column (dimensionless)</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tau0: initial optical thickness (m/m)</span>
+<span class="sd">        g0: initial asymmetry parameter (dimensionless)</span>
+<span class="sd">        ssa0: initial single scatterign albedo (dimensionless)</span>
+<span class="sd">        epsilon: small number to avoid singularity</span>
+<span class="sd">        exp_min: small number to avoid zero calcs</span>
+<span class="sd">        nr: real part of refractive index</span>
+<span class="sd">        mu0: cosine of direct beam zenith angle</span>
+<span class="sd">        mu0n: adjusted cosine of direct beam zenith angle after refraction</span>
+<span class="sd">        trnlay: transmission through layer</span>
+<span class="sd">        rdif_a: reflectivity to diffuse irradiance at polarization angle == perpendicular</span>
+<span class="sd">        rdif_b: reflectivity to diffuse irradiance at polarization angle == parallel</span>
+<span class="sd">        tdif_a: transmissivity to diffuse irradiance at polarization angle == perpendicular</span>
+<span class="sd">        tdif_b: transmissivity to diffuse irradiance at polarization angle == parallel</span>
+<span class="sd">        rdir: reflectivity to direct beam</span>
+<span class="sd">        tdir: transmissivity to direct beam</span>
+<span class="sd">        lyrfrsnl: index of uppermost fresnel reflecting layer in ice column</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tau0</span> <span class="o">=</span> <span class="n">tau</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># read and transpose tau</span>
+    <span class="n">g0</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># read and transpose g</span>
+    <span class="n">ssa0</span> <span class="o">=</span> <span class="n">ssa</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># read and transpose ssa</span>
+    <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-5</span>  <span class="c1"># to deal with singularity</span>
+    <span class="n">exp_min</span> <span class="o">=</span> <span class="mf">1e-5</span>  <span class="c1"># exp(-500)  # min value &gt; 0 to avoid error</span>
+    <span class="n">nr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="mi">480</span><span class="p">)</span>
+    <span class="n">mu0</span> <span class="o">=</span> <span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">480</span><span class="p">)</span>  <span class="c1"># cos beam angle = incident beam</span>
+
+    <span class="c1"># ice-adjusted real refractive index</span>
+    <span class="n">temp1</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_re</span><span class="o">**</span><span class="mi">2</span>
+        <span class="o">-</span> <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_im</span><span class="o">**</span><span class="mi">2</span>
+        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">temp2</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_re</span><span class="o">**</span><span class="mi">2</span>
+        <span class="o">-</span> <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_im</span><span class="o">**</span><span class="mi">2</span>
+        <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">nr</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">temp1</span> <span class="o">+</span> <span class="p">(</span><span class="n">temp2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_re</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_im</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+    <span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="c1"># . Eq. 20: Briegleb and Light 2007: adjusts beam angle</span>
+    <span class="c1"># (i.e. this is Snell&#39;s Law for refraction at interface between media)</span>
+    <span class="c1"># mu0n = -1 represents light travelling vertically upwards and mu0n = +1</span>
+    <span class="c1"># represents light travellign vertically downwards</span>
+    <span class="c1"># mu0n = np.sqrt(1-((1-mu0**2)/(ref_indx*ref_indx)))  (original,</span>
+    <span class="c1"># before update for diffuse Fresnel reflection)</span>
+    <span class="c1"># this version accounts for diffuse fresnel reflection:</span>
+    <span class="n">mu0n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">mu0</span><span class="p">))</span> <span class="o">/</span> <span class="n">nr</span><span class="p">))</span>
+
+    <span class="c1"># solar beam transm for layer (direct beam only)</span>
+    <span class="n">trnlay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># layer reflectivity to diffuse radiation from above</span>
+    <span class="n">rdif_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># layer reflectivity to diffuse radiation from below</span>
+    <span class="n">rdif_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># layer transmission to diffuse radiation from above</span>
+    <span class="n">tdif_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># layer transmission to diffuse radiation from below</span>
+    <span class="n">tdif_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># layer reflectivity to direct radiation (solar beam + diffuse)</span>
+    <span class="n">rdir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># layer transmission to direct radiation (solar beam + diffuse)</span>
+    <span class="n">tdir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># if there are non zeros in layer type, grab the index of the</span>
+    <span class="c1"># first fresnel layer and load in the precalculated diffuse fresnel</span>
+    <span class="c1"># reflection</span>
+    <span class="c1"># (precalculated as large no. of gaussian points required for convergence)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">layer_type</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">lyrfrsnl</span> <span class="o">=</span> <span class="n">ice</span><span class="o">.</span><span class="n">layer_type</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lyrfrsnl</span> <span class="o">=</span> <span class="mi">9999999</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">tau0</span><span class="p">,</span>
+        <span class="n">g0</span><span class="p">,</span>
+        <span class="n">ssa0</span><span class="p">,</span>
+        <span class="n">epsilon</span><span class="p">,</span>
+        <span class="n">exp_min</span><span class="p">,</span>
+        <span class="n">nr</span><span class="p">,</span>
+        <span class="n">mu0</span><span class="p">,</span>
+        <span class="n">mu0n</span><span class="p">,</span>
+        <span class="n">trnlay</span><span class="p">,</span>
+        <span class="n">rdif_a</span><span class="p">,</span>
+        <span class="n">rdif_b</span><span class="p">,</span>
+        <span class="n">tdif_a</span><span class="p">,</span>
+        <span class="n">tdif_b</span><span class="p">,</span>
+        <span class="n">rdir</span><span class="p">,</span>
+        <span class="n">tdir</span><span class="p">,</span>
+        <span class="n">lyrfrsnl</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_reflection_transmission_from_top"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.calc_reflection_transmission_from_top">[docs]</a><span class="k">def</span> <span class="nf">calc_reflection_transmission_from_top</span><span class="p">(</span>
+    <span class="n">lyr</span><span class="p">,</span> <span class="n">trnlay</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">rdir</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdir</span><span class="p">,</span> <span class="n">tdif_b</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">ice</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the reflection and transmission of energy at top surfaces.</span>
+
+<span class="sd">    Calculate the solar beam transmission, total transmission, and</span>
+<span class="sd">    reflectivity for diffuse radiation from below at interface lyr,</span>
+<span class="sd">    the top of the current layer lyr:</span>
+<span class="sd">    </span>
+<span class="sd">                    layers       interface</span>
+<span class="sd">    </span>
+<span class="sd">             ---------------------  lyr-1</span>
+<span class="sd">                      lyr-1</span>
+<span class="sd">             ---------------------  lyr</span>
+<span class="sd">                       lyr</span>
+<span class="sd">             ---------------------</span>
+<span class="sd">       note that we ignore refraction between sea ice and underlying substrate:</span>
+<span class="sd">    </span>
+<span class="sd">                    layers       interface</span>
+<span class="sd">    </span>
+<span class="sd">             ---------------------  lyr-1</span>
+<span class="sd">                      lyr-1</span>
+<span class="sd">             ---------------------  lyr</span>
+<span class="sd">             \\\\\\\ R_sfc \\\\\\\</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lyr: integer representing the index of the current layer (0 at top)</span>
+<span class="sd">        trnlay: transmissivity of current layer</span>
+<span class="sd">        rdif_a: reflectivity to diffuse irradiance at polarization state == perpendicular</span>
+<span class="sd">        rdir: reflectivity to direct beam</span>
+<span class="sd">        tdif_a: transmissivity to diffuse irradiance at polarization state == perpendicular</span>
+<span class="sd">        rdif_b: reflectivity to diffuse irradiance at polarization state == parallel</span>
+<span class="sd">        tdir: transmissivity to direct beam</span>
+<span class="sd">        tdif_b: transmissivity to diffuse irradiance at polarization state == parallel</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        trndir: transmission of direct beam</span>
+<span class="sd">        trntdr: total transmission of direct beam for all layers above current layer</span>
+<span class="sd">        rdndif: downwards diffuse reflectance</span>
+<span class="sd">        trndif: diffuse transmission</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rdndif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">trntdr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">trndif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">trndir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">trntdr</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">trndif</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">rdndif</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">trndir</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Eq. 51  Briegleb and Light 2007</span>
+    <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">trnlay</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="p">)</span>  <span class="c1"># solar beam transmission from top</span>
+
+    <span class="c1"># interface multiple scattering for lyr-1</span>
+    <span class="n">refkm1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span>
+
+    <span class="c1"># direct tran times layer direct ref</span>
+    <span class="n">tdrrdir</span> <span class="o">=</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+
+    <span class="c1"># total down diffuse = tot tran - direct tran</span>
+    <span class="n">tdndif</span> <span class="o">=</span> <span class="n">trntdr</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">-</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+
+    <span class="c1"># total transmission to direct beam for layers above</span>
+    <span class="n">trntdr</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">tdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">tdndif</span> <span class="o">+</span> <span class="n">tdrrdir</span> <span class="o">*</span> <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="n">refkm1</span> <span class="o">*</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Eq. B4  Briegleb and Light 2007</span>
+    <span class="c1"># reflectivity to diffuse radiation for layers above</span>
+    <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">tdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">refkm1</span> <span class="o">*</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="c1"># diffuse transmission to diffuse beam for layers above</span>
+    <span class="n">trndif</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">trndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">refkm1</span> <span class="o">*</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">trndir</span><span class="p">,</span> <span class="n">trntdr</span><span class="p">,</span> <span class="n">rdndif</span><span class="p">,</span> <span class="n">trndif</span></div>
+
+
+<div class="viewcode-block" id="apply_gaussian_integral"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.apply_gaussian_integral">[docs]</a><span class="k">def</span> <span class="nf">apply_gaussian_integral</span><span class="p">(</span>
+    <span class="n">model_config</span><span class="p">,</span> <span class="n">exp_min</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ws</span><span class="p">,</span> <span class="n">gs</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">lm</span><span class="p">,</span> <span class="n">lyr</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">tdif_a</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Applies gaussian integral to integrate over angles.</span>
+
+<span class="sd">    Uses gaussien integration to integrate fluxes hemispherically from</span>
+<span class="sd">    N of reference angles where N = len(gauspt) (default is 8).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        exp_min: small number for avoiding div/0 error</span>
+<span class="sd">        ts: delta-scaled extinction optical depth for lyr</span>
+<span class="sd">        ws: delta-scaled single scattering albedo for lyr</span>
+<span class="sd">        gs: delta-scaled asymmetry parameter for lyr</span>
+<span class="sd">        epsilon: small number to avoid singularity</span>
+<span class="sd">        lm: lamda for use in delta scaling</span>
+<span class="sd">        lyr: integer representing index of current layer (0==top)</span>
+<span class="sd">        rdif_a: rdif_a: reflectance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        tdif_a: rdif_a: transmittance to diffuse energy w polarization state == perpendicular</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        smt: accumulator for tdif gaussian integration</span>
+<span class="sd">        smr: accumulator for rdif gaussian integration</span>
+<span class="sd">        swt: sum of gaussian weights</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># gaussian angles (radians)</span>
+    <span class="n">gauspt</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="mf">0.9894009</span><span class="p">,</span>
+        <span class="mf">0.9445750</span><span class="p">,</span>
+        <span class="mf">0.8656312</span><span class="p">,</span>
+        <span class="mf">0.7554044</span><span class="p">,</span>
+        <span class="mf">0.6178762</span><span class="p">,</span>
+        <span class="mf">0.4580168</span><span class="p">,</span>
+        <span class="mf">0.2816036</span><span class="p">,</span>
+        <span class="mf">0.0950125</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="c1"># gaussian weights</span>
+    <span class="n">gauswt</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="mf">0.0271525</span><span class="p">,</span>
+        <span class="mf">0.0622535</span><span class="p">,</span>
+        <span class="mf">0.0951585</span><span class="p">,</span>
+        <span class="mf">0.1246290</span><span class="p">,</span>
+        <span class="mf">0.1495960</span><span class="p">,</span>
+        <span class="mf">0.1691565</span><span class="p">,</span>
+        <span class="mf">0.1826034</span><span class="p">,</span>
+        <span class="mf">0.1894506</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">swt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">smr</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">smt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">R1</span> <span class="o">=</span> <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>  <span class="c1"># use R1 as temporary var</span>
+    <span class="n">T1</span> <span class="o">=</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>  <span class="c1"># use T1 as temporary var</span>
+
+    <span class="k">for</span> <span class="n">ng</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">gauspt</span><span class="p">),</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">gauspt</span><span class="p">[</span><span class="n">ng</span><span class="p">]</span>  <span class="c1"># solar zenith angles</span>
+        <span class="n">gwt</span> <span class="o">=</span> <span class="n">gauswt</span><span class="p">[</span><span class="n">ng</span><span class="p">]</span>  <span class="c1"># gaussian weight</span>
+        <span class="n">swt</span> <span class="o">=</span> <span class="n">swt</span> <span class="o">+</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">gwt</span>  <span class="c1"># sum of weights</span>
+        <span class="n">trn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,),</span> <span class="n">exp_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">ts</span> <span class="o">/</span> <span class="n">mu</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># transmission</span>
+
+        <span class="n">alp</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">ws</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">gs</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># alp = alpha(ws,mu0n,gs,lm)</span>
+        <span class="n">gam</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">gs</span> <span class="o">*</span> <span class="n">mu</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ws</span><span class="p">))</span>
+            <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># gam = gamma(ws,mu0n,gs,lm)</span>
+
+        <span class="n">apg</span> <span class="o">=</span> <span class="n">alp</span> <span class="o">+</span> <span class="n">gam</span>
+        <span class="n">amg</span> <span class="o">=</span> <span class="n">alp</span> <span class="o">-</span> <span class="n">gam</span>
+        <span class="n">rdr</span> <span class="o">=</span> <span class="n">apg</span> <span class="o">*</span> <span class="n">R1</span> <span class="o">+</span> <span class="n">amg</span> <span class="o">*</span> <span class="n">T1</span> <span class="o">*</span> <span class="n">trn</span> <span class="o">-</span> <span class="n">amg</span>
+        <span class="n">tdr</span> <span class="o">=</span> <span class="n">apg</span> <span class="o">*</span> <span class="n">T1</span> <span class="o">+</span> <span class="n">amg</span> <span class="o">*</span> <span class="n">R1</span> <span class="o">*</span> <span class="n">trn</span> <span class="o">-</span> <span class="n">apg</span> <span class="o">*</span> <span class="n">trn</span> <span class="o">+</span> <span class="n">trn</span>
+        <span class="n">smr</span> <span class="o">=</span> <span class="n">smr</span> <span class="o">+</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">rdr</span> <span class="o">*</span> <span class="n">gwt</span>  <span class="c1"># accumulator for rdif gaussian integration</span>
+        <span class="n">smt</span> <span class="o">=</span> <span class="n">smt</span> <span class="o">+</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">tdr</span> <span class="o">*</span> <span class="n">gwt</span>  <span class="c1"># accumulator for tdif gaussian integration</span>
+
+    <span class="k">return</span> <span class="n">smt</span><span class="p">,</span> <span class="n">smr</span><span class="p">,</span> <span class="n">swt</span></div>
+
+
+<div class="viewcode-block" id="update_transmittivity_reflectivity"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.update_transmittivity_reflectivity">[docs]</a><span class="k">def</span> <span class="nf">update_transmittivity_reflectivity</span><span class="p">(</span>
+    <span class="n">swt</span><span class="p">,</span> <span class="n">smr</span><span class="p">,</span> <span class="n">smt</span><span class="p">,</span> <span class="n">lyr</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_b</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;updates transmissivity and reflectivity values after iterations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        swt: sum of gaussian weights (for integrating over angle)</span>
+<span class="sd">        smr: accumulator for rdif gaussian integration</span>
+<span class="sd">        smt: accumulator for tdif gaussian integration</span>
+<span class="sd">        lyr: integer representign index of current layer (0 == top)</span>
+<span class="sd">        rdif_a: reflectance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        rdif_b: reflectance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        tdif_a: transmittance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        tdif_b: transmittance to diffuse energy w polarization state == parallel</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        rdif_b: updated reflectance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        tdif_a: updated transmittance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        tdif_b: updated transmittance to diffuse energy w polarization state == parallel</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">smr</span> <span class="o">/</span> <span class="n">swt</span>
+    <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">smt</span> <span class="o">/</span> <span class="n">swt</span>
+
+    <span class="c1"># homogeneous layer</span>
+    <span class="n">rdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+    <span class="n">tdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_b</span></div>
+
+
+<div class="viewcode-block" id="calc_correction_fresnel_layer"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.calc_correction_fresnel_layer">[docs]</a><span class="k">def</span> <span class="nf">calc_correction_fresnel_layer</span><span class="p">(</span>
+    <span class="n">model_config</span><span class="p">,</span>
+    <span class="n">ice</span><span class="p">,</span>
+    <span class="n">illumination</span><span class="p">,</span>
+    <span class="n">mu0n</span><span class="p">,</span>
+    <span class="n">mu0</span><span class="p">,</span>
+    <span class="n">nr</span><span class="p">,</span>
+    <span class="n">rdif_a</span><span class="p">,</span>
+    <span class="n">rdif_b</span><span class="p">,</span>
+    <span class="n">tdif_a</span><span class="p">,</span>
+    <span class="n">tdif_b</span><span class="p">,</span>
+    <span class="n">trnlay</span><span class="p">,</span>
+    <span class="n">lyr</span><span class="p">,</span>
+    <span class="n">rdir</span><span class="p">,</span>
+    <span class="n">tdir</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates correction for Fresnel reflection and total internal reflection.</span>
+
+<span class="sd">    Corrects fluxes for Fresnel reflection in cases where total</span>
+<span class="sd">    internal reflection does and does not occur (angle &gt; critical_angle).</span>
+<span class="sd">    In TIR case fluxes are precalculated because ~256 gaussian points required</span>
+<span class="sd">    for convergence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        mu0n: incidence angle for direct beam adjusted for refraction</span>
+<span class="sd">        mu0: incidence angle of direct beam at upper surface</span>
+<span class="sd">        nr: real part of refractive index</span>
+<span class="sd">        rdif_a: reflectance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        rdif_b: reflectance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        tdif_a: transmittance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        tdif_b: transmittance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        trnlay: transmission of layer == lyr</span>
+<span class="sd">        lyr: current layer (0 ==top)</span>
+<span class="sd">        rdir: reflectance to direct beam</span>
+<span class="sd">        tdir: transmission of direct beam</span>
+
+
+<span class="sd">    Returns:</span>
+<span class="sd">        rdif_a: updated reflectance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        rdif_b: updated reflectance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        tdif_a: updated transmittance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        tdif_b: updated transmittance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        trnlay: updated transmission of layer == lyr</span>
+<span class="sd">        rdir: updated reflectance to direct beam</span>
+<span class="sd">        tdir: updated transmission of direct beam</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ref_indx</span> <span class="o">=</span> <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_re</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">ice</span><span class="o">.</span><span class="n">ref_idx_im</span>
+    <span class="n">critical_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">ref_indx</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">wl</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">critical_angle</span><span class="p">[</span><span class="n">wl</span><span class="p">]:</span>
+            <span class="c1"># in this case, no total internal reflection</span>
+
+            <span class="c1"># compute fresnel reflection and transmission amplitudes</span>
+            <span class="c1"># for two polarizations: 1=perpendicular and 2=parallel to</span>
+            <span class="c1"># the plane containing incident, reflected and refracted rays.</span>
+
+            <span class="c1"># Eq. 22  Briegleb &amp; Light 2007</span>
+            <span class="c1"># Inputs to equation 21 (i.e. Fresnel formulae for R and T)</span>
+            <span class="n">R1</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">-</span> <span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">+</span> <span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span>
+            <span class="p">)</span>  <span class="c1"># reflection amplitude factor for perpendicular polarization</span>
+            <span class="n">R2</span> <span class="o">=</span> <span class="p">(</span><span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">+</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span>
+            <span class="p">)</span>  <span class="c1"># reflection amplitude factor for parallel polarization</span>
+            <span class="n">T1</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">2</span> <span class="o">*</span> <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">+</span> <span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">])</span>
+            <span class="p">)</span>  <span class="c1"># transmission amplitude factor for perpendicular polarization</span>
+            <span class="n">T2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">2</span> <span class="o">*</span> <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">+</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">])</span>
+            <span class="p">)</span>  <span class="c1"># transmission amplitude factor for parallel polarization</span>
+
+            <span class="c1"># unpolarized light for direct beam</span>
+            <span class="c1"># Eq. 21  Brigleb and light 2007</span>
+            <span class="n">Rf_dir_a</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">R1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">R2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">Tf_dir_a</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">T1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">T2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">nr</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">*</span> <span class="n">mu0n</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span> <span class="o">/</span> <span class="n">mu0</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># in this case, total internal reflection occurs</span>
+            <span class="n">Tf_dir_a</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">Rf_dir_a</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># precalculated diffuse reflectivities and transmissivities</span>
+        <span class="c1"># for incident radiation above and below fresnel layer, using</span>
+        <span class="c1"># the direct albedos and accounting for complete internal</span>
+        <span class="c1"># reflection from below. Precalculated because high order</span>
+        <span class="c1"># number of gaussian points (~256) is required for convergence:</span>
+
+        <span class="c1"># Eq. 25  Brigleb and light 2007</span>
+        <span class="c1"># diffuse reflection of flux arriving from above</span>
+
+        <span class="n">Rf_dif_a</span> <span class="o">=</span> <span class="n">ice</span><span class="o">.</span><span class="n">fl_r_dif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span>  <span class="c1"># reflection from diffuse unpolarized radiation</span>
+        <span class="n">Tf_dif_a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">Rf_dif_a</span>  <span class="c1"># transmission from diffuse unpolarized radiation</span>
+
+        <span class="c1"># diffuse reflection of flux arriving from below</span>
+        <span class="n">Rf_dif_b</span> <span class="o">=</span> <span class="n">ice</span><span class="o">.</span><span class="n">fl_r_dif_b</span><span class="p">[</span><span class="n">wl</span><span class="p">]</span>
+        <span class="n">Tf_dif_b</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">Rf_dif_b</span>
+
+        <span class="c1"># -----------------------------------------------------------------------</span>
+        <span class="c1"># the lyr = lyrfrsnl layer properties are updated to combine</span>
+        <span class="c1"># the fresnel (refractive) layer, always taken to be above</span>
+        <span class="c1"># the present layer lyr (i.e. be the top interface):</span>
+
+        <span class="n">rintfc</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Rf_dif_b</span> <span class="o">*</span> <span class="n">rdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">])</span>  <span class="c1"># denom interface scattering</span>
+
+        <span class="c1"># layer transmissivity to DIRECT radiation</span>
+        <span class="c1"># Eq. B7  Briegleb &amp; Light 2007</span>
+        <span class="n">tdir</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Tf_dir_a</span> <span class="o">*</span> <span class="n">tdir</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">Tf_dir_a</span> <span class="o">*</span> <span class="n">rdir</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">Rf_dif_b</span> <span class="o">*</span> <span class="n">rintfc</span> <span class="o">*</span> <span class="n">tdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># layer reflectivity to DIRECT radiation</span>
+        <span class="c1"># Eq. B7  Briegleb &amp; Light 2007</span>
+        <span class="n">rdir</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">Rf_dir_a</span> <span class="o">+</span> <span class="n">Tf_dir_a</span> <span class="o">*</span> <span class="n">rdir</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rintfc</span> <span class="o">*</span> <span class="n">Tf_dif_b</span>
+
+        <span class="c1"># R BAR = layer reflectivity to DIFFUSE radiation (above)</span>
+        <span class="c1"># Eq. B9  Briegleb &amp; Light 2007</span>
+        <span class="n">rdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">Rf_dif_a</span> <span class="o">+</span> <span class="n">Tf_dif_a</span> <span class="o">*</span> <span class="n">rdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rintfc</span> <span class="o">*</span> <span class="n">Tf_dif_b</span>
+
+        <span class="c1"># R BAR = layer reflectivity to DIFFUSE radiation (below)</span>
+        <span class="c1"># Eq. B10  Briegleb &amp; Light 2007</span>
+        <span class="n">rdif_b</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">rdif_b</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">+</span> <span class="n">tdif_b</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">Rf_dif_b</span> <span class="o">*</span> <span class="n">rintfc</span> <span class="o">*</span> <span class="n">tdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># T BAR layer transmissivity to DIFFUSE radiation (above),</span>
+        <span class="c1"># Eq. B9  Briegleb &amp; Light 2007</span>
+        <span class="n">tdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">tdif_a</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rintfc</span> <span class="o">*</span> <span class="n">Tf_dif_a</span>
+
+        <span class="c1"># Eq. B10  Briegleb &amp; Light 2007</span>
+        <span class="n">tdif_b</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">tdif_b</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rintfc</span> <span class="o">*</span> <span class="n">Tf_dif_b</span>
+
+        <span class="c1"># update trnlay to include fresnel transmission</span>
+        <span class="n">trnlay</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tf_dir_a</span> <span class="o">*</span> <span class="n">trnlay</span><span class="p">[</span><span class="n">wl</span><span class="p">,</span> <span class="n">lyr</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">tdif_b</span><span class="p">,</span> <span class="n">trnlay</span><span class="p">,</span> <span class="n">rdir</span><span class="p">,</span> <span class="n">tdir</span></div>
+
+
+<div class="viewcode-block" id="calc_reflection_below"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.calc_reflection_below">[docs]</a><span class="k">def</span> <span class="nf">calc_reflection_below</span><span class="p">(</span>
+    <span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">rdif_a</span><span class="p">,</span> <span class="n">rdif_b</span><span class="p">,</span> <span class="n">tdif_a</span><span class="p">,</span> <span class="n">tdif_b</span><span class="p">,</span> <span class="n">trnlay</span><span class="p">,</span> <span class="n">rdir</span><span class="p">,</span> <span class="n">tdir</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates dir/diff reflectyivity for layers below surface.</span>
+
+<span class="sd">    Compute reflectivity to direct (rupdir) and diffuse (rupdif) radiation</span>
+<span class="sd">    for layers below by adding succesive layers starting from the</span>
+<span class="sd">    underlying ice and working upwards:</span>
+
+<span class="sd">                  layers       interface</span>
+
+<span class="sd">           ---------------------  lyr</span>
+<span class="sd">                     lyr</span>
+<span class="sd">           ---------------------  lyr+1</span>
+<span class="sd">                    lyr+1</span>
+<span class="sd">           ---------------------</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        rdif_a: reflectance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        rdif_b: reflectance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        tdif_a: transmittance to diffuse energy w polarization state == perpendicular</span>
+<span class="sd">        tdif_b: transmittance to diffuse energy w polarization state == parallel</span>
+<span class="sd">        trnlay: transmission of layer == lyr</span>
+<span class="sd">        rdir: reflectance to direct beam</span>
+<span class="sd">        tdir: transmission of direct beam</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        rupdir: upwards flux direct</span>
+<span class="sd">        rupdif: upwards flux diffuse</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># reflectivity to diffuse radiation</span>
+    <span class="n">rupdif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">ice</span><span class="o">.</span><span class="n">sfc</span>
+    <span class="c1"># reflectivity to direct radiation</span>
+    <span class="n">rupdir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">rupdir</span><span class="p">[:,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">ice</span><span class="o">.</span><span class="n">sfc</span>
+    <span class="k">for</span> <span class="n">lyr</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="p">):</span>  <span class="c1"># starts at the bottom and works its way up to the top layer</span>
+
+        <span class="c1"># Eq. B5  Briegleb and Light 2007</span>
+        <span class="c1"># interface scattering</span>
+        <span class="n">refkp1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># dir from top layer plus exp tran ref from lower layer, interface</span>
+        <span class="c1"># scattered and tran thru top layer from below, plus diff tran ref</span>
+        <span class="c1"># from lower layer with interface scattering tran thru top from below</span>
+        <span class="n">rupdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">rdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">(</span>
+                <span class="n">trnlay</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdir</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="o">+</span> <span class="p">(</span><span class="n">tdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">-</span> <span class="n">trnlay</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="n">refkp1</span>
+            <span class="o">*</span> <span class="n">tdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># dif from top layer from above, plus dif tran upwards reflected and</span>
+        <span class="c1"># interface scattered which tran top from below</span>
+        <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">rdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">tdif_a</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">refkp1</span> <span class="o">*</span> <span class="n">tdif_b</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">rupdif</span><span class="p">,</span> <span class="n">rupdir</span></div>
+
+
+<div class="viewcode-block" id="trans_refl_at_interfaces"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.trans_refl_at_interfaces">[docs]</a><span class="k">def</span> <span class="nf">trans_refl_at_interfaces</span><span class="p">(</span>
+    <span class="n">model_config</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">rupdif</span><span class="p">,</span> <span class="n">rupdir</span><span class="p">,</span> <span class="n">rdndif</span><span class="p">,</span> <span class="n">trndir</span><span class="p">,</span> <span class="n">trndif</span><span class="p">,</span> <span class="n">trntdr</span>
+<span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Calculates transmission and reflection at layer interfaces.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        rupdif: total diffuse radiation reflected upwards</span>
+<span class="sd">        rupdir: total direct radiation reflected upwards</span>
+<span class="sd">        rdndif: downwards reflection of diffuse radiation</span>
+<span class="sd">        trndir: transmission of direct radiation</span>
+<span class="sd">        trndif: transmission of diffuse radiation</span>
+<span class="sd">        trntdr: total transmission</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        fdirup: upwards flux of direct radiation</span>
+<span class="sd">        fdifup: upwards flux of diffuse radiation</span>
+<span class="sd">        fdirdn: downwards flux of direct radiation</span>
+<span class="sd">        fdifdn: downwards flux of diffuse radiation</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fdirup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">fdifup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">fdirdn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">fdifdn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">dfdir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">dfdif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">puny</span> <span class="o">=</span> <span class="mf">1e-10</span>  <span class="c1"># not sure how should we define this</span>
+
+    <span class="k">for</span> <span class="n">lyr</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="c1"># Eq. 52  Briegleb and Light 2007</span>
+        <span class="c1"># interface scattering</span>
+        <span class="n">refk</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span>
+
+        <span class="c1"># dir tran ref from below times interface scattering, plus diff</span>
+        <span class="c1"># tran and ref from below times interface scattering</span>
+        <span class="n">fdirup</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">trntdr</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">-</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">refk</span>
+
+        <span class="c1"># dir tran plus total diff trans times interface scattering plus</span>
+        <span class="c1"># dir tran with up dir ref and down dif ref times interface scattering</span>
+        <span class="n">fdirdn</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">(</span>
+                <span class="n">trntdr</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+                <span class="o">-</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="n">refk</span>
+        <span class="p">)</span>
+
+        <span class="c1"># diffuse tran ref from below times interface scattering</span>
+        <span class="n">fdifup</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">trndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">refk</span>
+
+        <span class="c1"># diffuse tran times interface scattering</span>
+        <span class="n">fdifdn</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">trndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">refk</span>
+
+        <span class="c1"># dfdir = fdirdn - fdirup</span>
+        <span class="n">dfdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">trntdr</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">-</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="n">refk</span>
+            <span class="o">-</span> <span class="n">trndir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="n">rupdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rdndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="n">refk</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dfdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">puny</span><span class="p">:</span>
+
+            <span class="n">dfdir</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span>
+            <span class="p">)</span>  <span class="c1"># echmod necessary?</span>
+            <span class="c1"># dfdif = fdifdn - fdifup</span>
+
+        <span class="n">dfdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">trndif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rupdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">*</span> <span class="n">refk</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dfdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">puny</span><span class="p">:</span>
+
+            <span class="n">dfdif</span><span class="p">[:,</span> <span class="n">lyr</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span>
+            <span class="p">)</span>  <span class="c1">#!echmod necessary?</span>
+
+    <span class="k">return</span> <span class="n">fdirup</span><span class="p">,</span> <span class="n">fdifup</span><span class="p">,</span> <span class="n">fdirdn</span><span class="p">,</span> <span class="n">fdifdn</span></div>
+
+
+<div class="viewcode-block" id="calculate_fluxes"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.calculate_fluxes">[docs]</a><span class="k">def</span> <span class="nf">calculate_fluxes</span><span class="p">(</span><span class="n">model_config</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">fdirup</span><span class="p">,</span> <span class="n">fdifup</span><span class="p">,</span> <span class="n">fdirdn</span><span class="p">,</span> <span class="n">fdifdn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates total fluxes in each layer and for entire column.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        fdirup: upwards flux of direct radiation</span>
+<span class="sd">        fdifup: upwards flux od diffuse radiation</span>
+<span class="sd">        fdirdn: downwards flux of direct radiation</span>
+<span class="sd">        fdifdn: downwards flux of diffuse radiation</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        albedo: ratio of upwards fluxes to incoming irradiance</span>
+<span class="sd">        F_abs: absorbed flux in each layer</span>
+<span class="sd">        F_btm_net: net fluxes at bottom surface</span>
+<span class="sd">        F_top_pls: upwards flux from upper surface</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">F_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">F_dwn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">F_abs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">])</span>
+    <span class="n">F_abs_vis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">])</span>
+    <span class="n">F_abs_nir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="n">F_up</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fdirup</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">Fs</span> <span class="o">*</span> <span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">fdifup</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="n">illumination</span><span class="o">.</span><span class="n">Fd</span>
+        <span class="p">)</span>
+        <span class="n">F_dwn</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fdirdn</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">Fs</span> <span class="o">*</span> <span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">fdifdn</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="n">illumination</span><span class="o">.</span><span class="n">Fd</span>
+        <span class="p">)</span>
+
+    <span class="n">F_net</span> <span class="o">=</span> <span class="n">F_up</span> <span class="o">-</span> <span class="n">F_dwn</span>
+
+    <span class="c1"># import matplotlib.pyplot as plt</span>
+    <span class="c1"># plt.plot(Inputs.Fs)</span>
+    <span class="c1"># plt.show()</span>
+    <span class="c1"># plt.figure(1)</span>
+    <span class="c1"># plt.plot(Inputs.Fs)</span>
+    <span class="c1"># plt.plot(F_dwn[:,0].T)</span>
+    <span class="c1"># plt.plot(F_dwn[:,1].T)</span>
+    <span class="c1"># plt.plot(F_dwn[:,2].T)</span>
+    <span class="c1"># plt.show()</span>
+    <span class="c1"># plt.show()</span>
+
+    <span class="c1"># Absorbed flux in each layer</span>
+    <span class="n">F_abs</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">F_net</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">F_net</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Upward flux at upper model boundary</span>
+    <span class="n">F_top_pls</span> <span class="o">=</span> <span class="n">F_up</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Net flux at lower model boundary = bulk transmission through entire</span>
+    <span class="c1"># media = absorbed radiation by underlying surface:</span>
+    <span class="n">F_btm_net</span> <span class="o">=</span> <span class="o">-</span><span class="n">F_net</span><span class="p">[:,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># [0,1,2,3,4]</span>
+
+        <span class="n">F_abs_vis</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">F_abs</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+        <span class="n">F_abs_nir</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">F_abs</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="n">albedo</span> <span class="o">=</span> <span class="n">F_up</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">F_dwn</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">albedo</span><span class="p">,</span> <span class="n">F_abs</span><span class="p">,</span> <span class="n">F_btm_net</span><span class="p">,</span> <span class="n">F_top_pls</span></div>
+
+
+<div class="viewcode-block" id="conservation_of_energy_check"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.conservation_of_energy_check">[docs]</a><span class="k">def</span> <span class="nf">conservation_of_energy_check</span><span class="p">(</span><span class="n">illumination</span><span class="p">,</span> <span class="n">F_abs</span><span class="p">,</span> <span class="n">F_btm_net</span><span class="p">,</span> <span class="n">F_top_pls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks there is no conservation of energy violation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        F_abs: absorbed flux in each layer</span>
+<span class="sd">        F_btm_net: net flux at bottom surface</span>
+<span class="sd">        F_top_pls: upwards flux from upper boundary</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError is conservation of energy error is detected</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Incident direct+diffuse radiation equals (absorbed+transmitted+bulk_reflected)</span>
+    <span class="n">energy_sum</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">illumination</span><span class="o">.</span><span class="n">Fs</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">illumination</span><span class="o">.</span><span class="n">Fd</span>
+        <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F_abs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">F_btm_net</span> <span class="o">+</span> <span class="n">F_top_pls</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">energy_conservation_error</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">energy_sum</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">energy_conservation_error</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;energy conservation error: </span><span class="si">{</span><span class="n">energy_conservation_error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="get_outputs"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.get_outputs">[docs]</a><span class="k">def</span> <span class="nf">get_outputs</span><span class="p">(</span><span class="n">illumination</span><span class="p">,</span> <span class="n">albedo</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">F_abs</span><span class="p">,</span> <span class="n">F_btm_net</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Assimilates useful data into instance of Outputs class.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        albedo: ratio of upwwards fluxes and irradiance</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+<span class="sd">        L_snw: mass of ice in each layer</span>
+<span class="sd">        F_abs: absorbed flux in each layer</span>
+<span class="sd">        F_btm_net: net flux at bottom surface</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        outputs: instance of Outputs class</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">Outputs</span><span class="p">()</span>
+
+    <span class="c1"># Radiative heating rate:</span>
+    <span class="n">F_abs_slr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F_abs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">heat_rt</span> <span class="o">=</span> <span class="n">F_abs_slr</span> <span class="o">/</span> <span class="p">(</span><span class="n">L_snw</span> <span class="o">*</span> <span class="mi">2117</span><span class="p">)</span>  <span class="c1"># [K/s] 2117 = specific heat ice (J kg-1 K-1)</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">heat_rt</span> <span class="o">=</span> <span class="n">heat_rt</span> <span class="o">*</span> <span class="mi">3600</span>  <span class="c1"># [K/hr]</span>
+
+    <span class="c1"># Spectral albedo</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">albedo</span> <span class="o">=</span> <span class="n">albedo</span>
+
+    <span class="c1"># Spectrally-integrated solar, visible, and NIR albedos:</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">BBA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span> <span class="o">*</span> <span class="n">albedo</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">)</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">BBAVIS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">]</span>
+        <span class="o">*</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">])</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">BBANIR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span><span class="p">]</span>
+        <span class="o">*</span> <span class="n">albedo</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Total incident insolation( Wm - 2)</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">total_insolation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">illumination</span><span class="o">.</span><span class="n">mu_not</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">illumination</span><span class="o">.</span><span class="n">Fs</span><span class="p">)</span> <span class="o">+</span> <span class="n">illumination</span><span class="o">.</span><span class="n">Fd</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Spectrally-integrated absorption by underlying surface:</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">abs_slr_btm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F_btm_net</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">abs_vis_btm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F_btm_net</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">abs_nir_btm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">F_btm_net</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Spectrally-integrated VIS and NIR total snowpack absorption:</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">abs_vis_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">]</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">abs_nir_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">flx_slr</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span><span class="p">]</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="n">model_config</span><span class="o">.</span><span class="n">vis_max_idx</span> <span class="p">:</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nir_max_idx</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="c1"># Spectrally-integrated absorption by entire snow/ice column</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">abs_slr_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F_abs_slr</span><span class="p">)</span>
+
+    <span class="c1"># Spectrally-integrated absorption by each layer</span>
+    <span class="n">outputs</span><span class="o">.</span><span class="n">absorbed_flux_per_layer</span> <span class="o">=</span> <span class="n">F_abs_slr</span>
+
+    <span class="k">return</span> <span class="n">outputs</span></div>
+
+
+<div class="viewcode-block" id="apply_smoothing_function"><a class="viewcode-back" href="../../src.html#src.adding_doubling_solver.apply_smoothing_function">[docs]</a><span class="k">def</span> <span class="nf">apply_smoothing_function</span><span class="p">(</span><span class="n">albedo</span><span class="p">,</span> <span class="n">model_config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Applies Savitsky-Golay smoothing function to albedo, if toggled.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        albedo: array of albedo values, likely passed as outputs.albedo</span>
+<span class="sd">        model_config: instance of ModelConfig</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">yhat</span> <span class="o">=</span> <span class="n">savgol_filter</span><span class="p">(</span><span class="n">albedo</span><span class="p">,</span> <span class="n">model_config</span><span class="o">.</span><span class="n">window_size</span><span class="p">,</span> <span class="n">model_config</span><span class="o">.</span><span class="n">poly_order</span><span class="p">)</span>
+    <span class="n">albedo</span> <span class="o">=</span> <span class="n">yhat</span>
+
+    <span class="k">return</span> <span class="n">albedo</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Joseph Cook.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

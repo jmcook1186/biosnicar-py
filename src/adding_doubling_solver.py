@@ -1069,3 +1069,7 @@ def apply_smoothing_function(albedo, model_config):
     albedo = yhat
 
     return albedo
+
+
+if __name__ == '__main__':
+    pass

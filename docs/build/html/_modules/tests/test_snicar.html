@@ -1,0 +1,722 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tests.test_snicar &#8212; BioSNICAR 2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/haiku.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>BioSNICAR 2.0 documentation</span></a></h1>
+        <h2 class="heading"><span>tests.test_snicar</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <h1>Source code for tests.test_snicar</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">src.classes</span> <span class="kn">import</span> <span class="n">Impurity</span>
+
+<span class="c1"># make sure we can import from/src</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;./src&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">setup_snicar</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">classes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">column_OPs</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">toon_rt_solver</span> <span class="kn">import</span> <span class="n">toon_solver</span>
+<span class="kn">from</span> <span class="nn">adding_doubling_solver</span> <span class="kn">import</span> <span class="n">adding_doubling_solver</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+
+<span class="sd">&quot;&quot;&quot;Runs benchmarking and fuzzing tests on BioSNICAR.</span>
+
+<span class="sd">To run configure these tests, update the values in conftest.py</span>
+<span class="sd">Then navigate to the tests folder and run</span>
+
+<span class="sd">`pytest`</span>
+
+<span class="sd">The tests will automatically run - green dots indicate tests</span>
+<span class="sd">passing successfully. A plot of N random spectra pairs will</span>
+<span class="sd">be saved to the /tests folder.</span>
+
+<span class="sd">The fuzzer exists to run snocar with a wide range of input variables</span>
+<span class="sd">to check that no combinations break the code. It is quite memory intensive</span>
+<span class="sd">to fuzz over a very large parameter space. 10^3 runs is ok on a decent</span>
+<span class="sd">spec laptop. I have divided the fuzzer into two separate functions. One</span>
+<span class="sd">has coverage for &quot;config&quot; variables that set up the radiative transfer</span>
+<span class="sd">e.g. direct vs diffuse, approximation type, etc. The other is more for</span>
+<span class="sd">conditions of the ice column, e.g. density, effective radius, LAPs.</span>
+
+<span class="sd">To toggle the fuzzer on/off change the value of &quot;fuzz&quot; in conftest.py</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="test_AD_solver"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_AD_solver">[docs]</a><span class="k">def</span> <span class="nf">test_AD_solver</span><span class="p">(</span><span class="n">new_benchmark_ad</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests Toon solver against SNICAR_ADv4 benchmark.</span>
+
+<span class="sd">    This func generates a new file - py_benchmark_data.csv - that contains</span>
+<span class="sd">    spectral and broadband albedo simulated by BioSNICAR for a range of input</span>
+<span class="sd">    configurations. The same set of simulations was also run using a previously</span>
+<span class="sd">    published version of the SNICAR code written in Matlab by Chloe Whicker at</span>
+<span class="sd">    University of Michigan and run on the UMich server. This function</span>
+<span class="sd">    only creates the equivalent dataset using BioSNICAR, it doesn&#39;t compare the two.</span>
+
+<span class="sd">    Equivalence between the Python and Matlab model configuration is controlled by</span>
+<span class="sd">    a call to match_matlab_config(). This function can be toggled off by setting</span>
+<span class="sd">    new_benchmark_ad to False in conftest.py.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        new_benchmark_ad: Boolean toggling this function on/off</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None but saves py_benchmark_data.csv to ./tests/test_data/</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">new_benchmark_ad</span><span class="p">:</span>
+        <span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span>
+            <span class="n">illumination</span><span class="p">,</span>
+            <span class="n">rt_config</span><span class="p">,</span>
+            <span class="n">model_config</span><span class="p">,</span>
+            <span class="n">plot_config</span><span class="p">,</span>
+            <span class="n">impurities</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">setup_snicar</span><span class="p">()</span>
+        <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span> <span class="o">=</span> <span class="n">match_matlab_config</span><span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+
+        <span class="n">lyrList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">densList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">800</span><span class="p">]</span>
+        <span class="n">reffList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
+        <span class="n">zenList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
+        <span class="n">bcList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">]</span>
+        <span class="n">dzList</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+        <span class="p">]</span>
+
+        <span class="n">ncols</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">lyrList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">densList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">reffList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">zenList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">bcList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">dzList</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">ncols</span> <span class="o">==</span> <span class="mi">3000</span>
+
+        <span class="n">specOut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">ncols</span><span class="p">,</span> <span class="mi">481</span><span class="p">))</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">layer_type</span> <span class="ow">in</span> <span class="n">lyrList</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">density</span> <span class="ow">in</span> <span class="n">densList</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">reff</span> <span class="ow">in</span> <span class="n">reffList</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">zen</span> <span class="ow">in</span> <span class="n">zenList</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">bcList</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">dz</span> <span class="ow">in</span> <span class="n">dzList</span><span class="p">:</span>
+
+                                <span class="n">ice</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="n">dz</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">=</span> <span class="mi">5</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer_type</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="p">[</span><span class="n">density</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">rds</span> <span class="o">=</span> <span class="p">[</span><span class="n">reff</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+                                <span class="n">illumination</span><span class="o">.</span><span class="n">solzen</span> <span class="o">=</span> <span class="n">zen</span>
+                                <span class="n">illumination</span><span class="o">.</span><span class="n">calculate_irradiance</span><span class="p">()</span>
+                                <span class="n">impurities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">conc</span> <span class="o">=</span> <span class="p">[</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                <span class="p">]</span>  <span class="c1"># bc in all layers</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">calculate_refractive_index</span><span class="p">()</span>
+                                <span class="n">illumination</span><span class="o">.</span><span class="n">calculate_irradiance</span><span class="p">()</span>
+
+                                <span class="n">ssa_snw</span><span class="p">,</span> <span class="n">g_snw</span><span class="p">,</span> <span class="n">mac_snw</span> <span class="o">=</span> <span class="n">get_layer_OPs</span><span class="p">(</span>
+                                    <span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span>
+                                <span class="p">)</span>
+                                <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span> <span class="o">=</span> <span class="n">mix_in_impurities</span><span class="p">(</span>
+                                    <span class="n">ssa_snw</span><span class="p">,</span>
+                                    <span class="n">g_snw</span><span class="p">,</span>
+                                    <span class="n">mac_snw</span><span class="p">,</span>
+                                    <span class="n">ice</span><span class="p">,</span>
+                                    <span class="n">impurities</span><span class="p">,</span>
+                                    <span class="n">model_config</span><span class="p">,</span>
+                                <span class="p">)</span>
+                                <span class="n">outputs</span> <span class="o">=</span> <span class="n">adding_doubling_solver</span><span class="p">(</span>
+                                    <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span>
+                                <span class="p">)</span>
+
+                                <span class="n">specOut</span><span class="p">[</span><span class="n">counter</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">480</span><span class="p">]</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">albedo</span>
+                                <span class="n">specOut</span><span class="p">[</span><span class="n">counter</span><span class="p">,</span> <span class="mi">480</span><span class="p">]</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">BBA</span>
+                                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;./tests/test_data/py_benchmark_data.csv&quot;</span><span class="p">,</span> <span class="n">specOut</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="test_AD_solver_clean"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_AD_solver_clean">[docs]</a><span class="k">def</span> <span class="nf">test_AD_solver_clean</span><span class="p">(</span><span class="n">new_benchmark_ad_clean</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests Toon solver against SNICAR_ADv4 benchmark for impurity-free ice.</span>
+
+<span class="sd">    This func generates a new file - py_benchmark_data_clean.csv - that contains</span>
+<span class="sd">    spectral and broadband albedo simulated by BioSNICAR for a range of input</span>
+<span class="sd">    configurations. The same set of simulations was also run using a previously</span>
+<span class="sd">    published version of the SNICAR code written in Matlab by Chloe Whicker at</span>
+<span class="sd">    University of Michigan and run on the UMich server. This function</span>
+<span class="sd">    only creates the equivalent dataset using BioSNICAR, it doesn&#39;t compare the two.</span>
+<span class="sd">    The difference between this function and test_v4 is that no impurities are included</span>
+<span class="sd">    in the model configuration.</span>
+
+<span class="sd">    Equivalence between the Python and Matlab model configuration is controlled by</span>
+<span class="sd">    a call to match_matlab_config(). This function can be toggled off by setting</span>
+<span class="sd">    new_benchmark_clean to False in conftest.py.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        new_benchmark_clean: Boolean toggling this function on/off</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None but saves py_benchmark_data_clean.csv to ./tests/test_data/</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">new_benchmark_ad_clean</span><span class="p">:</span>
+        <span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span>
+            <span class="n">illumination</span><span class="p">,</span>
+            <span class="n">rt_config</span><span class="p">,</span>
+            <span class="n">model_config</span><span class="p">,</span>
+            <span class="n">plot_config</span><span class="p">,</span>
+            <span class="n">impurities</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">setup_snicar</span><span class="p">()</span>
+        <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span> <span class="o">=</span> <span class="n">match_matlab_config</span><span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;generating benchmark data using params equivalent to snicarv4 (AD solver)&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">lyrList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">densList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">800</span><span class="p">]</span>
+        <span class="n">reffList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
+        <span class="n">zenList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
+        <span class="n">bcList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dzList</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+        <span class="p">]</span>
+
+        <span class="n">ncols</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">lyrList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">densList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">reffList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">zenList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">bcList</span><span class="p">)</span>
+            <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">dzList</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">specOut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">ncols</span><span class="p">,</span> <span class="mi">481</span><span class="p">))</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">layer_type</span> <span class="ow">in</span> <span class="n">lyrList</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">density</span> <span class="ow">in</span> <span class="n">densList</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">reff</span> <span class="ow">in</span> <span class="n">reffList</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">zen</span> <span class="ow">in</span> <span class="n">zenList</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">bcList</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">dz</span> <span class="ow">in</span> <span class="n">dzList</span><span class="p">:</span>
+
+                                <span class="n">ice</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="n">dz</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">=</span> <span class="mi">5</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer_type</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="p">[</span><span class="n">density</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">rds</span> <span class="o">=</span> <span class="p">[</span><span class="n">reff</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+                                <span class="n">illumination</span><span class="o">.</span><span class="n">solzen</span> <span class="o">=</span> <span class="n">zen</span>
+                                <span class="n">illumination</span><span class="o">.</span><span class="n">calculate_irradiance</span><span class="p">()</span>
+                                <span class="n">impurities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">conc</span> <span class="o">=</span> <span class="p">[</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                    <span class="n">bc</span><span class="p">,</span>
+                                <span class="p">]</span>  <span class="c1"># bc in all layers</span>
+                                <span class="n">ice</span><span class="o">.</span><span class="n">calculate_refractive_index</span><span class="p">()</span>
+
+                                <span class="n">ssa_snw</span><span class="p">,</span> <span class="n">g_snw</span><span class="p">,</span> <span class="n">mac_snw</span> <span class="o">=</span> <span class="n">get_layer_OPs</span><span class="p">(</span>
+                                    <span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span>
+                                <span class="p">)</span>
+                                <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span> <span class="o">=</span> <span class="n">mix_in_impurities</span><span class="p">(</span>
+                                    <span class="n">ssa_snw</span><span class="p">,</span>
+                                    <span class="n">g_snw</span><span class="p">,</span>
+                                    <span class="n">mac_snw</span><span class="p">,</span>
+                                    <span class="n">ice</span><span class="p">,</span>
+                                    <span class="n">impurities</span><span class="p">,</span>
+                                    <span class="n">model_config</span><span class="p">,</span>
+                                <span class="p">)</span>
+
+                                <span class="n">outputs</span> <span class="o">=</span> <span class="n">adding_doubling_solver</span><span class="p">(</span>
+                                    <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span>
+                                <span class="p">)</span>
+
+                                <span class="n">specOut</span><span class="p">[</span><span class="n">counter</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">480</span><span class="p">]</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">albedo</span>
+                                <span class="n">specOut</span><span class="p">[</span><span class="n">counter</span><span class="p">,</span> <span class="mi">480</span><span class="p">]</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">BBA</span>
+                                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span>
+            <span class="s2">&quot;./tests/test_data/py_benchmark_data_clean.csv&quot;</span><span class="p">,</span> <span class="n">specOut</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="test_realistic_bba_ad"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_realistic_bba_ad">[docs]</a><span class="k">def</span> <span class="nf">test_realistic_bba_ad</span><span class="p">(</span><span class="n">get_matlab_data</span><span class="p">,</span> <span class="n">get_python_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests that BBA values are never &gt;1 or &lt;0.</span>
+
+<span class="sd">    Simple test that ensures broadband albedo predicted by model never</span>
+<span class="sd">    goes outside valid range of 0-1.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if the two datasets differ in length</span>
+<span class="sd">        tests fail if any BBA values in matlab data are &lt;0 or &gt;1</span>
+<span class="sd">        tests fail if any BBA values in python data are &lt;0 or &gt;1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># are the values predicted by the model always physical (i.e. between 0-1)</span>
+    <span class="c1"># do the files have the right shape and size?</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">get_matlab_data</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">get_python_data</span>
+
+    <span class="n">bb_py</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="mi">481</span><span class="p">]</span>
+    <span class="n">bb_mat</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="mi">481</span><span class="p">]</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bb_py</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">bb_mat</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">bb_py</span><span class="p">[</span><span class="n">bb_py</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">bb_py</span><span class="p">[</span><span class="n">bb_py</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">bb_mat</span><span class="p">[</span><span class="n">bb_mat</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">bb_mat</span><span class="p">[</span><span class="n">bb_mat</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="test_compare_pyBBA_to_matBBA"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_compare_pyBBA_to_matBBA">[docs]</a><span class="k">def</span> <span class="nf">test_compare_pyBBA_to_matBBA</span><span class="p">(</span><span class="n">get_matlab_data</span><span class="p">,</span> <span class="n">get_python_data</span><span class="p">,</span> <span class="n">set_tolerance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests that BBA values match between BioSNICAR data and the benchmark.</span>
+
+<span class="sd">    Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark</span>
+<span class="sd">    dataset and the newly generated BioSNICAR dataset for the AD solver.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo</span>
+<span class="sd">        set_tolerance: threshold error for BBAs to be considered equal</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if the difference between any pair of BBA values exceeds set_tolerance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">get_matlab_data</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">get_python_data</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="n">set_tolerance</span>
+    <span class="n">bb_py</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="mi">481</span><span class="p">]</span>
+    <span class="n">bb_mat</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="mi">481</span><span class="p">]</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">bb_mat</span> <span class="o">-</span> <span class="n">bb_py</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="n">error</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="test_compare_pyBBA_to_matBBA_clean"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_compare_pyBBA_to_matBBA_clean">[docs]</a><span class="k">def</span> <span class="nf">test_compare_pyBBA_to_matBBA_clean</span><span class="p">(</span>
+    <span class="n">get_matlab_data_clean</span><span class="p">,</span> <span class="n">get_python_data_clean</span><span class="p">,</span> <span class="n">set_tolerance</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests that BBA values match between BioSNICAR data and the benchmark for clean ice.</span>
+
+<span class="sd">    Element-wise comparison between BBAs in equivalent positions in the Matlab benchmark</span>
+<span class="sd">    dataset and the newly generated BioSNICAR dataset for the AD solver with no impurities.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo</span>
+<span class="sd">        set_tolerance: threshold error for BBAs to be considered equal</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if the difference between any pair of BBA values exceeds set_tolerance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">get_matlab_data_clean</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">get_python_data_clean</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="n">set_tolerance</span>
+    <span class="n">bb_py</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="mi">481</span><span class="p">]</span>
+    <span class="n">bb_mat</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="mi">481</span><span class="p">]</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">bb_mat</span> <span class="o">-</span> <span class="n">bb_py</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="n">error</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="match_matlab_config"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.match_matlab_config">[docs]</a><span class="k">def</span> <span class="nf">match_matlab_config</span><span class="p">(</span><span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensures model config is equal to the Matlab version used to generate benchmark data.</span>
+
+<span class="sd">    This function resets values in instances of Ice, Illumination and ModelConfig to ensure</span>
+<span class="sd">    equivalence between BioSNICAR and the Matlab code used to generate the benchmark data.</span>
+<span class="sd">    Also ensures all vars have correct length, and re-executes the class functions in Ice and</span>
+<span class="sd">    Illumination that update refractive indices and at-surface irradiance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ice: instance of Ice class</span>
+<span class="sd">        illumination: instance of Illumination class</span>
+<span class="sd">        rt_config: instance of RTConfig class</span>
+<span class="sd">        model_config: instance of ModelConfig class</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ice: updated instance of Ice class</span>
+<span class="sd">        illumination: updated instance of Illumination class</span>
+<span class="sd">        impurities: array of instances of Impurity class</span>
+<span class="sd">        rt_config: updated instance of RTConfig class</span>
+<span class="sd">        model_config: updated instance of ModelConfig class</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nbr_lyr</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="c1"># make sure ice config matches matlab benchmark</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">ri</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">shp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">shp_fctr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">ar</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">sfc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">]</span> <span class="o">*</span> <span class="n">model_config</span><span class="o">.</span><span class="n">nbr_wvl</span><span class="p">)</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">cdom</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">water</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">nbr_lyr</span> <span class="o">=</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">layer_type</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">rds</span> <span class="o">=</span> <span class="p">[</span><span class="n">ice</span><span class="o">.</span><span class="n">rds</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="p">[</span><span class="n">ice</span><span class="o">.</span><span class="n">rho</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+
+    <span class="n">illumination</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">illumination</span><span class="o">.</span><span class="n">direct</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># recalculate fluxes</span>
+    <span class="n">ice</span><span class="o">.</span><span class="n">calculate_refractive_index</span><span class="p">()</span>
+    <span class="n">illumination</span><span class="o">.</span><span class="n">calculate_irradiance</span><span class="p">()</span>
+
+    <span class="c1"># make sure smoothing function is toggled off</span>
+    <span class="n">model_config</span><span class="o">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># make sure impurities[0] is bc</span>
+    <span class="c1"># (same bc used by matlab model)</span>
+    <span class="n">impurities</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">conc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nbr_lyr</span>
+    <span class="n">impurity0</span> <span class="o">=</span> <span class="n">Impurity</span><span class="p">(</span>
+        <span class="s2">&quot;bc_ChCB_rn40_dns1270.nc&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;bc&quot;</span><span class="p">,</span> <span class="n">conc</span>
+    <span class="p">)</span>
+    <span class="n">impurities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">impurity0</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="p">(</span><span class="n">impurities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;bc&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">impurities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">file</span> <span class="o">==</span> <span class="s2">&quot;bc_ChCB_rn40_dns1270.nc&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span></div>
+
+
+<div class="viewcode-block" id="test_compare_pyspec_to_matspec_ad"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_compare_pyspec_to_matspec_ad">[docs]</a><span class="k">def</span> <span class="nf">test_compare_pyspec_to_matspec_ad</span><span class="p">(</span><span class="n">get_matlab_data</span><span class="p">,</span> <span class="n">get_python_data</span><span class="p">,</span> <span class="n">set_tolerance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests that spectral albedo values match between BioSNICAR data and the AD benchmark.</span>
+
+<span class="sd">    Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark</span>
+<span class="sd">    dataset and the newly generated BioSNICAR dataset for the AD solver. Albedo is compared</span>
+<span class="sd">    wavelength by wavelength for each column in the datasets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        get_matlab_data: matlab-snicar-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_python_data: BioSNICAR generated csv file of spectral and broadband albedo</span>
+<span class="sd">        set_tolerance: threshold error for BBAs to be considered equal</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if the difference between any pair of albedo values exceeds set_tolerance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">get_matlab_data</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">get_python_data</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="n">set_tolerance</span>
+    <span class="n">bb_spec</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">480</span><span class="p">]</span>
+    <span class="n">bb_spec</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">480</span><span class="p">]</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">bb_spec</span> <span class="o">-</span> <span class="n">bb_spec</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="n">error</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="test_compare_pyspec_to_matspec_clean"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_compare_pyspec_to_matspec_clean">[docs]</a><span class="k">def</span> <span class="nf">test_compare_pyspec_to_matspec_clean</span><span class="p">(</span>
+    <span class="n">get_matlab_data_clean</span><span class="p">,</span> <span class="n">get_python_data_clean</span><span class="p">,</span> <span class="n">set_tolerance</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests that spectral albedo values match between BioSNICAR data and the Toon benchmark.</span>
+
+<span class="sd">    Element-wise comparison between spectral albedo in equivalent positions in the Matlab benchmark</span>
+<span class="sd">    dataset and the newly generated BioSNICAR dataset for the AD solver with no impurities.</span>
+<span class="sd">    Albedo is compared wavelength by wavelength for each column in the datasets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        get_matlab_data_clean: matlab-snicar-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_python_data_clean: BioSNICAR generated csv file of spectral and broadband albedo</span>
+<span class="sd">        set_tolerance: threshold error for BBAs to be considered equal</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if the difference between any pair of albedo values exceeds set_tolerance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">get_matlab_data_clean</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">get_python_data_clean</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="n">set_tolerance</span>
+    <span class="n">bb_spec</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">480</span><span class="p">]</span>
+    <span class="n">bb_spec</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">480</span><span class="p">]</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">bb_spec</span> <span class="o">-</span> <span class="n">bb_spec</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="n">error</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="test_plot_random_spectra_pairs"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_plot_random_spectra_pairs">[docs]</a><span class="k">def</span> <span class="nf">test_plot_random_spectra_pairs</span><span class="p">(</span><span class="n">get_matlab_data</span><span class="p">,</span> <span class="n">get_python_data</span><span class="p">,</span> <span class="n">get_n_spectra</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots random selection of N spectra pairs and saves to /tests/test_data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        get_matlab_data: matlab-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_python_data: python-generated csv file of spectral and broadband albedo</span>
+<span class="sd">        get_n_spectra: number of pairs of spectral albedo to plot</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None but saves py_mat_comparison.png to /tests/test_data/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">get_matlab_data</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">get_python_data</span>
+    <span class="n">n_spec</span> <span class="o">=</span> <span class="n">get_n_spectra</span>
+    <span class="n">idxs</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">py</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">n_spec</span><span class="p">)</span>
+
+    <span class="n">wavelength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">py_spectra</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">idxs</span><span class="p">]</span>
+    <span class="n">mat_spectra</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">idxs</span><span class="p">]</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">py_spectra</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">mat_spectra</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;wavelength (nm)&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Albedo&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;solid lines = Python</span><span class="se">\n</span><span class="s2">crosses = Matlab&quot;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./tests/test_data/py_mat_comparison.png&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_config_fuzzer"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_config_fuzzer">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;dir&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;aprx&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;inc&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;ref&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">test_config_fuzzer</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="n">aprx</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">fuzz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks model runs correctly with range of input value combinations.</span>
+
+<span class="sd">    Fuzzer checks that model functions correctly across range of configurations.</span>
+<span class="sd">    This fuzzer spoecifically checks rtm config and illumination parameters. The</span>
+<span class="sd">    range of values is set in the parameterize decorators on this function and can</span>
+<span class="sd">    be adjusted to test for specific failures or to increase test coverage. The</span>
+<span class="sd">    defaults are designed to balance coverage with execution time. This func can be</span>
+<span class="sd">    toggled off by setting fuzz to fase in conftest.py</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dir: Boolean toggling between direct and diffuse irradiance</span>
+<span class="sd">        aprx: choice of two-stream approximation</span>
+<span class="sd">        inc: choice of spectral distribution of incoming irradiance</span>
+<span class="sd">        ref: chocie of refractive indices (Warren 1984, Warren 2008, Picard 2016)</span>
+<span class="sd">        fuzz: boolean toggling this fuxxing func on/off</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if snicar throws an exception with a particular configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fuzz</span><span class="p">:</span>
+
+        <span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span>
+            <span class="n">illumination</span><span class="p">,</span>
+            <span class="n">rt_config</span><span class="p">,</span>
+            <span class="n">model_config</span><span class="p">,</span>
+            <span class="n">plot_config</span><span class="p">,</span>
+            <span class="n">impurities</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">setup_snicar</span><span class="p">()</span>
+        <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span> <span class="o">=</span> <span class="n">match_matlab_config</span><span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+
+        <span class="n">rt_config</span><span class="o">.</span><span class="n">aprx_typ</span> <span class="o">=</span> <span class="n">aprx</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">direct</span> <span class="o">=</span> <span class="nb">dir</span>
+        <span class="n">ice</span><span class="o">.</span><span class="n">rf</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="n">ice</span><span class="o">.</span><span class="n">calculate_refractive_index</span><span class="p">()</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">inc</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">calculate_irradiance</span><span class="p">()</span>
+
+        <span class="n">ssa_snw</span><span class="p">,</span> <span class="n">g_snw</span><span class="p">,</span> <span class="n">mac_snw</span> <span class="o">=</span> <span class="n">get_layer_OPs</span><span class="p">(</span><span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span><span class="p">)</span>
+        <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span> <span class="o">=</span> <span class="n">mix_in_impurities</span><span class="p">(</span>
+            <span class="n">ssa_snw</span><span class="p">,</span> <span class="n">g_snw</span><span class="p">,</span> <span class="n">mac_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+        <span class="n">outputs_toon</span> <span class="o">=</span> <span class="n">toon_solver</span><span class="p">(</span>
+            <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">rt_config</span>
+        <span class="p">)</span>
+
+        <span class="n">outputs_ad</span> <span class="o">=</span> <span class="n">adding_doubling_solver</span><span class="p">(</span>
+            <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="test_var_fuzzer"><a class="viewcode-back" href="../../tests.html#tests.test_snicar.test_var_fuzzer">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;rds&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;rho&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;zen&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;cfactor&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;dust&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50000</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;algae&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50000</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">test_var_fuzzer</span><span class="p">(</span><span class="n">rds</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">zen</span><span class="p">,</span> <span class="n">cfactor</span><span class="p">,</span> <span class="n">dust</span><span class="p">,</span> <span class="n">algae</span><span class="p">,</span> <span class="n">fuzz</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks model runs correctly with range of input value combinations.</span>
+
+<span class="sd">    Fuzzer checks that model functions correctly across range of configurations.</span>
+<span class="sd">    This fuzzer spoecifically checks input parameters including ice physical properties.</span>
+<span class="sd">    The range of values is set in the parameterize decorators on this function and can</span>
+<span class="sd">    be adjusted to test for specific failures or to increase test coverage. The</span>
+<span class="sd">    defaults are designed to balance coverage with execution time. This func can be</span>
+<span class="sd">    toggled off by setting fuzz to fase in conftest.py</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rds: effective grain radius (um) of ice grains (lyr_typ==0) or air bubbles (lyr_typ==1)</span>
+<span class="sd">        rho: density of ice layer (kg/m3)</span>
+<span class="sd">        zen: zenith angle of direct beam (degrees from vertical)</span>
+<span class="sd">        cfactor: concentrating factor used to convert field-measured to modelled LAP concentration</span>
+<span class="sd">        dust: concentration of mineral dust in each layer of the model (ppb)</span>
+<span class="sd">        algae: concentration of glacir algae in each layer of the model (ppb)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        tests fail if snicar throws an exception with a particular configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fuzz</span><span class="p">:</span>
+        <span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span>
+            <span class="n">illumination</span><span class="p">,</span>
+            <span class="n">rt_config</span><span class="p">,</span>
+            <span class="n">model_config</span><span class="p">,</span>
+            <span class="n">plot_config</span><span class="p">,</span>
+            <span class="n">impurities</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">setup_snicar</span><span class="p">()</span>
+        <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span> <span class="o">=</span> <span class="n">match_matlab_config</span><span class="p">(</span>
+            <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">rt_config</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+
+        <span class="n">impurities</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">conc1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+        <span class="n">conc1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">algae</span>
+        <span class="n">impurity0</span> <span class="o">=</span> <span class="n">Impurity</span><span class="p">(</span>
+            <span class="s2">&quot;mie_sot_ChC90_dns_1317.nc&quot;</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">cfactor</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;bc&quot;</span><span class="p">,</span>
+            <span class="n">conc1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">impurities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">impurity0</span><span class="p">)</span>
+
+        <span class="n">conc2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+        <span class="n">conc2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dust</span>
+        <span class="n">impurity1</span> <span class="o">=</span> <span class="n">Impurity</span><span class="p">(</span>
+            <span class="s2">&quot;dust_balkanski_central_size1.nc&quot;</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">cfactor</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;dust1&quot;</span><span class="p">,</span>
+            <span class="n">conc2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">impurities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">impurity1</span><span class="p">)</span>
+
+        <span class="n">ice</span><span class="o">.</span><span class="n">rds</span> <span class="o">=</span> <span class="p">[</span><span class="n">rds</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+        <span class="n">ice</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="p">[</span><span class="n">rho</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ice</span><span class="o">.</span><span class="n">dz</span><span class="p">)</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">solzen</span> <span class="o">=</span> <span class="n">zen</span>
+        <span class="n">illumination</span><span class="o">.</span><span class="n">calculate_irradiance</span><span class="p">()</span>
+
+        <span class="n">ssa_snw</span><span class="p">,</span> <span class="n">g_snw</span><span class="p">,</span> <span class="n">mac_snw</span> <span class="o">=</span> <span class="n">get_layer_OPs</span><span class="p">(</span><span class="n">ice</span><span class="p">,</span> <span class="n">model_config</span><span class="p">)</span>
+        <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span> <span class="o">=</span> <span class="n">mix_in_impurities</span><span class="p">(</span>
+            <span class="n">ssa_snw</span><span class="p">,</span> <span class="n">g_snw</span><span class="p">,</span> <span class="n">mac_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">impurities</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+        <span class="n">outputs_toon</span> <span class="o">=</span> <span class="n">toon_solver</span><span class="p">(</span>
+            <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">rt_config</span>
+        <span class="p">)</span>
+
+        <span class="n">outputs_ad</span> <span class="o">=</span> <span class="n">adding_doubling_solver</span><span class="p">(</span>
+            <span class="n">tau</span><span class="p">,</span> <span class="n">ssa</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">L_snw</span><span class="p">,</span> <span class="n">ice</span><span class="p">,</span> <span class="n">illumination</span><span class="p">,</span> <span class="n">model_config</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Joseph Cook.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

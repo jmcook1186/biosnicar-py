@@ -91,3 +91,6 @@ def build_impurities_array():
         impurities.append(Impurity(file, coated, cfactor, unit, name, conc))
 
     return impurities
+
+if __name__ == '__main__':
+    pass

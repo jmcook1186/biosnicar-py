@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.display &#8212; BioSNICAR 2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/haiku.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../../index.html">
+          <span>BioSNICAR 2.0 documentation</span></a></h1>
+        <h2 class="heading"><span>src.display</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <h1>Source code for src.display</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">classes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+
+<div class="viewcode-block" id="setup_axes"><a class="viewcode-back" href="../../src.html#src.display.setup_axes">[docs]</a><span class="k">def</span> <span class="nf">setup_axes</span><span class="p">(</span><span class="n">plot_config</span><span class="p">):</span>
+
+    <span class="n">rc</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;figure.figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+        <span class="s2">&quot;axes.facecolor&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">plot_config</span><span class="o">.</span><span class="n">facecolor</span><span class="p">),</span>
+        <span class="s2">&quot;axes.grid&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
+        <span class="s2">&quot;grid.color&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">plot_config</span><span class="o">.</span><span class="n">grid_color</span><span class="p">),</span>
+        <span class="s2">&quot;xtick.major.width&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">xtick_width</span><span class="p">,</span>
+        <span class="s2">&quot;xtick.major.size&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">xtick_size</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.major.width&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">ytick_width</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.major.size&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">ytick_size</span><span class="p">,</span>
+        <span class="s2">&quot;axes.linewidth&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">linewidth</span><span class="p">,</span>
+        <span class="s2">&quot;font.size&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">fontsize</span><span class="p">,</span>
+        <span class="s2">&quot;xtick.bottom&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">xtick_btm</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.left&quot;</span><span class="p">:</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">ytick_left</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">rc</span></div>
+
+
+<div class="viewcode-block" id="plot_albedo"><a class="viewcode-back" href="../../src.html#src.display.plot_albedo">[docs]</a><span class="k">def</span> <span class="nf">plot_albedo</span><span class="p">(</span><span class="n">plot_config</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">albedo</span><span class="p">):</span>
+
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">setup_axes</span><span class="p">(</span><span class="n">plot_config</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;seaborn&quot;</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+    <span class="n">wvl</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">wavelengths</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wvl</span><span class="p">,</span> <span class="n">albedo</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Albedo&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span>
+        <span class="s2">&quot;Wavelength (µm)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span>
+    <span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span>
+        <span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span>
+    <span class="p">),</span> <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="mf">0.68</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot_config</span><span class="o">.</span><span class="n">save</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">savepath</span> <span class="o">+</span> <span class="s2">&quot;spectral_albedo.png&quot;</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="display_out_data"><a class="viewcode-back" href="../../src.html#src.display.display_out_data">[docs]</a><span class="k">def</span> <span class="nf">display_out_data</span><span class="p">(</span><span class="n">outputs</span><span class="p">):</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">** OUTPUT DATA **&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Broadband albedo: &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">BBA</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+    <span class="n">I2DBA</span><span class="p">,</span> <span class="n">I3DBA</span><span class="p">,</span> <span class="n">NDCI</span><span class="p">,</span> <span class="n">MCI</span><span class="p">,</span> <span class="n">II</span> <span class="o">=</span> <span class="n">calculate_band_ratios</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">albedo</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">BAND RATIO INDEX VALUES&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;2DBA Index: &quot;</span><span class="p">,</span> <span class="n">I2DBA</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3DBA index: &quot;</span><span class="p">,</span> <span class="n">I3DBA</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NDCI index: &quot;</span><span class="p">,</span> <span class="n">NDCI</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;MCI index: &quot;</span><span class="p">,</span> <span class="n">MCI</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Impurity Index: &quot;</span><span class="p">,</span> <span class="n">II</span><span class="p">)</span>
+
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="calculate_band_ratios"><a class="viewcode-back" href="../../src.html#src.display.calculate_band_ratios">[docs]</a><span class="k">def</span> <span class="nf">calculate_band_ratios</span><span class="p">(</span><span class="n">albedo</span><span class="p">):</span>
+
+    <span class="n">I2DBA</span> <span class="o">=</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">51</span><span class="p">]</span> <span class="o">/</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">46</span><span class="p">]</span>
+    <span class="n">I3DBA</span> <span class="o">=</span> <span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">46</span><span class="p">]</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">50</span><span class="p">])</span> <span class="o">/</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">55</span><span class="p">]</span>
+    <span class="n">NDCI</span> <span class="o">=</span> <span class="p">((</span><span class="n">albedo</span><span class="p">[</span><span class="mi">50</span><span class="p">]</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">48</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">55</span><span class="p">]</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">48</span><span class="p">]))</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">50</span><span class="p">]</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">48</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">55</span><span class="p">]</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">48</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">MCI</span> <span class="o">=</span> <span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">50</span><span class="p">]</span> <span class="o">-</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">46</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">50</span><span class="p">]</span> <span class="o">+</span> <span class="n">albedo</span><span class="p">[</span><span class="mi">46</span><span class="p">])</span>
+    <span class="n">II</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">36</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">albedo</span><span class="p">[</span><span class="mi">66</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">I2DBA</span><span class="p">,</span> <span class="n">I3DBA</span><span class="p">,</span> <span class="n">NDCI</span><span class="p">,</span> <span class="n">MCI</span><span class="p">,</span> <span class="n">II</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Joseph Cook.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>

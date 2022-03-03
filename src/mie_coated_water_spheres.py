@@ -364,3 +364,7 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     }
 
     return res
+
+
+if __name__ == '__main__':
+    pass

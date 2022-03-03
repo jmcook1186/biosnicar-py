@@ -76,3 +76,7 @@ def calculate_band_ratios(albedo):
     II = np.log(albedo[36]) / np.log(albedo[66])
 
     return I2DBA, I3DBA, NDCI, MCI, II
+
+
+if __name__ == '__main__':
+    pass

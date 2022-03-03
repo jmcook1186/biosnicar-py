@@ -364,3 +364,6 @@ class PlotConfig:
         self.save = inputs["PLOT"]["SAVE"]
 
 
+
+if __name__ == '__main__':
+    pass

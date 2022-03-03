@@ -416,3 +416,7 @@ for side_length in np.arange(2000, 11000, 1000):
         net_cdf_updater(
             RI_SOURCE, SAVEPATH, g_list, ssa_list, mac_list, depth, side_length, 917
         )
+
+
+if __name__ == '__main__':
+    pass

@@ -2,6 +2,8 @@
 How to Use
 **********
 
+This document explains how to use BioSNICAR.
+
 Installing Environment/Dependencies
 -----------------------------------
 
