@@ -1,9 +1,8 @@
+#!/usr/bin/python
 import sys
-
-from src.classes import Impurity
-
 # make sure we can import from/src
-sys.path.append("./src")
+sys.path.append("../src")
+from classes import Impurity
 from setup_snicar import *
 from classes import *
 from column_OPs import *
