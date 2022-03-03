@@ -50,6 +50,9 @@ def bioptical_calculations(
     saveplots,
     savepath,
 ):
+    """Calculates absorption cross section from input vars.
+
+    """
 
     #################
     ## Initialization
@@ -223,6 +226,8 @@ def ssp_calculations(
     figname,
     report_dims,
 ):
+    """Calculates single scattering optical properties using Mie or GO scattering codes.
+    """
 
     if GO:
         # set up lists
