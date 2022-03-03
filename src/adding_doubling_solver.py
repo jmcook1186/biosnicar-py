@@ -1041,6 +1041,9 @@ def apply_smoothing_function(albedo, model_config):
     Args:
         albedo: array of albedo values, likely passed as outputs.albedo
         model_config: instance of ModelConfig
+    
+    Returns:
+        albedo: updated array of albedo values
 
     """
 
