@@ -7,6 +7,11 @@
 
 BioSNICAR is a set of Python scripts that predict the spectral albedo of snow and glacier ice between 200nm to 5000nm given information about the illumination conditions, ice structure and the type and concentration of light absorbing particulates (LAPs) externally mixed with the snow/ice. The jumping off point for this model was legacy FORTRAN and Matlab code of the SNICAR model developed by Flanner et al. (2007), which solves the radiative transfer equations simplified into a two-stream scheme after Toon et al. 1989. Two solvers are available: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers (Brieglib and Light, 2007, Dang et al. 2019, Wicker et al. 2022). BioSNICAR couples SNICAR to a bio-optical model that allows for calculation of optical properties of snow and glacier algae to load into the model as LAPs (Cook et al. 2017, 2020). This functionality, along with the vectorized AD solver formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
 
+## Documentation
+
+Detailed documentation is available at https://biosnicar-go-py.readthedocs.io.This README gives a brief overview of the key information required to run the model.
+
+
 ## How to use
 
 ### Installing Environment/Dependencies
@@ -37,23 +42,6 @@ We have also maintained a separate version of the BioSNICAR codebase that uses a
 
 ## Choosing Inputs
 It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to `inputs.md` for explanations of each parameter. 
-
-## Theoretical Background
-
-A detailed description of the theory on which the model is based can be found in Flanner et al. 2021. Briefly, the spectral albedo is computed from the single scattering  properties of snow/ice and the light absorbing particulates (LAPs), along with the concentrations of LAPs and the physical properties of snow/ice (density, grain/pore size). These can vary in each layer, allowing for representation of e.g. porous weathered crust above unweathered ice with an uppermost mm of liquid water containing algae, or deep layers of ancient dust. Below are detailed the different options to calculate the single scattering properties.
-
-### Snow and ice 
-
-The snow and ice single scattering properties are generated from the refractive index of ice from Warren 1984, Warren 2008 or Picard 2016 and all parametrisation is done in the driver of the model. Snow and ice are represented either as a collection of grains, or as a continuous layer with embedded air bubbles. This second option requires to use the AD solver with fresnel layers (ADD_DOUBLE and LAYER_TYPE toggled on in the model driver). The embedded bubbles are represented as spheres of air surrounded by ice, and the optical properties are calculated using Mie theory (Whicker et al. 2022). Alternatively, the grains can be represented as spheres using Mie theory, as spheroids, hexagonal plates or koch snowflakes using calculations adapted from Mie theory (He et al. 2017, 2018), or hexagonal prisms using geometric optics calculations (van Diedenhoven 2014, Cook et al. 2020). The grain option works with both solvers as long as there is no fresnel layer included when using the AD solver. There is also an option to add liquid water coating around the grains using two-layer coated sphere Mie calculations (Niklas Bohn, 01/05/2020). This option had previously been included in the Matlab version of BioSNICAR and was deprecated for the Python translation in favour of increasing ice grain radii to simulate interstitial melt water; however, it was subsequently decided that giving the choice of method for incorporating liquid water was a better approach. Note that running the model with spherical grains and omitting any biological particles is equivalent to running the original SNICAR model of Flanner et al. (2007, 2009). The impact of colored dissolved organic matter (CDOM) on snow/ice optical properties can be incorporated by toggling on the cdom_layer parameter in the model. The current parametrisation is based on CDOM absorption measurements carried on samples from south-eastern greenlandic glaciers (Halbach et al. 2022).
-
-### LAPs
-
-The single scattering properties (ssps) of LAPs are calculated outside of the main driver of the model. For most of them, the ssps were calculated in published studies and are directly loaded from the main driver, so that the user only needs to select the type of LAP to include in the simulations from the driver (black carbon from Bohren and Huffman, 1983; brown carbon from Kirchstetter et al. 2004; dust from Balkanski et al 2007; volcanic ashes from Flanner et al 2014; Colorado dust from Skiles et al 2017; Greenlandic dust with low to high hematite content from Polashenski et al 2015, Greenlandic dust sampled in the south-western ablation area of the ice sheet from Cook et al. 2020; snow and glacier algae from Cook et al. 2017, Cook et al. 2020). 
-However, BioSNICAR includes a bio-optical model that allows for the calculations of ssps of pigmented algae. Two options are available: spherical cells as per ice grains using Mie theory, typically used for snow algae, and circular based cylinders using geometric optics typically used for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013. The user needs to feed the bio-optical model with the refractive index and absorption cross section of the cell, along with algae dry and wet density and cell size. The absorption cross section can be calculated in the model from intracellular pigment concentrations (Cook et al. 2017; pigment absorption coefficients from Bidigare 1990, Halbach 2022, Clementson and Wojtasiewicz 2019)) or loaded as the absorbance of extracted pigments directly, which allows to use a pigment packaging correction (Chevrollier et al. 2022) or loaded as an empirical measurement of whole-cells. The ssps calculated are then stored into a file directly usable in the main driver of the model.
-
-## Model Structure
-
-<img src="./Assets/model_structure2.jpg" width=1500>
 
 
 ## Repository Structure
@@ -182,22 +170,6 @@ The following directory tree shows the correct structure for this model code. Th
     └── test_snicar.py
 ```
 
-
-# Testing
-
-This repository contains a set of executable tests that anyone can run independently to verify the codebase against a Matlab benchmark version (published in Whicker et al 2021) along with a fuzzer that tests that the model runs and returns valid results across a wide parameter space. The fuzzer can be configured for specific ranges of values by adjusting the `pytest.mark.parameterize` statements in `test_snicar.py`, or just use our recommended defaults. The fuzzer can be toggled off by setting `fuzz = 0` in `conftest.py`. Tests are organised in `/tests` but are run from the top level directory so that the model code can be more conveniently imported as modules into the test session. Therefore, to run the tests, simply navigate to the top level directory and run:
-
-`$ pytest tests`
-
-This will open two datasets containing 5000 simulations replicated in the Python and Matlab implementations. Sucessfully passing tests are reported in the console as green dots, and pytest will return a summary of N tests passed and N tests failed. A figure showing N pairs of spectra is saved to the /tests folder for visual inspection. Any failures will be documented in the terminal so that they can be analysed and any bugs fixed. In the downloaded version of this repo, 100% of 1060 individual tests pass.
-
-This demonstrates physically realistic predictions and equivalency between the two codebases to at least 1e-8 albedo units. The great majority of the simulations match to within 1e-12.
-
-<img src="./Assets/py_mat_comparison.png" width=500>
-
-More tests can and will be added over time (please feel free to contribute tests)!
-
-The model configuration used to generate the data used to drive the automated tests can be found in the `matlab_benchmark_script.m` and `python_benchmark_script.py` files. The Python version calls functions in `py_benchmarking_funcs.py` The matlab version was run on a linux server at UMich, the Python version was run locally by the repository owner on Ubuntu 20.04. 
 
 # Contributions
 

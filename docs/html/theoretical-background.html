@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theoretical Background &mdash; BioSNICAR 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to Use" href="how-to-use.html" />
+    <link rel="prev" title="Welcome to BioSNICAR’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> BioSNICAR
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Theoretical Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#snow-and-ice">Snow and ice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#laps">LAPs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="how-to-use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inputs.html">Input Configuration Guide for BioSNICAR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">BioSNICAR Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BioSNICAR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Theoretical Background</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/theoretical-background.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="theoretical-background">
+<h1>Theoretical Background<a class="headerlink" href="#theoretical-background" title="Permalink to this headline"></a></h1>
+<p>A detailed description of the theory on which the model is based can be found in Flanner et al. 2021. Briefly, the spectral albedo is computed from the single scattering  properties of snow/ice and the light absorbing particulates (LAPs), along with the concentrations of LAPs and the physical properties of snow/ice (density, grain/pore size). These can vary in each layer, allowing for representation of e.g. porous weathered crust above unweathered ice with an uppermost mm of liquid water containing algae, or deep layers of ancient dust. Below are detailed the different options to calculate the single scattering properties.</p>
+<section id="snow-and-ice">
+<h2>Snow and ice<a class="headerlink" href="#snow-and-ice" title="Permalink to this headline"></a></h2>
+<p>The snow and ice single scattering properties are generated from the refractive index of ice from Warren 1984, Warren 2008 or Picard 2016 and all parametrisation is done in the driver of the model. Snow and ice are represented either as a collection of grains, or as a continuous layer with embedded air bubbles. This second option requires to use the AD solver with fresnel layers (ADD_DOUBLE and LAYER_TYPE toggled on in the model driver). The embedded bubbles are represented as spheres of air surrounded by ice, and the optical properties are calculated using Mie theory (Whicker et al. 2022). Alternatively, the grains can be represented as spheres using Mie theory, as spheroids, hexagonal plates or koch snowflakes using calculations adapted from Mie theory (He et al. 2017, 2018), or hexagonal prisms using geometric optics calculations (van Diedenhoven 2014, Cook et al. 2020). The grain option works with both solvers as long as there is no fresnel layer included when using the AD solver. There is also an option to add liquid water coating around the grains using two-layer coated sphere Mie calculations (Niklas Bohn, 01/05/2020). This option had previously been included in the Matlab version of BioSNICAR and was deprecated for the Python translation in favour of increasing ice grain radii to simulate interstitial melt water; however, it was subsequently decided that giving the choice of method for incorporating liquid water was a better approach. Note that running the model with spherical grains and omitting any biological particles is equivalent to running the original SNICAR model of Flanner et al. (2007, 2009). The impact of colored dissolved organic matter (CDOM) on snow/ice optical properties can be incorporated by toggling on the cdom_layer parameter in the model. The current parametrisation is based on CDOM absorption measurements carried on samples from south-eastern greenlandic glaciers (Halbach et al. 2022).</p>
+</section>
+<section id="laps">
+<h2>LAPs<a class="headerlink" href="#laps" title="Permalink to this headline"></a></h2>
+<p>The single scattering properties (ssps) of LAPs are calculated outside of the main driver of the model. For most of them, the ssps were calculated in published studies and are directly loaded from the main driver, so that the user only needs to select the type of LAP to include in the simulations from the driver (black carbon from Bohren and Huffman, 1983; brown carbon from Kirchstetter et al. 2004; dust from Balkanski et al 2007; volcanic ashes from Flanner et al 2014; Colorado dust from Skiles et al 2017; Greenlandic dust with low to high hematite content from Polashenski et al 2015, Greenlandic dust sampled in the south-western ablation area of the ice sheet from Cook et al. 2020; snow and glacier algae from Cook et al. 2017, Cook et al. 2020).
+However, BioSNICAR includes a bio-optical model that allows for the calculations of ssps of pigmented algae. Two options are available: spherical cells as per ice grains using Mie theory, typically used for snow algae, and circular based cylinders using geometric optics typically used for glacier algae that are long chains of cells approximated as cylinders after Lee and Pilon, 2013. The user needs to feed the bio-optical model with the refractive index and absorption cross section of the cell, along with algae dry and wet density and cell size. The absorption cross section can be calculated in the model from intracellular pigment concentrations (Cook et al. 2017; pigment absorption coefficients from Bidigare 1990, Halbach 2022, Clementson and Wojtasiewicz 2019)) or loaded as the absorbance of extracted pigments directly, which allows to use a pigment packaging correction (Chevrollier et al. 2022) or loaded as an empirical measurement of whole-cells. The ssps calculated are then stored into a file directly usable in the main driver of the model.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to BioSNICAR’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="how-to-use.html" class="btn btn-neutral float-right" title="How to Use" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Cook.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

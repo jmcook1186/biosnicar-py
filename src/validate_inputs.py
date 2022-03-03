@@ -1,5 +1,7 @@
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 from classes import *
-
 
 def validate_inputs(ice, rt_config, model_config, illumination, impurities):
 
@@ -206,3 +208,8 @@ def validate_model_config(model_config):
         raise ValueError("nbr_wvl does not equal 480")
 
     return
+
+
+
+if __name__ == '__main__':
+    pass

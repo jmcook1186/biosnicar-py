@@ -1,3 +1,6 @@
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 from scipy.signal import savgol_filter
 from setup_snicar import *
 from classes import *
@@ -841,3 +844,6 @@ def apply_smoothing_function(albedo, model_config):
     albedo = yhat
 
     return albedo
+
+if __name__ == '__main__':
+    pass

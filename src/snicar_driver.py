@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-import collections as c
-from pathlib import Path
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
+import sys
+sys.path.append("./src")
 from setup_snicar import *
 from classes import *
 from column_OPs import *

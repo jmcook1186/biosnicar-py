@@ -1,9 +1,9 @@
+#!/usr/bin/python
 import sys
-
-from src.classes import Impurity
-
-# make sure we can import from/src
+# make sure we can import from /src
+sys.path.append("../src")
 sys.path.append("./src")
+from classes import Impurity
 from setup_snicar import *
 from classes import *
 from column_OPs import *
@@ -671,3 +671,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
         pass
 
     return
+
+
+if __name__ == '__main__':
+    pass

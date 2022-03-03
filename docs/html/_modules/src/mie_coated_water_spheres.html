@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.mie_coated_water_spheres &mdash; BioSNICAR 2.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> BioSNICAR
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../theoretical-background.html">Theoretical Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-to-use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../inputs.html">Input Configuration Guide for BioSNICAR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">BioSNICAR Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BioSNICAR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>src.mie_coated_water_spheres</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.mie_coated_water_spheres</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Copyright (C) 2020  Niklas Bohn (GFZ, &lt;nbohn@gfz-potsdam.de&gt;),</span>
+<span class="sd">German Research Centre for Geosciences (GFZ, &lt;https://www.gfz-potsdam.de&gt;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;./src&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">miepython</span> <span class="kn">import</span> <span class="n">mie</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">jv</span><span class="p">,</span> <span class="n">yv</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+
+<div class="viewcode-block" id="fill_nans_scipy1"><a class="viewcode-back" href="../../src.html#src.mie_coated_water_spheres.fill_nans_scipy1">[docs]</a><span class="k">def</span> <span class="nf">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interpolates data to fill nan values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    padata: source data with np.NaN values</span>
+<span class="sd">    pkind:  kind of interpolation (see scipy.interpolate.interp1d docs)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        f(aindexes): data with interpolated values instead of nans</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">aindexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">padata</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">(</span><span class="n">agood_indexes</span><span class="p">,)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">padata</span><span class="p">))</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span>
+        <span class="n">agood_indexes</span><span class="p">,</span>
+        <span class="n">padata</span><span class="p">[</span><span class="n">agood_indexes</span><span class="p">],</span>
+        <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">,</span>
+        <span class="n">kind</span><span class="o">=</span><span class="n">pkind</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">aindexes</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="miecoated_ab3"><a class="viewcode-back" href="../../src.html#src.mie_coated_water_spheres.miecoated_ab3">[docs]</a><span class="k">def</span> <span class="nf">miecoated_ab3</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computation of Mie Coefficients.</span>
+<span class="sd">    </span>
+<span class="sd">    Computes a_n, b_n, of orders n=1 to nmax, complex</span>
+<span class="sd">    refractive index m=m&#39;+im&quot;, and size parameters </span>
+<span class="sd">    x=k0*a, y=k0*b where k0 = wave number in the ambient medium for</span>
+<span class="sd">    coated spheres, a = inner radius, b = outer radius </span>
+<span class="sd">    m1, m2 = inner, outer refractive index;</span>
+<span class="sd">    </span>
+<span class="sd">    p. 183 in Bohren and Huffman (1983) BEWI:TDD122 but</span>
+<span class="sd">    using the bottom equation on p. 483 for chi_prime (Matzler 2002).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        m1: refractive index for inner sphere</span>
+<span class="sd">        m2: refractive index for outher sphere</span>
+<span class="sd">        x:  size parameter for inner sphere</span>
+<span class="sd">        y:  size parameter for outer sphere</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Mie Coefficients a_n and b_n</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">M</span> <span class="o">=</span> <span class="n">m2</span> <span class="o">/</span> <span class="n">m1</span>
+    <span class="n">nmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)))</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">m1</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">m2</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">m2</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="n">su</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="p">)</span>
+    <span class="n">sv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">sw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">pu</span> <span class="o">=</span> <span class="n">su</span> <span class="o">*</span> <span class="n">jv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">sy</span> <span class="o">*</span> <span class="n">jv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">pv</span> <span class="o">=</span> <span class="n">sv</span> <span class="o">*</span> <span class="n">jv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">pw</span> <span class="o">=</span> <span class="n">sw</span> <span class="o">*</span> <span class="n">jv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">p1u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">u</span><span class="p">)]),</span> <span class="n">pu</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">p1y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">y</span><span class="p">)]),</span> <span class="n">py</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">p1v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">v</span><span class="p">)]),</span> <span class="n">pv</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">p1w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">w</span><span class="p">)]),</span> <span class="n">pw</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">ppw</span> <span class="o">=</span> <span class="n">p1w</span> <span class="o">-</span> <span class="n">n</span> <span class="o">*</span> <span class="n">pw</span> <span class="o">/</span> <span class="n">w</span>
+    <span class="n">ppy</span> <span class="o">=</span> <span class="n">p1y</span> <span class="o">-</span> <span class="n">n</span> <span class="o">*</span> <span class="n">py</span> <span class="o">/</span> <span class="n">y</span>
+    <span class="n">chv</span> <span class="o">=</span> <span class="o">-</span><span class="n">sv</span> <span class="o">*</span> <span class="n">yv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">chw</span> <span class="o">=</span> <span class="o">-</span><span class="n">sw</span> <span class="o">*</span> <span class="n">yv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">chy</span> <span class="o">=</span> <span class="o">-</span><span class="n">sy</span> <span class="o">*</span> <span class="n">yv</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">ch1y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">y</span><span class="p">)]),</span> <span class="n">chy</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">gsy</span> <span class="o">=</span> <span class="n">py</span> <span class="o">-</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">chy</span>
+    <span class="n">gs1y</span> <span class="o">=</span> <span class="n">p1y</span> <span class="o">-</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">ch1y</span>
+    <span class="n">gspy</span> <span class="o">=</span> <span class="n">gs1y</span> <span class="o">-</span> <span class="n">n</span> <span class="o">*</span> <span class="n">gsy</span> <span class="o">/</span> <span class="n">y</span>
+    <span class="n">du</span> <span class="o">=</span> <span class="n">p1u</span> <span class="o">/</span> <span class="n">pu</span> <span class="o">-</span> <span class="n">n</span> <span class="o">/</span> <span class="n">u</span>
+    <span class="n">dv</span> <span class="o">=</span> <span class="n">p1v</span> <span class="o">/</span> <span class="n">pv</span> <span class="o">-</span> <span class="n">n</span> <span class="o">/</span> <span class="n">v</span>
+    <span class="n">dw</span> <span class="o">=</span> <span class="n">p1w</span> <span class="o">/</span> <span class="n">pw</span> <span class="o">-</span> <span class="n">n</span> <span class="o">/</span> <span class="n">w</span>
+    <span class="n">chpw</span> <span class="o">=</span> <span class="n">chw</span> <span class="o">*</span> <span class="n">dw</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">pw</span>
+    <span class="n">uu</span> <span class="o">=</span> <span class="n">M</span> <span class="o">*</span> <span class="n">du</span> <span class="o">-</span> <span class="n">dv</span>
+    <span class="n">vv</span> <span class="o">=</span> <span class="n">du</span> <span class="o">/</span> <span class="n">M</span> <span class="o">-</span> <span class="n">dv</span>
+    <span class="n">pvi</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">pv</span>
+    <span class="n">aaa</span> <span class="o">=</span> <span class="n">pv</span> <span class="o">*</span> <span class="n">uu</span> <span class="o">/</span> <span class="p">(</span><span class="n">chv</span> <span class="o">*</span> <span class="n">uu</span> <span class="o">+</span> <span class="n">pvi</span><span class="p">)</span>
+    <span class="n">bbb</span> <span class="o">=</span> <span class="n">pv</span> <span class="o">*</span> <span class="n">vv</span> <span class="o">/</span> <span class="p">(</span><span class="n">chv</span> <span class="o">*</span> <span class="n">vv</span> <span class="o">+</span> <span class="n">pvi</span><span class="p">)</span>
+    <span class="n">aa1</span> <span class="o">=</span> <span class="n">ppw</span> <span class="o">-</span> <span class="n">aaa</span> <span class="o">*</span> <span class="n">chpw</span>
+    <span class="n">aa2</span> <span class="o">=</span> <span class="n">pw</span> <span class="o">-</span> <span class="n">aaa</span> <span class="o">*</span> <span class="n">chw</span>
+    <span class="n">bb1</span> <span class="o">=</span> <span class="n">ppw</span> <span class="o">-</span> <span class="n">bbb</span> <span class="o">*</span> <span class="n">chpw</span>
+    <span class="n">bb2</span> <span class="o">=</span> <span class="n">pw</span> <span class="o">-</span> <span class="n">bbb</span> <span class="o">*</span> <span class="n">chw</span>
+    <span class="n">aa</span> <span class="o">=</span> <span class="p">(</span><span class="n">py</span> <span class="o">*</span> <span class="n">aa1</span> <span class="o">-</span> <span class="n">m2</span> <span class="o">*</span> <span class="n">ppy</span> <span class="o">*</span> <span class="n">aa2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">gsy</span> <span class="o">*</span> <span class="n">aa1</span> <span class="o">-</span> <span class="n">m2</span> <span class="o">*</span> <span class="n">gspy</span> <span class="o">*</span> <span class="n">aa2</span><span class="p">)</span>
+    <span class="n">bb</span> <span class="o">=</span> <span class="p">(</span><span class="n">m2</span> <span class="o">*</span> <span class="n">py</span> <span class="o">*</span> <span class="n">bb1</span> <span class="o">-</span> <span class="n">ppy</span> <span class="o">*</span> <span class="n">bb2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">m2</span> <span class="o">*</span> <span class="n">gsy</span> <span class="o">*</span> <span class="n">bb1</span> <span class="o">-</span> <span class="n">gspy</span> <span class="o">*</span> <span class="n">bb2</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">aa</span><span class="p">,</span> <span class="n">bb</span><span class="p">))</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nmax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">f</span></div>
+
+
+<div class="viewcode-block" id="miecoated"><a class="viewcode-back" href="../../src.html#src.mie_coated_water_spheres.miecoated">[docs]</a><span class="k">def</span> <span class="nf">miecoated</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mie Efficiencies of coated spheres.</span>
+
+<span class="sd">    Calculates Mie efficiencies for given complex refractive-index</span>
+<span class="sd">    ratios m1=m1&#39;+im1&quot;, m2= m2&#39;+im2&quot; of kernel</span>
+<span class="sd">    and coating, resp., and size parameters x=k0*a, y=k0*b where</span>
+<span class="sd">    k0 = wave number in ambient  medium, a,b = inner,</span>
+<span class="sd">    outer sphere radius, using complex Mie Coefficients an and bn for</span>
+<span class="sd">    n=1 to nmax, s. Bohren and Huffman (1983)</span>
+<span class="sd">    BEWI:TDD122, p. 181-185,483.</span>
+
+<span class="sd">    opt selects the function &quot;Miecoated_ab..&quot; for an and bn, n=1 to nmax.</span>
+
+<span class="sd">    Note that 0&lt;=x&lt;=y (Matzler, 2002).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        m1:  refractive-index ratio of kernel</span>
+<span class="sd">        m2:  refractive-index ratio of coating</span>
+<span class="sd">        x:   size parameter for inner sphere</span>
+<span class="sd">        y:   size parameter for outer sphere</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        qext: extinction efficiency</span>
+<span class="sd">        qsca: scatterign efficiency</span>
+<span class="sd">        qb: backscattering efficiency</span>
+<span class="sd">        asy: asymmetry parameter</span>
+<span class="sd">        qratio: qb/qsca</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># to reduce computing time</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mie</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># to avoid a singularity at x=0</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mie</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># to reduce computing time</span>
+    <span class="k">elif</span> <span class="n">m1</span> <span class="o">==</span> <span class="n">m2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">mie</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># this is the normal situation</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">nmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">y</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)))</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">nmax</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cn</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">c1n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">c2n</span> <span class="o">=</span> <span class="n">cn</span> <span class="o">/</span> <span class="n">n</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span>
+
+        <span class="n">f</span> <span class="o">=</span> <span class="n">miecoated_ab3</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">anp</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">anpp</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">imag</span>
+        <span class="n">bnp</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">bnpp</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">imag</span>
+
+        <span class="c1"># displaced numbers used for asymmetry parameter, p. 120</span>
+        <span class="n">g1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+        <span class="n">g1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">anp</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">g1</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">anpp</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">g1</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bnp</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">g1</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bnpp</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="n">nmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">dn</span> <span class="o">=</span> <span class="n">cn</span> <span class="o">*</span> <span class="p">(</span><span class="n">anp</span> <span class="o">+</span> <span class="n">bnp</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">dn</span><span class="p">)</span>
+        <span class="n">qext</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">/</span> <span class="n">y2</span>
+        <span class="n">en</span> <span class="o">=</span> <span class="n">cn</span> <span class="o">*</span> <span class="p">(</span><span class="n">anp</span> <span class="o">*</span> <span class="n">anp</span> <span class="o">+</span> <span class="n">anpp</span> <span class="o">*</span> <span class="n">anpp</span> <span class="o">+</span> <span class="n">bnp</span> <span class="o">*</span> <span class="n">bnp</span> <span class="o">+</span> <span class="n">bnpp</span> <span class="o">*</span> <span class="n">bnpp</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">en</span><span class="p">)</span>
+        <span class="n">qsca</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">q</span> <span class="o">/</span> <span class="n">y2</span>
+        <span class="n">qabs</span> <span class="o">=</span> <span class="n">qext</span> <span class="o">-</span> <span class="n">qsca</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="n">cn</span>
+        <span class="n">gn</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">^</span> <span class="n">n</span>
+        <span class="n">f_3</span> <span class="o">=</span> <span class="n">fn</span> <span class="o">*</span> <span class="n">gn</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f_3</span><span class="p">)</span>
+        <span class="n">qb</span> <span class="o">=</span> <span class="n">q</span> <span class="o">*</span> <span class="n">q</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">/</span> <span class="n">y2</span>
+        <span class="n">asy1</span> <span class="o">=</span> <span class="n">c1n</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">anp</span> <span class="o">*</span> <span class="n">g1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">anpp</span> <span class="o">*</span> <span class="n">g1</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">bnp</span> <span class="o">*</span> <span class="n">g1</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">bnpp</span> <span class="o">*</span> <span class="n">g1</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="p">)</span>
+        <span class="n">asy2</span> <span class="o">=</span> <span class="n">c2n</span> <span class="o">*</span> <span class="p">(</span><span class="n">anp</span> <span class="o">*</span> <span class="n">bnp</span> <span class="o">+</span> <span class="n">anpp</span> <span class="o">*</span> <span class="n">bnpp</span><span class="p">)</span>
+        <span class="n">asy</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">/</span> <span class="n">y2</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">asy1</span> <span class="o">+</span> <span class="n">asy2</span><span class="p">)</span> <span class="o">/</span> <span class="n">qsca</span>
+        <span class="n">qratio</span> <span class="o">=</span> <span class="n">qb</span> <span class="o">/</span> <span class="n">qsca</span>
+
+        <span class="k">return</span> <span class="n">qext</span><span class="p">,</span> <span class="n">qsca</span><span class="p">,</span> <span class="n">qabs</span><span class="p">,</span> <span class="n">qb</span><span class="p">,</span> <span class="n">asy</span><span class="p">,</span> <span class="n">qratio</span></div>
+
+
+<div class="viewcode-block" id="miecoated_driver"><a class="viewcode-back" href="../../src.html#src.mie_coated_water_spheres.miecoated_driver">[docs]</a><span class="k">def</span> <span class="nf">miecoated_driver</span><span class="p">(</span><span class="n">rice</span><span class="p">,</span> <span class="n">rwater</span><span class="p">,</span> <span class="n">fn_ice</span><span class="p">,</span> <span class="n">rf_ice</span><span class="p">,</span> <span class="n">fn_water</span><span class="p">,</span> <span class="n">wvl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Driver for miecoated.</span>
+<span class="sd">    </span>
+<span class="sd">    Originally written by Christian Matzler</span>
+<span class="sd">    (see Matzler, 2002). The driver convolves the efficiency factors with the particle</span>
+<span class="sd">    dimensions to return the cross sections for extinction, scattering and</span>
+<span class="sd">    absorption plus the asymmetry parameter, q ratio and single scattering albedo.</span>
+
+<span class="sd">    Note that the code includes an interpolation regime. This is because the original</span>
+<span class="sd">    code produced NaNs for a few wavelengths at certain size parameters, particularly</span>
+<span class="sd">    in the mid NIR wavelengths.</span>
+
+<span class="sd">    Adapted from Matlab code by Joseph Cook, University of Sheffield, UK (2017).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rice:     inner sphere diameter in microns</span>
+<span class="sd">        rwater:   outer sphere diameter in microns (i.e. total coated sphere,</span>
+<span class="sd">                        not water layer thickness)</span>
+<span class="sd">        fn_ice:   path to csv file containing refractive index of ice (Warren, 1984)</span>
+<span class="sd">        fn_water: path to csv file containing refractive index of liquid water</span>
+<span class="sd">                    (Segelstein, 1981)</span>
+<span class="sd">        wvl:      wavelength which should be calculated (in microns)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            res: tuple containing cross sections for extinction, scattering and </span>
+<span class="sd">            absorption plus the asymmetry parameter, q ratio and single scattering </span>
+<span class="sd">            albedo</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># calculate volume and density of sphere</span>
+
+    <span class="c1"># cross sectional area of ice core</span>
+    <span class="n">XSArea_inner</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">rice</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># cross sectional area of water layer sphere</span>
+    <span class="n">XSArea_outer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">rwater</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">XSArea_inner</span>
+    <span class="n">TotalXS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">rwater</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># density of water at 1 degree C in kg m-3</span>
+    <span class="n">WatDensity</span> <span class="o">=</span> <span class="mi">999</span>
+
+    <span class="c1"># density of ice in kg m-3</span>
+    <span class="n">IceDensity</span> <span class="o">=</span> <span class="mi">934</span>
+
+    <span class="n">IceVol</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rice</span><span class="o">**</span><span class="mi">3</span>
+    <span class="n">WatVol</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rwater</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">IceVol</span>
+    <span class="n">TotalVol</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rwater</span><span class="o">**</span><span class="mi">3</span>
+
+    <span class="n">IceMass</span> <span class="o">=</span> <span class="n">IceVol</span> <span class="o">*</span> <span class="n">IceDensity</span>
+    <span class="n">WatMass</span> <span class="o">=</span> <span class="n">WatVol</span> <span class="o">*</span> <span class="n">WatDensity</span>
+    <span class="n">TotalMass</span> <span class="o">=</span> <span class="n">IceMass</span> <span class="o">+</span> <span class="n">WatMass</span>
+
+    <span class="c1"># read in refractive indices of ice and liquid water</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">fn_ice</span><span class="p">)</span>
+    <span class="n">ref_index_ice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">)))</span>
+    <span class="n">wvl_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;wvl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">rf_ice</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">n_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;re_Wrn84&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">k_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;im_Wrn84&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">rf_ice</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;re_Wrn08&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">k_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;im_Wrn08&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">rf_ice</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">n_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;re_Pic16&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">k_ice</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s2">&quot;im_Pic16&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">ref_index_water</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fn_water</span><span class="p">)</span>
+    <span class="n">wvl_water</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ref_index_water</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">n_water</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ref_index_water</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">k_water</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ref_index_water</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ref_index_water</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">wvl_water</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_index_water</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="s2">&quot;wl&quot;</span><span class="p">]</span>
+        <span class="n">n_water</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_index_water</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">]</span>
+        <span class="n">k_water</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_index_water</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">]</span>
+
+    <span class="n">n_water_interp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">wvl</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">wvl_water</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">n_water</span><span class="p">)</span>
+    <span class="n">k_water_interp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">wvl</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">wvl_water</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">k_water</span><span class="p">)</span>
+
+    <span class="n">extinction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+    <span class="n">scattering</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+    <span class="n">absorption</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+    <span class="n">backscattering</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+    <span class="n">asymmetry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+    <span class="n">q_ratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+    <span class="n">ssa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wvl</span><span class="p">))):</span>
+        <span class="c1"># size parameters for inner and outer spheres</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rice</span> <span class="o">/</span> <span class="p">(</span><span class="n">wvl</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rwater</span> <span class="o">/</span> <span class="p">(</span><span class="n">wvl</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+
+        <span class="n">m1</span> <span class="o">=</span> <span class="n">n_ice</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_ice</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="n">n_water_interp</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_water_interp</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span>
+
+        <span class="c1"># call Miecoated and return efficiencies</span>
+        <span class="n">qext</span><span class="p">,</span> <span class="n">qsca</span><span class="p">,</span> <span class="n">qabs</span><span class="p">,</span> <span class="n">qb</span><span class="p">,</span> <span class="n">asy</span><span class="p">,</span> <span class="n">qratio</span> <span class="o">=</span> <span class="n">miecoated</span><span class="p">(</span><span class="n">m1</span><span class="o">=</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="o">=</span><span class="n">m2</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># append efficiencies to lists</span>
+        <span class="n">extinction</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">qext</span>
+        <span class="n">scattering</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">qsca</span>
+        <span class="n">absorption</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">qabs</span>
+        <span class="n">backscattering</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">qb</span>
+        <span class="n">asymmetry</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">asy</span>
+        <span class="n">q_ratio</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">qratio</span>
+        <span class="n">ssa</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">qsca</span> <span class="o">/</span> <span class="n">qext</span>
+
+    <span class="c1"># replace any possible nans with values estimated by cubic interpolation</span>
+    <span class="n">extinction</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">extinction</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">scattering</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">scattering</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">absorption</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">absorption</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">backscattering</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">backscattering</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">asymmetry</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">asymmetry</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">q_ratio</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">q_ratio</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">ssa</span> <span class="o">=</span> <span class="n">fill_nans_scipy1</span><span class="p">(</span><span class="n">padata</span><span class="o">=</span><span class="n">ssa</span><span class="p">,</span> <span class="n">pkind</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+
+    <span class="c1"># calculate cross sections from efficiency factors</span>
+    <span class="n">ExtXC</span> <span class="o">=</span> <span class="n">extinction</span> <span class="o">*</span> <span class="n">TotalXS</span>
+    <span class="n">ScaXC</span> <span class="o">=</span> <span class="n">scattering</span> <span class="o">*</span> <span class="n">TotalXS</span>
+    <span class="n">AbsXC</span> <span class="o">=</span> <span class="n">absorption</span> <span class="o">*</span> <span class="n">TotalXS</span>
+
+    <span class="n">ExtXCvol</span> <span class="o">=</span> <span class="n">extinction</span> <span class="o">*</span> <span class="n">TotalVol</span>
+    <span class="n">ScaXCvol</span> <span class="o">=</span> <span class="n">scattering</span> <span class="o">*</span> <span class="n">TotalVol</span>
+    <span class="n">AbsXCvol</span> <span class="o">=</span> <span class="n">absorption</span> <span class="o">*</span> <span class="n">TotalVol</span>
+
+    <span class="n">ExtXCmass</span> <span class="o">=</span> <span class="n">extinction</span> <span class="o">*</span> <span class="n">TotalMass</span>
+    <span class="n">ScaXCmass</span> <span class="o">=</span> <span class="n">scattering</span> <span class="o">*</span> <span class="n">TotalMass</span>
+    <span class="n">AbsXCmass</span> <span class="o">=</span> <span class="n">absorption</span> <span class="o">*</span> <span class="n">TotalMass</span>
+
+    <span class="c1"># print fraction of sphere made up of water by mass and volume</span>
+    <span class="n">water_frac_mss</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="n">IceMass</span> <span class="o">/</span> <span class="n">TotalMass</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">water_frac_vol</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="n">IceVol</span> <span class="o">/</span> <span class="n">TotalVol</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">ice_frac_mss</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="n">water_frac_mss</span>
+    <span class="n">ice_frac_vol</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="n">water_frac_vol</span>
+
+    <span class="c1"># density of particle as average weighted by mass of components</span>
+    <span class="n">part_dens</span> <span class="o">=</span> <span class="p">(</span><span class="n">IceDensity</span> <span class="o">*</span> <span class="n">ice_frac_mss</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">WatDensity</span> <span class="o">*</span> <span class="n">water_frac_mss</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;extinction&quot;</span><span class="p">:</span> <span class="n">extinction</span><span class="p">,</span>
+        <span class="s2">&quot;scattering&quot;</span><span class="p">:</span> <span class="n">scattering</span><span class="p">,</span>
+        <span class="s2">&quot;absorption&quot;</span><span class="p">:</span> <span class="n">absorption</span><span class="p">,</span>
+        <span class="s2">&quot;backscattering&quot;</span><span class="p">:</span> <span class="n">backscattering</span><span class="p">,</span>
+        <span class="s2">&quot;asymmetry&quot;</span><span class="p">:</span> <span class="n">asymmetry</span><span class="p">,</span>
+        <span class="s2">&quot;q_ratio&quot;</span><span class="p">:</span> <span class="n">q_ratio</span><span class="p">,</span>
+        <span class="s2">&quot;ssa&quot;</span><span class="p">:</span> <span class="n">ssa</span><span class="p">,</span>
+        <span class="s2">&quot;extinction_cross_section&quot;</span><span class="p">:</span> <span class="n">ExtXC</span><span class="p">,</span>
+        <span class="s2">&quot;scattering_cross_section&quot;</span><span class="p">:</span> <span class="n">ScaXC</span><span class="p">,</span>
+        <span class="s2">&quot;absorption_cross_section&quot;</span><span class="p">:</span> <span class="n">AbsXC</span><span class="p">,</span>
+        <span class="s2">&quot;extinction_volume_cross_section&quot;</span><span class="p">:</span> <span class="n">ExtXCvol</span><span class="p">,</span>
+        <span class="s2">&quot;scattering_volume_cross_section&quot;</span><span class="p">:</span> <span class="n">ScaXCvol</span><span class="p">,</span>
+        <span class="s2">&quot;absorption_volume_cross_section&quot;</span><span class="p">:</span> <span class="n">AbsXCvol</span><span class="p">,</span>
+        <span class="s2">&quot;extinction_mass_cross_section&quot;</span><span class="p">:</span> <span class="n">ExtXCmass</span><span class="p">,</span>
+        <span class="s2">&quot;scattering_mass_cross_section&quot;</span><span class="p">:</span> <span class="n">ScaXCmass</span><span class="p">,</span>
+        <span class="s2">&quot;absorption_mass_cross_section&quot;</span><span class="p">:</span> <span class="n">AbsXCmass</span><span class="p">,</span>
+        <span class="s2">&quot;water_mass_fraction&quot;</span><span class="p">:</span> <span class="n">water_frac_mss</span><span class="p">,</span>
+        <span class="s2">&quot;water_volume_fraction&quot;</span><span class="p">:</span> <span class="n">water_frac_vol</span><span class="p">,</span>
+        <span class="s2">&quot;ice_mass_fraction&quot;</span><span class="p">:</span> <span class="n">ice_frac_mss</span><span class="p">,</span>
+        <span class="s2">&quot;ice_volume_fraction&quot;</span><span class="p">:</span> <span class="n">ice_frac_vol</span><span class="p">,</span>
+        <span class="s2">&quot;particle_density&quot;</span><span class="p">:</span> <span class="n">part_dens</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Cook.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

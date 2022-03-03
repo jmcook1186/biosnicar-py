@@ -1,4 +1,6 @@
-from pathlib import Path
+#!/usr/bin/python
+import sys
+sys.path.append("./src")
 import xarray as xr
 import yaml
 import numpy as np
@@ -364,3 +366,6 @@ class PlotConfig:
         self.save = inputs["PLOT"]["SAVE"]
 
 
+
+if __name__ == '__main__':
+    pass

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """Calculates effective radius of air bubbles.
 
 This script is for taking specific surface area for bubbly ice an calculating the
@@ -16,7 +17,8 @@ from Chloe Whicker (UMich).
 """
 
 import numpy as np
-
+import sys
+sys.path.append("./src")
 
 # SET CONSTANTS
 RHO_ICE = 917  # density of pure ice
@@ -57,3 +59,6 @@ No = (6 * V_air) / (np.pi * D_eff**3) * np.exp(3 * SIGMA_TILDE_G**2)
 r_eff_micron = D_eff / 2 * 1e6
 
 print(np.round(r_eff_micron, 0))
+
+if __name__ == '__main__':
+    pass
