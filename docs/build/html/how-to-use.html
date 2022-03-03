@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>How to Use &#8212; BioSNICAR 2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/haiku.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Input Configuration Guide for BioSNICAR" href="inputs.html" />
+    <link rel="prev" title="Theoretical Background" href="theoretical-background.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>BioSNICAR 2.0 documentation</span></a></h1>
+        <h2 class="heading"><span>How to Use</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="theoretical-background.html">Theoretical Background</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="inputs.html">Input Configuration Guide for BioSNICAR</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <section id="how-to-use">
+<h1>How to Use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h1>
+<section id="installing-environment-dependencies">
+<h2>Installing Environment/Dependencies<a class="headerlink" href="#installing-environment-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>If you do not have Python installed, download Python &gt;3.6. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:</p>
+<p>Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the “remote containers” extension to be added to VSCode. Further instructions are available here: <a class="reference external" href="https://code.visualstudio.com/docs/remote/containers">https://code.visualstudio.com/docs/remote/containers</a></p>
+</section>
+<section id="running-the-model">
+<h2>Running the model<a class="headerlink" href="#running-the-model" title="Permalink to this headline">¶</a></h2>
+<p>The model driver and all the core source code can be found in <cite>/src</cite>. From the top level directory (<cite>~/BioSNICAR_GO_PY</cite>), run:</p>
+<p><cite>python ./src/snicar_driver.py</cite></p>
+<p>This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.</p>
+<p>Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file <cite>inputs.yaml</cite>. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for the those in <cite>inputs.yaml</cite>.</p>
+<p>More complex applications of the model code, for example model inversions, field/model comparisons etc are included under <cite>/experiments</cite>, with details provided in that module’s own README.</p>
+<p>We have also maintained a separate version of the BioSNICAR codebase that uses a “functional” prorgamming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the <cite>classic</cite> branch of this repository. it might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. The two branches are entirely equivalent int heir simulations but very different in their programmign style. The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.</p>
+</section>
+<section id="choosing-inputs">
+<h2>Choosing Inputs<a class="headerlink" href="#choosing-inputs" title="Permalink to this headline">¶</a></h2>
+<p>It is straightforward to adjust the model configuration by updating the values in <cite>inputs.yaml</cite>. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to <cite>inputs.md</cite> for explanations of each parameter.</p>
+</section>
+</section>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="theoretical-background.html">Theoretical Background</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="inputs.html">Input Configuration Guide for BioSNICAR</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Joseph Cook.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>
