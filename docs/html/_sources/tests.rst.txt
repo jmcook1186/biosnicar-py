@@ -3,7 +3,6 @@ tests
 
 tests.conftest
 --------------
-Conftest contains fixtures for the tests in test_snicar().
 
 .. automodule:: tests.conftest
    :members:
