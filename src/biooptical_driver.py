@@ -145,6 +145,7 @@ In Mie mode, the optical properties are calculated using Mie scattering
 using Scott Prahl's miepython package https://github.com/scottprahl/miepython.
 """
 import numpy as np
+import os
 
 # %%
 from biooptical_Funcs import bioptical_calculations, net_cdf_updater, ssp_calculations
@@ -156,7 +157,7 @@ from biooptical_Funcs import bioptical_calculations, net_cdf_updater, ssp_calcul
 # --------------------------------------------------------------------------------------
 
 # Set base directory and constant variables
-DIR_BASE = "./BioSNICAR_GO_PY/"
+DIR_BASE = os.getcwd()
 WVL = np.arange(0.200, 4.999, 0.001)  # spectral range of interest in µm
 K_WATER = np.loadtxt(DIR_BASE + "Data/OP_data/k_ice_480.csv")
 
@@ -287,39 +288,41 @@ INFO = ""
 # --------------------------------------------------------------------------------------
 # CALCULATIONS OF SCATTERING PROPERTIES
 # --------------------------------------------------------------------------------------
+if __name__ == '__main__':
+    
+    # assym, ss_alb = ssp_calculations(
+    #     GO,
+    #     MIE,
+    #     SAVEPATH_OPS,
+    #     R,
+    #     L,
+    #     wvl_rescaled_BioSNICAR,
+    #     n_rescaled_BioSNICAR,
+    #     k_rescaled_BioSNICAR,
+    #     PLOTS_OPS,
+    #     SAVEFIGS_OPS,
+    #     FIGNAME_OPS,
+    #     REPORT_DIMS,
+    # )
 
-assym, ss_alb = ssp_calculations(
-    GO,
-    MIE,
-    SAVEPATH_OPS,
-    R,
-    L,
-    wvl_rescaled_BioSNICAR,
-    n_rescaled_BioSNICAR,
-    k_rescaled_BioSNICAR,
-    PLOTS_OPS,
-    SAVEFIGS_OPS,
-    FIGNAME_OPS,
-    REPORT_DIMS,
-)
+    # # %%
+    # # --------------------------------------------------------------------------------------
+    # # SAVING DATA IN NETCDF
+    # # --------------------------------------------------------------------------------------
 
-# %%
-# --------------------------------------------------------------------------------------
-# SAVING DATA IN NETCDF
-# --------------------------------------------------------------------------------------
+    # if NETCDF_SAVE:
+    #     net_cdf_updater(
+    #         GO,
+    #         MIE,
+    #         SAVEPATH_NETCDF,
+    #         FILENAME_NETCDF,
+    #         wvl_rescaled_BioSNICAR,
+    #         assym,
+    #         ss_alb,
+    #         ACS_rescaled_BioSNICAR,
+    #         L,
+    #         R,
+    #         DENSITY_WET,
+    #         INFO,
+    #     )
 
-if NETCDF_SAVE:
-    net_cdf_updater(
-        GO,
-        MIE,
-        SAVEPATH_NETCDF,
-        FILENAME_NETCDF,
-        wvl_rescaled_BioSNICAR,
-        assym,
-        ss_alb,
-        ACS_rescaled_BioSNICAR,
-        L,
-        R,
-        DENSITY_WET,
-        INFO,
-    )

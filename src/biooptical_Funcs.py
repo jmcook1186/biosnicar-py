@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-@author: jmcook1186, lcvl41
+@author: Joseph Cook, Lou Chevrollier
 
 Contains functions relating to bio-optical model components of BioSNICAR_GO_py
 Called from BioOptical_driver.py
@@ -505,3 +505,7 @@ def net_cdf_updater(
     algfile.to_netcdf(str(savepath + filename + ".nc"), mode="w")
 
     return
+
+
+if __name__ == '__main__':
+    pass
