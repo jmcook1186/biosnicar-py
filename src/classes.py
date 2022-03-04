@@ -367,5 +367,102 @@ class PlotConfig:
 
 
 
+
+class BioOpticalConfig:
+    
+    """Configuration for bio-optical model.
+
+    Attributes:
+        wvl: (numpy array, default: np.arange(0.200, 4.999, 0.001))
+                wavelengths in spectral range of interest (in µm, 1nm step)
+        unit: unit for absorption cross section, 0 = m2/cell, 1 = m2/um3, 3 = m2/mg 
+        acs_calculated: toggles calculating ACS from pigments or loading from file.
+        pigment_dir: (string) used if ACS_calculated is True, directory to
+                         folder containing pigment mass absorption coefficients
+                         that must be csv file with size and resolution of wvl,
+                         and units in m2/mg
+        pigment_data: (string) dictionary with pigment file names and
+                            associated intracellular concentrations
+                            (ng/cell, ng/µm3 or ng/ng)
+        ACS_loaded_reconstructed: (boolean) True if the
+                                ACS is loaded as a reconstructed spectrum
+                                from pigment absorbance (see methods in
+                                Chevrollier et al. 2022)
+        packaging_correction: (boolean - applied ONLY if
+                                ACS_loaded_reconstructed is True) if True,
+                                reconstructed ACS is corrected for pigment
+                                packaging following Chevrollier et al. 2022
+        ACS_loaded_invivo: (boolean) True if the ACS is loaded as in vivo
+                                spectra of whole cells
+        ACS_file: (string) directory to the ACS file if loaded
+        density_dry:  (int - used if biomass: True) density of dry biomass
+                        (kg/m3 - 625 and 684 for snow and glacier algae,
+                        Chevrollier et al. 2022)
+        density_wet:  (int - used if biomass: True) density of wet biomass
+                        (kg/m3 - 1060 and 1160 for snow and glacier algae,
+                        Chevrollier et al. 2022)
+        cell_volume: (int - used if cellular: True) volume of the algae
+                        cell (um3)
+        n_algae: (numpy array) real part of cellular refractive index
+                        in the spectral range of wvl (constant 1.38 by default,
+                        Chevrollier et al. 2022)
+        k_water: (numpy array) imaginary part of the refractive index of water
+                        in the spectral range of wvl
+        smooth: (boolean) if True,  apply optional smoothing filter
+        window_size: (int) size of window of smoothing filter (dflt value: 25)
+        poly_order: (int) polynomial order of smoothing filter (dflt value: 3)
+        smoothStart: (int) start of smoothing filter (default value: 44)
+        smoothStop: (int) stop of smoothing filter (default value: 100)
+        plot_n_k_ACS_cell: (boolean) if True, plot with n,k and ACS printed
+        plot_pigment_ACS: (boolean) if True, plot with pigment ACSs printed
+        savefiles_n_k_ACS_cell: (boolean) if True, files with k,n and ACS
+                                    saved in the directory savepath_n_k_ACS_plots
+        saveplots_n_k_ACS: (boolean) if True, plots saved in the directory
+                                savepath_n_k_ACS_plots
+        savefilename_n_k_ACS_cell: (string) name of the file containing n,
+                                    k and ACS if savefiles toggled on
+        savepath_n_k_ACS_plots: (boolean) directory for saving data if
+                                    savefiles or saveplots toggled on
+        GO: (boolean) if True, uses geometric optics equations (Cook et
+            al. 2020 adapted from Diedenhoven et al (2014)) to calculate single
+                scattering OPs assuming cell shape: cylinder
+        Mie: (boolean) if True, uses Mie theory to calculate single
+                scattering OPs assuming cell shape: sphere
+        r: (int) radius of sphere (Mie)/cynlinder (GO) representing cell (µm)
+        L: (int) depth of the cylinder representing the cell (GO option, µm)
+        wvl: (numpy array) same as in 1.
+        n_algae: (numpy array) with real part of the RI of a single cell
+                in the spectral range of wvl
+        k_algae: (numpy array) with imaginary part of RI of a single cell
+                 in the spectral range of wvl (output of bioptical_calculations())
+        plot_OPs: (boolean) if True, print plots with OPs
+        savefigs_OPs: (boolean) if True, save plots with OPs
+        figname_OPs: (string) figure name
+        report_dims: (boolean) if True, cell dimensions printed to console
+
+    """
+
+    def __init__(self):
+
+        with open("./src/inputs.yaml", "r") as ymlfile:
+            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
+        self.figsize = inputs["PLOT"]["FIG_SIZE"]
+        self.facecolor = inputs["PLOT"]["FACECOLOR"]
+        self.grid = inputs["PLOT"]["GRID"]
+        self.grid_color = inputs["PLOT"]["GRIDCOLOR"]
+        self.xtick_width = inputs["PLOT"]["XTICK_WIDTH"]
+        self.xtick_size = inputs["PLOT"]["XTICK_SIZE"]
+        self.ytick_width = inputs["PLOT"]["YTICK_WIDTH"]
+        self.ytick_size = inputs["PLOT"]["YTICK_SIZE"]
+        self.linewidth = inputs["PLOT"]["LINEWIDTH"]
+        self.fontsize = inputs["PLOT"]["FONTSIZE"]
+        self.xtick_btm = inputs["PLOT"]["XTICK_BTM"]
+        self.ytick_left = inputs["PLOT"]["YTICK_LEFT"]
+        self.save = inputs["PLOT"]["SAVE"]
+
+
+
+
 if __name__ == '__main__':
     pass

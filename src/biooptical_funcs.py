@@ -15,6 +15,7 @@ import pandas as pd
 from miepython import mie
 from plotnine import aes, geom_line, ggplot
 from scipy.signal import savgol_filter
+from classes import *
 
 plt.style.use("seaborn")
 
@@ -63,28 +64,28 @@ def bioptical_calculations(
     wvl = wvl  # µm
     xw = 0.59 * density_wet / 1000  # conversion mass to volume water fraction
 
-    ##################
-    ## ACS calculation
-    ##################
 
-    if ACS_calculated:
+
+def get_absorption_cross_section(bio_optical_config):
+    
+    if bio_optical_config.acs_calculated:
         # open mass absorption coefficients (m2/mg) for each algal pigment
         # from a dictionary.key is pigment name, value is abs coeff in m2/mg
         abs_coeff = 0
-        for key, value in pigments_data.items():
+        for key, value in bio_optical_config.pigments_data.items():
             abs_pigm = (np.array(pd.read_csv(key))).flatten()  # m2/mg
             abs_cff_pigments[str(key.split(pigment_dir, 1)[1])[0:-4]] = abs_pigm
             conc = value  # intracellular conc in ng/µm3, ng/cell, or ng/ng
             abs_coeff = abs_coeff + conc * abs_pigm  # 10e6 m2/µm3,m2/cell,m2/ng
 
-        if biovolume:
+        if bio_optical_config.unit == 0:
             ACS = abs_coeff / 1000000  # correct the 10e6
-        if cellular:
+        if bio_optical_config.unit == 1:
             ACS = abs_coeff / 1000000  # correct the 10e6
-        if biomass:
+        if bio_optical_config.unit == 2:
             ACS = abs_coeff / 1000  # m2/mg for biomass option
 
-    elif ACS_loaded_reconstructed:
+    elif bio_optical_config.acs_loaded_reconstructed:
         ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
         if packaging_correction_SA:  # ! applies only from 300nm
             pckg_SA = np.loadtxt(dir_base + "Data/pigments/pckg_SA.csv")
@@ -93,9 +94,14 @@ def bioptical_calculations(
             pckg_GA = np.loadtxt(dir_base + "Data/pigments/pckg_GA.csv")
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
-    elif ACS_loaded_invivo:
+    elif bio_optical_config.ACS_loaded_invivo:
+        
         ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
 
+    
+    return abs_coeff
+
+def calculate k(bio_optical_config, abs_coeff):
     ################
     ## k calculation
     ################
@@ -103,17 +109,17 @@ def bioptical_calculations(
     k_water_alg = k_water
     k_water_alg[0:600] = 0 #200 to 800nm
 
-    if cellular:  # ACS in m2 / cell
+    if bio_optical_model.unit == 0  # ACS in m2 / cell
         # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
         k = xw * k_water_alg + ACS * 10 ** (12) * wvl / (np.pi * 4) / cell_vol
         n = n_algae
 
-    if biovolume:  # ACS in m2 / µm3
+    if bio_optical_model.unit == 1  # ACS in m2 / µm3
         # units: ACS (m2/µm3 to µm2/µm3) * wvl (µm)
         k = xw * k_water_alg + ACS * 10 ** (12) * wvl / (np.pi * 4)
         n = n_algae
 
-    if biomass:  # ACS in m2 / dry mg
+    if bio_optical_model.unit == 2:  # ACS in m2 / dry mg
         # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
         k = xw * k_water + ACS * density_dry * wvl / (np.pi * 4)
         n = n_algae
@@ -133,6 +139,7 @@ def bioptical_calculations(
     data["k"] = k_rescaled_BioSNICAR  # unitless
     data["n"] = n_rescaled_BioSNICAR  # unitless
 
+    return data
     ################################
     ## optional: plotting and saving
     ################################
