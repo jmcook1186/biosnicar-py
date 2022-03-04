@@ -16,227 +16,139 @@ from miepython import mie
 from plotnine import aes, geom_line, ggplot
 from scipy.signal import savgol_filter
 from classes import *
-
 plt.style.use("seaborn")
 
+def get_absorption_cross_section(bio_optical_config):
 
-def bioptical_calculations(
-    ACS_calculated,
-    ACS_file,
-    ACS_loaded_invivo,
-    ACS_loaded_reconstructed,
-    biovolume,
-    biomass,
-    cellular,
-    density_wet,
-    density_dry,
-    dir_base,
-    cell_vol,
-    wvl,
-    packaging_correction_SA,
-    packaging_correction_GA,
-    pigment_dir,
-    pigments_data,
-    n_algae,
-    k_water,
-    smooth,
-    window_size,
-    poly_order,
-    smoothStart,
-    smoothStop,
-    plot_optical_props,
-    plot_pigment_ACSs,
-    savefiles,
-    savefilename,
-    saveplots,
-    savepath,
-):
-    """Calculates absorption cross section from input vars.
+    """Calculates or loads cellular absorption cross section.
+        
+    Args:
+        bio_optical_config: instance of BioOpticalConfig class
 
+    Returns:
+        ACS: absorption cross section in m2/cell, m2/um3 or m2/mg
+        
     """
 
     #################
     ## Initialization
     #################
 
-    data = pd.DataFrame()  # storing n,k,ACS
-    abs_cff_pigments = pd.DataFrame(index=wvl * 1000)  # storing pigment MACs
-    wvl = wvl  # µm
-    xw = 0.59 * density_wet / 1000  # conversion mass to volume water fraction
+    abs_cff_pigments = pd.DataFrame(index = bio_optical_config.wvl * 1000)  # storing pigment MACs
 
-
-
-def get_absorption_cross_section(bio_optical_config):
-    
     if bio_optical_config.acs_calculated:
         # open mass absorption coefficients (m2/mg) for each algal pigment
         # from a dictionary.key is pigment name, value is abs coeff in m2/mg
         abs_coeff = 0
-        for key, value in bio_optical_config.pigments_data.items():
+        for key, value in bio_optical_config.pigment_data.items():
             abs_pigm = (np.array(pd.read_csv(key))).flatten()  # m2/mg
-            abs_cff_pigments[str(key.split(pigment_dir, 1)[1])[0:-4]] = abs_pigm
-            conc = value  # intracellular conc in ng/µm3, ng/cell, or ng/ng
-            abs_coeff = abs_coeff + conc * abs_pigm  # 10e6 m2/µm3,m2/cell,m2/ng
-
-        if bio_optical_config.unit == 0:
-            ACS = abs_coeff / 1000000  # correct the 10e6
-        if bio_optical_config.unit == 1:
-            ACS = abs_coeff / 1000000  # correct the 10e6
-        if bio_optical_config.unit == 2:
-            ACS = abs_coeff / 1000  # m2/mg for biomass option
+            abs_cff_pigments[str(key.split(bio_optical_config.pigment_dir, 1)[1])[0:-4]] = abs_pigm
+            conc = value  # intracellular conc in ng/µm3, ng/cell, or ng/mg
+            abs_coeff = abs_coeff + conc * abs_pigm / 1000000  # m2/µm3,m2/cell,m2/mg
 
     elif bio_optical_config.acs_loaded_reconstructed:
-        ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
-        if packaging_correction_SA:  # ! applies only from 300nm
-            pckg_SA = np.loadtxt(dir_base + "Data/pigments/pckg_SA.csv")
+        ACS = (np.array(pd.read_csv(bio_optical_config.acs_file))).flatten()  # m2/mg, um3 or cell
+        if bio_optical_config.packaging_correction_SA:  # ! applies only from 300nm
+            pckg_SA = np.loadtxt(bio_optical_config.dir_pckg + "pckg_SA.csv")
             abs_coeff = abs_coeff * pckg_SA[0:-1]
-        if packaging_correction_GA:  # ! applies from 300nm
-            pckg_GA = np.loadtxt(dir_base + "Data/pigments/pckg_GA.csv")
+        if bio_optical_config.packaging_correction_GA:  # ! applies from 300nm
+            pckg_GA = np.loadtxt(bio_optical_config.dir_pckg + "pckg_GA.csv")
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
-    elif bio_optical_config.ACS_loaded_invivo:
+    elif bio_optical_config.acs_loaded_invivo:
+        ACS = (np.array(pd.read_csv(bio_optical_config.acs_file))).flatten()  # m2/mg, um3 or cell
         
-        ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
+    return ACS
 
+
+
+def calculate_k(bio_optical_config, ACS):
     
-    return abs_coeff
+    """Calculates cellular imaginary part of refractive index.
+        
+    Args:
+        bio_optical_config: instance of BioOpticalConfig class
+        ACS: absorption cross section in m2/cell, m2/um3 or m2/mg
 
-def calculate k(bio_optical_config, abs_coeff):
-    ################
-    ## k calculation
-    ################
-
-    k_water_alg = k_water
-    k_water_alg[0:600] = 0 #200 to 800nm
-
-    if bio_optical_model.unit == 0  # ACS in m2 / cell
-        # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
-        k = xw * k_water_alg + ACS * 10 ** (12) * wvl / (np.pi * 4) / cell_vol
-        n = n_algae
-
-    if bio_optical_model.unit == 1  # ACS in m2 / µm3
-        # units: ACS (m2/µm3 to µm2/µm3) * wvl (µm)
-        k = xw * k_water_alg + ACS * 10 ** (12) * wvl / (np.pi * 4)
-        n = n_algae
-
-    if bio_optical_model.unit == 2:  # ACS in m2 / dry mg
-        # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
-        k = xw * k_water + ACS * density_dry * wvl / (np.pi * 4)
-        n = n_algae
-
-    ###############################
-    ## ACS, k storage and rescaling
-    ###############################
-
-    # rescaling variables to BioSNICAR resolution (10nm)
-    wvl_rescaled_BioSNICAR = wvl[5::10]
-    ACS_rescaled_BioSNICAR = ACS[5::10]
-    k_rescaled_BioSNICAR = k[5::10]
-    n_rescaled_BioSNICAR = n[5::10]
-
-    data["wvl"] = wvl_rescaled_BioSNICAR
-    data["ACS"] = ACS_rescaled_BioSNICAR  # in m2/kg dry or wet biomass
-    data["k"] = k_rescaled_BioSNICAR  # unitless
-    data["n"] = n_rescaled_BioSNICAR  # unitless
-
-    return data
-    ################################
-    ## optional: plotting and saving
-    ################################
-
-    # apply optional smoothing filter with user defined window width
-    # and polynomial order
-    if smooth:
-        yhat = savgol_filter(
-            ACS[smoothStart:smoothStop], window_size, poly_order
-        )  # window size 51, polynomial order 3
-        ACS[smoothStart:smoothStop] = yhat
-
-    # optionally save files to savepath
-    if savefiles:  # optional save dataframe to csv files
-        data["k"].to_csv(
-            str(savepath + "{}_k.csv".format(savefilename)), header=None, index=False
-        )
-        data["ACS"].to_csv(
-            str(savepath + "{}_ACS.csv".format(savefilename)), header=None, index=False
-        )
-        data["n"].to_csv(
-            str(savepath + "{}_n.csv".format(savefilename)), header=None, index=False
-        )
-
-    # optionally plot figures to interative window
-    if plot_optical_props:
-        plt.figure(figsize=(10, 15))
-        plt.subplot(2, 1, 1)
-        plt.plot(wvl[100:600] * 1000, ACS[100:600])
-        plt.xticks(fontsize=24), plt.yticks(fontsize=24)
-        plt.xlabel("Wavelength (nm)", fontsize=24),
-        plt.ylabel(
-            str("ACS (m$2$ cell$^{-1}$, m$^2$ µm$3$ or m$^2$ ng$3$ ))"), fontsize=24
-        )
-        plt.tight_layout()
-
-        plt.subplot(2, 1, 2)
-        plt.plot(wvl[100:600] * 1000, k[100:600])
-        plt.xticks(fontsize=24), plt.yticks(fontsize=24)
-        plt.xlabel("Wavelength (nm)", fontsize=24), plt.ylabel("k", fontsize=24)
-        plt.tight_layout()
-
-        # optionally save plots to savepath
-        if saveplots:
-            plt.show()
-            plt.savefig(str(savepath + "/ACSandK.png"))
-        else:
-            plt.show()
-
-    if plot_pigment_ACSs:
-        ax = abs_cff_pigments.replace(0, np.nan).plot(use_index=True, xlim=(300, 800))
-        ax.set_xlabel("Wavelength (nm)")
-        ax.set_ylabel("Mass absorption coefficient (m$^2$ mg$^{-1}$)")
-        abs_cff_pigments.plot()
-
-        # if saveplots:
-        # plt.show()
-        # plt.savefig(str(savepath+"/PigmentACSs.png"))
-
-        # else:
-        # plt.show()
-
-    return (
-        wvl,
-        wvl_rescaled_BioSNICAR,
-        k,
-        k_rescaled_BioSNICAR,
-        n,
-        n_rescaled_BioSNICAR,
-        ACS,
-        ACS_rescaled_BioSNICAR,
-        data,
-        abs_cff_pigments,
-    )
-
-
-#%%
-
-
-def ssp_calculations(
-    GO,
-    Mie,
-    savepath,
-    r,
-    L,
-    wvl,
-    n_algae,
-    k_algae,
-    plots,
-    savefigs,
-    figname,
-    report_dims,
-):
-    """Calculates single scattering optical properties using Mie or GO scattering codes.
+    Returns:
+        k: cellular imaginary part of refractive index (unitless)
+        
     """
 
-    if GO:
+    k_water_alg = np.loadtxt(bio_optical_config.k_water_dir)
+    k_water_alg[0:600] = 0 #accounted for in ACS
+    xw = 0.59 * bio_optical_config.wet_density / 1000  # conversion mass to volume water fraction
+
+
+    if bio_optical_config.unit == 0:  # ACS in m2 / cell
+        # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
+        k = xw * k_water_alg + ACS * 10 ** (12) * bio_optical_config.wvl / (np.pi * 4) / bio_optical_config.cell_vol
+
+    if bio_optical_config.unit == 1:  # ACS in m2 / µm3
+        # units: ACS (m2/µm3 to µm2/µm3) * wvl (µm)
+        k = xw * k_water_alg + ACS * 10 ** (12) * bio_optical_config.wvl / (np.pi * 4)
+
+    if bio_optical_config.unit == 2:  # ACS in m2 / dry mg
+        # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
+        k = xw * k_water_alg + ACS * bio_optical_config.dry_density * bio_optical_config.wvl / (np.pi * 4)
+
+    return k
+
+def rescale_480band(bio_optical_config, ACS, k):
+    """Rescales ACS and refractive index to BioSNICAR resolution.
+        
+    Args:
+        bio_optical_config: instance of BioOpticalConfig class
+        ACS: absorption cross section in m2/cell, m2/um3 or m2/mg
+        k: cellular imaginary part of refractive index (unitless)
+
+    Returns:
+        wvl_rescaled_BioSNICAR: wavelengths 480 bands
+        ACS_rescaled_BioSNICAR: cellular absorption cross section 480 bands (unitless)
+        k_rescaled_BioSNICAR: cellular imaginary part of refractive index 480 bands (unitless)
+        n_rescaled_BioSNICAR: cellular real part of refractive index 480 bands (unitless)
+
+    """
+    
+    # rescaling variables to BioSNICAR resolution (10nm)
+    wvl_rescaled_BioSNICAR = bio_optical_config.wvl[5::10]
+    ACS_rescaled_BioSNICAR = ACS[5::10]
+    k_rescaled_BioSNICAR = k[5::10]
+    n_rescaled_BioSNICAR = (bio_optical_config.n_algae*np.ones(np.size(bio_optical_config.wvl)))[5::10] 
+    
+    return wvl_rescaled_BioSNICAR, ACS_rescaled_BioSNICAR, k_rescaled_BioSNICAR, n_rescaled_BioSNICAR
+
+
+def calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, wvl_rescaled_BioSNICAR,n_rescaled_BioSNICAR):
+    """Calculates single scattering optical properties using Mie or GO scattering codes.
+    
+    The main calculations used for the GO mode are based upon the equations of
+    Diedenhoven et al (2014), who provided a python script as supplementary
+    material for their paper, available at:
+    https://www.researchgate.net/publication/259821840_ice_OP_parameterization
+    In Mie mode, the optical properties are calculated using Mie scattering
+    using Scott Prahl's miepython package https://github.com/scottprahl/miepython.
+    This function also plots and saves single scattering properties. 
+    
+    Args:
+        bio_optical_config: instance of BioOpticalConfig class
+        wvl_rescaled_BioSNICAR: wavelengths 480 bands
+        ACS_rescaled_BioSNICAR: cellular absorption cross section 480 bands (unitless)
+        k_rescaled_BioSNICAR: cellular imaginary part of refractive index 480 bands (unitless)
+        n_rescaled_BioSNICAR: cellular real part of refractive index 480 bands (unitless)
+
+    Returns:
+        assym: assym parameter
+        ss_alb: single scattering albedo
+    """
+    r = bio_optical_config.radius
+    L = bio_optical_config.length
+    wvl = wvl_rescaled_BioSNICAR
+    n_algae = n_rescaled_BioSNICAR
+    k_algae = k_rescaled_BioSNICAR
+        
+    if bio_optical_config.GO:
+        
         # set up lists
         SSA_list = []
         Assy_list = []
@@ -410,7 +322,7 @@ def ssp_calculations(
             assym = np.array(Assy_list).flatten()
             ss_alb = np.array(SSA_list).flatten()
 
-        if plots:
+        if bio_optical_config.plot_ssps:
 
             plt.figure(1)
             plt.plot(wvl, SSA_list, label="{}x{}".format(r, L)),
@@ -418,17 +330,11 @@ def ssp_calculations(
             plt.xlabel("Wavelength (um)"), plt.grid(False),
             plt.legend(loc="best", ncol=2)
 
-            if savefigs:
-                plt.savefig(str(savepath + "SSA_{}x{}.jpg".format(r, L)))
-
             plt.figure(2)
             plt.plot(wvl, Assy_list, label="{}x{}".format(r, L)),
             plt.xlim(0.3, 1.4), plt.ylabel("Assymetry Parameter"),
             plt.xlabel("Wavelength (um)"), plt.grid(False),
             plt.legend(loc="best", ncol=2)
-
-            if savefigs:
-                plt.savefig(str(savepath + "AssymetryParam_{}x{}.jpg".format(r, L)))
 
             plt.figure(3)
             plt.plot(wvl, absXS_list, label="{}x{}".format(r, L)),
@@ -436,18 +342,18 @@ def ssp_calculations(
             plt.xlabel("Wavelength (um)"), plt.grid(False),
             plt.legend(loc="best", ncol=2)
 
-            if savefigs:
-                plt.savefig(str(savepath + "AbsXS_{}x{}.jpg".format(r, L)))
-
             plt.figure(4)
             plt.plot(wvl, X_list, label="{}x{}".format(r, L)),
             plt.ylabel("Size Parameter X"), plt.xlabel("Wavelength (um)"),
             plt.grid(False), plt.legend(loc="best", ncol=2)
+            
+            if bio_optical_config.savefig_ssps:
+                plt.savefig(str(bio_optical_config.savepath + "SSA_{}x{}.jpg".format(r, L)))
+                plt.savefig(str(bio_optical_config.savepath + "AssymetryParam_{}x{}.jpg".format(r, L)))
+                plt.savefig(str(bio_optical_config.savepath + "AbsXS_{}x{}.jpg".format(r, L)))
+                plt.savefig(str(bio_optical_config.savepath + "X_SizeParam_{}x{}.jpg".format(r, L)))
 
-            if savefigs:
-                plt.savefig(str(savepath + "X_SizeParam_{}x{}.jpg".format(r, L)))
-
-        if report_dims:
+        if bio_optical_config.report_dims:
             print("cell diameter = ", np.round(diameter, 2), " (micron)")
             print("cell length = ", L, " (micron)")
             print("aspect ratio = ", ar)
@@ -456,7 +362,7 @@ def ssp_calculations(
             print("projected area = ", np.round(Area, 2))
             print()  # line break
 
-    if Mie:
+    if bio_optical_config.Mie:
 
         X = 2 * np.pi * r / wvl  # unitless
         qext, qsca, qback, g = mie(n_algae - 1j * k_algae, X)
@@ -464,7 +370,7 @@ def ssp_calculations(
         assym = g
         ss_alb = qsca / qext
 
-        if plots:
+        if bio_optical_config.plot_ssps:
             qqabs = qabs * np.pi * r ** 2  # calculate cross section from efficiency
             qqsca = qsca * np.pi * r ** 2  # calculate cross section from efficiency
             qqext = qext * np.pi * r ** 2  # calculate cross section from efficiency
@@ -478,8 +384,8 @@ def ssp_calculations(
             plt.xlabel("Wavelength (nm)")
             plt.legend(loc="best")
 
-            if savefigs:
-                plt.savefig(str(savepath + figname + ".jpg"), dpi=150)
+            if bio_optical_config.savefig_ssps:
+                plt.savefig(str(bio_optical_config.savepath + "Mie_params.jpg"), dpi=150)
                 plt.show()
             else:
                 plt.show()
@@ -487,34 +393,98 @@ def ssp_calculations(
     return assym, ss_alb
 
 
-def net_cdf_updater(
-    GO, Mie, savepath, filename, wvl, g, ssa, ACS, L, r, density, information
-):
 
-    algfile = pd.DataFrame()
-    algfile["asm_prm"] = np.squeeze(g)
-    algfile["ss_alb"] = np.squeeze(ssa)
-    algfile["ext_cff_mss"] = ACS
-    algfile = algfile.to_xarray()
-    algfile.attrs["medium_type"] = "air"
-    if GO:
-        algfile.attrs["description"] = (
-            "Optical properties for glacier algal cell: cylinder of radius "
-            "{}um and length {}um".format(str(r), str(L))
+def plot_k_n_ACS(bio_optical_config, ACS, k):
+    """Optionnally plots and saves figures and files for ACS, n and k. 
+    
+    Args:
+        bio_optical_config: instance of BioOpticalConfig class
+        ACS: absorption cross section in m2/cell, m2/um3 or m2/mg
+        k: cellular imaginary part of refractive index (unitless)
+        
+    Returns:
+        None
+    """
+
+    if bio_optical_config.smooth:
+        yhat = savgol_filter(ACS, bio_optical_config.window_size, 
+                             bio_optical_config.poly_order)  # window size 51, polynomial order 3
+        ACS = yhat
+
+    # optionally save files to savepath
+    if bio_optical_config.savefiles_n_k_acs:  # optional save dataframe to csv files
+        pd.DataFrame(k).to_csv(
+            str(bio_optical_config.savepath + "k.csv"), header=None, index=False
         )
-        algfile.attrs["side_length_um"] = L
-    if Mie:
-        algfile.attrs[
-            "description"
-        ] = "Optical properties for snow algal " "cell: sphere of radius {}um".format(
-            str(r)
+        pd.DataFrame(ACS).to_csv(
+            str(bio_optical_config.savepath + "ACS.csv"), header=None, index=False
         )
-    algfile.attrs["psd"] = "monodisperse"
-    algfile.attrs["radius_um"] = r
-    algfile.attrs["density_kg_m3"] = density
-    algfile.attrs["wvl"] = wvl
-    algfile.attrs["information"] = information
-    algfile.to_netcdf(str(savepath + filename + ".nc"), mode="w")
+        pd.DataFrame((bio_optical_config.n_algae*np.ones(np.size(bio_optical_config.wvl)))).to_csv(
+            str(bio_optical_config.savepath + "n.csv"), header=None, index=False
+        )
+
+    # optionally plot figures to interative window
+    if bio_optical_config.plot_n_k_acs:
+        plt.figure(figsize=(10, 15))
+        plt.subplot(2, 1, 1)
+        plt.plot(bio_optical_config.wvl[100:600] * 1000, ACS[100:600])
+        plt.xticks(fontsize=24), plt.yticks(fontsize=24)
+        plt.xlabel("Wavelength (nm)", fontsize=24),
+        plt.ylabel(
+            str("ACS (m$2$ cell$^{-1}$, m$^2$ µm$3$ or m$^2$ ng$3$ ))"), fontsize=24
+        )
+        plt.tight_layout()
+
+        plt.subplot(2, 1, 2)
+        plt.plot(bio_optical_config.wvl[100:600] * 1000, k[100:600])
+        plt.xticks(fontsize=24), plt.yticks(fontsize=24)
+        plt.xlabel("Wavelength (nm)", fontsize=24), plt.ylabel("k", fontsize=24)
+        plt.tight_layout()
+
+        # optionally save plots to savepath
+        if bio_optical_config.saveplots_n_k_acs:
+            plt.show()
+            plt.savefig(str(bio_optical_config.savepath + "/ACSandK.png"))
+        else:
+            plt.show()
+        
+
+def net_cdf_updater(bio_optical_config, assym, ss_alb, ACS):
+    """Optionnally saves netcdf file with optical properties usable in BioSNICAR.
+    
+    Args:
+        bio_optical_config: instance of BioOpticalConfig class
+        ACS: absorption cross section in m2/cell, m2/um3 or m2/mg
+        assym: assym parameter
+        ss_alb: single scattering albedo
+        
+    Returns:
+        None
+    """
+    if bio_optical_config.save_netcdf: 
+        algfile = pd.DataFrame()
+        algfile["asm_prm"] = np.squeeze(assym)
+        algfile["ss_alb"] = np.squeeze(ss_alb)
+        algfile["ext_cff_mss"] = ACS
+        algfile = algfile.to_xarray()
+        algfile.attrs["medium_type"] = "air"
+        if bio_optical_config.GO:
+            algfile.attrs["description"] = (
+                "Optical properties for glacier algal cell: cylinder of radius "
+                "{}um and length {}um".format(str(bio_optical_config.radius), str(bio_optical_config.length))
+            )
+            algfile.attrs["side_length_um"] = bio_optical_config.length
+        if bio_optical_config.Mie:
+            algfile.attrs[
+                "description"
+            ] = "Optical properties for snow algal " "cell: sphere of radius {}um".format(
+                str(bio_optical_config.radius)
+            )
+        algfile.attrs["psd"] = "monodisperse"
+        algfile.attrs["density_kg_m3"] = bio_optical_config.wet_density
+        algfile.attrs["wvl"] = bio_optical_config.wvl
+        algfile.attrs["information"] = bio_optical_config.information
+        algfile.to_netcdf(str(bio_optical_config.savepath_netcdf + bio_optical_config.filename_netcdf + ".nc"), mode="w")
 
     return
 
