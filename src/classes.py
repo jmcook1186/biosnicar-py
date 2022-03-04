@@ -381,7 +381,7 @@ class BioOpticalConfig:
         dry_density:  (int - used if biomass: True) density of dry biomass
                         (kg/m3 - 625 and 684 for snow and glacier algae,
                         Chevrollier et al. 2022)
-        acs_calc: toggles calculating ACS from pigments or loading from file.
+        acs_calculated: toggles calculating ACS from pigments or loading from file.
         acs_loaded_reconstructed: (boolean) True if the
                                 ACS is loaded as a reconstructed spectrum
                                 from pigment absorbance (see methods in
@@ -449,10 +449,10 @@ class BioOpticalConfig:
         with open("./src/inputs.yaml", "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.wvl=np.arange(0.200, 4.999, 0.001)
+        self.wvl=np.arange(0.200, 5, 0.001)
         self.wet_density= inputs["BIOOPTICAL"]["WET_DENSITY"]
         self.dry_density= inputs["BIOOPTICAL"]["DRY_DENSITY"]
-        self.acs_calc=inputs["BIOOPTICAL"]["ACS_CALC"]
+        self.acs_calculated=inputs["BIOOPTICAL"]["ACS_CALC"]
         self.acs_loaded_reconstructed=inputs["BIOOPTICAL"]["ACS_LOAD_RECONSTRUCTED"]
         self.acs_loaded_invivo=inputs["BIOOPTICAL"]["ACS_LOAD_INVIVO"]
         self.acs_file=inputs["BIOOPTICAL"]["ACS_FILE"]
@@ -472,8 +472,8 @@ class BioOpticalConfig:
         self.report_dims = inputs["BIOOPTICAL"]["REPORT_DIMS"] 
         self.plot_ssps = inputs["BIOOPTICAL"]["PLOT_SSPS"]
         self.savefig_ssps = inputs["BIOOPTICAL"]["SAVEFIG_SSPS"]
-        self.plot_n_k_acs = inputs["BIOOPTICAL"]["PLOT_N_K_ACS"]
-        self.saveplots_n_k_acs = inputs["BIOOPTICAL"]["SAVE_PLOT_N_K_ACS"]
+        self.plot_k_acs = inputs["BIOOPTICAL"]["PLOT_K_ACS"]
+        self.saveplots_k_acs = inputs["BIOOPTICAL"]["SAVE_PLOT_K_ACS"]
         self.savefiles_n_k_acs = inputs["BIOOPTICAL"]["SAVE_N_K_ACS"]
         self.savepath = inputs["BIOOPTICAL"]["SAVE_PATH_FIG"]
         self.smooth = inputs["CTRL"]["SMOOTH"]

@@ -4,7 +4,7 @@
 @author: Joseph Cook, Lou Chevrollier
 
 Contains functions relating to bio-optical model components of BioSNICAR_GO_py
-Called from BioOptical_driver.py
+Called from biooptical_driver.py
 
 """
 
@@ -37,26 +37,30 @@ def get_absorption_cross_section(bio_optical_config):
     abs_cff_pigments = pd.DataFrame(index = bio_optical_config.wvl * 1000)  # storing pigment MACs
 
     if bio_optical_config.acs_calculated:
+        print("ACS reconstructed from pigments")
         # open mass absorption coefficients (m2/mg) for each algal pigment
         # from a dictionary.key is pigment name, value is abs coeff in m2/mg
         abs_coeff = 0
         for key, value in bio_optical_config.pigment_data.items():
-            abs_pigm = (np.array(pd.read_csv(key))).flatten()  # m2/mg
+            abs_pigm = np.array(pd.read_csv(key, header=None)).flatten()  # m2/mg
             abs_cff_pigments[str(key.split(bio_optical_config.pigment_dir, 1)[1])[0:-4]] = abs_pigm
             conc = value  # intracellular conc in ng/µm3, ng/cell, or ng/mg
             abs_coeff = abs_coeff + conc * abs_pigm / 1000000  # m2/µm3,m2/cell,m2/mg
+        ACS = abs_coeff
 
     elif bio_optical_config.acs_loaded_reconstructed:
-        ACS = (np.array(pd.read_csv(bio_optical_config.acs_file))).flatten()  # m2/mg, um3 or cell
+        print("ACS reconstructed directly loaded")
+        ACS = np.loadtxt(bio_optical_config.acs_file)  # m2/mg, um3 or cell
         if bio_optical_config.packaging_correction_SA:  # ! applies only from 300nm
             pckg_SA = np.loadtxt(bio_optical_config.dir_pckg + "pckg_SA.csv")
-            abs_coeff = abs_coeff * pckg_SA[0:-1]
+            ACS = ACS * pckg_SA
         if bio_optical_config.packaging_correction_GA:  # ! applies from 300nm
             pckg_GA = np.loadtxt(bio_optical_config.dir_pckg + "pckg_GA.csv")
-            abs_coeff = abs_coeff * pckg_GA[0:-1]
+            ACS = ACS * pckg_GA
 
     elif bio_optical_config.acs_loaded_invivo:
-        ACS = (np.array(pd.read_csv(bio_optical_config.acs_file))).flatten()  # m2/mg, um3 or cell
+        print("ACS in vivo directly loaded")
+        ACS = np.loadtxt(bio_optical_config.acs_file) # m2/mg, um3 or cell
         
     return ACS
 
@@ -347,6 +351,8 @@ def calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, wvl_rescaled_BioSNI
             plt.ylabel("Size Parameter X"), plt.xlabel("Wavelength (um)"),
             plt.grid(False), plt.legend(loc="best", ncol=2)
             
+            plt.show()
+            
             if bio_optical_config.savefig_ssps:
                 plt.savefig(str(bio_optical_config.savepath + "SSA_{}x{}.jpg".format(r, L)))
                 plt.savefig(str(bio_optical_config.savepath + "AssymetryParam_{}x{}.jpg".format(r, L)))
@@ -383,11 +389,10 @@ def calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, wvl_rescaled_BioSNI
             plt.ylabel(r"Cross Section ($\mu$m$^2$)")
             plt.xlabel("Wavelength (nm)")
             plt.legend(loc="best")
+            plt.show()
 
             if bio_optical_config.savefig_ssps:
                 plt.savefig(str(bio_optical_config.savepath + "Mie_params.jpg"), dpi=150)
-                plt.show()
-            else:
                 plt.show()
 
     return assym, ss_alb
@@ -424,39 +429,38 @@ def plot_k_n_ACS(bio_optical_config, ACS, k):
         )
 
     # optionally plot figures to interative window
-    if bio_optical_config.plot_n_k_acs:
-        plt.figure(figsize=(10, 15))
+    if bio_optical_config.plot_k_acs:
+        plt.figure(figsize=(7, 9))
         plt.subplot(2, 1, 1)
         plt.plot(bio_optical_config.wvl[100:600] * 1000, ACS[100:600])
-        plt.xticks(fontsize=24), plt.yticks(fontsize=24)
-        plt.xlabel("Wavelength (nm)", fontsize=24),
+        plt.xticks(fontsize=15), plt.yticks(fontsize=15)
+        plt.xlabel("Wavelength (nm)", fontsize=15),
         plt.ylabel(
-            str("ACS (m$2$ cell$^{-1}$, m$^2$ µm$3$ or m$^2$ ng$3$ ))"), fontsize=24
+            str("ACS (m$2$ cell$^{-1}$, m$^2$ µm$3$ or m$^2$ ng$3$ ))"), fontsize=15
         )
         plt.tight_layout()
 
         plt.subplot(2, 1, 2)
         plt.plot(bio_optical_config.wvl[100:600] * 1000, k[100:600])
-        plt.xticks(fontsize=24), plt.yticks(fontsize=24)
-        plt.xlabel("Wavelength (nm)", fontsize=24), plt.ylabel("k", fontsize=24)
+        plt.xticks(fontsize=15), plt.yticks(fontsize=15)
+        plt.xlabel("Wavelength (nm)", fontsize=15), plt.ylabel("k", fontsize=15)
         plt.tight_layout()
+        plt.show()
 
         # optionally save plots to savepath
-        if bio_optical_config.saveplots_n_k_acs:
+        if bio_optical_config.saveplots_k_acs:
             plt.show()
             plt.savefig(str(bio_optical_config.savepath + "/ACSandK.png"))
-        else:
-            plt.show()
-        
 
-def net_cdf_updater(bio_optical_config, assym, ss_alb, ACS):
+def net_cdf_updater(bio_optical_config, assym, ss_alb, ACS_rescaled_BioSNICAR, wvl_rescaled_BioSNICAR):
     """Optionnally saves netcdf file with optical properties usable in BioSNICAR.
     
     Args:
         bio_optical_config: instance of BioOpticalConfig class
-        ACS: absorption cross section in m2/cell, m2/um3 or m2/mg
+        ACS_rescaled_BioSNICAR: absorption cross section in m2/cell, m2/um3 or m2/mg
         assym: assym parameter
         ss_alb: single scattering albedo
+        wvl_rescaled_BioSNICAR: wavelengths
         
     Returns:
         None
@@ -465,7 +469,7 @@ def net_cdf_updater(bio_optical_config, assym, ss_alb, ACS):
         algfile = pd.DataFrame()
         algfile["asm_prm"] = np.squeeze(assym)
         algfile["ss_alb"] = np.squeeze(ss_alb)
-        algfile["ext_cff_mss"] = ACS
+        algfile["ext_cff_mss"] = ACS_rescaled_BioSNICAR
         algfile = algfile.to_xarray()
         algfile.attrs["medium_type"] = "air"
         if bio_optical_config.GO:
@@ -482,7 +486,7 @@ def net_cdf_updater(bio_optical_config, assym, ss_alb, ACS):
             )
         algfile.attrs["psd"] = "monodisperse"
         algfile.attrs["density_kg_m3"] = bio_optical_config.wet_density
-        algfile.attrs["wvl"] = bio_optical_config.wvl
+        algfile.attrs["wvl"] = wvl_rescaled_BioSNICAR
         algfile.attrs["information"] = bio_optical_config.information
         algfile.to_netcdf(str(bio_optical_config.savepath_netcdf + bio_optical_config.filename_netcdf + ".nc"), mode="w")
 
