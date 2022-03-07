@@ -148,7 +148,7 @@ def calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, wvl_rescaled_BioSNI
 
     The user cna toggle between using two methods to calculate the single scattering optical
     properties from the real and imaginary parts of the refractive index along with the
-    cell size distribution. The BioSNICAR default is to assume monocultures, but a particle
+    cell size distribution. The BioSNICAR default is to assume monodispersions, but a particle
     size distribution can easily be calculated by running thie bio-optical model over a range
     of particle sizes and calculating an appropriate average. The two schemes availabe are Mie
     scatteriung or geometrical optics. The former assumes spehericalcells and is slow to converge
@@ -498,7 +498,7 @@ def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled_BioSNICA
     Returns:
         None
     """
-    
+
     if bio_optical_config.save_netcdf: 
         algfile = pd.DataFrame()
         algfile["asm_prm"] = np.squeeze(assym)
