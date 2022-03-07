@@ -127,26 +127,26 @@ def rescale_480band(bio_optical_config, abs_cff, k):
         k: cellular imaginary part of refractive index (unitless)
 
     Returns:
-        wvl_rescaled_BioSNICAR: wavelengths 480 bands
-        abs_cff_rescaled_BioSNICAR: cellular absorption cross section 480 bands (unitless)
-        k_rescaled_BioSNICAR: cellular imaginary part of refractive index 480 bands (unitless)
-        n_rescaled_BioSNICAR: cellular real part of refractive index 480 bands (unitless)
+        wvl_rescaled: wavelengths 480 bands
+        abs_cff_rescaled: cellular absorption cross section 480 bands (unitless)
+        k_rescaled: cellular imaginary part of refractive index 480 bands (unitless)
+        n_rescaled: cellular real part of refractive index 480 bands (unitless)
 
     """
     
     # rescaling variables to BioSNICAR resolution (10nm)
-    wvl_rescaled_BioSNICAR = bio_optical_config.wvl[5::10]
-    abs_cff_rescaled_BioSNICAR = abs_cff[5::10]
-    k_rescaled_BioSNICAR = k[5::10]
-    n_rescaled_BioSNICAR = (bio_optical_config.n_algae*np.ones(np.size(bio_optical_config.wvl)))[5::10] 
+    wvl_rescaled = bio_optical_config.wvl[5::10]
+    abs_cff_rescaled = abs_cff[5::10]
+    k_rescaled = k[5::10]
+    n_rescaled = (bio_optical_config.n_algae*np.ones(np.size(bio_optical_config.wvl)))[5::10] 
     
-    return wvl_rescaled_BioSNICAR, abs_cff_rescaled_BioSNICAR, k_rescaled_BioSNICAR, n_rescaled_BioSNICAR
+    return wvl_rescaled, abs_cff_rescaled, k_rescaled, n_rescaled
 
 
-def calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, wvl_rescaled_BioSNICAR,n_rescaled_BioSNICAR):
+def calculate_ssps(bio_optical_config, k_rescaled, wvl_rescaled,n_rescaled):
     """Calculates single scattering optical properties using Mie or GO scattering codes.
 
-    The user cna toggle between using two methods to calculate the single scattering optical
+    The user can toggle between using two methods to calculate the single scattering optical
     properties from the real and imaginary parts of the refractive index along with the
     cell size distribution. The BioSNICAR default is to assume monodispersions, but a particle
     size distribution can easily be calculated by running thie bio-optical model over a range
@@ -165,20 +165,22 @@ def calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, wvl_rescaled_BioSNI
     
     Args:
         bio_optical_config: instance of BioOpticalConfig class
-        wvl_rescaled_BioSNICAR: wavelengths 480 bands
-        abs_cff_rescaled_BioSNICAR: cellular absorption cross section 480 bands (unitless)
-        k_rescaled_BioSNICAR: cellular imaginary part of refractive index 480 bands (unitless)
-        n_rescaled_BioSNICAR: cellular real part of refractive index 480 bands (unitless)
+        wvl_rescaled: wavelengths 480 bands
+        abs_cff_rescaled: cellular absorption cross section 480 bands (unitless)
+        k_rescaled: cellular imaginary part of refractive index 480 bands (unitless)
+        n_rescaled: cellular real part of refractive index 480 bands (unitless)
 
     Returns:
-        assym: assym parameter
+        assym: assymetry parameter
+        
         ss_alb: single scattering albedo
     """
+
     r = bio_optical_config.radius
     L = bio_optical_config.length
-    wvl = wvl_rescaled_BioSNICAR
-    n_algae = n_rescaled_BioSNICAR
-    k_algae = k_rescaled_BioSNICAR
+    wvl = wvl_rescaled
+    n_algae = n_rescaled
+    k_algae = k_rescaled
         
     if bio_optical_config.GO:
         
@@ -482,7 +484,7 @@ def plot_k_n_abs_cff(bio_optical_config, abs_cff, k):
             plt.show()
             plt.savefig(str(bio_optical_config.savepath + "/abs_cffandK.png"))
 
-def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled_BioSNICAR, wvl_rescaled_BioSNICAR):
+def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled, wvl_rescaled):
     """Optionally saves netcdf file with optical properties usable in BioSNICAR.
 
     Saves the calculate optical properties to a NetCDF file with formatting that allows the
@@ -490,10 +492,10 @@ def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled_BioSNICA
 
     Args:
         bio_optical_config: instance of BioOpticalConfig class
-        abs_cff_rescaled_BioSNICAR: absorption cross section in m2/cell, m2/um3 or m2/mg
+        abs_cff_rescaled: absorption cross section in m2/cell, m2/um3 or m2/mg
         assym: assym parameter
         ss_alb: single scattering albedo
-        wvl_rescaled_BioSNICAR: wavelengths
+        wvl_rescaled: wavelengths
         
     Returns:
         None
@@ -503,7 +505,7 @@ def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled_BioSNICA
         algfile = pd.DataFrame()
         algfile["asm_prm"] = np.squeeze(assym)
         algfile["ss_alb"] = np.squeeze(ss_alb)
-        algfile["ext_cff_mss"] = abs_cff_rescaled_BioSNICAR
+        algfile["ext_cff_mss"] = abs_cff_rescaled
         algfile = algfile.to_xarray()
         algfile.attrs["medium_type"] = "air"
         if bio_optical_config.GO:
@@ -520,7 +522,7 @@ def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled_BioSNICA
             )
         algfile.attrs["psd"] = "monodisperse"
         algfile.attrs["density_kg_m3"] = bio_optical_config.wet_density
-        algfile.attrs["wvl"] = wvl_rescaled_BioSNICAR
+        algfile.attrs["wvl"] = wvl_rescaled
         algfile.attrs["information"] = bio_optical_config.information
         algfile.to_netcdf(str(bio_optical_config.savepath_netcdf + bio_optical_config.filename_netcdf + ".nc"), mode="w")
 
