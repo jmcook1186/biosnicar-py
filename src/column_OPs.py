@@ -1,4 +1,14 @@
 #!/usr/bin/python
+"""Calculates optical properties of ice/snow column from inputs.
+
+These functions take the user-defined inputs for the physical 
+properties of the snow and ice and any impurities and calculate
+the single scattering albedo, asymmetry parameter and optical 
+thickness which are then passed to one or other of our radiative
+transfer solvers (Toon solver or adding-doubling solver).
+
+"""
+
 import sys
 sys.path.append("./src")
 import numpy as np
