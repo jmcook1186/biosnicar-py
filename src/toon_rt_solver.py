@@ -1,4 +1,33 @@
 #!/usr/bin/python
+"""Radiative transfer solver using the Toon matrix method.
+
+Here the ice/impurity optical properties and illumination conditions
+are used to calculate energy fluxes between the ice, atmosphere and
+underlying substrate.
+
+Typically this function would be called from snicar_driver() because
+it takes as inputs intermediates that are calculated elsewhere.
+Specifically, the functions setup_snicar(), get_layer_OPs() and
+mix_in_impurities() are called to generate tau, ssa, g and L_snw,
+which are then passed as inputs to toon_solver().
+
+The Toon solver was originally coded in FORTRAN and then Matlab by Mark Flanner.
+His Matlab scripts were the jumping off point for this script and are still
+used to benchmark this code against.
+
+This solver can only treat ice as a "granular" material with a bulk medium of air 
+with discrete ice grains. No Fresnel reflection is included in this solver. There
+are also well-known instabilities that arise at certain solar zenith angles (see
+Toon et al. 1989). Our model does not accept solar zenith angles that fall outside 
+of the valid range for the Toon solver. Swapping to the adding-doubling solver is
+a route around this problem - there the solar zenith angle can range from 1-89 
+degrees. The main benefit of the Toon solver is speed, and continuity from legacy
+radiative transfer models.
+
+"""
+
+
+
 import sys
 sys.path.append("./src")
 from scipy.signal import savgol_filter

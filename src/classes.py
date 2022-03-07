@@ -1,4 +1,26 @@
 #!/usr/bin/python
+
+"""Classes used in BioSNICAR.
+
+This module contains class definitions for all the classes used in BioSNICAR. This includes:
+
+Impurity
+Ice
+Illumination
+RTConfig
+ModelConfig
+PlotConfig
+Outputs
+BioOpticaLConfig
+
+These classes are used as convenient, mutable containers for the necessary data required to run
+BioSNICAR. They are automatically instantiated by calling setup_snicar() using values provided
+in inputs.yaml. Class functions are available for recalculating derived attributes when the
+user changes attributes of Ice or Illumination classes. 
+
+"""
+
+
 import sys
 sys.path.append("./src")
 import xarray as xr
@@ -483,7 +505,18 @@ class BioOpticalConfig:
         self.savepath_netcdf = inputs["BIOOPTICAL"]["SAVE_PATH_NETCDF"]
         self.filename_netcdf = inputs["BIOOPTICAL"]["FILENAME_NETCDF"]
         self.information = inputs["BIOOPTICAL"]["INFO_NETCDF"]
-      
+
+        self.validate_biooptical_inputs()
+
+    def validate_biooptical_inputs(self):
+        
+        assert(self.wvl == np.arange(0.200, 5, 0.001))
+        if self.Mie:
+            assert(self.GO==False) 
+        if self.GO:
+            assert(self.Mie==False)  
+          
+        return
 
 
 if __name__ == '__main__':
