@@ -513,9 +513,9 @@ The file is the precise filename in /Data/OP_data/480band/lap/ that contains the
 * **dust_greenland_Cook_CENTRAL_20190911.nc:**  Dark Zone dust 2 (Cook et al. 2019 "MEAN") 
 * **dust_greenland_Cook_HIGH_20190911.nc:**  Dark Zone dust 3 (Cook et al. 2019 "HIGH") 
 * **snw_alg_r025um_chla020_chlb025_cara150_carb140.nc:**  Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-* **SA_Chevrollier2022_r8.99.nc:**  Snow algae (Chevrollier et al 2022) NOT YET FUNCTIONAL
+* **SA_Chevrollier2022_r8.99.nc:**  Snow algae (Chevrollier et al 2022) (not yet validated for release)
 * **Cook2020_glacier_algae_4_40.nc:**  Glacier Algae (Cook et al. 2020)
-* **GA_Chevrollier2022_r4.9_L18.8.nc:**  Glacier algae (Chevrollier et al 2022) NOT YET FUNCTIONAL
+* **GA_Chevrollier2022_r4.9_L18.8.nc:**  Glacier algae (Chevrollier et al 2022) (not yet validated for release)
   
   
 UNIT
