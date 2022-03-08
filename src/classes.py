@@ -11,7 +11,7 @@ RTConfig
 ModelConfig
 PlotConfig
 Outputs
-BioOpticaLConfig
+BioOpticalConfig
 
 These classes are used as convenient, mutable containers for the necessary data required to run
 BioSNICAR. They are automatically instantiated by calling setup_snicar() using values provided
@@ -96,10 +96,10 @@ class Ice:
         nbr_lyr: number of vertical layers
     """
 
-    def __init__(self):
+    def __init__(self, input_file):
 
         # use config to calculate refractive indices
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.dz = inputs["ICE"]["DZ"]
@@ -119,9 +119,9 @@ class Ice:
         self.ar = inputs["ICE"]["AR"]
         self.nbr_lyr = len(self.dz)
 
-        self.calculate_refractive_index()
+        self.calculate_refractive_index(input_file)
 
-    def calculate_refractive_index(self):
+    def calculate_refractive_index(self, input_file):
         """Calculates ice refractive index from initialized class attributes.
 
         Takes self.rf and config from inpouts.yaml and uses them to calculate
@@ -143,7 +143,7 @@ class Ice:
         if self.rf < 0 or self.rf > 2:
             raise ValueError("Ice ref index type out of range - between 0 and 2 only")
 
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         refidx_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
@@ -180,9 +180,9 @@ class Illumination:
         nbr_wvl: number fo wavelengths (default 480)
     """
 
-    def __init__(self):
+    def __init__(self, input_file):
 
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.direct = inputs["RTM"]["DIRECT"]
@@ -261,9 +261,9 @@ class RTConfig:
 
     """
 
-    def __init__(self):
+    def __init__(self, input_file):
 
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.aprx_typ = inputs["RTM"]["APRX_TYP"]
@@ -291,9 +291,9 @@ class ModelConfig:
 
     """
 
-    def __init__(self):
+    def __init__(self, input_file):
 
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.smooth = inputs["CTRL"]["SMOOTH"]
@@ -368,9 +368,9 @@ class PlotConfig:
 
     """
 
-    def __init__(self):
+    def __init__(self, input_file):
 
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.figsize = inputs["PLOT"]["FIG_SIZE"]
@@ -465,10 +465,10 @@ class BioOpticalConfig:
 
     """
 
-    def __init__(self):
+    def __init__(self, input_file):
 
 
-        with open("./src/inputs.yaml", "r") as ymlfile:
+        with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
         self.wvl=np.arange(0.200, 5, 0.001)

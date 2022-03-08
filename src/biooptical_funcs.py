@@ -3,11 +3,9 @@
 """
 @author: Joseph Cook, Lou Chevrollier
 
-Contains functions relating to bio-optical model components of BioSNICAR_GO_py
-Called from biooptical_driver.py
+Contains functions relating to bio-optical model components of BioSNICAR_GO_py.
 
 """
-
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +15,50 @@ from plotnine import aes, geom_line, ggplot
 from scipy.signal import savgol_filter
 from classes import *
 plt.style.use("seaborn")
+
+def run_biooptical_model():
+    """ Executes functions in bio-optical model.
+
+    Calling `run_biooptical_model()` with no arguments runs the full bio-optical model
+    with config defined in inputs.yaml. This includes generating new optical properties
+    and saving the resuting files to /Data/480band/laps. 
+
+    To then incorporate the newly generated impurities into the radiative transfer model
+    the new filenames must be used to generate instances of Impurity in setup_snicar().
+    This is achieved by adding them to the impurities section of inputs.yaml.
+
+    Args:
+        None
+    
+    Returns:
+        None but saves NetCDFs to /Data/480band/laps.
+    
+    """
+
+    bio_optical_config = BioOpticalConfig()
+    abs_cff = get_absorption_cross_section(bio_optical_config)
+    k = calculate_k(bio_optical_config, abs_cff)
+    wvl_rescaled_BioSNICAR, abs_cff_rescaled_BioSNICAR,\
+    k_rescaled_BioSNICAR, n_rescaled_BioSNICAR = rescale_480band(bio_optical_config, 
+                                                                abs_cff, k)
+    plot_k_n_abs_cff(bio_optical_config, abs_cff, k)
+
+    # # --------------------------------------------------------------------------------------
+    # # CALCULATIONS OF SCATTERING PROPERTIES
+    # # --------------------------------------------------------------------------------------
+
+    assym, ss_alb = calculate_ssps(bio_optical_config, k_rescaled_BioSNICAR, 
+                                    wvl_rescaled_BioSNICAR,n_rescaled_BioSNICAR)
+
+
+    # # --------------------------------------------------------------------------------------
+    # # SAVING DATA IN NETCDF
+    # # --------------------------------------------------------------------------------------
+
+    net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled_BioSNICAR, wvl_rescaled_BioSNICAR)
+
+    return
+
 
 def get_absorption_cross_section(bio_optical_config):
 
@@ -172,7 +214,7 @@ def calculate_ssps(bio_optical_config, k_rescaled, wvl_rescaled,n_rescaled):
 
     Returns:
         assym: assymetry parameter
-        
+
         ss_alb: single scattering albedo
     """
 

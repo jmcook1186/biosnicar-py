@@ -1,6 +1,6 @@
-****************************************
-Input Configuration Guide for BioSNICAR
-****************************************
+********************
+Input Configuration
+********************
 
 BioSNICAR is configured by updating the values in the config file inputs.yaml. This file is divided into subsections for variables that corrspond to specific parts of the model. These are: 
 

@@ -32,4 +32,12 @@ We have also maintained a separate version of the BioSNICAR codebase that uses a
 
 Choosing Inputs
 ------------------
-It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to `inputs.md` for explanations of each parameter. 
+It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to `Input Configuration` for explanations of each parameter. 
+Please note that you can have multiple input files, even saved in an external directory with specific configurations and then loop through them in snicar driver. For example, you may wish to conduct an experiment with 10 different model configurations - in this case you could have ten inputsX.yaml files in an external directory. Then execute all the functions inside the default snicar_driver.py in a simple for loop, assigning each file to input_files in turn.
+This is good for reproducibility as those config files can be archived.
+
+BioOptical Model
+----------------
+
+The bio-optical model is generally run separately to the main model code because most users use the default optical properties provided in the downloaded repository. However, some users may wish to generate new files. To do this, simply call `run_biooptical_model()` in the driver script after updating the `biooptical` section of inputs.yaml. We have included the function call in the template driver script but left it commented out as we expect it to be rarely used.
+  
