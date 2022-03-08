@@ -12,22 +12,23 @@ from adding_doubling_solver import adding_doubling_solver
 from validate_inputs import *
 from display import *
 
+
+# define input file
+input_file = "./src/inputs.yaml"
+
 ###################
 # BIO-OPTICAL MODEL
 ###################
 
-# optionally run the bio-optical modelk to add new impurity optical properties to
+# optionally run the bio-optical model to add new impurity optical properties to
 # the BioSNICAR database. Commewnted out by default as we expect our default lap
 # database to be sufficient for most users.
 
-# run_biooptical_model()
+run_biooptical_model(input_file)
 
 ###########################
 # RADIATIVE TRANSFER MODEL
 ###########################
-
-# define input file
-input_file = "./src/inputs.yaml"
 
 # first build classes from config file and validate their contents
 (

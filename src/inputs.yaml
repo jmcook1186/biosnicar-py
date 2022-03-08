@@ -87,7 +87,7 @@ PLOT:
 BIOOPTICAL: 
     WET_DENSITY: 1060
     DRY_DENSITY: 684
-    ACS_CALC: False
+    ABS_CFF_CALC: False
     PIGMENT_CONC: { "Data/pigments/alloxanthin.csv": 0,
                     "Data/pigments/antheraxanthin.csv": 0,
                     "Data/pigments/chl-a.csv": 0,
@@ -104,9 +104,9 @@ BIOOPTICAL:
                     "Data/pigments/zeaxanthin.csv": 0,
                     }
     PIGMENT_DIR: "Data/pigments/"
-    ACS_LOAD_RECONSTRUCTED: False
-    ACS_LOAD_INVIVO: True
-    ACS_FILE: "file.csv"
+    ABS_CFF_LOAD_RECONSTRUCTED: False
+    ABS_CFF_LOAD_INVIVO: True
+    ABS_CFF_FILE: "file.csv"
     PCKG_SA: False
     PCKG_GA: False
     DIR_PCKG: "Data/pigments/"
@@ -121,9 +121,9 @@ BIOOPTICAL:
     PLOT_SSPS: False
     SAVEFIG_SSPS: False
     REPORT_DIMS: False
-    PLOT_K_ACS: False
-    SAVE_N_K_ACS: False
-    SAVE_PLOT_K_ACS: False
+    PLOT_K_ABS_CFF: False
+    SAVE_N_K_ABS_CFF: False
+    SAVE_PLOT_K_ABS_CFF: False
     SAVE_PATH_FIG: "Data/pigments/"
     SAVE_NETCDF: False
     SAVE_PATH_NETCDF: "Data/OP_data/480band/lap/"

@@ -16,7 +16,7 @@ from scipy.signal import savgol_filter
 from classes import *
 plt.style.use("seaborn")
 
-def run_biooptical_model():
+def run_biooptical_model(input_file):
     """ Executes functions in bio-optical model.
 
     Calling `run_biooptical_model()` with no arguments runs the full bio-optical model
@@ -35,7 +35,7 @@ def run_biooptical_model():
     
     """
 
-    bio_optical_config = BioOpticalConfig()
+    bio_optical_config = BioOpticalConfig(input_file)
     abs_cff = get_absorption_cross_section(bio_optical_config)
     k = calculate_k(bio_optical_config, abs_cff)
     wvl_rescaled_BioSNICAR, abs_cff_rescaled_BioSNICAR,\
@@ -88,7 +88,7 @@ def get_absorption_cross_section(bio_optical_config):
 
     abs_cff_pigments = pd.DataFrame(index = bio_optical_config.wvl * 1000)  # storing pigment MACs
 
-    if bio_optical_config.acs_calculated:
+    if bio_optical_config.abs_cff_calculated:
         print("abs_cff reconstructed from pigments")
         # open mass absorption coefficients (m2/mg) for each algal pigment
         # from a dictionary.key is pigment name, value is abs coeff in m2/mg
@@ -100,9 +100,9 @@ def get_absorption_cross_section(bio_optical_config):
             abs_coeff = abs_coeff + conc * abs_pigm / 1000000  # m2/µm3,m2/cell,m2/mg
         abs_cff = abs_coeff
 
-    elif bio_optical_config.acs_loaded_reconstructed:
+    elif bio_optical_config.abs_cff_loaded_reconstructed:
         print("abs_cff reconstructed directly loaded")
-        abs_cff = np.loadtxt(bio_optical_config.acs_file)  # m2/mg, um3 or cell
+        abs_cff = np.loadtxt(bio_optical_config.abs_cff_file)  # m2/mg, um3 or cell
         if bio_optical_config.packaging_correction_SA:  # ! applies only from 300nm
             pckg_SA = np.loadtxt(bio_optical_config.dir_pckg + "pckg_SA.csv")
             abs_cff = abs_cff * pckg_SA
@@ -110,9 +110,9 @@ def get_absorption_cross_section(bio_optical_config):
             pckg_GA = np.loadtxt(bio_optical_config.dir_pckg + "pckg_GA.csv")
             abs_cff = abs_cff * pckg_GA
 
-    elif bio_optical_config.acs_loaded_invivo:
+    elif bio_optical_config.abs_cff_loaded_invivo:
         print("abs_cff in vivo directly loaded")
-        abs_cff = np.loadtxt(bio_optical_config.acs_file) # m2/mg, um3 or cell
+        abs_cff = np.loadtxt(bio_optical_config.abs_cff_file) # m2/mg, um3 or cell
         
     return abs_cff
 
@@ -491,7 +491,7 @@ def plot_k_n_abs_cff(bio_optical_config, abs_cff, k):
         abs_cff = yhat
 
     # optionally save files to savepath
-    if bio_optical_config.savefiles_n_k_acs:  # optional save dataframe to csv files
+    if bio_optical_config.savefiles_n_k_abs_cff:  # optional save dataframe to csv files
         pd.DataFrame(k).to_csv(
             str(bio_optical_config.savepath + "k.csv"), header=None, index=False
         )
@@ -503,7 +503,7 @@ def plot_k_n_abs_cff(bio_optical_config, abs_cff, k):
         )
 
     # optionally plot figures to interative window
-    if bio_optical_config.plot_k_acs:
+    if bio_optical_config.plot_k_abs_cff:
         plt.figure(figsize=(7, 9))
         plt.subplot(2, 1, 1)
         plt.plot(bio_optical_config.wvl[100:600] * 1000, abs_cff[100:600])
@@ -522,7 +522,7 @@ def plot_k_n_abs_cff(bio_optical_config, abs_cff, k):
         plt.show()
 
         # optionally save plots to savepath
-        if bio_optical_config.saveplots_k_acs:
+        if bio_optical_config.saveplots_k_abs_cff:
             plt.show()
             plt.savefig(str(bio_optical_config.savepath + "/abs_cffandK.png"))
 

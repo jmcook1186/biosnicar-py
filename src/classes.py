@@ -403,14 +403,14 @@ class BioOpticalConfig:
         dry_density:  (int - used if biomass: True) density of dry biomass
                         (kg/m3 - 625 and 684 for snow and glacier algae,
                         Chevrollier et al. 2022)
-        acs_calculated: toggles calculating abs_cff from pigments or loading from file.
-        acs_loaded_reconstructed: (boolean) True if the
+        ABS_CFF_CALC: toggles calculating abs_cff from pigments or loading from file.
+        abs_cff_loaded_reconstructed: (boolean) True if the
                                 abs_cff is loaded as a reconstructed spectrum
                                 from pigment absorbance (see methods in
                                 Chevrollier et al. 2022)
-        acs_loaded_invivo: (boolean) True if the abs_cff is loaded as in vivo
+        abs_cff_loaded_invivo: (boolean) True if the abs_cff is loaded as in vivo
                                 spectra of whole cells
-        acs_file: (string) directory to the abs_cff file if loaded
+        abs_cff_file: (string) directory to the abs_cff file if loaded
         pigment_data: dictionary with pigment file names and associated 
                       intracellular concentrations (ng/cell, ng/µm3 or ng/ng)
         pigment_dir: (string) used if abs_cff_calculated is True, directory to
@@ -446,9 +446,9 @@ class BioOpticalConfig:
         plot_ssps: (boolean) if True, print plots with ssps
         savefig_ssps: if True, ssps plots saved in the directory
                                 savepath
-        plot_n_k_acs: (boolean) if True, plot with n,k and abs_cff printed
-        saveplots_n_k_acs: (boolean) if True, plots saved in the directory savepath
-        savefiles_n_k_acs: (boolean) if True, files with k,n and abs_cff
+        plot_n_k_abs_cff: (boolean) if True, plot with n,k and abs_cff printed
+        saveplots_n_k_abs_cff: (boolean) if True, plots saved in the directory savepath
+        savefiles_n_k_abs_cff: (boolean) if True, files with k,n and abs_cff
                         saved in the directory savepath
         savepath: (boolean) directory for saving data if
             savefiles or saveplots toggled on
@@ -474,10 +474,10 @@ class BioOpticalConfig:
         self.wvl=np.arange(0.200, 5, 0.001)
         self.wet_density= inputs["BIOOPTICAL"]["WET_DENSITY"]
         self.dry_density= inputs["BIOOPTICAL"]["DRY_DENSITY"]
-        self.acs_calculated=inputs["BIOOPTICAL"]["abs_cff_CALC"]
-        self.acs_loaded_reconstructed=inputs["BIOOPTICAL"]["abs_cff_LOAD_RECONSTRUCTED"]
-        self.acs_loaded_invivo=inputs["BIOOPTICAL"]["abs_cff_LOAD_INVIVO"]
-        self.acs_file=inputs["BIOOPTICAL"]["abs_cff_FILE"]
+        self.abs_cff_calculated=inputs["BIOOPTICAL"]["ABS_CFF_CALC"]
+        self.abs_cff_loaded_reconstructed=inputs["BIOOPTICAL"]["ABS_CFF_LOAD_RECONSTRUCTED"]
+        self.abs_cff_loaded_invivo=inputs["BIOOPTICAL"]["ABS_CFF_LOAD_INVIVO"]
+        self.abs_cff_file=inputs["BIOOPTICAL"]["ABS_CFF_FILE"]
         self.pigment_data=inputs["BIOOPTICAL"]["PIGMENT_CONC"]
         self.pigment_dir=inputs["BIOOPTICAL"]["PIGMENT_DIR"]
         self.packaging_correction_SA=inputs["BIOOPTICAL"]["PCKG_SA"]
@@ -494,9 +494,9 @@ class BioOpticalConfig:
         self.report_dims = inputs["BIOOPTICAL"]["REPORT_DIMS"] 
         self.plot_ssps = inputs["BIOOPTICAL"]["PLOT_SSPS"]
         self.savefig_ssps = inputs["BIOOPTICAL"]["SAVEFIG_SSPS"]
-        self.plot_k_acs = inputs["BIOOPTICAL"]["PLOT_K_abs_cff"]
-        self.saveplots_k_acs = inputs["BIOOPTICAL"]["SAVE_PLOT_K_abs_cff"]
-        self.savefiles_n_k_acs = inputs["BIOOPTICAL"]["SAVE_N_K_abs_cff"]
+        self.plot_k_abs_cff = inputs["BIOOPTICAL"]["PLOT_K_ABS_CFF"]
+        self.saveplots_k_abs_cff = inputs["BIOOPTICAL"]["SAVE_PLOT_K_ABS_CFF"]
+        self.savefiles_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVE_N_K_ABS_CFF"]
         self.savepath = inputs["BIOOPTICAL"]["SAVE_PATH_FIG"]
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
@@ -510,7 +510,6 @@ class BioOpticalConfig:
 
     def validate_biooptical_inputs(self):
         
-        assert(self.wvl == np.arange(0.200, 5, 0.001))
         if self.Mie:
             assert(self.GO==False) 
         if self.GO:
