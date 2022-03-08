@@ -1,17 +1,8 @@
 #!/usr/bin/python
-
-import sys
-sys.path.append("./src")
-from scipy.signal import savgol_filter
-from setup_snicar import *
-from classes import *
-import numpy as np
-
-
 """Radiative transfer solver using the adding-doubling method.
 
 Here the ice/impurity optical properties and illumination conditions
-are used to calculate energy fl;uxes between the ice, atmosphere and
+are used to calculate energy fluxes between the ice, atmosphere and
 underlying substrate.
 
 Typically this function would be called from snicar_driver() because
@@ -38,6 +29,12 @@ solid ice layers and fresnel reflection are included.
 
 """
 
+import sys
+sys.path.append("./src")
+from scipy.signal import savgol_filter
+from setup_snicar import *
+from classes import *
+import numpy as np
 
 def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
     """control function for the adding-doubling solver.

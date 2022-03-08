@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import numpy as np
 import xarray as xr
 
+"""Contains functions for updating optical property files and formatting for reading in to BioSNICAR.
+"""
 
 ds = xr.open_dataset(
     "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/dust_greenland_C_20150308.nc"

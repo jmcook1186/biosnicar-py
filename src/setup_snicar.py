@@ -6,7 +6,7 @@ from classes import *
 
 
 
-def setup_snicar():
+def setup_snicar(input_file):
     """Builds impurity array and instances of all classes according to config in yaml file.
 
     Args:
@@ -22,14 +22,14 @@ def setup_snicar():
 
     """
 
-    impurities = build_impurities_array()
+    impurities = build_impurities_array(input_file)
     (
         ice,
         illumination,
         rt_config,
         model_config,
         plot_config,
-    ) = build_classes()
+    ) = build_classes(input_file)
 
     return (
         ice,
@@ -41,7 +41,7 @@ def setup_snicar():
     )
 
 
-def build_classes():
+def build_classes(input_file):
     """Instantiates classes according to config in yaml file.
 
     Args:
@@ -56,16 +56,16 @@ def build_classes():
         display_config: instance of DisplayConfig class
     """
 
-    ice = Ice()
-    illumination = Illumination()
-    rt_config = RTConfig()
-    model_config = ModelConfig()
-    plot_config = PlotConfig()
+    ice = Ice(input_file)
+    illumination = Illumination(input_file)
+    rt_config = RTConfig(input_file)
+    model_config = ModelConfig(input_file)
+    plot_config = PlotConfig(input_file)
 
     return ice, illumination, rt_config, model_config, plot_config
 
 
-def build_impurities_array():
+def build_impurities_array(input_file):
 
     """Creates an array of instances of Impurity.
 
@@ -79,7 +79,7 @@ def build_impurities_array():
         impurities: array of instances of Impurity
     """
 
-    with open("./src/inputs.yaml", "r") as ymlfile:
+    with open(input_file, "r") as ymlfile:
         inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
     impurities = []

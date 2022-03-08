@@ -83,3 +83,50 @@ PLOT:
     XTICK_BTM: True
     YTICK_LEFT: True
     SAVE: False
+
+BIOOPTICAL: 
+    WET_DENSITY: 1060
+    DRY_DENSITY: 684
+    ABS_CFF_CALC: True
+    PIGMENT_CONC: { "Data/pigments/alloxanthin.csv": 0,
+                    "Data/pigments/antheraxanthin.csv": 0,
+                    "Data/pigments/chl-a.csv": 0,
+                    "Data/pigments/chl-b.csv": 0,
+                    "Data/pigments/lutein.csv": 0,
+                    "Data/pigments/neoxanthin.csv": 0,
+                    "Data/pigments/pheophytin.csv": 0,
+                    "Data/pigments/Photop_carotenoids.csv": 0,
+                    "Data/pigments/Photos_carotenoids.csv": 0,
+                    "Data/pigments/ppg.csv": 0,
+                    "Data/pigments/trans_astaxanthin_ester.csv": 0,
+                    "Data/pigments/trans_astaxanthin.csv": 0,
+                    "Data/pigments/violaxanthin.csv": 0,
+                    "Data/pigments/zeaxanthin.csv": 0,
+                    }
+    PIGMENT_DIR: "Data/pigments/"
+    ABS_CFF_LOAD_RECONSTRUCTED: False
+    ABS_CFF_LOAD_INVIVO: True
+    ABS_CFF_FILE: "file.csv"
+    PCKG_SA: False
+    PCKG_GA: False
+    DIR_PCKG: "Data/pigments/"
+    K_WATER_DIR: "Data/OP_data/k_ice_480.csv"
+    UNIT: 0
+    CELL_VOLUME: 1500
+    N_ALGAE: 1.4
+    GO: True
+    MIE: False
+    CELL_R: 10
+    CELL_L: 20
+    PLOT_SSPS: True
+    SAVEFIG_SSPS: False
+    REPORT_DIMS: False
+    PLOT_K_ABS_CFF: False
+    SAVE_N_K_ABS_CFF: False
+    SAVE_PLOT_K_ABS_CFF: False
+    SAVE_PATH_FIG: "Data/pigments/"
+    SAVE_NETCDF: False
+    SAVE_PATH_NETCDF: "Data/OP_data/480band/lap/"
+    INFO_NETCDF: "info"
+    FILENAME_NETCDF: "alg"
+

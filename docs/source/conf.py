@@ -70,6 +70,7 @@ napoleon_use_rtype = True
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
+napoleon_custom_sections = [('Returns', 'params_style')]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -96,8 +97,9 @@ language = None
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "friendly"
 
+highlight_language = 'py3'
 
 # -- Options for HTML output -------------------------------------------------
 

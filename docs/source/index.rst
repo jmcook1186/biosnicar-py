@@ -10,9 +10,9 @@ Contents
 .. toctree::
    :maxdepth: 4
    
-   theoretical-background
    how-to-use
    inputs
+   theoretical-background
    testing
    modules
 

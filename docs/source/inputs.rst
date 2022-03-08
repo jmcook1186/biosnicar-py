@@ -1,6 +1,6 @@
-****************************************
-Input Configuration Guide for BioSNICAR
-****************************************
+********************
+Input Configuration
+********************
 
 BioSNICAR is configured by updating the values in the config file inputs.yaml. This file is divided into subsections for variables that corrspond to specific parts of the model. These are: 
 
@@ -513,9 +513,9 @@ The file is the precise filename in /Data/OP_data/480band/lap/ that contains the
 * **dust_greenland_Cook_CENTRAL_20190911.nc:**  Dark Zone dust 2 (Cook et al. 2019 "MEAN") 
 * **dust_greenland_Cook_HIGH_20190911.nc:**  Dark Zone dust 3 (Cook et al. 2019 "HIGH") 
 * **snw_alg_r025um_chla020_chlb025_cara150_carb140.nc:**  Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-* **SA_Chevrollier2022_r8.99.nc:**  Snow algae (Chevrollier et al 2022) NOT YET FUNCTIONAL
+* **SA_Chevrollier2022_r8.99.nc:**  Snow algae (Chevrollier et al 2022) (not yet validated for release)
 * **Cook2020_glacier_algae_4_40.nc:**  Glacier Algae (Cook et al. 2020)
-* **GA_Chevrollier2022_r4.9_L18.8.nc:**  Glacier algae (Chevrollier et al 2022) NOT YET FUNCTIONAL
+* **GA_Chevrollier2022_r4.9_L18.8.nc:**  Glacier algae (Chevrollier et al 2022) (not yet validated for release)
   
   
 UNIT
@@ -544,4 +544,509 @@ Boolean that toggles sulfate coating on or off. This is only applicable to black
 PLOT
 ====
 These parameters control how the output albedo plot is formatted. Recommend leaving them all at their default values. The user may, however, want to toggle figure saving on and off, in which case update the value of SAVE.
+
+
+BIOOPTICAL
+==========
+
+WET_DENSITY
+-----------
+
+**Definition**
+
+The density of wet biomass for snow and glacier algae in units of kg m-3. The default values are 1060 kgm-3 for snow algae and 1160 kgm-3 for glacier algae, as measured by Chevrollier et al. (2022).
+
+**Values**
+
+Positive float or integer.
+
+**Default**
+
+1060 or 1160 
+
+
+DRY_DENSITY
+-----------
+
+**Definition**
+
+Density of dry biomass in units of kgm-3. The default values are 625 kg m-3 for snow algae and 684 kgm-3 for glacier algae as measured by Chevrollier et al. (2022).
+
+
+**Values**
+
+Positive float or integer.
+
+
+**Default**
+
+625 or 684 
+
+
+ABS_CFF_CALC
+------------
+
+**Definition**
+
+Boolean toggling whether abs_cff is calculated from user-defined pigment concentrations or a premeasured/precalculated abs_cff is loaded from an external file.
+
+**Values**
+
+True or False
+
+
+**Default**
+
+True 
+
+
+PIGMENT_CONC
+------------
+
+**Definition**
+
+Dictionary containing paths to pigment files as keys and their concentrations as values. The units can be ng/cell, ng/µm3 or ng/ng depending on the value of UNIT.
+
+**Values**
+
+The keys should remain constant, but the user can provide concentrations for each pigment as a positive integer or float.
+
+**Defaults**
+::
+  { "Data/pigments/alloxanthin.csv": 0,
+    "Data/pigments/antheraxanthin.csv": 0,
+    "Data/pigments/chl-a.csv": 0,
+    "Data/pigments/chl-b.csv": 0,
+    "Data/pigments/lutein.csv": 0,
+    "Data/pigments/neoxanthin.csv": 0,
+    "Data/pigments/pheophytin.csv": 0,
+    "Data/pigments/Photop_carotenoids.csv": 0,
+    "Data/pigments/Photos_carotenoids.csv": 0,
+    "Data/pigments/ppg.csv": 0,
+    "Data/pigments/trans_astaxanthin_ester.csv": 0,
+    "Data/pigments/trans_astaxanthin.csv": 0,
+    "Data/pigments/violaxanthin.csv": 0,
+    "Data/pigments/zeaxanthin.csv": 0,
+    }
+
+PIGMENT_DIR
+-----------
+
+**Definition**
+
+Path to the directory holding then pigment absorption data relative to the base directory.
+
+**Values**
+
+String
+
+**Default**
+
+"Data/pigments/"
+: True
+
+
+ABS_CFF_LOAD_RECONSTRUCTED
+--------------------------
+
+**Definition**
+
+Boolean that toggles whether abs_cff is loaded as a reconstructed spectrum from individual pigment absorption measurements (see Chevrollier et al. 2022 for details).
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+
+ABS_CFF_LOAD_INVIVO
+-------------------
+
+**Definition**
+
+Boolean toggling whether the abs_cff is loaded as an in vivo spectrum measured for whole intact cells (see Chevrollier et al. 2022 for details).
+
+**Values**
+
+True or False
+
+**Default**
+
+True
+
+
+ABS_CFF_FILE
+------------
+
+**Definition**
+
+Path to the absorption coefficient data if abs_cff is loaded from an external file (i.e. if ABS_CFF_CALC == False and one of ABS_CFF_LOAD_INVIVO or ABS_CFF_LOAD_RECONSTRUCTED == True)
+
+**Values**
+
+String
+
+**Defaults**
+
+"file.csv" (dummy file)
+
+
+PCKG_SA 
+-------
+
+**Definition**
+
+Boolean toggling whether the loaded snow algae abs_cff is to be corrected for the pigment packaging effect followingn Chevrollier et al. (2022).
+Only used if ABS_CFF_LOAD_RECONSTRUCTED == True.
+
+**Values**
+
+True or False
+
+**Defaults**
+
+False
+
+
+PCKG_GA
+-------
+
+**Definition**
+
+Boolean toggling whether the loaded glacier algae abs_cff is to be corrected for the pigment packaging effect following Chevrollier et al. (2022).
+Only used if ABS_CFF_LOAD_RECONSTRUCTED == True.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+DIR_PCKG:
+---------
+
+**Definition**
+
+Path to directory containing pigment packaging correction files
+
+**Values**
+
+String
+
+**Default**
+
+"Data/pigments/"
+
+
+K_WATER_DIR 
+-----------
+
+**Definition**
+Path to file containing imaginary part of the refractive index of water
+
+**Values**
+String
+
+**Default**
+
+"Data/OP_data/k_ice_480.csv"
+
+
+UNIT:
+-----
+
+**Definition**
+
+Unit used for absorption cross section from m2/cell, m2/um3 or m2/mg. The unit here should correspond to the unit in which pigment concentration is expressed in PIGMENT_CONC.
+If the unit here is m2/cell then the pigment concentration should be expressed in ng/cell. If the unit here is m2/um3 then the pigment data should be expressed in ng/um3.
+If the unit here is m2/mg then the pigment concentration should be expressed in ng/mg. 
+
+**Values**
+
+*0: m2/cell 
+*1: m2/um3
+*2: m2/mg 
+
+**Default**
+
+0
+
+
+CELL_VOLUME 
+-----------
+
+**Definition**
+
+Average volume of algal cell in um3.
+
+**Values**
+
+Positive integers
+
+**Default**
+
+1500
+
+
+N_ALGAE
+-------
+
+**Definition**
+
+Real part of the complex refractive index for the algal cell
+
+**Values**
+
+positive float, likely to be ~1.3 - 1.5.
+
+**Default**
+
+1.4
+
+GO
+--
+
+**Definition**
+
+Boolean toggling use of geometric optics paramaterisation (Cook et al. 2020 adapted from Diedenhoven et al (2014)) to calculate single scattering optical properties assuming cell shape: cylinder
+
+**Values**
+
+True or False
+
+**Default**
+
+True
+
+
+MIE
+---
+**Definition**
+
+Boolean toggling use of Mie scattering equations to calculate single scattering optical properties assuming cell shape: sphere
+
+**Values**
+
+True or False
+
+**Defaults**
+
+False
+
+
+CELL_R
+------
+
+**Definition**
+
+Cell radius in um (sphere radius if MIE==True, circular face radius if GO==True).
+
+**Values**
+
+Positive integers
+
+**Default**
+
+10
+
+
+CELL_L
+------
+
+**Definition**
+
+Cell length in um (cylinder length if GO==True, not used if GO==False)
+
+**Values**
+
+Positive integers
+
+**Default**
+
+10
+
+
+
+PLOT_SSPS
+---------
+
+**Definition**
+
+Toggles plotting of single scattering optical properties in interactive window.
+
+
+**Values**
+
+True or False
+
+**Default**
+
+True
+
+
+SAVEFIG_SSPS
+------------
+
+**Definition**
+
+Toggles saving of single scattering optical property figures to file.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+REPORT_DIMS
+-----------
+
+**Definition**
+
+Toggles printing of single scattering optical property summary data to console.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+PLOT_K_ABS_CFF
+--------------
+
+**Definition**
+
+Toggles plotting of refractive index data in interactive window.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+SAVE_N_K_ABS_CFF
+----------------
+
+**Definition**
+
+Toggles saving of refractive index data to file.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+
+SAVE_PLOT_K_ABS_CFF:
+--------------------
+
+**Definition**
+
+Toggles saving of refractive index plots to file.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+SAVE_PATH_FIG
+-------------
+**Definition**
+
+Path to directory to save figures in.
+
+**Values**
+
+String
+
+**Default**
+
+"Data/pigments/"
+
+
+SAVE_NETCDF
+-----------
+
+**Definition**
+
+Toggles saving of new optical property data to netCDF format.
+
+**Values**
+
+True or False
+
+**Default**
+
+False
+
+
+SAVE_PATH_NETCDF
+----------------
+
+**Definition**
+
+Path to directory to save NetCDF file in. Should be the same as the source directory for lap data loaded into BioSNICAR.
+
+**Values**
+
+String
+
+**Default**
+
+"Data/OP_data/480band/lap/"
+
+
+INFO_NETCDF
+-----------
+
+**Definition**
+
+Any additional information to be stored in the NetCDF file as attribute data (e.g. authors, dates etc).
+
+**Values**
+
+String
+
+**Default**
+
+"info"
+
+
+FILENAME_NETCDF
+---------------
+
+**Definition**
+
+Filename for saving the new NetCDF file to. Should be the same as the file defned in any instantiation of Impurity class intending to use these ptical properties in BioSNICSAR.
+
+**Values**
+
+String
+
+**Default**
+
+"alg"
 

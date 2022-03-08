@@ -102,3 +102,10 @@ src.validate\_inputs module
    :show-inheritance:
 
 
+src.biooptical_funcs module
+---------------------------
+
+.. automodule:: src.biooptical_funcs
+   :members:
+   :undoc-members:
+   :show-inheritance:
