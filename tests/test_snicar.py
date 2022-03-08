@@ -59,7 +59,7 @@ def test_AD_solver(new_benchmark_ad):
         None but saves py_benchmark_data.csv to ./tests/test_data/
 
     """
-
+    input_file = "./src/inputs.yaml"
     if new_benchmark_ad:
         (
             ice,
@@ -68,7 +68,7 @@ def test_AD_solver(new_benchmark_ad):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar()
+        ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config
         )
@@ -120,7 +120,7 @@ def test_AD_solver(new_benchmark_ad):
                                     bc,
                                     bc,
                                 ]  # bc in all layers
-                                ice.calculate_refractive_index()
+                                ice.calculate_refractive_index(input_file)
                                 illumination.calculate_irradiance()
 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(
@@ -173,6 +173,7 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
         None but saves py_benchmark_data_clean.csv to ./tests/test_data/
 
     """
+    input_file = "./src/inputs.yaml"
 
     if new_benchmark_ad_clean:
         (
@@ -182,7 +183,7 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar()
+        ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config
         )
@@ -236,7 +237,7 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
                                     bc,
                                     bc,
                                 ]  # bc in all layers
-                                ice.calculate_refractive_index()
+                                ice.calculate_refractive_index(input_file)
 
                                 ssa_snw, g_snw, mac_snw = get_layer_OPs(
                                     ice, model_config
@@ -381,6 +382,8 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
 
 
     """
+    input_file = "./src/inputs.yaml"
+
     nbr_lyr = 5
     # make sure ice config matches matlab benchmark
     ice.ri = 2
@@ -400,7 +403,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     illumination.direct = 1
 
     # recalculate fluxes
-    ice.calculate_refractive_index()
+    ice.calculate_refractive_index(input_file)
     illumination.calculate_irradiance()
 
     # make sure smoothing function is toggled off
@@ -542,7 +545,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
     """
 
     if fuzz:
-
+        input_file = "./src/inputs.yaml"
         (
             ice,
             illumination,
@@ -550,7 +553,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar()
+        ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config
         )
@@ -558,7 +561,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
         rt_config.aprx_typ = aprx
         illumination.direct = dir
         ice.rf = ref
-        ice.calculate_refractive_index()
+        ice.calculate_refractive_index(input_file)
         illumination.incoming = inc
         illumination.calculate_irradiance()
 
@@ -612,6 +615,8 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     """
 
     if fuzz:
+        input_file = "./src/inputs.yaml"
+
         (
             ice,
             illumination,
@@ -619,7 +624,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar()
+        ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config
         )
