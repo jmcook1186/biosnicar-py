@@ -9,7 +9,7 @@ Installing Environment/Dependencies
 
 If you do not have Python installed, download Python >3.6. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
 
-.. code-block:: python3
+.. code-block:: python
    pip install -r requirements.txt
 
 Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the "remote containers" extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
@@ -20,7 +20,7 @@ Running the model
 
 The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
 
-.. code-block:: python3
+.. code-block:: python
    python ./src/snicar_driver.py
 
 This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console. 
