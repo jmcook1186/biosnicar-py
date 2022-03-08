@@ -7,9 +7,9 @@ BioSNICAR tests
 ---------------
 
 The tests folder contains automated tests that can be run locally by navigating to the top level project directory and executing
-.. code-block::python3
 
-  pytest ./tests
+.. code-block:: python3
+   pytest ./tests
 
 
 The console will show the total number of tests collected. As each test is executed its result is shown in the console as a green dot (pass) or red cross (fail). After about 5 minutes the testing will finish. 100% of tests should pass.
@@ -30,8 +30,8 @@ The benchmark data was generated on the Umich linux server using the published v
 
 The script that generates the v3 and v4 equivalent Python data is `benchmarking_driver.py`. It is **strongly recommended** to run this file after any changes to the BioSNICAR source code to ensure the benchmarking tests are using predictions from the latest version and can catch any breaking changes. This takes about 20 minutes to run and will generate new Python benchmark files. However, for rapid development the new benchmark data generation can be toggled off in conftest.
 
-.. code-block::python3
-  python ./tests/benchmarking_driver.py
+.. code-block:: python3
+   python ./tests/benchmarking_driver.py
 
 
 
