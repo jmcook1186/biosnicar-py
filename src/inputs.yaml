@@ -87,7 +87,7 @@ PLOT:
 BIOOPTICAL: 
     WET_DENSITY: 1060
     DRY_DENSITY: 684
-    ABS_CFF_CALC: False
+    ABS_CFF_CALC: True
     PIGMENT_CONC: { "Data/pigments/alloxanthin.csv": 0,
                     "Data/pigments/antheraxanthin.csv": 0,
                     "Data/pigments/chl-a.csv": 0,
@@ -115,10 +115,10 @@ BIOOPTICAL:
     CELL_VOLUME: 1500
     N_ALGAE: 1.4
     GO: True
-    Mie: False
-    cell_radius: 10
-    cell_length: 20
-    PLOT_SSPS: False
+    MIE: False
+    CELL_R: 10
+    CELL_L: 20
+    PLOT_SSPS: True
     SAVEFIG_SSPS: False
     REPORT_DIMS: False
     PLOT_K_ABS_CFF: False
