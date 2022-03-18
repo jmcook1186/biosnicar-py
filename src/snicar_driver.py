@@ -24,7 +24,7 @@ input_file = "./src/inputs.yaml"
 # the BioSNICAR database. Commewnted out by default as we expect our default lap
 # database to be sufficient for most users.
 
-run_biooptical_model(input_file)
+#run_biooptical_model(input_file)
 
 ###########################
 # RADIATIVE TRANSFER MODEL
