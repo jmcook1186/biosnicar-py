@@ -33,8 +33,6 @@ def welcome():
     # an example image stored as a static file in the /templates folder
 
     global success
-    # set hard-coded variable values
-    images_path = "/assets"
 
     # react to data submitted from web form in homepage.html
     if request.method == "POST":
@@ -79,7 +77,7 @@ def output():
 # def info_page():
 #     return render_template("info_page.html", title="Ice Classifiers")
 
-####################   ROUTE 3: /classifier   #############################
+####################   ROUTE 3: /model   #############################
 #### this route contains the model calls. Input data is gathered from  ####
 #### the html form in homepage.html & parsed to the successive python  ####
 #### scripts comprising the IceClassifiers model. Output image saves   ####
