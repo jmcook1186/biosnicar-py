@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+
+<HTML>
+   <HEAD>
+      <TITLE>
+         {{ title }}
+      </TITLE>
+   </HEAD>
+
+</BODY>
+   <style>
+
+   * {margin: 0;padding: 0;}
+
+   .header {
+       background: url('templates/assets/background_header.jpg') no-repeat;
+       background-size: 100% 100%;
+       width: 100%;
+       display: inline-block;
+       height: 220px;
+   }
+
+</style>
+   <header class="header"></header>
+      <br>
+      <H1><br><font face = "Helvetica" size = "6" style="margin-left:50px" >BioSNICAR </font></H1>
+      <P><font face = "Helvetica" size = "5" style="margin-left:50px" >Radiative transfer modelling of ice and snow </font></P>
+      <br>
+      <P></br><font face = "Helvetica" size = "3" style="margin-left:50px" > Please enter your input values and press SUBMIT.</font><br></P>
+      <br>
+      <form action = "http://localhost:5000/welcome" method = "post">
+
+      <br><p> <font face = "Helvetica" size = "3" style = "margin-left:50px" >Ice Type (0 or 1):</font></p>
+         <p><input type = "number" name = "lyr_typ" style="background-color:#d1d1d1;font-size: 12pt; margin-left:50px"/></p><br>
+         
+      <br><p><font face = "Helvetica" size = "3" style = "margin-left:50px" >Layer thickness (meters)</font></p>
+         <p><input type = "number" name = "dz" style="background-color:#d1d1d1;font-size: 12pt; margin-left:50px" /></p><br>
+      
+      <br><p><font face = "Helvetica" size = "3" style = "margin-left:50px" >effective grain/bubble radius (microns)</font></p>
+         <p><input type = "number" name = "r_eff" style="background-color:#d1d1d1;font-size: 12pt; margin-left:50px" /></p><br>
+      
+      <br><p><font face = "Helvetica" size = "3" style = "margin-left:50px" >Ice density (kg/m3)</font></p>
+         <p><input type = "number" name = "rho" style="background-color:#d1d1d1;font-size: 12pt; margin-left:50px" /></p><br>
+      
+      <br><p><input type = "submit" value = "submit" style = "background-color:#d1d1d1;font-size: 26px;font-weight:bold; height:50px; width:200px; margin-left:50px" /></p>
+      </form>
+      <br>
+   <br>
+   <br>
+   <P><font face = "Helvetica" size = "3" style = "margin-left:50px">To access app documentation, click the "More Info" button</font></P>
+
+   <P><button onclick="location.href = '/info_page';" id="Info Page" style= background-color:#d1d1d1;font-size:20px;margin-left:50px;height:40px;width:200px;" ><b> More Info</b> </font></button></P>
+   <br>
+   <br>
+      <style>
+
+
+   * {margin: 0;padding: 0;}
+
+   .footer {
+       background: url('templates/assets/background.jpg') no-repeat;
+       background-size: 100% 100%;
+       width: 100%;
+       display: inline-block;
+       height: 250px;
+   }
+   </style>
+
+
+</BODY>
+</HTML>
