@@ -17,19 +17,22 @@ from display import *
 
 
 # Flask static paths set to /templates to enable retrieval of default image by index.html
-app = Flask(__name__, static_url_path = "/templates", static_folder = "templates")
+app = Flask(__name__)
 
 # set root url for host as a dynamic variable
-host = 'http://localhost:5000/'
+port = int(os.environ.get("PORT", 8000))
+host = '0.0.0.0:8000/'
 success = False
+
+
 ####################   ROUTE 1: /welcome   #############################
 #### renders welcome page, sends POST request to /classifier route #####
 #####    and redirects to /output when POST request completed      #####
 
-@app.route('/welcome', methods=['POST', 'GET'])
-def welcome():
+@app.route('/', methods=['POST', 'GET'])
+def main():
     # this function creates a homepage for the app - when the browser is
-    # directed to localhost:5000/welcome it displays a welcome message and
+    # directed to localhost:8000/welcome it displays a welcome message and
     # an example image stored as a static file in the /templates folder
 
     global success
@@ -138,9 +141,7 @@ def post_function():
     return
 
 
-# run app
-if __name__ == "__main__":
-    app.run(debug=True)
+app.run(host = '0.0.0.0', port = port, debug=True)
 
 
 
