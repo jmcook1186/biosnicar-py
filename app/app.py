@@ -1,6 +1,24 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+"""
+This script configures and deploys the BioSNICAR web app. 
+
+The BioSNICAR web-app offers convenient browser access to the
+BioSNICAR model code via a simple GUI. It has reduced functionality
+compared to the full BioSNICAR model but is likely to be sufficient
+for many users.
+
+Here are two functions, main() and model(). The former sets up
+a landing page with a simpel Flask form for parsing user input
+values. These are passed as a POST request to model() which
+saves albedo data to file. This file is rendered in a response
+page that is redirected to automatically.
+
+"""
 import sys
 sys.path.append("./src")
+sys.path.append("../app")
 from flask import Flask, request, render_template, redirect, url_for
 import time
 import numpy as np
@@ -17,22 +35,22 @@ from display import *
 
 
 # Flask static paths set to /templates to enable retrieval of default image by index.html
-app = Flask(__name__)
+app = Flask(__name__, static_folder="/")
 
 # set root url for host as a dynamic variable
-port = int(os.environ.get("PORT", 8000))
-host = '0.0.0.0:8000/'
+port = int(os.environ.get("PORT", 5000))
+host = 'http://localhost:5000/'
 success = False
 
 
 ####################   ROUTE 1: /welcome   #############################
-#### renders welcome page, sends POST request to /classifier route #####
+#### renders welcome page, sends POST request to /model route #####
 #####    and redirects to /output when POST request completed      #####
 
 @app.route('/', methods=['POST', 'GET'])
 def main():
     # this function creates a homepage for the app - when the browser is
-    # directed to localhost:8000/welcome it displays a welcome message and
+    # directed to localhost:5000/welcome it displays a welcome message and
     # an example image stored as a static file in the /templates folder
 
     global success
@@ -53,14 +71,16 @@ def main():
         
         # send request with payload = create_row_data
         r = requests.post(url=api_url, json=payload)
+
         print("PRINTING REQUEST STATUS: CODE = {}, REASON = {}, TEXT = {} ".format(r.status_code, r.reason, r.text))
 
         if success == True:
+
             return redirect(url_for('output')) # on request success redirect browser to URL for output() function
         # else:
         #     return redirect(url_for('output_fail'))
 
-    return render_template('welcome.html', title='BioSNICAR') # while post request incomplete render homepage
+    return render_template('home.html', title='BioSNICAR') # while post request incomplete render homepage
 
 
 ######################   ROUTE 2: /output   ###########################
@@ -133,15 +153,15 @@ def post_function():
     plt.plot(wvl, outputs.albedo)
     plt.ylim(0,1)
     plt.xlim(0.2,2.5)
-    plt.savefig("app/templates/outputs/albedo.jpg")
-
+    plt.savefig("app/outputs/albedo.jpg")
 
     success=True
 
     return
 
 
-app.run(host = '0.0.0.0', port = port, debug=True)
+if __name__ == '__main__':
+    app.run(host = '0.0.0.0', port = port, debug=True)
 
 
 
