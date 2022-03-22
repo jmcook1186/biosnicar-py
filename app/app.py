@@ -96,12 +96,9 @@ def output():
 #     return render_template("responsepage_fail.html", title="Ice Classifiers")
 
 
-# @app.route("/info_page")
-# def info_page():
-#     return render_template("info_page.html", title="Ice Classifiers")
 
 ####################   ROUTE 3: /model   #############################
-#### this route contains the model calls. Input data is gathered from  ####
+#### this route contains the model call. Input data is gathered from  ####
 #### the html form in homepage.html & parsed to the successive python  ####
 #### scripts comprising the IceClassifiers model. Output image saves   ####
 #### to ./templates to make the file available as a static resource to ####
@@ -109,6 +106,17 @@ def output():
 
 @app.route('/model', methods=['POST'])
 def post_function():
+    """
+    Runs BioSNICAR model and renders output to webpage.
+
+    This function takes the use inputs from the POST request submitted
+    by the user via the webform on route "/". These inputs are passed
+    to the BioSNCAR model and a plot of spectral albedo is saved to file.
+    The broadband albedo, rounded to 2 decimal places, is printed on the
+    figure. A successful model run triggers an auto redirect to 
+    the /output page where the figure is rendered.
+
+    """
 
     global success
     json = request.get_json()
@@ -149,11 +157,14 @@ def post_function():
 
     # now run one or both of the radiative transfer solvers
     outputs = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config)
+    rounded_BBA = np.round(outputs.BBA, 2)
     wvl = np.arange(0.205, 5, 0.01)
     plt.plot(wvl, outputs.albedo)
     plt.ylim(0,1)
     plt.xlim(0.2,2.5)
+    plt.text(1.75, 0.85, f"BBA: {rounded_BBA}", fontsize = 20)
     plt.savefig("app/outputs/albedo.jpg")
+    plt.close()
 
     success=True
 
