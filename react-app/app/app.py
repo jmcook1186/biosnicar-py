@@ -73,6 +73,10 @@ def run_snicar():
     dz = float(request.json['dz'])
     r_eff = int(request.json['r_eff'])
     rho = int(request.json['rho'])
+    bc = int(request.json['bc'])
+    glacier_algae = int(request.json['glacier_algae'])
+    snow_algae = int(request.json['snow_algae'])
+    zenith = int(request.json['zenith'])
 
     print(lyr_typ)
     print(dz)
@@ -97,7 +101,12 @@ def run_snicar():
     ice.rds = [r_eff, r_eff]
     ice.rho = [rho, rho]
 
+    impurities[0].conc = [bc,0]
+    impurities[1].conc = [snow_algae, 0]
+    impurities[2].conc = [glacier_algae, 0]
 
+    illumination.solzen = zenith
+    illumination.calculate_irradiance()
     # validate inputs to ensure no invalid combinations have been chosen
     status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
 

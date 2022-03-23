@@ -9,17 +9,21 @@ function App() {
   const [dz, setThickness] = useState()
   const [reff, setRadius] = useState()
   const [rho, setDensity] = useState()
+  const [bc, setBC] = useState()
+  const [glacier_algae, setGA] = useState()
+  const [snow_algae, setSA] = useState()
+  const [zenith, setZen] = useState()
 
-  // initial figure state
-  //setFigure("./outputs/albedo_default.jpg")
 
   async function runModel(){
     console.log("inside func");
-    console.log(layer_type, dz, reff, rho)
+    console.log(layer_type, dz, reff, rho, bc, glacier_algae, snow_algae, zenith)
 
     await fetch("http://localhost:5000/model", 
     {'method': 'POST', 
-    body: JSON.stringify({'lyr_typ': layer_type, 'dz': dz, 'r_eff': reff, 'rho': rho}),
+    body: JSON.stringify({'lyr_typ': layer_type, 'dz': dz, 
+      'r_eff': reff, 'rho': rho, 'bc': bc, 'glacier_algae': glacier_algae,
+      'snow_algae': snow_algae, 'zenith': zenith}),
     headers: {'Content-Type':'application/json'}
     });
 
@@ -65,7 +69,7 @@ function App() {
     
     
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 180, color: 'black', fontSize: 18}}>
+    position:"absolute", left:25, top: 190, color: 'black', fontSize: 18}}>
       <p>Thickness (meters)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -80,7 +84,7 @@ function App() {
 
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 210, color: 'black', fontSize: 18}}>
+    position:"absolute", left:25, top: 230, color: 'black', fontSize: 18}}>
       <p>Radius (microns)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -95,7 +99,7 @@ function App() {
 
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 240, color: 'black', fontSize: 18}}>
+    position:"absolute", left:25, top: 270, color: 'black', fontSize: 18}}>
       <p>Density (kg/m3)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -106,6 +110,67 @@ function App() {
       value={rho}
       placeholder="Enter column density"
       onChange={e => setDensity(e.target.value)} />
+      </li>
+
+
+
+    <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
+    position:"absolute", left:25, top: 310, color: 'black', fontSize: 18}}>
+      <p>Black carbon conc (ppb)&nbsp;&nbsp;&nbsp;&nbsp;</p>
+      
+    <input 
+      type="number"
+      min="0"
+      max="100000"
+      step="1"
+      value={bc}
+      placeholder="Enter BC concentration"
+      onChange={e => setBC(e.target.value)} />
+      </li>
+
+
+
+    <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
+    position:"absolute", left:25, top: 350, color: 'black', fontSize: 18}}>
+      <p>Glacier algae conc (cells/mL)&nbsp;&nbsp;&nbsp;&nbsp;</p>
+      
+    <input 
+      type="number"
+      min="0"
+      max="100000"
+      step="1"
+      value={glacier_algae}
+      placeholder="Enter algae concentration"
+      onChange={e => setGA(e.target.value)} />
+      </li>
+
+    
+    <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
+    position:"absolute", left:25, top: 390, color: 'black', fontSize: 18}}>
+      <p>Snow algae conc (cells/mL)&nbsp;&nbsp;&nbsp;&nbsp;</p>
+      
+    <input 
+      type="number"
+      min="0"
+      max="100000"
+      step="1"
+      value={snow_algae}
+      placeholder="Enter algae concentration"
+      onChange={e => setSA(e.target.value)} />
+      </li>
+
+    <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
+    position:"absolute", left:25, top: 430, color: 'black', fontSize: 18}}>
+      <p>Solar zenith angle (degrees) &nbsp;&nbsp;&nbsp;&nbsp;</p>
+      
+    <input 
+      type="number"
+      min="0"
+      max="100000"
+      step="1"
+      value={zenith}
+      placeholder="Enter zenith angle"
+      onChange={e => setZen(e.target.value)} />
       </li>
 
 
