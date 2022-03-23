@@ -130,6 +130,8 @@ def run_snicar():
     plt.savefig("react-app/src/outputs/albedo.jpg")
     plt.close()
 
+    np.savetxt("react-app/src/outputs/albedo.csv", outputs.albedo, delimiter=',')
+
     res = Response("success")
     res.headers['Access-Control-Allow-Origin'] = '*'
 

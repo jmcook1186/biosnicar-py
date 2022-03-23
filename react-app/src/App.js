@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import DownloadLink from 'react-download-link'
 import './App.css';
 import background from "./assets/background.jpg";
 import figure from "./outputs/albedo.jpg"
+import outFile from './outputs/albedo.csv';
 
 function App() {
   
@@ -179,6 +181,7 @@ function App() {
     onClick={runModel}><b>Submit</b></button>}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
+    <a href={outFile} download="albedo.csv"> Download Here </a>
 
     <img src={figure} alt='albedo' style={{position:"absolute", left:550, top: 200}} />
 
