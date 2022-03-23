@@ -37,7 +37,7 @@ from display import *
 
 
 # Flask static paths set to /templates to enable retrieval of default image by index.html
-app = Flask(__name__, static_folder="/")
+app = Flask(__name__, static_folder="react-app/build")
 
 # set root url for host as a dynamic variable
 port = int(os.environ.get("PORT", 5000))
@@ -50,6 +50,10 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = ['Content-Type']
 
+
+@app.route('/')
+def root():
+    return app.send_static_file('index.html')
 
 # the actual func to run
 @app.route('/model', methods=['POST'])

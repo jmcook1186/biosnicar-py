@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/static/css/main.073c9b0a.css",
+    "main.js": "/static/js/main.5b935769.js",
+    "static/js/787.b701888c.chunk.js": "/static/js/787.b701888c.chunk.js",
+    "static/media/background.jpg": "/static/media/background.607670d4f4f830d6d036.jpg",
+    "static/media/albedo.jpg": "/static/media/albedo.fdacd4b81a3289c987c3.jpg",
+    "static/media/albedo.csv": "/static/media/albedo.e11ae64834fdb3e4c24d.csv",
+    "index.html": "/index.html",
+    "main.073c9b0a.css.map": "/static/css/main.073c9b0a.css.map",
+    "main.5b935769.js.map": "/static/js/main.5b935769.js.map",
+    "787.b701888c.chunk.js.map": "/static/js/787.b701888c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.073c9b0a.css",
+    "static/js/main.5b935769.js"
+  ]
+}
