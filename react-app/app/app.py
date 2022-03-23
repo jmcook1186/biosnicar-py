@@ -17,9 +17,11 @@ page that is redirected to automatically.
 
 """
 import sys
+sys.path.append("../../src")
 sys.path.append("./src")
 sys.path.append("../app")
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, Response
+from flask_cors import CORS, cross_origin
 import time
 import numpy as np
 import requests
@@ -42,70 +44,17 @@ port = int(os.environ.get("PORT", 5000))
 host = 'http://localhost:5000/'
 success = False
 
-
-####################   ROUTE 1: /welcome   #############################
-#### renders welcome page, sends POST request to /model route #####
-#####    and redirects to /output when POST request completed      #####
-
-@app.route('/', methods=['POST', 'GET'])
-def main():
-    # this function creates a homepage for the app - when the browser is
-    # directed to localhost:5000/welcome it displays a welcome message and
-    # an example image stored as a static file in the /templates folder
-
-    global success
-
-    # react to data submitted from web form in homepage.html
-    if request.method == "POST":
-        # get data submitted from html form
-        lyr_typ = request.form['lyr_typ']
-        dz = request.form['dz']
-        r_eff = request.form['r_eff']
-        rho = request.form['rho']
+# enable cross domain requests
+# because flask is on port 5000, react on port 3000
+app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = ['Content-Type']
 
 
-        # create POST request using requests package
-        api_url = str(host + 'model') # set url to send request to
-        payload = {'lyr_typ': lyr_typ, 'dz': dz, 'r_eff': r_eff, 'rho': rho}
-        
-        
-        # send request with payload = create_row_data
-        r = requests.post(url=api_url, json=payload)
-
-        print("PRINTING REQUEST STATUS: CODE = {}, REASON = {}, TEXT = {} ".format(r.status_code, r.reason, r.text))
-
-        if success == True:
-
-            return redirect(url_for('output')) # on request success redirect browser to URL for output() function
-        # else:
-        #     return redirect(url_for('output_fail'))
-
-    return render_template('home.html', title='BioSNICAR') # while post request incomplete render homepage
-
-
-######################   ROUTE 2: /output   ###########################
-#######     renders responsepage html template via /output     ########
-
-@app.route("/output")
-def output():
-    return render_template("response.html", title="BioSNICAR")
-
-
-# @app.route("/output_fail")
-# def output_fail():
-#     return render_template("responsepage_fail.html", title="Ice Classifiers")
-
-
-
-####################   ROUTE 3: /model   #############################
-#### this route contains the model call. Input data is gathered from  ####
-#### the html form in homepage.html & parsed to the successive python  ####
-#### scripts comprising the IceClassifiers model. Output image saves   ####
-#### to ./templates to make the file available as a static resource to ####
-#### display in the browser when responsepage.html renders via /output ####
-
+# the actual func to run
 @app.route('/model', methods=['POST'])
-def post_function():
+@cross_origin()
+def run_snicar():
     """
     Runs BioSNICAR model and renders output to webpage.
 
@@ -118,14 +67,17 @@ def post_function():
 
     """
 
-    global success
-    json = request.get_json()
-    lyr_typ = int(json["lyr_typ"])
-    dz = float(json["dz"])
-    r_eff = int(json["r_eff"])
-    rho = int(json["rho"])
+    input_file = "react-app/app/inputs.yaml"
 
-    input_file = "app/inputs.yaml"
+    lyr_typ = int(request.json['lyr_typ'])
+    dz = float(request.json['dz'])
+    r_eff = int(request.json['r_eff'])
+    rho = int(request.json['rho'])
+
+    print(lyr_typ)
+    print(dz)
+    print(r_eff)
+    print(rho)
 
     # first build classes from config file and validate their contents
     (
@@ -163,12 +115,16 @@ def post_function():
     plt.ylim(0,1)
     plt.xlim(0.2,2.5)
     plt.text(1.75, 0.85, f"BBA: {rounded_BBA}", fontsize = 20)
-    plt.savefig("app/outputs/albedo.jpg")
+    plt.xlabel("Wavelength (microns)")
+    plt.ylabel("Albedo")
+    plt.tight_layout()
+    plt.savefig("react-app/src/outputs/albedo.jpg")
     plt.close()
 
-    success=True
+    res = Response("success")
+    res.headers['Access-Control-Allow-Origin'] = '*'
 
-    return
+    return res
 
 
 if __name__ == '__main__':
