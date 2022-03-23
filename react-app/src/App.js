@@ -43,20 +43,19 @@ function App() {
     height: '100vh',
     }}>
 
-    <header style={{position:"absolute", top: 25, left: 25, color: 'black', fontSize: 70}}>
+    <header style={{position:"absolute", top: 25, left: 100, color: 'black', fontSize: 80}}>
     <b>biosnicar</b>
     </header>
 
-    <p style={{position:"absolute",left:28, top: 75, color: 'black', fontSize: 22}}>
+    <p style={{position:"absolute",left:100, top: 85, color: 'black', fontSize: 24}}>
     snow and ice albedo model</p>
 
-    <p style={{position:"absolute",right:55, top: 25, color: 'black', fontSize: 22}}>
-    <a href="https://biosnicar-go-py.readthedocs.io/en/latest/"><b>Documentation</b></a>
-    </p>
 
+    <p style={{position:"absolute",left:100, top: 180, color: 'black', fontSize: 22}}>
+    Enter input values below</p>
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 150, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 250, color: 'black', fontSize: 18}}>
       <p>Layer Type&nbsp;&nbsp;&nbsp;&nbsp;</p>
 
     <input 
@@ -71,7 +70,7 @@ function App() {
     
     
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 190, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 300, color: 'black', fontSize: 18}}>
       <p>Thickness (meters)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -86,7 +85,7 @@ function App() {
 
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 230, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 350, color: 'black', fontSize: 18}}>
       <p>Radius (microns)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -101,7 +100,7 @@ function App() {
 
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 270, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 400, color: 'black', fontSize: 18}}>
       <p>Density (kg/m3)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -117,7 +116,7 @@ function App() {
 
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 310, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 450, color: 'black', fontSize: 18}}>
       <p>Black carbon conc (ppb)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -133,13 +132,13 @@ function App() {
 
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 350, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 500, color: 'black', fontSize: 18}}>
       <p>Glacier algae conc (cells/mL)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
       type="number"
       min="0"
-      max="100000"
+      max="10000000"
       step="1"
       value={glacier_algae}
       placeholder="Enter algae concentration"
@@ -148,13 +147,13 @@ function App() {
 
     
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 390, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 550, color: 'black', fontSize: 18}}>
       <p>Snow algae conc (cells/mL)&nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
       type="number"
       min="0"
-      max="100000"
+      max="10000000"
       step="1"
       value={snow_algae}
       placeholder="Enter algae concentration"
@@ -162,7 +161,7 @@ function App() {
       </li>
 
     <li style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:25, top: 430, color: 'black', fontSize: 18}}>
+    position:"absolute", left:100, top: 600, color: 'black', fontSize: 18}}>
       <p>Solar zenith angle (degrees) &nbsp;&nbsp;&nbsp;&nbsp;</p>
       
     <input 
@@ -177,13 +176,23 @@ function App() {
 
 
     {<button style={{display: 'flex', justifyContent:'center', alignItems:'center', color: 'black',
-    position:"absolute", left:50, bottom: 50, fontSize: 28, width: 150, height: 80}} 
+    position:"absolute", left:100, bottom: 170, fontSize: 28, width: 180, height: 100}} 
     onClick={runModel}><b>Submit</b></button>}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
-    <a href={outFile} download="albedo.csv"> Download Here </a>
+    <form method="get" action={outFile}>
+    <button type="submit" style={{position:"absolute", bottom:170, left:300, width: 180, 
+    height: 100, fontSize: 18}}><b>Download albedo data</b></button>
+    </form>
 
-    <img src={figure} alt='albedo' style={{position:"absolute", left:550, top: 200}} />
+    <form method="submit" action="https://biosnicar-go-py.readthedocs.io/en/latest/">
+    <button type="submit" style={{position:"absolute", bottom:170, left:500, width: 180, 
+    height: 100, fontSize: 18}}><b>Documentation</b></button>
+    </form>
+
+    <p style={{position:'absolute', bottom:0, right:20, fontSize:18}}><i>Copyright: Joseph Cook (github.com/jmcook1186) 2022</i></p>
+
+    <img src={figure} alt='albedo' style={{position:"absolute", left:950, top: 250, width: 800}} />
 
 
     </div>
