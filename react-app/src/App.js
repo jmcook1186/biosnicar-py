@@ -21,7 +21,7 @@ function App() {
     console.log("inside func");
     console.log(layer_type, dz, reff, rho, bc, glacier_algae, snow_algae, zenith)
 
-    await fetch("http://localhost:5000/model", 
+    await fetch("http://localhost:5000/app/model", 
     {'method': 'POST', 
     body: JSON.stringify({'lyr_typ': layer_type, 'dz': dz, 
       'r_eff': reff, 'rho': rho, 'bc': bc, 'glacier_algae': glacier_algae,

@@ -56,7 +56,7 @@ IMPURITIES:
   SA:
     NAME: "sa"
     FILE: "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
-    CFACTOR: 1
+    CFACTOR: 20
     COATED: False
     UNIT: 0
     CONC: [0 ,0]  
@@ -64,7 +64,7 @@ IMPURITIES:
   GA:
     NAME: "ga"
     FILE: "Cook2020_glacier_algae_4_40.nc"
-    CFACTOR: 1
+    CFACTOR: 20
     COATED: False
     UNIT: 0
     CONC: [0 ,0]

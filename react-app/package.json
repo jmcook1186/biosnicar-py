@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-snicar": "cd app && venv/bin/flask run --no-debugger",
+    "start-snicar": "cd /react-app/app && flask run --no-debugger",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -37,6 +37,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ],
-    "proxy": "http://localhost:5000/model"
+    "proxy": "http://localhost:5000/app/model"
   }
 }

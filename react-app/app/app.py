@@ -36,8 +36,7 @@ from validate_inputs import *
 from display import *
 
 
-# Flask static paths set to /templates to enable retrieval of default image by index.html
-app = Flask(__name__, static_folder="react-app/build")
+app = Flask(__name__, static_folder="../build", static_url_path='/')
 
 # set root url for host as a dynamic variable
 port = int(os.environ.get("PORT", 5000))
@@ -56,7 +55,7 @@ def root():
     return app.send_static_file('index.html')
 
 # the actual func to run
-@app.route('/model', methods=['POST'])
+@app.route('/app/model', methods=['POST'])
 @cross_origin()
 def run_snicar():
     """
