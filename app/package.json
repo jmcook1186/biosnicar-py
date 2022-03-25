@@ -1,5 +1,5 @@
 {
-  "name": "react-app",
+  "name": "biosnicar",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-snicar": "cd /react-app/app && flask run --no-debugger",
+    "start-snicar": "cd app/api/app && flask run --no-debugger",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

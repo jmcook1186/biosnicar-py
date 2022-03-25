@@ -19,7 +19,9 @@ page that is redirected to automatically.
 import sys
 sys.path.append("../../src")
 sys.path.append("./src")
-sys.path.append("../app")
+sys.path.append("../app/api")
+sys.path.append("./api")
+
 from flask import Flask, request, Response
 from flask_cors import CORS, cross_origin
 import time
@@ -70,7 +72,7 @@ def run_snicar():
 
     """
 
-    input_file = "react-app/app/inputs.yaml"
+    input_file = "app/api/inputs.yaml"
 
     lyr_typ = int(request.json['lyr_typ'])
     dz = float(request.json['dz'])
@@ -133,10 +135,10 @@ def run_snicar():
     plt.grid(False)
 
     plt.tight_layout()
-    plt.savefig("react-app/src/outputs/albedo.jpg")
+    plt.savefig("app/src/outputs/albedo.jpg")
     plt.close()
 
-    np.savetxt("react-app/src/outputs/albedo.csv", outputs.albedo, delimiter=',')
+    np.savetxt("app/src/outputs/albedo.csv", outputs.albedo, delimiter=',')
 
     res = Response("success")
     res.headers['Access-Control-Allow-Origin'] = '*'

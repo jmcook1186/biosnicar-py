@@ -1,4 +1,4 @@
-name: base
+name: biosnicar
 channels:
   - conda-forge
   - defaults
