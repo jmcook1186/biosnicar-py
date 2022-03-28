@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import DownloadLink from 'react-download-link'
 import './App.css';
 import background from "./assets/background.jpg";
 import figure from "./outputs/albedo.jpg"

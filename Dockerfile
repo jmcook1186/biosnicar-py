@@ -1,27 +1,28 @@
 # This Dockerfile builds the React client and API together
-FROM continuumio/miniconda3
-COPY . /biosnicar
-WORKDIR /biosnicar
-RUN ls
+FROM continuumio/miniconda3 as build-step0
+COPY . .
+
 RUN conda env create -f ./app/api/environment.yml
 # Make RUN commands use the new environment:
 SHELL ["conda", "run", "-n", "biosnicar", "/bin/bash", "-c"]
 
 
 # Build step #1: build the React front end
-FROM node:16
-WORKDIR /biosnicar
-RUN ls
-COPY ./app/package.json ./app/
+FROM node:16 as build-step1
 
-WORKDIR /biosnicar/app
-RUN yarn install
-RUN yarn build
+COPY ./app/package*.json ./app/
+WORKDIR ./app
+RUN npm install
+
+COPY . .
+WORKDIR ./app
+RUN npm run build
 
 
 # Build step #2: build the API with the client as static files
-FROM python:3.6
+FROM python:3.6 as build-step2
 RUN pwd
+WORKDIR ./app/api
 
 ENV FLASK_ENV production
 

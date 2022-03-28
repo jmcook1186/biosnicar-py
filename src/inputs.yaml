@@ -55,7 +55,7 @@ IMPURITIES:
   
   SA:
     NAME: "sa"
-    FILE: "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
+    FILE: "SA_Chevrollier2022_r8.99.nc"
     CFACTOR: 1
     COATED: False
     UNIT: 0
@@ -63,7 +63,7 @@ IMPURITIES:
 
   GA:
     NAME: "ga"
-    FILE: "Cook2020_glacier_algae_4_40.nc"
+    FILE: "GA_Chevrollier2022_r4.9_L18.8.nc"
     CFACTOR: 1
     COATED: False
     UNIT: 0
