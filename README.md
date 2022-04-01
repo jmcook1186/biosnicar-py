@@ -72,7 +72,7 @@ Simply update the values in the input fields and press `Submit`. The spectral al
 
 ### Video walkthrough
 
-[<img src="/assets/YouTube.png" width="50%">](https://youtu.be/9wHMzZAB_do "BioSNICAR Walkthough")
+[<img src="/assets/YouTube.png" width="70%">](https://youtu.be/9wHMzZAB_do "BioSNICAR Walkthough")
 
 ### Running the code
 
