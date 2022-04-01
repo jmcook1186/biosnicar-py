@@ -64,16 +64,15 @@ In the new terminal navigate to `/app/src/` and run:
 
 The BioSNICAR app will automatically open in your web browser. If it doesn't, or you accidentally close it,. you can access it again by navigating the browser to `localhost:3000`.
 
+<img src="./assets/App.png" width=500>
+
 ### Get albedo data
 
 Simply update the values in the input fields and press `Submit`. The spectral albedo plot and the broadband albedo value will update on the screen. You can download this data to a csv file by clicking `download data`. 
 
 ### Video walkthrough
 
-[<img src="https://i.ytimg.com/vi/9wHMzZAB_do.jpg" width="50%">](https://youtu.be/9wHMzZAB_do "BioSNICAR Walkthough")
-
-
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/9wHMzZAB_do" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[<img src="/assets/YouTube.png" width="50%">](https://youtu.be/9wHMzZAB_do "BioSNICAR Walkthough")
 
 ### Running the code
 
