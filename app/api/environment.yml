@@ -1,4 +1,4 @@
-name: base
+name: biosnicar
 channels:
   - conda-forge
   - defaults
@@ -10,9 +10,12 @@ dependencies:
   - scipy
   - pip
   - pip:
+      - numpy
       - miepython
       - statsmodels
       - seaborn
       - plotnine
       - pre-commit
+      - flask
+      - gunicorn
 prefix: /opt/conda

@@ -18,10 +18,10 @@ RTM:
   NIR_MAX_IDX: 480
 
 ICE:
-  DZ: [0.001,0.146]  # thickness of each vertical layer (unit : m)
-  LAYER_TYPE: [0,0]  # Fresnel layers (set all to 0 if toon : True)
+  DZ: [0.001,0.2]  # thickness of each vertical layer (unit : m)
+  LAYER_TYPE: [1,1]  # Fresnel layers (set all to 0 if toon : True)
   CDOM: [0, 0]  # Only for layer type :: 1
-  RHO: [916, 290]  # density of each layer (unit : kg m-3)
+  RHO: [500, 500]  # density of each layer (unit : kg m-3)
   RF: 2
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [12500, 12500]  # effective grain or bubble radius
@@ -55,19 +55,19 @@ IMPURITIES:
   
   SA:
     NAME: "sa"
-    FILE: "SA_Chevrollier2022_r8.99.nc"
-    CFACTOR: 1
+    FILE: "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
+    CFACTOR: 20
     COATED: False
-    UNIT: 1
+    UNIT: 0
     CONC: [0 ,0]  
 
   GA:
     NAME: "ga"
-    FILE: "GA_Chevrollier2022_r4.9_L18.8.nc"
-    CFACTOR: 1
+    FILE: "Cook2020_glacier_algae_4_40.nc"
+    CFACTOR: 20
     COATED: False
-    UNIT: 1
-    CONC: [1000000 ,0]
+    UNIT: 0
+    CONC: [0 ,0]
 
 PLOT:
     FIG_SIZE: (8,6)
