@@ -9,11 +9,12 @@ BioSNICAR model code via a simple GUI. It has reduced functionality
 compared to the full BioSNICAR model but is likely to be sufficient
 for many users.
 
-Here are two functions, main() and model(). The former sets up
-a landing page with a simpel Flask form for parsing user input
-values. These are passed as a POST request to model() which
-saves albedo data to file. This file is rendered in a response
-page that is redirected to automatically.
+Here are two functions, root() and run_snicar(). The former sets up
+a default route for the frontend to connect to. It renders index.html
+to the browser, where the user can define their input values.
+These are passed as a POST request to run_snicar() which
+saves albedo data to file (jpg and csv). The frontend detects the
+change in file contents and re-renders the browser contents.
 
 """
 import sys
@@ -54,6 +55,15 @@ app.config['CORS_HEADERS'] = ['Content-Type']
 
 @app.route('/')
 def root():
+    """
+    Sets up default route to connect backend to frontend.
+
+    Args:
+        None
+
+    Returns:
+        renders index.html to browser
+    """
     return app.send_static_file('index.html')
 
 # the actual func to run
@@ -63,12 +73,18 @@ def run_snicar():
     """
     Runs BioSNICAR model and renders output to webpage.
 
-    This function takes the use inputs from the POST request submitted
-    by the user via the webform on route "/". These inputs are passed
-    to the BioSNCAR model and a plot of spectral albedo is saved to file.
+    This function takes the use inputs from the POST request submitted 
+    via the React frontend. These inputs are passed to the BioSNCAR 
+    model and a plot of spectral albedo is saved to file.
     The broadband albedo, rounded to 2 decimal places, is printed on the
-    figure. A successful model run triggers an auto redirect to 
-    the /output page where the figure is rendered.
+    figure.
+
+    Args:
+        None, but receives args as POSt http request via
+        /run_snicar route.
+
+    Returns:
+        res: http response code
 
     """
 

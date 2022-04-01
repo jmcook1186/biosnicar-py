@@ -14,6 +14,8 @@ Detailed documentation is available at https://biosnicar-go-py.readthedocs.io. T
 
 ## How to use
 
+There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. The app is designed to be extremely user-friendly and require no coding skills. The app simply runs in the browser and is operated with a simple graphical user interface. However, the app only has basic functionality. Power-users will prefer to run the code directly to give access to all of BioSNICAR's functions. Both cases require a Python development environment with specific packages installed. The following section describes how to set up that environment.
+
 ### Installing Environment/Dependencies
 
 If you do not have Python installed, download Python >3.6. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
@@ -25,8 +27,55 @@ pip install -r requirements.txt
 
 Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the "remote containers" extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
 
+### Using the App
 
-### Running the model
+Intrustions for using the app are provided below, and there is also a walkthrough video embedded after the text instructions. Please note that so far the app has only been tested on Linux (Ubuntu 20.04) and Firefox.
+
+### Installing dependencies
+
+The BioSNICAR app is composed of a Flask backend connected to a React frontend. The backend runs on the dependencies already installed in the Python environment described in the previous section, but the frontend requires some javascript packaged to be installed too. First check if nNdejs is already installed on your machien by opening a terminal and running:
+
+`node -v`
+
+If you already have Nodejs installed you will see a version number in the terminal. If not, download Nodejs for your operating system [here](https://nodejs.org/en/). We then also want to install yarn. Your Nodejs installation includes Node Package Manager (npm) which can now be used to install yarn. Open a terminal and run:
+
+`npm install --global yarn`
+
+Yarn can now be used to install the specific javascript packages needed to run the frontend. To do this navigate to the `app/src` directory and run:
+
+`yarn`
+
+You will see notifications for quite a few package installations. Now you have everything required to run the BioSNICAR app.
+
+#### Run the app
+
+The code for the Flask backend is in `~/app/api/app.py`. The code for the React front-end is in `app/src/`. 
+
+In a terminal, navigate to the top-level BioSNICAR directory and run:
+
+
+`python ./app/api/app.py`
+
+This starts the Flask server running on `localhost:5000`. You can now ignore this and open a new terminal window (leaving the original terminal running in the background).
+
+In the new terminal navigate to `/app/src/` and run:
+
+`yarn start`
+
+The BioSNICAR app will automatically open in your web browser. If it doesn't, or you accidentally close it,. you can access it again by navigating the browser to `localhost:3000`.
+
+### Get albedo data
+
+Simply update the values in the input fields and press `Submit`. The spectral albedo plot and the broadband albedo value will update on the screen. You can download this data to a csv file by clicking `download data`. 
+
+### Video walkthrough
+
+[<img src="https://i.ytimg.com/vi/9wHMzZAB_do.jpg" width="50%">](https://youtu.be/9wHMzZAB_do "BioSNICAR Walkthough")
+
+
+<iframe width="1280" height="720" src="https://www.youtube.com/embed/9wHMzZAB_do" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+### Running the code
 
 The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
 
@@ -40,7 +89,8 @@ More complex applications of the model code, for example model inversions, field
 
 We have also maintained a separate version of the BioSNICAR codebase that uses a "functional" prorgamming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. The two branches are entirely equivalent int heir simulations but very different in their programmign style. The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
 
-## Choosing Inputs
+#### Choosing Inputs
+
 It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to the documentation at https://biosnicar-go-py.readthedocs.io
 
 
