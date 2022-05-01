@@ -91,8 +91,8 @@ def bioptical_calculations(
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
     elif ACS_loaded_invivo:
-        ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
-
+        ACS = np.array(pd.read_csv(ACS_file, header=None)).flatten() #(np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
+        
     ################
     ## k calculation
     ################
@@ -114,6 +114,7 @@ def bioptical_calculations(
         # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
         k = xw * k_water + ACS * density_dry * wvl / (np.pi * 4)
         n = n_algae
+        ACS = ACS * 1e6 # m2 / mg to m2 / kg
 
     ###############################
     ## ACS, k storage and rescaling

@@ -196,11 +196,11 @@ Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
 Inputs.add_double = True  # toggle addintg-doubling solver
 
 
-Inputs.dz = [0.1, 0.1]  # thickness of each vertical layer (unit = m)
+Inputs.dz = [0.001, 0.1]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [1, 1]  # Fresnel layers (set all to 0 if toon = True)
+Inputs.layer_type = [0, 1]  # Fresnel layers (set all to 0 if toon = True)
 Inputs.cdom_layer = [0, 0]  # Only for layer type == 1
-Inputs.rho_layers = [450, 450]  # density of each layer (unit = kg m-3)
+Inputs.rho_layers = [700, 700]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
@@ -320,7 +320,7 @@ Inputs.file_Cook_Greenland_dust_L = "dust_greenland_Cook_LOW_20190911.nc"
 # Dark Zone dust 2 (Cook et al. 2019 "mean") NOT FUNCTIONAL (COMING SOON)
 Inputs.file_Cook_Greenland_dust_C = "dust_greenland_Cook_CENTRAL_20190911.nc"
 # Dark Zone dust 3 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL (COMING SOON)
-Inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_HIGH_20190911.nc"
+Inputs.file_Cook_Greenland_dust_H = "trial_minerals_1um_corr.nc"
 # Snow Algae (Cook et al. 2017a, spherical, C nivalis)
 Inputs.file_snw_alg = "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
 # Glacier Algae (Cook et al. 2020)
@@ -331,6 +331,9 @@ Inputs.file_glacier_algae = "Cook2020_glacier_algae_4_40.nc"
 # However, snow and glacier algae can be provided in in cells/mL.
 # To use cells/mL for algae, set GA_units == 1.
 # The script will loop over the different mixing scenarios
+# 2-5 g/L == 2-5 10**6 ng /g
+# conc=5000000*4.3
+conc=28.3*1900000
 
 Inputs.mss_cnc_soot1 = [0]* len(Inputs.dz)
 Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
@@ -357,9 +360,9 @@ Inputs.mss_cnc_GreenlandCentral2 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral3 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral4 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral5 = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Cook_Greenland_dust_L = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Cook_Greenland_dust_L = [0,0]
+Inputs.mss_cnc_Cook_Greenland_dust_C = [0,0]
+Inputs.mss_cnc_Cook_Greenland_dust_H = [0,0]
 Inputs.mss_cnc_snw_alg = [0, 0]
 Inputs.mss_cnc_glacier_algae = [0, 0]
 
@@ -372,16 +375,6 @@ Inputs.mss_cnc_glacier_algae = [0, 0]
 # --------------------------------------------------------------------------------------
 # Error catching: invalid combinations of input variables
 # --------------------------------------------------------------------------------------
-
-if (
-    (np.sum(Inputs.mss_cnc_Cook_Greenland_dust_L) > 0)
-    or (np.sum(Inputs.mss_cnc_Cook_Greenland_dust_C) > 0)
-    or (np.sum(Inputs.mss_cnc_Cook_Greenland_dust_H) > 0)
-):
-    raise ValueError(
-        "The Greenland Dusts are not available in this release.\
-                     They will be included in the next version."
-    )
 
 if Inputs.GA_units == 1 or Inputs.SA_units == 1:  # pylint: disable=W0143
     print("\n****** WARNING ******")

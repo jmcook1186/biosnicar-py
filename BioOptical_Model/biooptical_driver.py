@@ -158,22 +158,22 @@ from biooptical_Funcs import bioptical_calculations, net_cdf_updater, ssp_calcul
 # Set base directory and constant variables
 DIR_BASE = "./BioSNICAR_GO_PY/"
 WVL = np.arange(0.200, 4.999, 0.001)  # spectral range of interest in µm
-K_WATER = np.loadtxt(DIR_BASE + "Data/OP_data/k_ice_480.csv")
+K_WATER = 0 * np.ones(np.size(WVL)) #np.loadtxt(DIR_BASE + "Data/OP_data/k_ice_480.csv")
 
 # Chose ACS units
 BIOVOLUME = False
-BIOMASS = False
-CELLULAR = True
+BIOMASS = True
+CELLULAR = False
 
 # Chose if ACS is calculated from pigment abs coeff or loaded
 ACS_LOADED_INVIVO = True
 ACS_LOADED_RECONSTRUCTED = False
 ACS_CALCULATED = False
 # if ACS is loaded:
-ACS_FILE = "acs.csv"
+ACS_FILE = "/Users/au660413/Documents/AU_PhD/ms2_dust_albedo/mineral_MAC.csv"
 # if reconstructed ACS is directly loaded from pigment absorbance:
 PACKAGING_CORRECTION_SA = False
-PACKAGING_CORRECTION_GA = True
+PACKAGING_CORRECTION_GA = False
 # if ACS is reconstructed from pigment profiles:
 PIGMENT_DIR = DIR_BASE + "Data/pigments/"
 PIGMENTS_DATA = {
@@ -194,16 +194,16 @@ PIGMENTS_DATA = {
 }
 
 # Algae properties
-N_ALGAE = 1.4 * np.ones(np.size(WVL))
-R = 10
-L = 20
-CELL_VOLUME = 4/3*np.pi*R**3
-DENSITY_DRY = 625
-DENSITY_WET = 1060
+N_ALGAE = 1.5 * np.ones(np.size(WVL))
+R = [0.5]
+L = 0
+CELL_VOLUME = 4/3*np.pi*R[0]**3
+DENSITY_DRY = 2500
+DENSITY_WET = 0
 
 # Chose method for calculation of scattering optical properties
-GO = True
-MIE = False
+GO = False
+MIE = True
 
 # Optional smoothing filter for calculated k, ACS
 SMOOTH = True
@@ -228,80 +228,85 @@ SAVEPATH_OPS = DIR_BASE
 FIGNAME_OPS = "figname"
 
 # Saving OPs in netcdf
-NETCDF_SAVE = False
-SAVEPATH_NETCDF = DIR_BASE + "Data/OP_data/480band/lap/"
-FILENAME_NETCDF = "filename"
+NETCDF_SAVE = True
+SAVEPATH_NETCDF = "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/Data/OP_data/480band/lap/"
+FILENAME_NETCDF = "trial_minerals_05um_corr"
 INFO = ""
 
 
+# see excel file from Joe's stuff
+#R = 
 # %%
-# --------------------------------------------------------------------------------------
-# CALCULATIONS OF ABSORPTION PROPERTIES
-# --------------------------------------------------------------------------------------
+for i,radius in enumerate(R):
 
-(
-    WVL,
-    wvl_rescaled_BioSNICAR,
-    k,
-    k_rescaled_BioSNICAR,
-    n,
-    n_rescaled_BioSNICAR,
-    ACS,
-    ACS_rescaled_BioSNICAR,
-    n_k_ACS_rescaled_BioSNICAR,
-    abs_coeff_pigm_DataFrame,
-) = bioptical_calculations(
-    ACS_CALCULATED,
-    ACS_FILE,
-    ACS_LOADED_INVIVO,
-    ACS_LOADED_RECONSTRUCTED,
-    BIOVOLUME,
-    BIOMASS,
-    CELLULAR,
-    DENSITY_WET,
-    DENSITY_DRY,
-    DIR_BASE,
-    CELL_VOLUME,
-    WVL,
-    PACKAGING_CORRECTION_SA,
-    PACKAGING_CORRECTION_GA,
-    PIGMENT_DIR,
-    PIGMENTS_DATA,
-    N_ALGAE,
-    K_WATER,
-    SMOOTH,
-    WINDOW_SIZE,
-    POLY_ORDER,
-    SMOOTH_START,
-    SMOOTH_STOP,
-    PLOT_N_K_ACS_CELL,
-    PLOT_PIGMENT_ACSS,
-    SAVEFILES_N_K_ACS_CELL,
-    SAVEFILENAME_N_K_ACS_CELL,
-    SAVEPLOTS_N_K_ACS,
-    SAVEPATH_N_K_ACS_PLOTS,
-)
-
-
-# %%
-# --------------------------------------------------------------------------------------
-# CALCULATIONS OF SCATTERING PROPERTIES
-# --------------------------------------------------------------------------------------
-
-assym, ss_alb = ssp_calculations(
-    GO,
-    MIE,
-    SAVEPATH_OPS,
-    R,
-    L,
-    wvl_rescaled_BioSNICAR,
-    n_rescaled_BioSNICAR,
-    k_rescaled_BioSNICAR,
-    PLOTS_OPS,
-    SAVEFIGS_OPS,
-    FIGNAME_OPS,
-    REPORT_DIMS,
-)
+    # --------------------------------------------------------------------------------------
+    # CALCULATIONS OF ABSORPTION PROPERTIES
+    # --------------------------------------------------------------------------------------
+    
+    (
+        WVL,
+        wvl_rescaled_BioSNICAR,
+        k,
+        k_rescaled_BioSNICAR,
+        n,
+        n_rescaled_BioSNICAR,
+        ACS,
+        ACS_rescaled_BioSNICAR,
+        n_k_ACS_rescaled_BioSNICAR,
+        abs_coeff_pigm_DataFrame,
+    ) = bioptical_calculations(
+        ACS_CALCULATED,
+        ACS_FILE,
+        ACS_LOADED_INVIVO,
+        ACS_LOADED_RECONSTRUCTED,
+        BIOVOLUME,
+        BIOMASS,
+        CELLULAR,
+        DENSITY_WET,
+        DENSITY_DRY,
+        DIR_BASE,
+        CELL_VOLUME,
+        WVL,
+        PACKAGING_CORRECTION_SA,
+        PACKAGING_CORRECTION_GA,
+        PIGMENT_DIR,
+        PIGMENTS_DATA,
+        N_ALGAE,
+        K_WATER,
+        SMOOTH,
+        WINDOW_SIZE,
+        POLY_ORDER,
+        SMOOTH_START,
+        SMOOTH_STOP,
+        PLOT_N_K_ACS_CELL,
+        PLOT_PIGMENT_ACSS,
+        SAVEFILES_N_K_ACS_CELL,
+        SAVEFILENAME_N_K_ACS_CELL,
+        SAVEPLOTS_N_K_ACS,
+        SAVEPATH_N_K_ACS_PLOTS,
+    )
+    
+    
+    # %%
+    # --------------------------------------------------------------------------------------
+    # CALCULATIONS OF SCATTERING PROPERTIES
+    # --------------------------------------------------------------------------------------
+    
+    assym, ss_alb = ssp_calculations(
+        GO,
+        MIE,
+        SAVEPATH_OPS,
+        radius,
+        L,
+        wvl_rescaled_BioSNICAR,
+        n_rescaled_BioSNICAR,
+        k_rescaled_BioSNICAR,
+        PLOTS_OPS,
+        SAVEFIGS_OPS,
+        FIGNAME_OPS,
+        REPORT_DIMS,
+    )
+    
 
 # %%
 # --------------------------------------------------------------------------------------
@@ -319,7 +324,7 @@ if NETCDF_SAVE:
         ss_alb,
         ACS_rescaled_BioSNICAR,
         L,
-        R,
+        1,
         DENSITY_WET,
         INFO,
     )
