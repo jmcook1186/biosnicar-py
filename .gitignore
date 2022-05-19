@@ -13,3 +13,7 @@ __pycache__/
 
 # test output
 py_mat_comparison.png
+
+# nodejs
+yarn.lock
+node_modules/.yarn-integrity
