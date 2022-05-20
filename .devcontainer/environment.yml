@@ -19,4 +19,5 @@ dependencies:
       - gunicorn
       - requests
       - flask-cors
+      - bump2version
 prefix: /opt/conda
