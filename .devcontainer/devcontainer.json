@@ -25,6 +25,7 @@
 		"python.dataScience.alwaysTrustNotebooks": true,
 		"jupyter.alwaysTrustNotebooks": true
 	},
+	"postCreateCommand": "cd /workspaces/BioSNICAR_GO_PY/app/src && yarn",
 	"extensions": [
 		"ms-python.python",
 		"njpwerner.autodocstring",
@@ -37,5 +38,5 @@
 		"oderwat.indent-rainbow",
 		"gua.rainbow-brackets",
 		"ms-python.vscode-pylance"
-	],
+	]
 }
