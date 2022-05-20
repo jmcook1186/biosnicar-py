@@ -111,10 +111,10 @@ def bioptical_calculations(
         n = n_algae
 
     if biomass:  # ACS in m2 / dry mg
-        # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
-        k = xw * k_water + ACS * density_dry * wvl / (np.pi * 4)
+        # units: ACS (m2/mg to m2/kg) * density (kg m-3) * wvl (µm to m)
+        k =  ACS * density_dry * wvl / (np.pi * 4) #+ xw * k_water 
         n = n_algae
-        ACS = ACS * 1e6 # m2 / mg to m2 / kg
+        ACS = ACS * 1000000 # m2 / mg to m2 / kg
 
     ###############################
     ## ACS, k storage and rescaling
