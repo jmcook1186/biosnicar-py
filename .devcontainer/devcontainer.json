@@ -25,7 +25,7 @@
 		"python.dataScience.alwaysTrustNotebooks": true,
 		"jupyter.alwaysTrustNotebooks": true
 	},
-	"postCreateCommand": "cd /workspaces/BioSNICAR_GO_PY/app/src && yarn",
+	"postCreateCommand": "/opt/conda/bin/pip install -e .",
 	"extensions": [
 		"ms-python.python",
 		"njpwerner.autodocstring",
