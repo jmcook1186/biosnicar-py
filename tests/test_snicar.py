@@ -8,6 +8,8 @@ from biosnicar.adding_doubling_solver import adding_doubling_solver
 import random
 import matplotlib.pyplot as plt
 import pytest
+from pathlib import Path
+import numpy as np
 
 
 """Runs benchmarking and fuzzing tests on BioSNICAR.
@@ -34,7 +36,7 @@ To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
 """
 
 
-def test_AD_solver(new_benchmark_ad):
+def test_AD_solver(new_benchmark_ad, input_file):
     """Tests Toon solver against SNICAR_ADv4 benchmark.
 
     This func generates a new file - py_benchmark_data.csv - that contains
@@ -55,7 +57,6 @@ def test_AD_solver(new_benchmark_ad):
         None but saves py_benchmark_data.csv to ./tests/test_data/
 
     """
-    input_file = "./src/inputs.yaml"
     if new_benchmark_ad:
         (
             ice,
@@ -66,7 +67,7 @@ def test_AD_solver(new_benchmark_ad):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         lyrList = [0, 1]
@@ -146,7 +147,7 @@ def test_AD_solver(new_benchmark_ad):
     return
 
 
-def test_AD_solver_clean(new_benchmark_ad_clean):
+def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
     """Tests Toon solver against SNICAR_ADv4 benchmark for impurity-free ice.
 
     This func generates a new file - py_benchmark_data_clean.csv - that contains
@@ -169,7 +170,6 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
         None but saves py_benchmark_data_clean.csv to ./tests/test_data/
 
     """
-    input_file = "./src/inputs.yaml"
 
     if new_benchmark_ad_clean:
         (
@@ -355,7 +355,7 @@ def test_compare_pyBBA_to_matBBA_clean(
     assert len(error[error > tol]) == 0
 
 
-def match_matlab_config(ice, illumination, rt_config, model_config):
+def match_matlab_config(ice, illumination, rt_config, model_config, input_file):
     """Ensures model config is equal to the Matlab version used to generate benchmark data.
 
     This function resets values in instances of Ice, Illumination and ModelConfig to ensure
@@ -378,7 +378,6 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
 
 
     """
-    input_file = "./src/inputs.yaml"
 
     nbr_lyr = 5
     # make sure ice config matches matlab benchmark
@@ -514,7 +513,7 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
 @pytest.mark.parametrize("aprx", [1, 2, 3])
 @pytest.mark.parametrize("inc", [0, 1, 2, 3, 4, 5, 6])
 @pytest.mark.parametrize("ref", [0, 1, 2])
-def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
+def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
@@ -539,7 +538,6 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
     """
 
     if fuzz:
-        input_file = "./src/inputs.yaml"
         (
             ice,
             illumination,
@@ -583,7 +581,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
 @pytest.mark.parametrize("cfactor", [1, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
+def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
@@ -609,7 +607,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     """
 
     if fuzz:
-        input_file = "./src/inputs.yaml"
 
         (
             ice,
