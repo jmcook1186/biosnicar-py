@@ -16,14 +16,9 @@ BioOpticalConfig
 These classes are used as convenient, mutable containers for the necessary data required to run
 BioSNICAR. They are automatically instantiated by calling setup_snicar() using values provided
 in inputs.yaml. Class functions are available for recalculating derived attributes when the
-user changes attributes of Ice or Illumination classes. 
+user changes attributes of Ice or Illumination classes.
 
 """
-
-
-import sys
-
-sys.path.append("./src")
 import math
 import os
 
@@ -390,10 +385,8 @@ class PlotConfig:
         self.save = inputs["PLOT"]["SAVE"]
 
 
-
-
 class BioOpticalConfig:
-    
+
     """Configuration class for bio-optical model.
 
     Attributes:
@@ -413,7 +406,7 @@ class BioOpticalConfig:
         abs_cff_loaded_invivo: (boolean) True if the abs_cff is loaded as in vivo
                                 spectra of whole cells
         abs_cff_file: (string) directory to the abs_cff file if loaded
-        pigment_data: dictionary with pigment file names and associated 
+        pigment_data: dictionary with pigment file names and associated
                       intracellular concentrations (ng/cell, ng/µm3 or ng/ng)
         pigment_dir: (string) used if abs_cff_calculated is True, directory to
                          folder containing pigment mass absorption coefficients
@@ -429,7 +422,7 @@ class BioOpticalConfig:
                                 packaging following Chevrollier et al. 2022
         dir_pckg: (string) directory to pigment packaging correction files
         k_water_dir: (string) path to file with imaginary part of the refractive
-                        index of water        
+                        index of water
         unit: unit for absorption cross section: 0 = m2/cell, 1 = m2/um3, 3 = m2/mg
               and/or pigment data: 0 = ng/cell, 1 = ng/um3, 3 = ng/mg
         cell_vol: (int - used if cellular: True) volume of the algae
@@ -469,31 +462,32 @@ class BioOpticalConfig:
 
     def __init__(self, input_file):
 
-
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        self.wvl=np.arange(0.200, 5, 0.001)
-        self.wet_density= inputs["BIOOPTICAL"]["WET_DENSITY"]
-        self.dry_density= inputs["BIOOPTICAL"]["DRY_DENSITY"]
-        self.abs_cff_calculated=inputs["BIOOPTICAL"]["ABS_CFF_CALC"]
-        self.abs_cff_loaded_reconstructed=inputs["BIOOPTICAL"]["ABS_CFF_LOAD_RECONSTRUCTED"]
-        self.abs_cff_loaded_invivo=inputs["BIOOPTICAL"]["ABS_CFF_LOAD_INVIVO"]
-        self.abs_cff_file=inputs["BIOOPTICAL"]["ABS_CFF_FILE"]
-        self.pigment_data=inputs["BIOOPTICAL"]["PIGMENT_CONC"]
-        self.pigment_dir=inputs["BIOOPTICAL"]["PIGMENT_DIR"]
-        self.packaging_correction_SA=inputs["BIOOPTICAL"]["PCKG_SA"]
-        self.packaging_correction_GA=inputs["BIOOPTICAL"]["PCKG_GA"]
-        self.dir_pckg=inputs["BIOOPTICAL"]["DIR_PCKG"]
-        self.k_water_dir=inputs["BIOOPTICAL"]["K_WATER_DIR"]
-        self.unit=inputs["BIOOPTICAL"]["UNIT"]
-        self.cell_vol=inputs["BIOOPTICAL"]["CELL_VOLUME"]
-        self.n_algae=inputs["BIOOPTICAL"]["N_ALGAE"]
+        self.wvl = np.arange(0.200, 5, 0.001)
+        self.wet_density = inputs["BIOOPTICAL"]["WET_DENSITY"]
+        self.dry_density = inputs["BIOOPTICAL"]["DRY_DENSITY"]
+        self.abs_cff_calculated = inputs["BIOOPTICAL"]["ABS_CFF_CALC"]
+        self.abs_cff_loaded_reconstructed = inputs["BIOOPTICAL"][
+            "ABS_CFF_LOAD_RECONSTRUCTED"
+        ]
+        self.abs_cff_loaded_invivo = inputs["BIOOPTICAL"]["ABS_CFF_LOAD_INVIVO"]
+        self.abs_cff_file = inputs["BIOOPTICAL"]["ABS_CFF_FILE"]
+        self.pigment_data = inputs["BIOOPTICAL"]["PIGMENT_CONC"]
+        self.pigment_dir = inputs["BIOOPTICAL"]["PIGMENT_DIR"]
+        self.packaging_correction_SA = inputs["BIOOPTICAL"]["PCKG_SA"]
+        self.packaging_correction_GA = inputs["BIOOPTICAL"]["PCKG_GA"]
+        self.dir_pckg = inputs["BIOOPTICAL"]["DIR_PCKG"]
+        self.k_water_dir = inputs["BIOOPTICAL"]["K_WATER_DIR"]
+        self.unit = inputs["BIOOPTICAL"]["UNIT"]
+        self.cell_vol = inputs["BIOOPTICAL"]["CELL_VOLUME"]
+        self.n_algae = inputs["BIOOPTICAL"]["N_ALGAE"]
         self.GO = inputs["BIOOPTICAL"]["GO"]
         self.Mie = inputs["BIOOPTICAL"]["MIE"]
         self.radius = inputs["BIOOPTICAL"]["CELL_R"]
         self.length = inputs["BIOOPTICAL"]["CELL_L"]
-        self.report_dims = inputs["BIOOPTICAL"]["REPORT_DIMS"] 
+        self.report_dims = inputs["BIOOPTICAL"]["REPORT_DIMS"]
         self.plot_ssps = inputs["BIOOPTICAL"]["PLOT_SSPS"]
         self.savefig_ssps = inputs["BIOOPTICAL"]["SAVEFIG_SSPS"]
         self.plot_k_abs_cff = inputs["BIOOPTICAL"]["PLOT_K_ABS_CFF"]
@@ -511,14 +505,14 @@ class BioOpticalConfig:
         self.validate_biooptical_inputs()
 
     def validate_biooptical_inputs(self):
-        
+
         if self.Mie:
-            assert(self.GO==False) 
+            assert self.GO == False
         if self.GO:
-            assert(self.Mie==False)  
-          
+            assert self.Mie == False
+
         return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

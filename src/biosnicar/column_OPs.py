@@ -1,24 +1,22 @@
 #!/usr/bin/python
 """Calculates optical properties of ice/snow column from inputs.
 
-These functions take the user-defined inputs for the physical 
+These functions take the user-defined inputs for the physical
 properties of the snow and ice and any impurities and calculate
-the single scattering albedo, asymmetry parameter and optical 
+the single scattering albedo, asymmetry parameter and optical
 thickness which are then passed to one or other of our radiative
 transfer solvers (Toon solver or adding-doubling solver).
 
 """
 
-import sys
 
-sys.path.append("./src")
 import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy.interpolate import pchip
 
-import mie_coated_water_spheres as wcs
-from classes import *
+import biosnicar.mie_coated_water_spheres as wcs
+from biosnicar.classes import *
 
 
 def get_layer_OPs(ice, model_config):
@@ -578,5 +576,5 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     return tau, ssa, g, L_snw
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

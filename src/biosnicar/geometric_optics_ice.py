@@ -45,9 +45,6 @@ parameters as assumed in the conventional geometric optics approximation.
 
 
 """
-import sys
-
-sys.path.append("./src")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -63,9 +60,9 @@ def preprocess_RI(ri_source, path_to_ri):
 
     """Preprocessing of wavelength and RI data.
 
-    Preprocessing function that ensures the wavelengths and real/imaginary 
-    parts of the refractive index for ice is provided in the correct waveband and correct 
-    spectral resolution to interface with BioSNICAR. The refractive indices are taken 
+    Preprocessing function that ensures the wavelengths and real/imaginary
+    parts of the refractive index for ice is provided in the correct waveband and correct
+    spectral resolution to interface with BioSNICAR. The refractive indices are taken
     from Warren and Brandt 2008.
 
     Grabs appropriates wavelengths, real and imaginary parts of ice
@@ -419,5 +416,5 @@ def net_cdf_updater(
 #         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

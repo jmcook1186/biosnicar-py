@@ -4,9 +4,6 @@
 Copyright (C) 2020  Niklas Bohn (GFZ, <nbohn@gfz-potsdam.de>),
 German Research Centre for Geosciences (GFZ, <https://www.gfz-potsdam.de>)
 """
-import sys
-
-sys.path.append("./src")
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -22,7 +19,7 @@ def fill_nans_scipy1(padata, pkind="nearest"):
     Args:
     padata: source data with np.NaN values
     pkind:  kind of interpolation (see scipy.interpolate.interp1d docs)
-    
+
     Returns:
         f(aindexes): data with interpolated values instead of nans
     """
@@ -43,13 +40,13 @@ def fill_nans_scipy1(padata, pkind="nearest"):
 
 def miecoated_ab3(m1, m2, x, y):
     """Computation of Mie Coefficients.
-    
+
     Computes a_n, b_n, of orders n=1 to nmax, complex
-    refractive index m=m'+im", and size parameters 
+    refractive index m=m'+im", and size parameters
     x=k0*a, y=k0*b where k0 = wave number in the ambient medium for
-    coated spheres, a = inner radius, b = outer radius 
+    coated spheres, a = inner radius, b = outer radius
     m1, m2 = inner, outer refractive index;
-    
+
     p. 183 in Bohren and Huffman (1983) BEWI:TDD122 but
     using the bottom equation on p. 483 for chi_prime (Matzler 2002).
 
@@ -58,7 +55,7 @@ def miecoated_ab3(m1, m2, x, y):
         m2: refractive index for outher sphere
         x:  size parameter for inner sphere
         y:  size parameter for outer sphere
-    
+
     Returns:
        Mie Coefficients a_n and b_n
     """
@@ -133,7 +130,7 @@ def miecoated(m1, m2, x, y):
         m2:  refractive-index ratio of coating
         x:   size parameter for inner sphere
         y:   size parameter for outer sphere
-    
+
     Returns:
         qext: extinction efficiency
         qsca: scatterign efficiency
@@ -203,7 +200,7 @@ def miecoated(m1, m2, x, y):
 
 def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     """Driver for miecoated.
-    
+
     Originally written by Christian Matzler
     (see Matzler, 2002). The driver convolves the efficiency factors with the particle
     dimensions to return the cross sections for extinction, scattering and
@@ -223,10 +220,10 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
         fn_water: path to csv file containing refractive index of liquid water
                     (Segelstein, 1981)
         wvl:      wavelength which should be calculated (in microns)
-        
+
         Returns:
-            res: tuple containing cross sections for extinction, scattering and 
-            absorption plus the asymmetry parameter, q ratio and single scattering 
+            res: tuple containing cross sections for extinction, scattering and
+            absorption plus the asymmetry parameter, q ratio and single scattering
             albedo
     """
 
@@ -370,5 +367,5 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     return res
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

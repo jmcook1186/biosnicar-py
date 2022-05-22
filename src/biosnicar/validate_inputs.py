@@ -1,8 +1,5 @@
 #!/usr/bin/python
-import sys
-
-sys.path.append("./src")
-from classes import *
+from biosnicar.classes import *
 
 
 def validate_inputs(ice, rt_config, model_config, illumination, impurities):
@@ -212,6 +209,5 @@ def validate_model_config(model_config):
     return
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

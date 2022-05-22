@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-import sys
-
-sys.path.append("./src")
 from toon_rt_solver import toon_solver
 
 from adding_doubling_solver import adding_doubling_solver
-from biooptical_funcs import *
-from classes import *
-from column_OPs import *
-from display import *
-from setup_snicar import *
-from validate_inputs import *
+from biosnicar.biooptical_funcs import *
+from biosnicar.classes import *
+from biosnicar.column_OPs import *
+from biosnicar.display import *
+from biosnicar.setup_snicar import *
+from biosnicar.validate_inputs import *
 
 # define input file
 input_file = "./src/inputs.yaml"
@@ -25,7 +21,7 @@ input_file = "./src/inputs.yaml"
 # the BioSNICAR database. Commewnted out by default as we expect our default lap
 # database to be sufficient for most users.
 
-#run_biooptical_model(input_file)
+# run_biooptical_model(input_file)
 
 ###########################
 # RADIATIVE TRANSFER MODEL
