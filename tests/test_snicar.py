@@ -1,14 +1,10 @@
 #!/usr/bin/python
-import sys
-# make sure we can import from /src
-sys.path.append("../src")
-sys.path.append("./src")
-from classes import Impurity
-from setup_snicar import *
-from classes import *
-from column_OPs import *
-from toon_rt_solver import toon_solver
-from adding_doubling_solver import adding_doubling_solver
+from biosnicar.classes import Impurity
+from biosnicar.setup_snicar import *
+from biosnicar.classes import *
+from biosnicar.column_OPs import *
+from biosnicar.toon_rt_solver import toon_solver
+from biosnicar.adding_doubling_solver import adding_doubling_solver
 import random
 import matplotlib.pyplot as plt
 import pytest
@@ -414,9 +410,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     impurities = []
 
     conc = [0] * nbr_lyr
-    impurity0 = Impurity(
-        "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc
-    )
+    impurity0 = Impurity("bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc)
     impurities.append(impurity0)
 
     assert (impurities[0].name == "bc") and (
@@ -678,5 +672,5 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
