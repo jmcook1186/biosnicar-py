@@ -547,7 +547,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         rt_config.aprx_typ = aprx
@@ -617,7 +617,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         impurities = []
