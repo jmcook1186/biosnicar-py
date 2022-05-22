@@ -22,12 +22,14 @@ user changes attributes of Ice or Illumination classes.
 
 
 import sys
+
 sys.path.append("./src")
-import xarray as xr
-import yaml
-import numpy as np
 import math
 import os
+
+import numpy as np
+import xarray as xr
+import yaml
 
 
 class Impurity:

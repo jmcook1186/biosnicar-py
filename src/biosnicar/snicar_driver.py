@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 sys.path.append("./src")
-from setup_snicar import *
+from toon_rt_solver import toon_solver
+
+from adding_doubling_solver import adding_doubling_solver
+from biooptical_funcs import *
 from classes import *
 from column_OPs import *
-from biooptical_funcs import *
-from toon_rt_solver import toon_solver
-from adding_doubling_solver import adding_doubling_solver
-from validate_inputs import *
 from display import *
-
+from setup_snicar import *
+from validate_inputs import *
 
 # define input file
 input_file = "./src/inputs.yaml"

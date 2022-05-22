@@ -23,8 +23,8 @@ def get_version(rel_path):
 
 setup(
     name="biosnicar",
-    packages=find_packages(include=["src", "src*"]),
-    version=get_version("src/__init__.py"),
+    package_dir={"": "src"},
+    version=get_version("src/biosnicar/__init__.py"),
     author="BioSNICAR team",
     author_email="joe.cook@sheffield.ac.uk",
     description="Snow and ice albedo modelling in Python",

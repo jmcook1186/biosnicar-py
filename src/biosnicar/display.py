@@ -1,10 +1,12 @@
 #!/usr/bin/python
 import sys
+
 sys.path.append("./src")
-from classes import *
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+
+from classes import *
 
 
 def setup_axes(plot_config):

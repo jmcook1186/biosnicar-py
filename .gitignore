@@ -12,9 +12,11 @@ __pycache__/
 *.mypy_cache
 *.pytest_cache
 *.egg-info
+dev_notebooks*
 
 # test output
 py_mat_comparison.png
+
 
 # nodejs
 yarn.lock

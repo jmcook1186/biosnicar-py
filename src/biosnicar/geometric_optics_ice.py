@@ -46,6 +46,7 @@ parameters as assumed in the conventional geometric optics approximation.
 
 """
 import sys
+
 sys.path.append("./src")
 import matplotlib.pyplot as plt
 import numpy as np
