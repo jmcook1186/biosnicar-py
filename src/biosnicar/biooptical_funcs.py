@@ -14,7 +14,7 @@ from miepython import mie
 from plotnine import aes, geom_line, ggplot
 from scipy.signal import savgol_filter
 
-from biosnicar.classes import *
+from biosnicar.classes import BioOpticalConfig
 
 plt.style.use("seaborn")
 

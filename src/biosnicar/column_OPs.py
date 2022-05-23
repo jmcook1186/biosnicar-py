@@ -16,7 +16,6 @@ import xarray as xr
 from scipy.interpolate import pchip
 
 import biosnicar.mie_coated_water_spheres as wcs
-from biosnicar.classes import *
 
 
 def get_layer_OPs(ice, model_config):
