@@ -32,8 +32,8 @@ solid ice layers and fresnel reflection are included.
 import numpy as np
 from scipy.signal import savgol_filter
 
-from biosnicar.setup_snicar import build_impurities_array
 from biosnicar.classes import Outputs
+from biosnicar.setup_snicar import build_impurities_array
 
 
 def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
