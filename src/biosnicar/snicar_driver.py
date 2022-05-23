@@ -10,12 +10,11 @@ from biosnicar.setup_snicar import setup_snicar
 from biosnicar.toon_rt_solver import toon_solver
 from biosnicar.validate_inputs import validate_inputs
 
-source_path = Path(__file__).resolve()
-source_dir = source_path.parent
+BIOSNICAR_SRC_PATH = Path(__file__).resolve().parent
 
 
 # define input file
-INPUT_FILE = source_dir.joinpath("inputs.yaml").as_posix()
+INPUT_FILE = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
 
 ###################
 # BIO-OPTICAL MODEL
