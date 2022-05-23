@@ -25,9 +25,10 @@ degrees. The main benefit of the Toon solver is speed, and continuity from legac
 radiative transfer models.
 
 """
+import numpy as np
 from scipy.signal import savgol_filter
-from biosnicar.setup_snicar import *
-from biosnicar.classes import *
+
+from biosnicar.classes import Outputs
 
 
 def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):

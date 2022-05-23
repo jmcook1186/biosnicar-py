@@ -1,12 +1,7 @@
 #!/usr/bin/python
-import sys
-
-sys.path.append("./src")
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-
-from biosnicar.classes import *
 
 
 def setup_axes(plot_config):

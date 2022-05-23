@@ -3,12 +3,10 @@
 from biosnicar.toon_rt_solver import toon_solver
 
 from biosnicar.adding_doubling_solver import adding_doubling_solver
-from biosnicar.biooptical_funcs import *
-from biosnicar.classes import *
-from biosnicar.column_OPs import *
-from biosnicar.display import *
-from biosnicar.setup_snicar import *
-from biosnicar.validate_inputs import *
+from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.display import plot_albedo, display_out_data
+from biosnicar.setup_snicar import setup_snicar
+from biosnicar.validate_inputs import validate_inputs
 
 # define input file
 input_file = "./src/inputs.yaml"

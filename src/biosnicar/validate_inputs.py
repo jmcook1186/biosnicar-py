@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from biosnicar.classes import *
+import numpy as np
 
 
 def validate_inputs(ice, rt_config, model_config, illumination, impurities):
@@ -32,7 +32,8 @@ def validate_inputs(ice, rt_config, model_config, illumination, impurities):
 def validate_snow_algae(impurities):
     """
     Validates snow algae configuration.
-    This includes warning the user that OPs are from literature and not yet field validated.
+    This includes warning the user that OPs are from literature and not yet field
+    validated.
     Most importantly, checks that the units of the absorption coefficient and the cell
     concentration match up (m2/cell -> cells/mL, m2/mg -> ppb)
 
