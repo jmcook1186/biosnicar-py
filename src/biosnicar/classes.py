@@ -391,60 +391,56 @@ class BioOpticalConfig:
 
     Attributes:
         wvl: (numpy array, default: np.arange(0.200, 4.999, 0.001))
-                wavelengths in spectral range of interest (in µm, 1nm step)
+            wavelengths in spectral range of interest (in µm, 1nm step)
         wet_density:  (int - used if biomass: True) density of wet biomass
-                        (kg/m3 - 1060 and 1160 for snow and glacier algae,
-                        Chevrollier et al. 2022)
+        (kg/m3 - 1060 and 1160 for snow and glacier algae,Chevrollier et al. 2022)
         dry_density:  (int - used if biomass: True) density of dry biomass
-                        (kg/m3 - 625 and 684 for snow and glacier algae,
-                        Chevrollier et al. 2022)
+            (kg/m3 - 625 and 684 for snow and glacier algae,
+            Chevrollier et al. 2022)
         ABS_CFF_CALC: toggles calculating abs_cff from pigments or loading from file.
         abs_cff_loaded_reconstructed: (boolean) True if the
-                                abs_cff is loaded as a reconstructed spectrum
-                                from pigment absorbance (see methods in
-                                Chevrollier et al. 2022)
+            abs_cff is loaded as a reconstructed spectrum
+            from pigment absorbance (see methods in Chevrollier et al. 2022)
         abs_cff_loaded_invivo: (boolean) True if the abs_cff is loaded as in vivo
-                                spectra of whole cells
+            spectra of whole cells
         abs_cff_file: (string) directory to the abs_cff file if loaded
         pigment_data: dictionary with pigment file names and associated
-                      intracellular concentrations (ng/cell, ng/µm3 or ng/ng)
+            intracellular concentrations (ng/cell, ng/µm3 or ng/ng)
         pigment_dir: (string) used if abs_cff_calculated is True, directory to
-                         folder containing pigment mass absorption coefficients
-                         that must be csv file with size and resolution of wvl,
-                         and units in m2/mg
+            folder containing pigment mass absorption coefficients
+            that must be csv file with size and resolution of wvl,
+            and units in m2/mg
         packaging_correction_SA: (boolean - applied ONLY if
-                                  abs_cff_loaded_reconstructed is True) if True,
-                                   reconstructed SA abs_cff is corrected for pigment
-                                 packaging following Chevrollier et al. 2022
+            abs_cff_loaded_reconstructed is True) if True,
+            reconstructed SA abs_cff is corrected for pigment
+            packaging following Chevrollier et al. 2022
         packaging_correction_GA: (boolean - applied ONLY if
-                                abs_cff_loaded_reconstructed is True) if True,
-                                reconstructed GA abs_cff is corrected for pigment
-                                packaging following Chevrollier et al. 2022
+            abs_cff_loaded_reconstructed is True) if True,
+            reconstructed GA abs_cff is corrected for pigment
+            packaging following Chevrollier et al. 2022
         dir_pckg: (string) directory to pigment packaging correction files
         k_water_dir: (string) path to file with imaginary part of the refractive
-                        index of water
+            index of water
         unit: unit for absorption cross section: 0 = m2/cell, 1 = m2/um3, 3 = m2/mg
-              and/or pigment data: 0 = ng/cell, 1 = ng/um3, 3 = ng/mg
-        cell_vol: (int - used if cellular: True) volume of the algae
-                        cell (um3)
+            and/or pigment data: 0 = ng/cell, 1 = ng/um3, 3 = ng/mg
+        cell_vol: (int - used if cellular: True) volume of the algae cell (um3)
         n_algae: (int) real part of cellular refractive index
-                        in the spectral range of wvl (constant 1.38 by default,
-                        Chevrollier et al. 2022)
+            in the spectral range of wvl (constant 1.38 by default,
+            Chevrollier et al. 2022)
         GO: (boolean) if True, uses geometric optics equations (Cook et
             al. 2020 adapted from Diedenhoven et al (2014)) to calculate single
-                scattering OPs assuming cell shape: cylinder
+            scattering OPs assuming cell shape: cylinder
         Mie: (boolean) if True, uses Mie theory to calculate single
-                scattering OPs assuming cell shape: sphere
+            scattering OPs assuming cell shape: sphere
         radius: (int) radius of sphere (Mie)/cynlinder (GO) representing cell (µm)
         length: (int) depth of the cylinder representing the cell (GO option, µm)
         report_dims: (boolean) if True, cell dimensions printed to console
         plot_ssps: (boolean) if True, print plots with ssps
-        savefig_ssps: if True, ssps plots saved in the directory
-                                savepath
+        savefig_ssps: if True, ssps plots saved in the directory savepath
         plot_n_k_abs_cff: (boolean) if True, plot with n,k and abs_cff printed
         saveplots_n_k_abs_cff: (boolean) if True, plots saved in the directory savepath
         savefiles_n_k_abs_cff: (boolean) if True, files with k,n and abs_cff
-                        saved in the directory savepath
+            saved in the directory savepath
         savepath: (boolean) directory for saving data if
             savefiles or saveplots toggled on
         smooth: (boolean) if True,  apply optional smoothing filter
@@ -453,10 +449,10 @@ class BioOpticalConfig:
         save_netcdf = (boolean) if True, saves data in a netcdf file
         savepath_netcdf = (string) save path directory
         filename_netcdf = (string) name of the file containing the
-                        optical properties
+            optical properties
         information = (string) containing any additional info for
-                    metadata in netcdf (e.g. 'Glacier algae OPs derived
-                    from GO calculations with empirical abs_cff')
+            metadata in netcdf (e.g. 'Glacier algae OPs derived
+            from GO calculations with empirical abs_cff')
 
     """
 
