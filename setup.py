@@ -24,6 +24,7 @@ def get_version(rel_path):
 setup(
     name="biosnicar",
     package_dir={"": "src"},
+    packages=find_packages(where="src"),
     version=get_version("src/biosnicar/__init__.py"),
     author="BioSNICAR team",
     author_email="joe.cook@sheffield.ac.uk",
