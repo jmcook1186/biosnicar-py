@@ -17,6 +17,10 @@ dev_notebooks*
 # test output
 py_mat_comparison.png
 
+# Sphinx documentation
+docs/doctrees*
+
+
 
 # nodejs
 yarn.lock
