@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from toon_rt_solver import toon_solver
+from biosnicar.toon_rt_solver import toon_solver
 
-from adding_doubling_solver import adding_doubling_solver
+from biosnicar.adding_doubling_solver import adding_doubling_solver
 from biosnicar.biooptical_funcs import *
 from biosnicar.classes import *
 from biosnicar.column_OPs import *

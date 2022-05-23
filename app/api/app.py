@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This script configures and deploys the BioSNICAR web app. 
+This script configures and deploys the BioSNICAR web app.
 
 The BioSNICAR web-app offers convenient browser access to the
 BioSNICAR model code via a simple GUI. It has reduced functionality
@@ -17,43 +17,37 @@ saves albedo data to file (jpg and csv). The frontend detects the
 change in file contents and re-renders the browser contents.
 
 """
-import sys
-sys.path.append("../../src")
-sys.path.append("./src")
-sys.path.append("../app/api")
-sys.path.append("./api")
-
-from flask import Flask, request, Response
-from flask_cors import CORS, cross_origin
 import time
+
+import matplotlib.pyplot as plt
 import numpy as np
 import requests
-import matplotlib.pyplot as plt
-from setup_snicar import *
-from classes import *
-from column_OPs import *
-from biooptical_funcs import *
-from toon_rt_solver import toon_solver
-from adding_doubling_solver import adding_doubling_solver
-from validate_inputs import *
-from display import *
+from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.biooptical_funcs import *
+from biosnicar.classes import *
+from biosnicar.column_OPs import *
+from biosnicar.display import *
+from biosnicar.setup_snicar import *
+from biosnicar.toon_rt_solver import toon_solver
+from biosnicar.validate_inputs import *
+from flask import Flask, Response, request
+from flask_cors import CORS, cross_origin
 
-
-app = Flask(__name__, static_folder="../build", static_url_path='/')
+app = Flask(__name__, static_folder="../build", static_url_path="/")
 
 # set root url for host as a dynamic variable
 port = int(os.environ.get("PORT", 5000))
-host = 'http://localhost:5000/'
+host = "http://localhost:5000/"
 success = False
 
 # enable cross domain requests
 # because flask is on port 5000, react on port 3000
 app = Flask(__name__)
 cors = CORS(app)
-app.config['CORS_HEADERS'] = ['Content-Type']
+app.config["CORS_HEADERS"] = ["Content-Type"]
 
 
-@app.route('/')
+@app.route("/")
 def root():
     """
     Sets up default route to connect backend to frontend.
@@ -64,17 +58,18 @@ def root():
     Returns:
         renders index.html to browser
     """
-    return app.send_static_file('index.html')
+    return app.send_static_file("index.html")
+
 
 # the actual func to run
-@app.route('/app/model', methods=['POST'])
+@app.route("/app/model", methods=["POST"])
 @cross_origin()
 def run_snicar():
     """
     Runs BioSNICAR model and renders output to webpage.
 
-    This function takes the use inputs from the POST request submitted 
-    via the React frontend. These inputs are passed to the BioSNCAR 
+    This function takes the use inputs from the POST request submitted
+    via the React frontend. These inputs are passed to the BioSNCAR
     model and a plot of spectral albedo is saved to file.
     The broadband albedo, rounded to 2 decimal places, is printed on the
     figure.
@@ -90,14 +85,14 @@ def run_snicar():
 
     input_file = "app/api/inputs.yaml"
 
-    lyr_typ = int(request.json['lyr_typ'])
-    dz = float(request.json['dz'])
-    r_eff = int(request.json['r_eff'])
-    rho = int(request.json['rho'])
-    bc = int(request.json['bc'])
-    glacier_algae = int(request.json['glacier_algae'])
-    snow_algae = int(request.json['snow_algae'])
-    zenith = int(request.json['zenith'])
+    lyr_typ = int(request.json["lyr_typ"])
+    dz = float(request.json["dz"])
+    r_eff = int(request.json["r_eff"])
+    rho = int(request.json["rho"])
+    bc = int(request.json["bc"])
+    glacier_algae = int(request.json["glacier_algae"])
+    snow_algae = int(request.json["snow_algae"])
+    zenith = int(request.json["zenith"])
 
     print(lyr_typ)
     print(dz)
@@ -114,7 +109,6 @@ def run_snicar():
         impurities,
     ) = setup_snicar(input_file)
 
-
     # load base classes from default inputs.yaml
     # then adjust for user inputs
     ice.layer_type = [lyr_typ, lyr_typ]
@@ -122,7 +116,7 @@ def run_snicar():
     ice.rds = [r_eff, r_eff]
     ice.rho = [rho, rho]
 
-    impurities[0].conc = [bc,0]
+    impurities[0].conc = [bc, 0]
     impurities[1].conc = [snow_algae, 0]
     impurities[2].conc = [glacier_algae, 0]
 
@@ -138,14 +132,16 @@ def run_snicar():
     )
 
     # now run one or both of the radiative transfer solvers
-    outputs = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config)
+    outputs = adding_doubling_solver(
+        tau, ssa, g, L_snw, ice, illumination, model_config
+    )
     rounded_BBA = np.round(outputs.BBA, 2)
     wvl = np.arange(0.205, 5, 0.01)
     plt.figure()
     plt.plot(wvl, outputs.albedo, linewidth=1)
-    plt.ylim(0,1)
-    plt.xlim(0.2,2.5)
-    plt.text(1.5, 0.8, f"broadband albedo\n{rounded_BBA}", fontsize = 20)
+    plt.ylim(0, 1)
+    plt.xlim(0.2, 2.5)
+    plt.text(1.5, 0.8, f"broadband albedo\n{rounded_BBA}", fontsize=20)
     plt.xlabel("Wavelength (microns)")
     plt.ylabel("Albedo")
     plt.grid(False)
@@ -154,19 +150,13 @@ def run_snicar():
     plt.savefig("app/src/outputs/albedo.jpg")
     plt.close()
 
-    np.savetxt("app/src/outputs/albedo.csv", outputs.albedo, delimiter=',')
+    np.savetxt("app/src/outputs/albedo.csv", outputs.albedo, delimiter=",")
 
     res = Response("success")
-    res.headers['Access-Control-Allow-Origin'] = '*'
+    res.headers["Access-Control-Allow-Origin"] = "*"
 
     return res
 
 
-if __name__ == '__main__':
-    app.run(host = '0.0.0.0', port = port, debug=True)
-
-
-
-
-
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=port, debug=True)

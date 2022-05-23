@@ -2,7 +2,15 @@
 
 import yaml
 
-from biosnicar.classes import *
+from biosnicar.classes import (
+    Ice,
+    Impurity,
+    Illumination,
+    RTConfig,
+    ModelConfig,
+    PlotConfig,
+    Outputs,
+)
 
 
 def setup_snicar(input_file):

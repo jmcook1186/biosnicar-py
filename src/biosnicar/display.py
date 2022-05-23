@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from classes import *
+from biosnicar.classes import *
 
 
 def setup_axes(plot_config):
@@ -83,5 +83,5 @@ def calculate_band_ratios(albedo):
     return I2DBA, I3DBA, NDCI, MCI, II
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
