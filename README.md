@@ -29,11 +29,11 @@ Finally, if you do not wish to install anything on your computer, but you use VS
 
 ### Using the App
 
-Intrustions for using the app are provided below, and there is also a walkthrough video embedded after the text instructions. Please note that so far the app has only been tested on Linux (Ubuntu 20.04) and Firefox.
+Instructions for using the app are provided below, and there is also a walkthrough video embedded after the text instructions. Please note that so far the app has only been tested on Linux (Ubuntu 20.04) and Firefox.
 
 ### Installing dependencies
 
-The BioSNICAR app is composed of a Flask backend connected to a React frontend. The backend runs on the dependencies already installed in the Python environment described in the previous section, but the frontend requires some javascript packaged to be installed too. First check if nNdejs is already installed on your machien by opening a terminal and running:
+The BioSNICAR app is composed of a Flask backend connected to a React frontend. The backend runs on the dependencies already installed in the Python environment described in the previous section, but the frontend requires some javascript packaged to be installed too. First check if Nodejs is already installed on your machine by opening a terminal and running:
 
 `node -v`
 
@@ -49,7 +49,7 @@ You will see notifications for quite a few package installations. Now you have e
 
 #### Run the app
 
-The code for the Flask backend is in `~/app/api/app.py`. The code for the React front-end is in `app/src/`. 
+The code for the Flask backend is in `~/app/api/app.py`. The code for the React front-end is in `app/src/`.
 
 In a terminal, navigate to the top-level BioSNICAR directory and run:
 
@@ -68,7 +68,7 @@ The BioSNICAR app will automatically open in your web browser. If it doesn't, or
 
 ### Get albedo data
 
-Simply update the values in the input fields and press `Submit`. The spectral albedo plot and the broadband albedo value will update on the screen. You can download this data to a csv file by clicking `download data`. 
+Simply update the values in the input fields and press `Submit`. The spectral albedo plot and the broadband albedo value will update on the screen. You can download this data to a csv file by clicking `download data`.
 
 ### Video walkthrough
 
@@ -76,17 +76,17 @@ Simply update the values in the input fields and press `Submit`. The spectral al
 
 ### Running the code
 
-The model driver and all the core source code can be found in `/src`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
+The model driver and all the core source code can be found in `/src/biosnicar`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
 
-`python ./src/snicar_driver.py`
+`python ./src/biosnicar/snicar_driver.py`
 
-This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console. 
+This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
 
 Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for the those in `inputs.yaml`.
 
 More complex applications of the model code, for example model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
 
-We have also maintained a separate version of the BioSNICAR codebase that uses a "functional" prorgamming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matblab implementations from previous literature. The two branches are entirely equivalent int heir simulations but very different in their programmign style. The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
+We have also maintained a separate version of the BioSNICAR codebase that uses a "functional" programming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matlab implementations from previous literature. The two branches are entirely equivalent in their simulations but very different in their programming style. The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
 
 #### Choosing Inputs
 
@@ -189,20 +189,21 @@ The following directory tree shows the correct structure for this model code. Th
 ├── README.md
 ├── requirements.txt
 ├── src
-│   ├── adding_doubling_solver.py
-│   ├── bubble_reff_calculator.py
-│   ├── classes.py
-│   ├── column_OPs.py
-│   ├── display.py
-│   ├── geometric_optics_ice.py
-│   ├── __init__.py
-│   ├── inputs.yaml
-│   ├── mie_coated_water_spheres.py
-│   ├── __pycache__
-│   ├── setup_snicar.py
-│   ├── snicar_driver.py
-│   ├── toon_rt_solver.py
-│   └── validate_inputs.py
+│   ├── biosnicar
+│      ├── adding_doubling_solver.py
+│      ├── bubble_reff_calculator.py
+│      ├── classes.py
+│      ├── column_OPs.py
+│      ├── display.py
+│      ├── geometric_optics_ice.py
+│      ├── __init__.py
+│      ├── inputs.yaml
+│      ├── mie_coated_water_spheres.py
+│      ├── __pycache__
+│      ├── setup_snicar.py
+│      ├── snicar_driver.py
+│      ├── toon_rt_solver.py
+│      └── validate_inputs.py
 └── tests
     ├── conftest.py
     ├── __init__.py
@@ -232,7 +233,7 @@ This code is provided under an MIT license with the caveat that it is in active 
 
 If you use this code in a publication, please cite:
 
-Cook, J. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere, doi:10.5194/tc-14-309-2020 
+Cook, J. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere, doi:10.5194/tc-14-309-2020
 
 Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
 
@@ -253,9 +254,9 @@ Clementson, L. A., & Wojtasiewicz, B. (2019). Dataset on the absorption characte
 
 Cook JM, et al (2017) Quantifying bioalbedo: A new physically-based model and critique of empirical methods for characterizing biological influence on ice and snow albedo. The Cryosphere: 1–29. DOI: 10.5194/tc-2017-73, 2017b
 
-Cook, J. M. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019. 
+Cook, J. M. et al. (2020): Glacier algae accelerate melt rates on the western Greenland Ice Sheet, The Cryosphere Discuss., https://doi.org/10.5194/tc-2019-58, in review, 2019.
 
-Dang, C., Zender, C., Flanner M. 2019. Intercomparison and improvement of two-stream shortwave radiative transfer schemes in Earth system models for a unified treatment of cryospheric surfaces. The Cryosphere, 13, 2325–2343, https://doi.org/10.5194/tc-13-2325-2019 
+Dang, C., Zender, C., Flanner M. 2019. Intercomparison and improvement of two-stream shortwave radiative transfer schemes in Earth system models for a unified treatment of cryospheric surfaces. The Cryosphere, 13, 2325–2343, https://doi.org/10.5194/tc-13-2325-2019
 
 Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
 
@@ -280,7 +281,7 @@ Polashenski et al. (2015): Neither dust nor black carbon causing apparent albedo
 
 Skiles, S. M., Painter, T., & Okin, G. S. (2017). A method to retrieve the spectral complex refractive index and single scattering optical properties of dust deposited in mountain snow. Journal of Glaciology, 63(237), 133-147.
 
-Toon, O. B., McKay, C. P., Ackerman, T. P., and Santhanam, K. (1989), Rapid calculation of radiative heating rates and photodissociation rates in inhomogeneous multiple scattering atmospheres, J. Geophys. Res., 94( D13), 16287– 16301, doi:10.1029/JD094iD13p16287. 
+Toon, O. B., McKay, C. P., Ackerman, T. P., and Santhanam, K. (1989), Rapid calculation of radiative heating rates and photodissociation rates in inhomogeneous multiple scattering atmospheres, J. Geophys. Res., 94( D13), 16287– 16301, doi:10.1029/JD094iD13p16287.
 
 van Diedenhoven et al. (2014): A flexible paramaterization for shortwave opticalproperties of ice crystals. Journal of the Atmospheric Sciences, 71: 1763 – 1782, doi:10.1175/JAS-D-13-0205.1
 
