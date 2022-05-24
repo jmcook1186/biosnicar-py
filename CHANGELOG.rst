@@ -10,7 +10,11 @@ Unreleased
 
 Changed
 ~~~~~~
+- restructured everything into a package called biosnicar
+- replaces from xxx import * with explicit imports
 - changed to semantic versioning style
+- moved the code from scr to src/biosnicar for
+
 
 Added
 ~~~~~~
