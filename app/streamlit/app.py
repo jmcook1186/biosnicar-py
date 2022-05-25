@@ -88,11 +88,21 @@ def run_snicar(
     outputs = adding_doubling_solver(
         tau, ssa, g, L_snw, ice, illumination, model_config
     )
-    rounded_BBA = np.round(outputs.BBA, 2)
+    rounded_broandband_albedo = np.round(outputs.BBA, 2)
     wave_length = np.arange(0.205, 5, 0.01)
     albedo = pd.Series(outputs.albedo, index=wave_length, name="albedo")
 
-    return {"albedo": albedo, "broadband": rounded_BBA}
+    return {"albedo": albedo, "broadband": rounded_broandband_albedo, "status": status}
+
+
+def plot_albedo(albedo: pd.Series):
+    fig = px.line(
+        result["albedo"],
+        range_y=[0, 1],
+        labels={"index": "Wavelenghts (microns)", "value": "Albedo"},
+    )
+    fig.update_layout(showlegend=False)
+    return fig
 
 
 st.write("You selected:", layer)
@@ -107,9 +117,6 @@ result = run_snicar(
     solar_zenith_angle,
 )
 st.metric("Broadband Albedo", result["broadband"])
-st.plotly_chart(
-    px.line(
-        result["albedo"], range_y=[0, 1], labels=["Wavelenghts (microns)", "Albedo"]
-    )
-)
+st.plotly_chart(plot_albedo(result["albedo"]))
 st.dataframe(result["albedo"])
+st.write(result["status"])
