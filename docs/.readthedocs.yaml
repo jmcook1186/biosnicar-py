@@ -33,6 +33,9 @@ submodules:
 python:
   install:
   - requirements: docs/requirements.txt
+
+
+python:
+  install:
   - method: pip
       path: .
-
