@@ -12,14 +12,14 @@ import plotly.express as px
 st.title("biosnicar")
 st.write("snow and ice albedo model")
 
-layer = st.sidebar.selectbox("Layer Type", (0, 1, 2))
+layer = st.sidebar.selectbox("Layer Type", (0, 1))
 thickness = st.sidebar.number_input("Thickness (meters)", 0.0, 10.0, 3.0)
 radius = st.sidebar.number_input("Radius (microns)", 0, 10000, 7000)
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 1000, 0)
 glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 1000, 0)
 snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 1000, 0)
-solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 90, 60)
+solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 89, 60)
 
 
 def run_snicar(
@@ -89,22 +89,27 @@ def run_snicar(
         tau, ssa, g, L_snw, ice, illumination, model_config
     )
     rounded_BBA = np.round(outputs.BBA, 2)
-    wvl = np.arange(0.205, 5, 0.01)
-    albedo = pd.Series(outputs.albedo)
+    wave_length = np.arange(0.205, 5, 0.01)
+    albedo = pd.Series(outputs.albedo, index=wave_length, name="albedo")
 
-    return px.line(albedo, range_y=[0, 1])
+    return {"albedo": albedo, "broadband": rounded_BBA}
 
 
 st.write("You selected:", layer)
+result = run_snicar(
+    layer,
+    thickness,
+    radius,
+    density,
+    black_carbon,
+    glacier_algae,
+    snow_algae,
+    solar_zenith_angle,
+)
+st.metric("Broadband Albedo", result["broadband"])
 st.plotly_chart(
-    run_snicar(
-        layer,
-        thickness,
-        radius,
-        density,
-        black_carbon,
-        glacier_algae,
-        snow_algae,
-        solar_zenith_angle,
+    px.line(
+        result["albedo"], range_y=[0, 1], labels=["Wavelenghts (microns)", "Albedo"]
     )
 )
+st.dataframe(result["albedo"])
