@@ -19,7 +19,7 @@ density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 1000, 0)
 glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 1000, 0)
 snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 1000, 0)
-solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 89, 60)
+solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 89, 50)
 
 
 def run_snicar(
@@ -91,21 +91,27 @@ def run_snicar(
     rounded_broandband_albedo = np.round(outputs.BBA, 2)
     wave_length = np.arange(0.205, 5, 0.01)
     albedo = pd.Series(outputs.albedo, index=wave_length, name="albedo")
+    albedo_csv = albedo.to_csv()
 
-    return {"albedo": albedo, "broadband": rounded_broandband_albedo, "status": status}
+    return {
+        "albedo": albedo,
+        "broadband": rounded_broandband_albedo,
+        "status": status,
+        "albedo_csv": albedo_csv,
+    }
 
 
 def plot_albedo(albedo: pd.Series):
     fig = px.line(
         result["albedo"],
         range_y=[0, 1],
+        range_x=[0.205, 2.5],
         labels={"index": "Wavelenghts (microns)", "value": "Albedo"},
     )
     fig.update_layout(showlegend=False)
     return fig
 
 
-st.write("You selected:", layer)
 result = run_snicar(
     layer,
     thickness,
@@ -116,7 +122,13 @@ result = run_snicar(
     snow_algae,
     solar_zenith_angle,
 )
+
+# display results
 st.metric("Broadband Albedo", result["broadband"])
 st.plotly_chart(plot_albedo(result["albedo"]))
+st.download_button("download data", data=result["albedo_csv"], file_name="albedo.csv")
 st.dataframe(result["albedo"])
-st.write(result["status"])
+st.write(
+    result["status"],
+)
+st.markdown("")
