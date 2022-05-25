@@ -4,7 +4,7 @@ src
 biosnicar.adding\_doubling\_solver module
 -----------------------------------
 
-.. automodule:: biosnicar.adding_doubling_solver
+.. automodule:: adding_doubling_solver
    :members:
    :undoc-members:
    :show-inheritance:
@@ -14,7 +14,7 @@ biosnicar.adding\_doubling\_solver module
 biosnicar.bubble\_reff\_calculator module
 -----------------------------------
 
-.. automodule:: biosnicar.bubble_reff_calculator
+.. automodule:: bubble_reff_calculator
    :members:
    :undoc-members:
    :show-inheritance:
@@ -25,7 +25,7 @@ biosnicar.bubble\_reff\_calculator module
 biosnicar.classes module
 ------------------
 
-.. automodule:: biosnicar.classes
+.. automodule:: classes
    :members:
    :undoc-members:
    :show-inheritance:
@@ -35,7 +35,7 @@ biosnicar.classes module
 biosnicar.column\_OPs module
 ----------------------
 
-.. automodule:: biosnicar.column_OPs
+.. automodule:: column_OPs
    :members:
    :undoc-members:
    :show-inheritance:
@@ -45,7 +45,7 @@ biosnicar.column\_OPs module
 biosnicar.display module
 ------------------
 
-.. automodule:: biosnicar.display
+.. automodule:: display
    :members:
    :undoc-members:
    :show-inheritance:
@@ -55,7 +55,7 @@ biosnicar.display module
 biosnicar.geometric\_optics\_ice module
 ---------------------------------
 
-.. automodule:: biosnicar.geometric_optics_ice
+.. automodule:: geometric_optics_ice
    :members:
    :undoc-members:
    :show-inheritance:
@@ -65,7 +65,7 @@ biosnicar.geometric\_optics\_ice module
 biosnicar.mie\_coated\_water\_spheres module
 --------------------------------------
 
-.. automodule:: biosnicar.mie_coated_water_spheres
+.. automodule:: mie_coated_water_spheres
    :members:
    :undoc-members:
    :show-inheritance:
@@ -76,7 +76,7 @@ biosnicar.mie\_coated\_water\_spheres module
 biosnicar.setup\_snicar module
 ------------------------
 
-.. automodule:: biosnicar.setup_snicar
+.. automodule:: setup_snicar
    :members:
    :undoc-members:
    :show-inheritance:
@@ -86,7 +86,7 @@ biosnicar.setup\_snicar module
 biosnicar.toon\_rt\_solver module
 ---------------------------
 
-.. automodule:: biosnicar.toon_rt_solver
+.. automodule:: toon_rt_solver
    :members:
    :undoc-members:
    :show-inheritance:
@@ -96,7 +96,7 @@ biosnicar.toon\_rt\_solver module
 biosnicar.validate\_inputs module
 ---------------------------
 
-.. automodule:: biosnicar.validate_inputs
+.. automodule:: validate_inputs
    :members:
    :undoc-members:
    :show-inheritance:
@@ -105,7 +105,7 @@ biosnicar.validate\_inputs module
 biosnicar.biooptical_funcs module
 ---------------------------
 
-.. automodule:: biosnicar.biooptical_funcs
+.. automodule:: biooptical_funcs
    :members:
    :undoc-members:
    :show-inheritance:
