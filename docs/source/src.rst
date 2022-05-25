@@ -1,20 +1,20 @@
 src
 ====
 
-src.biosnicar.adding\_doubling\_solver module
+biosnicar.adding\_doubling\_solver module
 -----------------------------------
 
-.. automodule:: src.biosnicar.adding_doubling_solver
+.. automodule:: biosnicar.adding_doubling_solver
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.bubble\_reff\_calculator module
+biosnicar.bubble\_reff\_calculator module
 -----------------------------------
 
-.. automodule:: src.biosnicar.bubble_reff_calculator
+.. automodule:: biosnicar.bubble_reff_calculator
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,50 +22,50 @@ src.biosnicar.bubble\_reff\_calculator module
 
 
 
-src.biosnicar.classes module
+biosnicar.classes module
 ------------------
 
-.. automodule:: src.biosnicar.classes
+.. automodule:: biosnicar.classes
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.column\_OPs module
+biosnicar.column\_OPs module
 ----------------------
 
-.. automodule:: src.biosnicar.column_OPs
+.. automodule:: biosnicar.column_OPs
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.display module
+biosnicar.display module
 ------------------
 
-.. automodule:: src.biosnicar.display
+.. automodule:: biosnicar.display
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.geometric\_optics\_ice module
+biosnicar.geometric\_optics\_ice module
 ---------------------------------
 
-.. automodule:: src.biosnicar.geometric_optics_ice
+.. automodule:: biosnicar.geometric_optics_ice
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.mie\_coated\_water\_spheres module
+biosnicar.mie\_coated\_water\_spheres module
 --------------------------------------
 
-.. automodule:: src.biosnicar.mie_coated_water_spheres
+.. automodule:: biosnicar.mie_coated_water_spheres
    :members:
    :undoc-members:
    :show-inheritance:
@@ -73,39 +73,39 @@ src.biosnicar.mie\_coated\_water\_spheres module
 
 
 
-src.biosnicar.setup\_snicar module
+biosnicar.setup\_snicar module
 ------------------------
 
-.. automodule:: src.biosnicar.setup_snicar
+.. automodule:: biosnicar.setup_snicar
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.toon\_rt\_solver module
+biosnicar.toon\_rt\_solver module
 ---------------------------
 
-.. automodule:: src.biosnicar.toon_rt_solver
+.. automodule:: biosnicar.toon_rt_solver
    :members:
    :undoc-members:
    :show-inheritance:
 
 
 
-src.biosnicar.validate\_inputs module
+biosnicar.validate\_inputs module
 ---------------------------
 
-.. automodule:: src.biosnicar.validate_inputs
+.. automodule:: biosnicar.validate_inputs
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-src.biosnicar.biooptical_funcs module
+biosnicar.biooptical_funcs module
 ---------------------------
 
-.. automodule:: src.biosnicar.biooptical_funcs
+.. automodule:: biosnicar.biooptical_funcs
    :members:
    :undoc-members:
    :show-inheritance:
