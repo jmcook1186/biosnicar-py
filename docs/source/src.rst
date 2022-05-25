@@ -1,7 +1,7 @@
 src
 ====
 
-src.adding\_doubling\_solver module
+src.biosnicar.adding\_doubling\_solver module
 -----------------------------------
 
 .. automodule:: src.biosnicar.adding_doubling_solver
@@ -11,7 +11,7 @@ src.adding\_doubling\_solver module
 
 
 
-src.bubble\_reff\_calculator module
+src.biosnicar.bubble\_reff\_calculator module
 -----------------------------------
 
 .. automodule:: src.biosnicar.bubble_reff_calculator
@@ -22,7 +22,7 @@ src.bubble\_reff\_calculator module
 
 
 
-src.classes module
+src.biosnicar.classes module
 ------------------
 
 .. automodule:: src.biosnicar.classes
@@ -32,7 +32,7 @@ src.classes module
 
 
 
-src.column\_OPs module
+src.biosnicar.column\_OPs module
 ----------------------
 
 .. automodule:: src.biosnicar.column_OPs
@@ -42,7 +42,7 @@ src.column\_OPs module
 
 
 
-src.display module
+src.biosnicar.display module
 ------------------
 
 .. automodule:: src.biosnicar.display
@@ -52,7 +52,7 @@ src.display module
 
 
 
-src.geometric\_optics\_ice module
+src.biosnicar.geometric\_optics\_ice module
 ---------------------------------
 
 .. automodule:: src.biosnicar.geometric_optics_ice
@@ -62,7 +62,7 @@ src.geometric\_optics\_ice module
 
 
 
-src.mie\_coated\_water\_spheres module
+src.biosnicar.mie\_coated\_water\_spheres module
 --------------------------------------
 
 .. automodule:: src.biosnicar.mie_coated_water_spheres
@@ -73,7 +73,7 @@ src.mie\_coated\_water\_spheres module
 
 
 
-src.setup\_snicar module
+src.biosnicar.setup\_snicar module
 ------------------------
 
 .. automodule:: src.biosnicar.setup_snicar
@@ -83,7 +83,7 @@ src.setup\_snicar module
 
 
 
-src.toon\_rt\_solver module
+src.biosnicar.toon\_rt\_solver module
 ---------------------------
 
 .. automodule:: src.biosnicar.toon_rt_solver
@@ -93,7 +93,7 @@ src.toon\_rt\_solver module
 
 
 
-src.validate\_inputs module
+src.biosnicar.validate\_inputs module
 ---------------------------
 
 .. automodule:: src.biosnicar.validate_inputs
@@ -102,7 +102,7 @@ src.validate\_inputs module
    :show-inheritance:
 
 
-src.biooptical_funcs module
+src.biosnicar.biooptical_funcs module
 ---------------------------
 
 .. automodule:: src.biosnicar.biooptical_funcs
