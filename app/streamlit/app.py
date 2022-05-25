@@ -1,23 +1,25 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 from biosnicar.setup_snicar import setup_snicar
 from biosnicar.validate_inputs import validate_inputs
 from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
 from biosnicar.adding_doubling_solver import adding_doubling_solver
 import matplotlib.pyplot as plt
+import plotly.express as px
 
 
 st.title("biosnicar")
 st.write("snow and ice albedo model")
 
 layer = st.sidebar.selectbox("Layer Type", (0, 1, 2))
-thickness = st.sidebar.number_input("Thickness (meters)", 0.0, 10.0)
-radius = st.sidebar.number_input("Radius (microns)", 0, 10000)
+thickness = st.sidebar.number_input("Thickness (meters)", 0.0, 10.0, 3.0)
+radius = st.sidebar.number_input("Radius (microns)", 0, 10000, 7000)
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 1000, 0)
 glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 1000, 0)
 snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 1000, 0)
-solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 0, 90, 60)
+solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 90, 60)
 
 
 def run_snicar(
@@ -49,11 +51,6 @@ def run_snicar(
     """
 
     input_file = "app/api/inputs.yaml"
-
-    print(layer)
-    print(thickness)
-    print(radius)
-    print(density)
 
     # first build classes from config file and validate their contents
     (
@@ -93,26 +90,13 @@ def run_snicar(
     )
     rounded_BBA = np.round(outputs.BBA, 2)
     wvl = np.arange(0.205, 5, 0.01)
-    plt.figure()
-    plt.plot(wvl, outputs.albedo, linewidth=1)
-    plt.ylim(0, 1)
-    plt.xlim(0.2, 2.5)
-    plt.text(1.5, 0.8, f"broadband albedo\n{rounded_BBA}", fontsize=20)
-    plt.xlabel("Wavelength (microns)")
-    plt.ylabel("Albedo")
-    plt.grid(False)
+    albedo = pd.Series(outputs.albedo)
 
-    plt.tight_layout()
-    plt.savefig("app/src/outputs/albedo.jpg")
-    plt.close()
-
-    np.savetxt("app/src/outputs/albedo.csv", outputs.albedo, delimiter=",")
-
-    return plt
+    return px.line(albedo, range_y=[0, 1])
 
 
 st.write("You selected:", layer)
-st.pyplot(
+st.plotly_chart(
     run_snicar(
         layer,
         thickness,
