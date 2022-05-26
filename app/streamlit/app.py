@@ -20,6 +20,7 @@ st.markdown(
 )
 st.markdown("""---""")
 
+
 st.sidebar.header("Ice")
 layer = st.sidebar.selectbox("Layer Type", ("grains", "solid"))
 thickness = st.sidebar.number_input(
@@ -41,6 +42,9 @@ snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 10000, 0)
 
 st.sidebar.header("Sun")
 solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 89, 50)
+
+if layer == "grains":
+    st.sidebar.button("whatever")
 
 
 def run_snicar(
@@ -154,6 +158,6 @@ result = run_snicar(
 st.metric("Broadband Albedo", result["broadband"])
 st.plotly_chart(plot_albedo(result["albedo"]))
 st.download_button("download data", data=result["albedo_csv"], file_name="albedo.csv")
-show_data = st.checkbox("show raw data")
-if show_data:
+
+with st.expander("Show raw data"):
     st.dataframe(result["albedo"])
