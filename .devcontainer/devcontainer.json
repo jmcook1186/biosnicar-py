@@ -25,6 +25,7 @@
 		"python.dataScience.alwaysTrustNotebooks": true,
 		"jupyter.alwaysTrustNotebooks": true
 	},
+	"postCreateCommand": "/opt/conda/bin/pip install -e .",
 	"extensions": [
 		"ms-python.python",
 		"njpwerner.autodocstring",
@@ -37,5 +38,5 @@
 		"oderwat.indent-rainbow",
 		"gua.rainbow-brackets",
 		"ms-python.vscode-pylance"
-	],
+	]
 }

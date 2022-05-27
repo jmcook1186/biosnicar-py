@@ -15,4 +15,9 @@ dependencies:
       - seaborn
       - plotnine
       - pre-commit
+      - flask
+      - gunicorn
+      - requests
+      - flask-cors
+      - bump2version
 prefix: /opt/conda

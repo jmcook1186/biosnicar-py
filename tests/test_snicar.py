@@ -1,19 +1,4 @@
 #!/usr/bin/python
-import sys
-# make sure we can import from /src
-sys.path.append("../src")
-sys.path.append("./src")
-from classes import Impurity
-from setup_snicar import *
-from classes import *
-from column_OPs import *
-from toon_rt_solver import toon_solver
-from adding_doubling_solver import adding_doubling_solver
-import random
-import matplotlib.pyplot as plt
-import pytest
-
-
 """Runs benchmarking and fuzzing tests on BioSNICAR.
 
 To run configure these tests, update the values in conftest.py
@@ -37,8 +22,19 @@ To toggle the fuzzer on/off change the value of "fuzz" in conftest.py
 
 """
 
+import random
 
-def test_AD_solver(new_benchmark_ad):
+import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.classes import Impurity
+from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.setup_snicar import setup_snicar
+from biosnicar.toon_rt_solver import toon_solver
+
+
+def test_AD_solver(new_benchmark_ad, input_file):
     """Tests Toon solver against SNICAR_ADv4 benchmark.
 
     This func generates a new file - py_benchmark_data.csv - that contains
@@ -59,7 +55,6 @@ def test_AD_solver(new_benchmark_ad):
         None but saves py_benchmark_data.csv to ./tests/test_data/
 
     """
-    input_file = "./src/inputs.yaml"
     if new_benchmark_ad:
         (
             ice,
@@ -70,7 +65,7 @@ def test_AD_solver(new_benchmark_ad):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         lyrList = [0, 1]
@@ -150,7 +145,7 @@ def test_AD_solver(new_benchmark_ad):
     return
 
 
-def test_AD_solver_clean(new_benchmark_ad_clean):
+def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
     """Tests Toon solver against SNICAR_ADv4 benchmark for impurity-free ice.
 
     This func generates a new file - py_benchmark_data_clean.csv - that contains
@@ -173,7 +168,6 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
         None but saves py_benchmark_data_clean.csv to ./tests/test_data/
 
     """
-    input_file = "./src/inputs.yaml"
 
     if new_benchmark_ad_clean:
         (
@@ -185,7 +179,7 @@ def test_AD_solver_clean(new_benchmark_ad_clean):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         print(
@@ -359,7 +353,7 @@ def test_compare_pyBBA_to_matBBA_clean(
     assert len(error[error > tol]) == 0
 
 
-def match_matlab_config(ice, illumination, rt_config, model_config):
+def match_matlab_config(ice, illumination, rt_config, model_config, input_file):
     """Ensures model config is equal to the Matlab version used to generate benchmark data.
 
     This function resets values in instances of Ice, Illumination and ModelConfig to ensure
@@ -382,7 +376,6 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
 
 
     """
-    input_file = "./src/inputs.yaml"
 
     nbr_lyr = 5
     # make sure ice config matches matlab benchmark
@@ -414,9 +407,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config):
     impurities = []
 
     conc = [0] * nbr_lyr
-    impurity0 = Impurity(
-        "bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc
-    )
+    impurity0 = Impurity("bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc)
     impurities.append(impurity0)
 
     assert (impurities[0].name == "bc") and (
@@ -520,7 +511,7 @@ def test_plot_random_spectra_pairs(get_matlab_data, get_python_data, get_n_spect
 @pytest.mark.parametrize("aprx", [1, 2, 3])
 @pytest.mark.parametrize("inc", [0, 1, 2, 3, 4, 5, 6])
 @pytest.mark.parametrize("ref", [0, 1, 2])
-def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
+def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
@@ -545,7 +536,6 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
     """
 
     if fuzz:
-        input_file = "./src/inputs.yaml"
         (
             ice,
             illumination,
@@ -555,7 +545,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         rt_config.aprx_typ = aprx
@@ -589,7 +579,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz):
 @pytest.mark.parametrize("cfactor", [1, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
+def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
@@ -615,7 +605,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     """
 
     if fuzz:
-        input_file = "./src/inputs.yaml"
 
         (
             ice,
@@ -626,7 +615,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
             impurities,
         ) = setup_snicar(input_file)
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
-            ice, illumination, rt_config, model_config
+            ice, illumination, rt_config, model_config, input_file
         )
 
         impurities = []
@@ -678,5 +667,5 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

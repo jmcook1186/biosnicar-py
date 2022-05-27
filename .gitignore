@@ -10,6 +10,18 @@ __pycache__/
 **/.DS_Store
 
 *.mypy_cache
+*.pytest_cache
+*.egg-info
+dev_notebooks*
 
 # test output
 py_mat_comparison.png
+
+# Sphinx documentation
+docs/doctrees*
+
+
+
+# nodejs
+yarn.lock
+node_modules/.yarn-integrity

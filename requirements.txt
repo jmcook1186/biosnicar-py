@@ -17,4 +17,5 @@ pyyaml == 6.0
 Flask == 2.0.3
 gunicorn == 20.1.0
 requests == 2.27.1
+bump2version == 1.0.1
 
