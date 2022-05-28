@@ -1,18 +1,29 @@
-import streamlit as st
 import numpy as np
 import pandas as pd
+import plotly.express as px
+import biosnicar
+from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
 from biosnicar.setup_snicar import setup_snicar
 from biosnicar.validate_inputs import validate_inputs
-from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.adding_doubling_solver import adding_doubling_solver
-import matplotlib.pyplot as plt
-import plotly.express as px
 
+import streamlit as st
 
-st.title("biosnicar")
+st.set_page_config(
+    page_title="biosnicar",
+    page_icon="❄️",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": "https://biosnicar-go-py.readthedocs.io/en/latest/",
+        "Report a bug": "https://github.com/jmcook1186/biosnicar-py/issues",
+        "About": f"# biosnicar frontent version {biosnicar.__version__}",
+    },
+)
+
+st.title(f"biosnicar")
 st.markdown(
-    """
- snow and ice albedo model
+    f"""
+snow ❄️ and ice 🧊 albedo model (v{biosnicar.__version__})
 
 [GitHub](https://github.com/jmcook1186/biosnicar-py)
 [Documentation](https://biosnicar-go-py.readthedocs.io/en/latest/)
@@ -43,9 +54,6 @@ snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 10000, 0)
 st.sidebar.header("Sun")
 solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 89, 50)
 
-if layer == "grains":
-    st.sidebar.button("whatever")
-
 
 def run_snicar(
     layer: str,
@@ -56,23 +64,21 @@ def run_snicar(
     glacier_algae: int,
     snow_algae: int,
     solar_zenith_angle: int,
-):
-    """
-    Runs BioSNICAR model and renders output to webpage.
-
-    This function takes the use inputs from the POST request submitted
-    via the React frontend. These inputs are passed to the BioSNCAR
-    model and a plot of spectral albedo is saved to file.
-    The broadband albedo, rounded to 2 decimal places, is printed on the
-    figure.
+) -> dict:
+    """Runs biosnicar
 
     Args:
-        None, but receives args as POSt http request via
-        /run_snicar route.
+        layer (str): _description_
+        thickness (float): _description_
+        radius (int): _description_
+        density (int): _description_
+        black_carbon (int): _description_
+        glacier_algae (int): _description_
+        snow_algae (int): _description_
+        solar_zenith_angle (int): _description_
 
     Returns:
-        res: http response code
-
+        dict: Dict with result for display.
     """
 
     input_file = "app/api/inputs.yaml"
