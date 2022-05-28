@@ -18,5 +18,7 @@ Changed
 
 Added
 ~~~~~~
+- added frontend app
 - setup.py for biosnicar package
 - bump2version to handle versioning
+
