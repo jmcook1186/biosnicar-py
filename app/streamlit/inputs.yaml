@@ -52,14 +52,14 @@ IMPURITIES:
     COATED: False
     UNIT: 0
     CONC: [0 ,0]
-  
+
   SA:
     NAME: "sa"
     FILE: "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
     CFACTOR: 20
     COATED: False
     UNIT: 0
-    CONC: [0 ,0]  
+    CONC: [0 ,0]
 
   GA:
     NAME: "ga"
@@ -84,7 +84,7 @@ PLOT:
     YTICK_LEFT: True
     SAVE: False
 
-BIOOPTICAL: 
+BIOOPTICAL:
     WET_DENSITY: 1060
     DRY_DENSITY: 684
     ABS_CFF_CALC: True
