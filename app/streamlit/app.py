@@ -23,7 +23,7 @@ st.set_page_config(
 st.title(f"biosnicar")
 st.markdown(
     f"""
-snow ❄️ and ice 🧊 albedo model (v{biosnicar.__version__})
+snow ❄️ ice 🧊 and life :space_invader: albedo model (v{biosnicar.__version__})
 
 [GitHub](https://github.com/jmcook1186/biosnicar-py)
 [Documentation](https://biosnicar-go-py.readthedocs.io/en/latest/)
@@ -33,7 +33,7 @@ st.markdown("""---""")
 
 
 st.sidebar.header("Ice")
-layer = st.sidebar.selectbox("Layer Type", ("grains", "solid"))
+layer = st.sidebar.selectbox("Layer Type", ("grains", "solid ice"))
 thickness = st.sidebar.number_input(
     "Thickness (meters)", 0.0, 10.0, 3.0, help="ice layer thickness in meters"
 )
@@ -41,18 +41,21 @@ radius = st.sidebar.number_input(
     "Radius (microns)",
     0,
     10000,
-    7000,
+    5000,
+    100,
     help="grain radius at layer type grain or bubble radius Layer type solid in each layer",
 )
+
+
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 
 st.sidebar.header("Impurities")
 black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 10000, 0)
-glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 10000, 0)
-snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 10000, 0)
+glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 50000, 0)
+snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 50000, 0)
 
 st.sidebar.header("Sun")
-solar_zenith_angle = st.sidebar.number_input("Solar zenith angel (degree)", 1, 89, 50)
+solar_zenith_angle = st.sidebar.number_input("Solar zenith angle (degrees)", 1, 89, 50)
 
 
 def run_snicar(
@@ -127,7 +130,7 @@ def run_snicar(
     rounded_broandband_albedo = np.round(outputs.BBA, 2)
     wave_length = np.arange(0.205, 5, 0.01)
     albedo = pd.Series(outputs.albedo, index=wave_length, name="albedo")
-    albedo.index.name = "wave lenght (microns)"
+    albedo.index.name = "wavelength (microns)"
     albedo_csv = albedo.to_csv()
 
     return {
@@ -143,7 +146,7 @@ def plot_albedo(albedo: pd.Series):
         result["albedo"],
         range_y=[0, 1],
         range_x=[0.205, 2.5],
-        labels={"index": "wave lenghts (microns)", "value": "Albedo"},
+        labels={"index": "wavelengths (microns)", "value": "Albedo"},
     )
     fig.update_layout(showlegend=False)
     return fig
