@@ -18,10 +18,18 @@ There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. 
 
 ### Installing Environment/Dependencies
 
-If you do not have Python installed, download Python >3.6. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
+If you do not have Python installed, download Python >3.8. It is recommended to use a fresh environment using conda or venv. Once activated, install the project dependencies with:
 
 ```
 pip install -r requirements.txt
+
+```
+
+Now install biosnicar:
+
+```
+
+pip install -e .
 
 ```
 
@@ -43,6 +51,7 @@ In a terminal, navigate to the top-level BioSNICAR directory and run:
 This starts the Streamlit server running on `http://localhost:8501`.
 
 <img src="./assets/App.png" width=500>
+
 
 ### Get albedo data
 
