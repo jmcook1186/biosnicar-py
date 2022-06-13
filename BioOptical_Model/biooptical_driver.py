@@ -170,7 +170,7 @@ ACS_LOADED_INVIVO = True
 ACS_LOADED_RECONSTRUCTED = False
 ACS_CALCULATED = False
 # if ACS is loaded:
-ACS_FILE = "/Users/au660413/Documents/AU_PhD/ms2_dust_albedo/ice_MAC_m2mg.csv"
+ACS_FILE = "/Users/au660413/Documents/AU_PhD/ms2_dust_albedo/icesurf_MAC_filter_m2mg.csv"
 # if reconstructed ACS is directly loaded from pigment absorbance:
 PACKAGING_CORRECTION_SA = False
 PACKAGING_CORRECTION_GA = False
@@ -195,15 +195,15 @@ PIGMENTS_DATA = {
 
 # Algae properties
 N_ALGAE = 1.55 * np.ones(np.size(WVL))
-R = [0.42]
+R = [0.45]
 L = 2.4
 CELL_VOLUME = 4/3*np.pi*R[0]**3 #L*np.pi*R[0]**2 
 DENSITY_DRY = 2500
 DENSITY_WET = 0
 
 # Chose method for calculation of scattering optical properties
-GO = True
-MIE = False
+GO = False
+MIE = True
 
 # Optional smoothing filter for calculated k, ACS
 SMOOTH = True
@@ -213,7 +213,7 @@ SMOOTH_START = 44
 SMOOTH_STOP = 100
 
 # Directories and printing/saving options for calculated k, ACS
-PLOT_N_K_ACS_CELL = False
+PLOT_N_K_ACS_CELL = True
 PLOT_PIGMENT_ACSS = False
 SAVEFILES_N_K_ACS_CELL = False
 SAVEPLOTS_N_K_ACS = False
@@ -221,7 +221,7 @@ SAVEPATH_N_K_ACS_PLOTS = DIR_BASE
 SAVEFILENAME_N_K_ACS_CELL = ""
 
 # Directories and printing/saving options for scattering OPs
-PLOTS_OPS = False
+PLOTS_OPS = True
 SAVEFIGS_OPS = False
 REPORT_DIMS = False
 SAVEPATH_OPS = DIR_BASE
@@ -229,8 +229,8 @@ FIGNAME_OPS = "figname"
 
 # Saving OPs in netcdf
 NETCDF_SAVE = True
-SAVEPATH_NETCDF = "/Users/au660413/Desktop/GitHub/BioSNICAR_GO_PY/Data/OP_data/480band/lap/"
-FILENAME_NETCDF = "dust_QQT_DZpsd_vol_GO_L2.4"
+SAVEPATH_NETCDF = "/Users/au660413/Desktop/github/biosnicar-py/Data/OP_data/480band/lap/"
+FILENAME_NETCDF = "dust_QQT_Mie_1.6um"
 INFO = ""
 
 
@@ -287,20 +287,20 @@ INFO = ""
 # --------------------------------------------------------------------------------------
 # CALCULATIONS OF SCATTERING PROPERTIES
 # --------------------------------------------------------------------------------------
-RAD = [0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475,0.75,1.25,1.75,2.25,3.75,7.5,12.5,17.5]
-weights_nb = [3.282275711,10.94091904,13.12910284,10.50328228,
-           8.533916849,5.251641138,4.376367615,3.938730853,
-           2.84463895,2.188183807,13.78555799,6.564551422,
-           4.157549234,1.969365427,4.814004376,2.84463895,
-           0.656455142,0.218818381]
-weights_vol = [0.001649385,0.01650214,0.033054136,0.037114072,
-               0.038908435,0.0293985,0.029116059,0.030438415,
-               0.025108443,0.021778676,0.218818381,0.176466436,
-               0.160789197,0.101863729,0.437636761,0.56892779,
-               0.273522976,0.218818381]
-assym_final = np.zeros(np.size(k_rescaled_BioSNICAR))
-ssa_final = np.zeros(np.size(k_rescaled_BioSNICAR))
-
+# RAD = [0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475,0.75,1.25,1.75,2.25,3.75,7.5,12.5,17.5]
+# weights_nb = [3.282275711,10.94091904,13.12910284,10.50328228,
+#            8.533916849,5.251641138,4.376367615,3.938730853,
+#            2.84463895,2.188183807,13.78555799,6.564551422,
+#            4.157549234,1.969365427,4.814004376,2.84463895,
+#            0.656455142,0.218818381]
+# weights_vol = [0.001649385,0.01650214,0.033054136,0.037114072,
+#                0.038908435,0.0293985,0.029116059,0.030438415,
+#                0.025108443,0.021778676,0.218818381,0.176466436,
+#                0.160789197,0.101863729,0.437636761,0.56892779,
+#                0.273522976,0.218818381]
+# assym_final = np.zeros(np.size(k_rescaled_BioSNICAR))
+# ssa_final = np.zeros(np.size(k_rescaled_BioSNICAR))
+RAD=[1.6]
 for i,radius in enumerate(RAD):
     
     assym, ss_alb = ssp_calculations(
@@ -317,8 +317,8 @@ for i,radius in enumerate(RAD):
         FIGNAME_OPS,
         REPORT_DIMS,
     )
-    assym_final = assym_final + assym*weights_vol[i]/100
-    ssa_final = ssa_final + ss_alb*weights_vol[i]/100
+    #assym_final = assym_final + assym*weights_vol[i]/100
+    #ssa_final = ssa_final + ss_alb*weights_vol[i]/100
 
     
 
@@ -334,8 +334,8 @@ if NETCDF_SAVE:
         SAVEPATH_NETCDF,
         FILENAME_NETCDF,
         wvl_rescaled_BioSNICAR,
-        assym_final,
-        ssa_final,
+        assym,
+        ss_alb,
         ACS_rescaled_BioSNICAR,
         L,
         1,

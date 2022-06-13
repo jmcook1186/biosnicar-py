@@ -850,6 +850,8 @@ def snicar_feeder(Inputs):
             Outputs.BBANIR,
             Outputs.abs_slr,
             Outputs.heat_rt,
+            Outputs.F_up, 
+            Outputs.F_dwn
         ) = adding_doubling.adding_doubling_solver(Inputs)
 
     return Outputs

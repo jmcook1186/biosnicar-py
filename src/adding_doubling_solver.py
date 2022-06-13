@@ -13,8 +13,6 @@ def adding_doubling_solver(Inputs):
     """
 
     import matplotlib.pyplot as plt
-    plt.figure(1)
-    plt.plot(Inputs.Fs)
 
     import numpy as np
 
@@ -637,4 +635,5 @@ def adding_doubling_solver(Inputs):
     # abs_ground_nir  = F_abs_nir_btm
     #   near-IR absorption by underlying substrate [W/m2]
 
-    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt
+
+    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt, F_up, F_dwn
