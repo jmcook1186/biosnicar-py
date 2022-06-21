@@ -27,6 +27,10 @@ snow ❄️ ice 🧊 and life :space_invader: albedo model (v{biosnicar.__versio
 
 [GitHub](https://github.com/jmcook1186/biosnicar-py)
 [Documentation](https://biosnicar-go-py.readthedocs.io/en/latest/)
+
+*Note that impurities are assumed to exist in the upper 1 mm of the ice only, as this
+approximates the observed distribution of glacier algae. To access other configurations, 
+download and run the full model as Python code instead.*
 """
 )
 st.markdown("""---""")
@@ -50,9 +54,9 @@ radius = st.sidebar.number_input(
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 
 st.sidebar.header("Impurities")
-black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 10000, 0)
-glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 50000, 0)
-snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 50000, 0)
+black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 50000, 0)
+glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 100000, 0)
+snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 10000, 0)
 
 st.sidebar.header("Sun")
 solar_zenith_angle = st.sidebar.number_input("Solar zenith angle (degrees)", 1, 89, 50)
