@@ -50,7 +50,6 @@ radius = st.sidebar.number_input(
     help="grain radius at layer type grain or bubble radius Layer type solid in each layer",
 )
 
-
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 
 st.sidebar.header("Impurities")
@@ -92,8 +91,11 @@ def run_snicar(
 
     if layer == "grains":
         layer = 0
-    elif layer == "solid":
+    elif layer == "solid ice":
         layer = 1
+    else:
+        raise ValueError("invalid layer type")
+    
 
     # first build classes from config file and validate their contents
     (
