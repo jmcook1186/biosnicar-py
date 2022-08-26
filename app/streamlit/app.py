@@ -46,16 +46,16 @@ radius = st.sidebar.number_input(
     0,
     10000,
     5000,
-    100,
+    1000,
     help="grain radius at layer type grain or bubble radius Layer type solid in each layer",
 )
 
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
 
 st.sidebar.header("Impurities")
-black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 50000, 0)
-glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 100000, 0)
-snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 10000, 0)
+black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 1000000, 0)
+glacier_algae = st.sidebar.number_input("Glacier algae conc (cells/mL)", 0, 1000000, 0)
+snow_algae = st.sidebar.number_input("Snow algae conc (cells/mL)", 0, 1000000, 0)
 
 st.sidebar.header("Sun")
 solar_zenith_angle = st.sidebar.number_input("Solar zenith angle (degrees)", 1, 89, 50)
