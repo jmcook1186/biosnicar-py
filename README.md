@@ -5,7 +5,7 @@
 
 ## Introduction
 
-BioSNICAR is a set of Python scripts that predict the spectral albedo of snow and glacier ice between 200nm to 5000nm given information about the illumination conditions, ice structure and the type and concentration of light absorbing particulates (LAPs) externally mixed with the snow/ice. The jumping off point for this model was legacy FORTRAN and Matlab code of the SNICAR model developed by Flanner et al. (2007), which solves the radiative transfer equations simplified into a two-stream scheme after Toon et al. 1989. Two solvers are available: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers (Brieglib and Light, 2007, Dang et al. 2019, Wicker et al. 2022). BioSNICAR couples SNICAR to a bio-optical model that allows for calculation of optical properties of snow and glacier algae to load into the model as LAPs (Cook et al. 2017, 2020). This functionality, along with the vectorized AD solver formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
+BioSNICAR predicts the spectral albedo of snow and glacier ice between 200nm to 5000nm given information about the illumination conditions, ice structure and the type and concentration of light absorbing particulates (LAPs) externally mixed with the snow/ice. The jumping off point for this model was legacy FORTRAN and Matlab code from SNICAR model - Flanner et al. (2007) - which solves the radiative transfer equations after Toon et al. 1989. Two solvers are available in BioSNICAR: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers (Brieglib and Light, 2007, Dang et al. 2019, Wicker et al. 2022). BioSNICAR couples SNICAR to a bio-optical model that allows for calculation of optical properties of snow and glacier algae to load into the model as LAPs (Cook et al. 2017, 2020). This functionality, along with the vectorized AD solver formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
 
 ## Documentation
 
@@ -14,7 +14,11 @@ Detailed documentation is available at https://biosnicar-go-py.readthedocs.io. T
 
 ## How to use
 
-There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. The app is designed to be extremely user-friendly and require no coding skills. The app simply runs in the browser and is operated with a simple graphical user interface. However, the app only has basic functionality. Power-users will prefer to run the code directly to give access to all of BioSNICAR's functions. Both cases require a Python development environment with specific packages installed. The following section describes how to set up that environment.
+There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. The app is designed to be extremely user-friendly and require no coding skills. The app simply runs in the browser and is operated with a simple graphical user interface. You can use the deployed version by visiting
+
+[bit.ly/biosnicar](bit.ly/biosnicar)
+
+Alternatively you can run the app locally. Power-users will prefer to run the code directly to give access to all of BioSNICAR's functions. Both runing the code and the app (if running locally) require a Python development environment with specific packages installed. The following section describes how to set up that environment.
 
 ### Installing Environment/Dependencies
 
@@ -40,6 +44,8 @@ Finally, if you do not wish to install anything on your computer, but you use VS
 Instructions for using the app are provided below.
 
 #### Run the app
+
+To run the deployed version of the app simply direct your browser to [bit.ly/biosnicar](bit.ly/biosnicar). Alternatively, run the app lcally by following these instructions:
 
 The code for the Streamlit frontend is in `~/app/streamlit/app.py`.
 
