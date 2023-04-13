@@ -10,12 +10,12 @@ Using the App
 
 BioSNICAR is available as a web application. Simply direct your browser to
 
-`Link bit.ly/biosnicar https://bit.ly/biosnicar`
+https://bit.ly/biosnicar
 
 
 This is the simplest way to use BiOSNICAR. You can set your input configuration in the labelled fields on the left hand side of the screen and the plot in the centre of the screen will automatically update, providing the spectral albedo. You can also download the spectral albedo data as a csv file by clicking `Download Data`.
 
-.. image:: /images/app.png
+.. image:: /docs/images/app.png
 
 There are some restrictions on the parameter values and the set of available parameters in the web application. For complete control over the model configuration you can download and run the model yourself.
 
