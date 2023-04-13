@@ -27,7 +27,7 @@ setup(
     packages=find_packages(where="src"),
     version=get_version("src/biosnicar/__init__.py"),
     author="BioSNICAR team",
-    author_email="joe.cook@sheffield.ac.uk",
+    author_email="jcook@envs.au.dk",
     description="Snow and ice albedo modelling in Python",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -59,6 +59,7 @@ setup(
     install_requires=[
         "numpy",
         "dask",
+        "click==8",
         "matplotlib",
         "miepython",
         "pandas",
