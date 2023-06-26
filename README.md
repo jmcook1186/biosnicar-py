@@ -9,7 +9,7 @@ BioSNICAR predicts the spectral albedo of snow and glacier ice between 200nm to 
 
 ## Documentation
 
-Detailed documentation is available at https://biosnicar-website.vercel.app/quick-start. This README gives a brief overview of the key information required to run the model.
+Detailed documentation is available at https://biosnicar.vercel.app/quick-start. This README gives a brief overview of the key information required to run the model.
 
 
 ## How to use
