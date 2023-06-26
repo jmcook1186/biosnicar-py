@@ -1,7 +1,7 @@
 python-dotenv
 streamlit
 pandas
-dask
+dask[complete]
 matplotlib
 miepython
 netCDF4
