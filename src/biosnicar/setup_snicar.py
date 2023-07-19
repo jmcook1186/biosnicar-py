@@ -7,7 +7,6 @@ from biosnicar.classes import (
     Illumination,
     Impurity,
     ModelConfig,
-    Outputs,
     PlotConfig,
     RTConfig,
 )
@@ -73,7 +72,6 @@ def build_classes(input_file):
 
 
 def build_impurities_array(input_file):
-
     """Creates an array of instances of Impurity.
 
     creates an array of impurities - each one an instance of Impurity with
@@ -101,6 +99,8 @@ def build_impurities_array(input_file):
         impurities.append(Impurity(file, coated, cfactor, unit, name, conc))
 
     return impurities
+
+    print("SETUP OK")
 
 
 if __name__ == "__main__":
