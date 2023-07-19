@@ -11,4 +11,4 @@ if __name__ == "__main__":
 
     # define input file
     input_file = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
-    out = get_albedo(input_file, "adding-doubling")
+    albedo = get_albedo(input_file, "adding-doubling", plot=True)

@@ -238,7 +238,8 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
 
     conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls)
 
-    outputs = get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net)
+    outputs = get_outputs(illumination, albedo,
+                          model_config, L_snw, F_abs, F_btm_net)
 
     if model_config.smooth:
         outputs.albedo = apply_smoothing_function(outputs.albedo, model_config)
@@ -301,7 +302,8 @@ def calc_reflectivity_transmittivity(
 
     # coefficient for delta eddington solution for all layers
     # Eq. 50: Briegleb and Light 2007
-    ts = (1 - (wtot * ftot)) * tautot  # layer delta-scaled extinction optical depth
+    # layer delta-scaled extinction optical depth
+    ts = (1 - (wtot * ftot)) * tautot
     ws = ((1 - ftot) * wtot) / (
         1 - (wtot * ftot)
     )  # layer delta-scaled single scattering albedo
@@ -324,7 +326,8 @@ def calc_reflectivity_transmittivity(
     rdif_a[:, lyr] = (
         (ue**2 - 1) * (1 / extins - extins) / ne
     )  # R BAR = layer reflectivity to DIFFUSE radiation
-    tdif_a[:, lyr] = 4 * ue / ne  # T BAR layer transmissivity to DIFFUSE radiation
+    # T BAR layer transmissivity to DIFFUSE radiation
+    tdif_a[:, lyr] = 4 * ue / ne
 
     # evaluate rdir, tdir for direct beam
     trnlay[:, lyr] = np.maximum(
@@ -333,7 +336,8 @@ def calc_reflectivity_transmittivity(
 
     #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
     alp = (
-        (0.75 * ws * mu0n) * (1 + gs * (1 - ws)) / (1 - lm**2 * mu0n**2 + epsilon)
+        (0.75 * ws * mu0n) * (1 + gs * (1 - ws)) /
+        (1 - lm**2 * mu0n**2 + epsilon)
     )  # alp = alpha(ws,mu0n,gs,lm)
     gam = (0.5 * ws) * (
         (1 + 3 * gs * mu0n**2 * (1 - ws)) / (1 - lm**2 * mu0n**2 + epsilon)
@@ -348,7 +352,8 @@ def calc_reflectivity_transmittivity(
         tdif_a[:, lyr] * trnlay[:, lyr] - 1
     )  # layer reflectivity to DIRECT radiation
     tdir[:, lyr] = (
-        apg * tdif_a[:, lyr] + (amg * rdif_a[:, lyr] - apg + 1) * trnlay[:, lyr]
+        apg * tdif_a[:, lyr] + (amg * rdif_a[:, lyr] -
+                                apg + 1) * trnlay[:, lyr]
     )  # layer transmissivity to DIRECT radiation
 
     return rdir, tdir, ts, ws, gs, lm
@@ -681,7 +686,8 @@ def apply_gaussian_integral(
         )  # transmission
 
         alp = (
-            (0.75 * ws * mu) * (1 + gs * (1 - ws)) / (1 - lm**2 * mu**2 + epsilon)
+            (0.75 * ws * mu) * (1 + gs * (1 - ws)) /
+            (1 - lm**2 * mu**2 + epsilon)
         )  # alp = alpha(ws,mu0n,gs,lm)
         gam = (
             (0.5 * ws)
@@ -825,7 +831,8 @@ def calc_correction_fresnel_layer(
         # Eq. 25  Brigleb and light 2007
         # diffuse reflection of flux arriving from above
 
-        Rf_dif_a = ice.fl_r_dif_a[wl]  # reflection from diffuse unpolarized radiation
+        # reflection from diffuse unpolarized radiation
+        Rf_dif_a = ice.fl_r_dif_a[wl]
         Tf_dif_a = 1 - Rf_dif_a  # transmission from diffuse unpolarized radiation
 
         # diffuse reflection of flux arriving from below
@@ -837,7 +844,8 @@ def calc_correction_fresnel_layer(
         # the fresnel (refractive) layer, always taken to be above
         # the present layer lyr (i.e. be the top interface):
 
-        rintfc = 1 / (1 - Rf_dif_b * rdif_a[wl, lyr])  # denom interface scattering
+        # denom interface scattering
+        rintfc = 1 / (1 - Rf_dif_b * rdif_a[wl, lyr])
 
         # layer transmissivity to DIRECT radiation
         # Eq. B7  Briegleb & Light 2007
@@ -852,12 +860,14 @@ def calc_correction_fresnel_layer(
 
         # R BAR = layer reflectivity to DIFFUSE radiation (above)
         # Eq. B9  Briegleb & Light 2007
-        rdif_a[wl, lyr] = Rf_dif_a + Tf_dif_a * rdif_a[wl, lyr] * rintfc * Tf_dif_b
+        rdif_a[wl, lyr] = Rf_dif_a + Tf_dif_a * \
+            rdif_a[wl, lyr] * rintfc * Tf_dif_b
 
         # R BAR = layer reflectivity to DIFFUSE radiation (below)
         # Eq. B10  Briegleb & Light 2007
         rdif_b[wl, lyr] = (
-            rdif_b[wl, lyr] + tdif_b[wl, lyr] * Rf_dif_b * rintfc * tdif_a[wl, lyr]
+            rdif_b[wl, lyr] + tdif_b[wl, lyr] *
+            Rf_dif_b * rintfc * tdif_a[wl, lyr]
         )
 
         # T BAR layer transmissivity to DIFFUSE radiation (above),
@@ -957,7 +967,6 @@ def trans_refl_at_interfaces(
     dfdir,
     dfdif,
 ):
-
     """Calculates transmission and reflection at layer interfaces.
 
     Args:
@@ -1037,7 +1046,7 @@ def trans_refl_at_interfaces(
 
             dfdif[:, lyr] = np.zeros(
                 (model_config.nbr_wvl,), dtype=int
-            )  #!echmod necessary?
+            )  # !echmod necessary?
 
     return fdirup, fdifup, fdirdn, fdifdn
 
@@ -1116,9 +1125,9 @@ def calculate_fluxes(
 
     for i in np.arange(0, ice.nbr_lyr, 1):  # [0,1,2,3,4]
 
-        F_abs_vis[i] = sum(F_abs[0 : model_config.vis_max_idx, i])
+        F_abs_vis[i] = sum(F_abs[0: model_config.vis_max_idx, i])
         F_abs_nir[i] = sum(
-            F_abs[model_config.vis_max_idx : model_config.nir_max_idx, i]
+            F_abs[model_config.vis_max_idx: model_config.nir_max_idx, i]
         )
 
     albedo = F_up[:, 0] / F_dwn[:, 0]
@@ -1153,7 +1162,8 @@ def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
 
     if energy_conservation_error > 1e-10:
 
-        raise ValueError(f"energy conservation error: {energy_conservation_error}")
+        raise ValueError(
+            f"energy conservation error: {energy_conservation_error}")
     else:
         pass
 
@@ -1177,23 +1187,25 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
 
     # Radiative heating rate:
     F_abs_slr = np.sum(F_abs, axis=0)
-    heat_rt = F_abs_slr / (L_snw * 2117)  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
+    # [K/s] 2117 = specific heat ice (J kg-1 K-1)
+    heat_rt = F_abs_slr / (L_snw * 2117)
     outputs.heat_rt = heat_rt * 3600  # [K/hr]
 
     # Spectral albedo
     outputs.albedo = albedo
 
     # Spectrally-integrated solar, visible, and NIR albedos:
-    outputs.BBA = np.sum(illumination.flx_slr * albedo) / np.sum(illumination.flx_slr)
+    outputs.BBA = np.sum(illumination.flx_slr * albedo) / \
+        np.sum(illumination.flx_slr)
     outputs.BBAVIS = np.sum(
-        illumination.flx_slr[0 : model_config.vis_max_idx]
-        * albedo[0 : model_config.vis_max_idx]
-    ) / np.sum(illumination.flx_slr[0 : model_config.vis_max_idx])
+        illumination.flx_slr[0: model_config.vis_max_idx]
+        * albedo[0: model_config.vis_max_idx]
+    ) / np.sum(illumination.flx_slr[0: model_config.vis_max_idx])
     outputs.BBANIR = np.sum(
-        illumination.flx_slr[model_config.vis_max_idx : model_config.nir_max_idx]
-        * albedo[model_config.vis_max_idx : model_config.nir_max_idx]
+        illumination.flx_slr[model_config.vis_max_idx: model_config.nir_max_idx]
+        * albedo[model_config.vis_max_idx: model_config.nir_max_idx]
     ) / np.sum(
-        illumination.flx_slr[model_config.vis_max_idx : model_config.nir_max_idx]
+        illumination.flx_slr[model_config.vis_max_idx: model_config.nir_max_idx]
     )
 
     # Total incident insolation( Wm - 2)
@@ -1203,19 +1215,20 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
 
     # Spectrally-integrated absorption by underlying surface:
     outputs.abs_slr_btm = np.sum(F_btm_net, axis=0)
-    outputs.abs_vis_btm = np.sum(F_btm_net[0 : model_config.vis_max_idx], axis=0)
+    outputs.abs_vis_btm = np.sum(
+        F_btm_net[0: model_config.vis_max_idx], axis=0)
     outputs.abs_nir_btm = np.sum(
-        F_btm_net[model_config.vis_max_idx : model_config.nir_max_idx + 1], axis=0
+        F_btm_net[model_config.vis_max_idx: model_config.nir_max_idx + 1], axis=0
     )
 
     # Spectrally-integrated VIS and NIR total snowpack absorption:
     outputs.abs_vis_tot = np.sum(
-        illumination.flx_slr[0 : model_config.vis_max_idx]
-        * (1 - albedo[0 : model_config.vis_max_idx])
+        illumination.flx_slr[0: model_config.vis_max_idx]
+        * (1 - albedo[0: model_config.vis_max_idx])
     )
     outputs.abs_nir_tot = np.sum(
-        illumination.flx_slr[model_config.vis_max_idx : model_config.nir_max_idx]
-        * (1 - albedo[model_config.vis_max_idx : model_config.nir_max_idx])
+        illumination.flx_slr[model_config.vis_max_idx: model_config.nir_max_idx]
+        * (1 - albedo[model_config.vis_max_idx: model_config.nir_max_idx])
     )
     # Spectrally-integrated absorption by entire snow/ice column
     outputs.abs_slr_tot = np.sum(F_abs_slr)
@@ -1238,7 +1251,8 @@ def apply_smoothing_function(albedo, model_config):
 
     """
 
-    yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
+    yhat = savgol_filter(albedo, model_config.window_size,
+                         model_config.poly_order)
     albedo = yhat
 
     return albedo

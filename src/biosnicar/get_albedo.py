@@ -12,7 +12,7 @@ from toon_rt_solver import toon_solver
 from validate_inputs import validate_inputs
 
 
-def get_albedo(input, solver):
+def get_albedo(input, solver, plot):
     (
         ice,
         illumination,
@@ -29,14 +29,15 @@ def get_albedo(input, solver):
     )
     # now run one or both of the radiative transfer solvers
     if solver == "toon":
-        outputs1 = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config)
-        plot_albedo(plot_config, model_config, outputs1.albedo)
-        return outputs1
+        outputs = toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config)
     elif solver == "adding-doubling":
-        outputs1 = adding_doubling_solver(
+        outputs = adding_doubling_solver(
             tau, ssa, g, L_snw, ice, illumination, model_config
         )
-        plot_albedo(plot_config, model_config, outputs1.albedo)
-        return outputs1
     else:
         return "solver not recognized, please choose toon or adding-doubling"
+
+    if plot:
+        plot_albedo(plot_config, model_config, outputs.albedo)
+
+    return outputs.albedo
