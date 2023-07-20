@@ -6,4 +6,4 @@ from pathlib import Path
 from get_albedo import get_albedo
 
 # call easy albedo func
-albedo = get_albedo("adding-doubling", plot=True)
+albedo = get_albedo("toon", plot=True, validate=True)
