@@ -19,7 +19,7 @@ def get_albedo(solver, plot, validate):
         model_config,
         plot_config,
         impurities,
-    ) = setup_snicar()
+    ) = setup_snicar("default")
 
     if validate:
         validate_inputs(ice, illumination, impurities)

@@ -95,7 +95,6 @@ def run_snicar(
         layer = 1
     else:
         raise ValueError("invalid layer type")
-    
 
     # first build classes from config file and validate their contents
     (
@@ -121,7 +120,7 @@ def run_snicar(
     illumination.solzen = solar_zenith_angle
     illumination.calculate_irradiance()
     # validate inputs to ensure no invalid combinations have been chosen
-    status = validate_inputs(ice, rt_config, model_config, illumination, impurities)
+    status = validate_inputs(ice, illumination, impurities)
 
     # now get the optical properties of the ice column
     ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
