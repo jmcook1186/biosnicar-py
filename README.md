@@ -5,7 +5,7 @@
 
 ## Introduction
 
-BioSNICAR predicts the spectral albedo of snow and glacier ice between 200nm to 5000nm given information about the illumination conditions, ice structure and the type and concentration of light absorbing particulates (LAPs) externally mixed with the snow/ice. The jumping off point for this model was legacy FORTRAN and Matlab code from SNICAR model - Flanner et al. (2007) - which solves the radiative transfer equations after Toon et al. 1989. Two solvers are available in BioSNICAR: the original SNICAR matrix solver typically representing ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver representing the ice as a solid medium with air bubbles and allowing the incorporation of Fresnel reflecting layers (Brieglib and Light, 2007, Dang et al. 2019, Wicker et al. 2022). BioSNICAR couples SNICAR to a bio-optical model that allows for calculation of optical properties of snow and glacier algae to load into the model as LAPs (Cook et al. 2017, 2020). This functionality, along with the vectorized AD solver formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
+BioSNICAR predicts the spectral albedo of snow and glacier ice between 200nm to 5000nm given information about the illumination conditions, ice structure and the type and concentration of light-absorbing particulates (LAPs) externally mixed with the snow/ice. The jumping-off point for this model was legacy FORTRAN and Matlab code from SNICAR model - Flanner et al. (2007) - which solves the radiative transfer equations after Toon et al. 1989. Two solvers are available in BioSNICAR: the original SNICAR matrix solver typically represents ice and snow with grains (Toon et al. 1989) and the Adding-Doubling (AD) solver represents the ice as a solid medium with air bubbles and allows the incorporation of Fresnel reflecting layers (Brieglib and Light, 2007, Dang et al. 2019, Wicker et al. 2022). BioSNICAR couples SNICAR to a bio-optical model that allows for the calculation of optical properties of snow and glacier algae to load into the model as LAPs (Cook et al. 2017, 2020). This functionality, along with the vectorized AD solver formulation, accessible user interface and applicability to a very wide range of surface conditions are the unique selling points of this implementation. This code is also very actively maintained and we welcome contributions from the community to help make BioSNICAR a useful tool for a diverse range of cryosphere scientists.
 
 ## Documentation
 
@@ -42,9 +42,9 @@ Instructions for using the app are provided below.
 
 #### Run the app
 
-To run the deployed version of the app simply direct your browser to [bit.ly/biosnicar](bit.ly/biosnicar). Alternatively, run the app lcally by following these instructions:
+To run the deployed version of the app simply direct your browser to [bit.ly/biosnicar](bit.ly/biosnicar). Alternatively, run the app locally by following these instructions:
 
-The code for the Streamlit frontend is in `~/app/streamlit/app.py`.
+The code for the Streamlit app is in `~/app/streamlit/app.py`.
 
 In a terminal, navigate to the top-level BioSNICAR directory and run:
 
@@ -61,13 +61,13 @@ Simply update the values and the spectral albedo plot and the broadband albedo v
 
 ### Running the code
 
-The model driver and all the core source code can be found in `/src/biosnicar`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
+The model driver and all the core source code can be found in `/src/biosnicar`. From the top-level directory (`~/BioSNICAR_GO_PY`), run:
 
 `python ./src/biosnicar/main.py`
 
 This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
 
-Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for the those in `inputs.yaml`.
+Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for those in `inputs.yaml`.
 
 More complex applications of the model code, for example, model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
 
@@ -83,7 +83,7 @@ New issues and pull requests are welcomed. Pull requests trigger our Github Acti
 
 # Permissions
 
-This code is provided under an MIT license with the caveat that it is in active development. Collaboration ideas and pull-requests generally welcomed. Please use the citations below to credit the builders of this repository and its predecessors.
+This code is provided under an MIT license with the caveat that it is in active development. Collaboration ideas and pull requests generally welcomed. Please use the citations below to credit the builders of this repository and its predecessors.
 
 # Citation
 
@@ -93,7 +93,7 @@ Cook, J. et al. (2020): Glacier algae accelerate melt rates on the western Green
 
 Flanner, M. et al. (2007): Present-day climate forcing and response from black carbon in snow, J. Geophys. Res., 112, D11202, https://doi.org/10.1029/2006JD008003
 
-And if using the adding-doubling method please also cite Dang et al (2019) and Whicker et al (2022) as their code was translated to form the adding_doubling_solver.py script here. The aspherical grain correction equations comes from He et al. (2016).
+And if using the adding-doubling method please also cite Dang et al (2019) and Whicker et al (2022) as their code was translated to form the adding_doubling_solver.py script here. The aspherical grain correction equations come from He et al. (2016).
 
 
 # References
