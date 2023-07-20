@@ -9,4 +9,4 @@ import biosnicar.mie_coated_water_spheres
 import biosnicar.setup_snicar
 import biosnicar.toon_rt_solver
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
