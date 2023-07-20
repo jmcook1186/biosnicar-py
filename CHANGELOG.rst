@@ -10,18 +10,11 @@ Unreleased
 
 Changed
 ~~~~~~
-- restructured everything into a package called biosnicar
-- replaces from xxx import * with explicit imports
-- changed to semantic versioning style
-- moved the code from scr to src/biosnicar
-
+- rename driver.py -> main.py
+- remove read-the-docs in favour of custom site
 
 Added
 ~~~~~~
-- added frontend app
-- setup.py for biosnicar package
-- bump2version to handle versioning
-- rename driver.py -> main.py
 - add wrapper func `get_albedo()` for one-line albedo prediction
-- remove read-the-docs in favour of custom site
+
 
