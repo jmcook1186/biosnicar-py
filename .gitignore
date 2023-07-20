@@ -28,3 +28,5 @@ node_modules/.yarn-integrity
 
 */node_modules/*
 app/node_modules
+/build
+*dask*
