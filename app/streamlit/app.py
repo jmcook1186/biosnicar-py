@@ -26,7 +26,7 @@ st.markdown(
 snow ❄️ ice 🧊 and life :space_invader: albedo model (v{biosnicar.__version__})
 
 [GitHub](https://github.com/jmcook1186/biosnicar-py)
-[Documentation](https://biosnicar-go-py.readthedocs.io/en/latest/)
+[Documentation](https://biosnicar.vercel.app)
 
 *Note that impurities are assumed to exist in the upper 1 mm of the ice only, as this
 approximates the observed distribution of glacier algae. To access other configurations, 
