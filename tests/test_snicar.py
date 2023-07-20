@@ -63,7 +63,7 @@ def test_AD_solver(new_benchmark_ad, input_file):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar(input_file)
+        ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -100,7 +100,6 @@ def test_AD_solver(new_benchmark_ad, input_file):
                     for zen in zenList:
                         for bc in bcList:
                             for dz in dzList:
-
                                 ice.dz = dz
                                 ice.nbr_lyr = 5
                                 ice.layer_type = [layer_type] * len(ice.dz)
@@ -177,7 +176,7 @@ def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar(input_file)
+        ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -216,7 +215,6 @@ def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
                     for zen in zenList:
                         for bc in bcList:
                             for dz in dzList:
-
                                 ice.dz = dz
                                 ice.nbr_lyr = 5
                                 ice.layer_type = [layer_type] * len(ice.dz)
@@ -543,7 +541,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar(input_file)
+        ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -605,7 +603,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
     """
 
     if fuzz:
-
         (
             ice,
             illumination,
@@ -613,7 +610,7 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
             model_config,
             plot_config,
             impurities,
-        ) = setup_snicar(input_file)
+        ) = setup_snicar()
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
