@@ -21,4 +21,7 @@ Added
 - added frontend app
 - setup.py for biosnicar package
 - bump2version to handle versioning
+- rename driver.py -> main.py
+- add wrapper func `get_albedo()` for one-line albedo prediction
+- remove read-the-docs in favour of custom site
 
