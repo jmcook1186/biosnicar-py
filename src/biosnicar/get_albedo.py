@@ -41,7 +41,10 @@ def get_albedo(solver, plot, validate):
             tau, ssa, g, L_snw, ice, illumination, model_config
         )
     else:
-        return "solver not recognized, please choose toon or adding-doubling"
+        raise ValueError(
+            "ERROR: solver not recognized, please choose toon or adding-doubling"
+        )
+        return
 
     if plot:
         plot_albedo(plot_config, model_config, outputs.albedo)
