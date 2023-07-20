@@ -9,16 +9,16 @@ BioSNICAR predicts the spectral albedo of snow and glacier ice between 200nm to 
 
 ## Documentation
 
-Detailed documentation is available at https://biosnicar.vercel.app/quick-start. This README gives a brief overview of the key information required to run the model.
+Detailed documentation is available at https://biosnicar.vercel.app. This README gives a brief overview of the key information required to run the model.
 
 
 ## How to use
 
-There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. The app is designed to be extremely user-friendly and require no coding skills. The app simply runs in the browser and is operated with a simple graphical user interface. You can use the deployed version by visiting
+There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. The app is designed to be extremely user-friendly and requires no coding skills. The app simply runs in the browser and is operated with a simple graphical user interface. You can use the deployed version by visiting
 
 [bit.ly/biosnicar](bit.ly/biosnicar)
 
-Alternatively you can run the app locally. Power-users will prefer to run the code directly to give access to all of BioSNICAR's functions. Both runing the code and the app (if running locally) require a Python development environment with specific packages installed. The following section describes how to set up that environment.
+Alternatively, you can run the app locally. Power users will prefer to run the code directly to give access to all of BioSNICAR's functions. Both running the code and the app (if running locally) require a Python development environment with specific packages installed. The following section describes how to set up that environment.
 
 ### Installing Environment/Dependencies
 
@@ -26,15 +26,12 @@ If you do not have Python installed, download Python >3.8. It is recommended to 
 
 ```
 pip install -r requirements.txt
-
 ```
 
 Now install biosnicar:
 
 ```
-
 pip install -e .
-
 ```
 
 Finally, if you do not wish to install anything on your computer, but you use VSCode and Docker, then you can use the devcontainer config provided to run this code in a remote container. This requires the "remote containers" extension to be added to VSCode. Further instructions are available here: https://code.visualstudio.com/docs/remote/containers
@@ -51,7 +48,6 @@ The code for the Streamlit frontend is in `~/app/streamlit/app.py`.
 
 In a terminal, navigate to the top-level BioSNICAR directory and run:
 
-
 `./start_app.sh`
 
 This starts the Streamlit server running on `http://localhost:8501`.
@@ -67,148 +63,19 @@ Simply update the values and the spectral albedo plot and the broadband albedo v
 
 The model driver and all the core source code can be found in `/src/biosnicar`. From the top level directory (`~/BioSNICAR_GO_PY`), run:
 
-`python ./src/biosnicar/snicar_driver.py`
+`python ./src/biosnicar/main.py`
 
 This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appear in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
 
 Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for the those in `inputs.yaml`.
 
-More complex applications of the model code, for example model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
+More complex applications of the model code, for example, model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
 
-We have also maintained a separate version of the BioSNICAR codebase that uses a "functional" programming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matlab implementations from previous literature. The two branches are entirely equivalent in their simulations but very different in their programming style. The object oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
+We have also maintained a separate version of the BioSNICAR codebase that uses a "functional" programming style rather than the object-oriented approach taken here. We refer to this as BioSNICAR Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matlab implementations from previous literature. The two branches are entirely equivalent in their simulations but very different in their programming style. The object-oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.
 
 #### Choosing Inputs
 
-It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. for this reason we have put together a guide. Please refer to the documentation at https://biosnicar-go-py.readthedocs.io
-
-
-## Repository Structure
-
-The following directory tree shows the correct structure for this model code. This is how the files are structured when this repository is cloned or downloaded. This can be used as a reference for understanding the software or as a guide if things get muddled during modification of the source code.
-
-```
-├── assets
-│   ├── example-output.jpg
-│   ├── model_schematic.odp
-│   ├── model_structure2.jpg
-│   ├── model_structure.jpg
-│   ├── py_mat_comparison.png
-│   └── SSA_derivation.pdf
-|
-├── bio_optical_model
-│   ├── biooptical_driver.py
-│   ├── biooptical_Funcs.py
-│   ├── __pycache__
-│   └── update_netCDFS.py
-|
-├── Data
-│   ├── additional_data
-│   │   ├── Albedo_master.csv
-│   │   ├── ARF_master.csv
-│   │   ├── Chlorophyll_a_m2mg.csv
-│   │   ├── HCRF_master_16171819.csv
-│   │   ├── InVivoPhenolData.csv
-│   │   ├── PhenolicPigment_m2mg.csv
-│   │   ├── phenol_mac_correction.csv
-│   │   ├── phenol_MAC.csv
-│   │   ├── phenol_mac_packaging_corrected.csv
-│   │   ├── Photoprotective_carotenoids_m2mg.csv
-│   │   ├── Photosynthetic_carotenoids_m2mg.csv
-│   │   ├── pigmentMAC_200nm.csv
-│   │   ├── pigmentMAC_250nm.csv
-│   │   └── Spectra_Metadata.csv
-│   ├── luts
-│   │   └── LUT.npy
-│   ├── OP_data
-│   │   ├── 480band
-│   │   │   ├── bubbly_ice_files
-│   │   │   ├── fsds
-│   │   │   ├── ice_hexagonal_columns
-│   │   │   │   ├── ice_Pic16
-│   │   │   │   ├── ice_Wrn08
-│   │   │   │   └── ice_Wrn84
-│   │   │   ├── ice_spherical_grains
-│   │   │   │   ├── ice_Pic16
-│   │   │   │   ├── ice_Wrn08
-│   │   │   │   └── ice_Wrn84
-│   │   │   ├── lap
-│   │   │   ├── rain_polished_ice_spectrum.csv
-│   │   │   └── r_sfc
-│   │   │       ├── blue_ice_spectrum_s10290721.csv
-│   │   │       └── rain_polished_ice_spectrum.csv
-│   │   ├── ice_k.csv
-│   │   ├── ice_n.csv
-│   │   ├── ice_optical_constants.csv
-│   │   ├── k_cdom_240_750.csv
-│   │   ├── k_ice_480.csv
-│   │   ├── Refractive_Index_Ice_Warren_1984.csv
-│   │   ├── Refractive_Index_Liquid_Water_Segelstein_1981.csv
-│   │   ├── water_RI.csv
-│   │   └── wavelengths.csv
-│   └── pigments
-│       ├── alloxanthin.csv
-│       ├── antheraxanthin.csv
-│       ├── chl-a.csv
-│       ├── chl-b.csv
-│       ├── cis_astaxanthin_diester.csv
-│       ├── cis_astaxanthin_monoester.csv
-│       ├── lutein.csv
-│       ├── neoxanthin.csv
-│       ├── pckg_GA.csv
-│       ├── pckg_SA.csv
-│       ├── pheophytin.csv
-│       ├── Photop_carotenoids.csv
-│       ├── Photos_carotenoids.csv
-│       ├── ppg.csv
-│       ├── total_astaxanthin.csv
-│       ├── trans_astaxanthin.csv
-│       ├── trans_astaxanthin_ester.csv
-│       ├── violaxanthin.csv
-│       └── zeaxanthin.csv
-├── experiments
-│   ├── call_snicar.py
-│   ├── config.yaml
-│   ├── driver.py
-│   ├── __init__.py
-│   ├── __pycache__
-│   ├── README.md
-│   └── utils.py
-|
-├── LICENSE
-├── README.md
-├── requirements.txt
-├── src
-│   ├── biosnicar
-│      ├── adding_doubling_solver.py
-│      ├── bubble_reff_calculator.py
-│      ├── classes.py
-│      ├── column_OPs.py
-│      ├── display.py
-│      ├── geometric_optics_ice.py
-│      ├── __init__.py
-│      ├── inputs.yaml
-│      ├── mie_coated_water_spheres.py
-│      ├── __pycache__
-│      ├── setup_snicar.py
-│      ├── snicar_driver.py
-│      ├── toon_rt_solver.py
-│      └── validate_inputs.py
-└── tests
-    ├── conftest.py
-    ├── __init__.py
-    ├── matlab_benchmark_script.m
-    ├── __pycache__
-    ├── README.md
-    ├── snicarAD_v4.m
-    ├── test_data
-    │   ├── matlab_benchmark_data_clean.csv
-    │   ├── matlab_benchmark_data.csv
-    │   ├── py_benchmark_data_clean.csv
-    │   ├── py_benchmark_data.csv
-    │   └── py_mat_comparison.png
-    └── test_snicar.py
-```
-
+It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. For this reason, we have put together a guide. Please refer to the documentation at [https://biosnicar.vercel.app](biosnicar.vercel.app).
 
 # Contributions
 
