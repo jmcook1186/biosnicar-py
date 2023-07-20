@@ -2,8 +2,7 @@
 import numpy as np
 
 
-def validate_inputs(ice, rt_config, model_config, illumination, impurities):
-
+def validate_inputs(ice, illumination, impurities):
     """
     Checks all config to make sure all inputs are valid by calling out to:
     validate_snow_algae()
@@ -94,7 +93,6 @@ def validate_glacier_algae(impurities):
     """
 
     for i, impurity in enumerate(impurities):
-
         if impurity.file == "GA_Chevrollier2022_r4.9_L18.8.nc" and (
             np.sum(impurity.conc) > 0
         ):

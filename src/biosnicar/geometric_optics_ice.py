@@ -41,10 +41,8 @@ user can define the range of side lengths and depths to be looped over.
 
 NOTE: The extinction coefficient in the current implementation is 2 for all size
 parameters as assumed in the conventional geometric optics approximation.
-
-
-
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -57,7 +55,6 @@ RI_SOURCE = 2
 
 
 def preprocess_RI(ri_source, path_to_ri):
-
     """Preprocessing of wavelength and RI data.
 
     Preprocessing function that ensures the wavelengths and real/imaginary
@@ -153,7 +150,6 @@ def calc_optical_params(
     delta = 0.3
 
     for i in np.arange(0, len(wavelengths), 1):
-
         mr = reals[i]
         mi = imags[i]
         wl = wavelengths[i]

@@ -67,7 +67,7 @@ IMPURITIES:
     CFACTOR: 1
     COATED: False
     UNIT: 1
-    CONC: [1000000 ,0]
+    CONC: [0 ,0]
 
 PLOT:
     FIG_SIZE: (8,6)

@@ -21,7 +21,6 @@ user changes attributes of Ice or Illumination classes.
 """
 import math
 import os
-
 import numpy as np
 import xarray as xr
 import yaml
@@ -47,7 +46,6 @@ class Impurity:
     """
 
     def __init__(self, file, coated, cfactor, unit, name, conc):
-
         self.name = name
         self.cfactor = cfactor
         self.unit = unit
@@ -94,7 +92,6 @@ class Ice:
     """
 
     def __init__(self, input_file):
-
         # use config to calculate refractive indices
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
@@ -178,7 +175,6 @@ class Illumination:
     """
 
     def __init__(self, input_file):
-
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -259,7 +255,6 @@ class RTConfig:
     """
 
     def __init__(self, input_file):
-
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -289,7 +284,6 @@ class ModelConfig:
     """
 
     def __init__(self, input_file):
-
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -366,7 +360,6 @@ class PlotConfig:
     """
 
     def __init__(self, input_file):
-
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -457,7 +450,6 @@ class BioOpticalConfig:
     """
 
     def __init__(self, input_file):
-
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
@@ -501,7 +493,6 @@ class BioOpticalConfig:
         self.validate_biooptical_inputs()
 
     def validate_biooptical_inputs(self):
-
         if self.Mie:
             assert self.GO == False
         if self.GO:

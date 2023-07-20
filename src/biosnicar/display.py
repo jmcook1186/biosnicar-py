@@ -5,7 +5,6 @@ import seaborn as sns
 
 
 def setup_axes(plot_config):
-
     rc = {
         "figure.figsize": (8, 6),
         "axes.facecolor": str(plot_config.facecolor),
@@ -25,7 +24,6 @@ def setup_axes(plot_config):
 
 
 def plot_albedo(plot_config, model_config, albedo):
-
     rc = setup_axes(plot_config)
     plt.style.use("seaborn")
     sns.set_style("white")
@@ -49,7 +47,6 @@ def plot_albedo(plot_config, model_config, albedo):
 
 
 def display_out_data(outputs):
-
     print("\n** OUTPUT DATA **")
     print("Broadband albedo: ", np.round(outputs.BBA, 4))
 
@@ -66,7 +63,6 @@ def display_out_data(outputs):
 
 
 def calculate_band_ratios(albedo):
-
     I2DBA = albedo[51] / albedo[46]
     I3DBA = (albedo[46] - albedo[50]) / albedo[55]
     NDCI = ((albedo[50] - albedo[48]) - (albedo[55] - albedo[48])) * (

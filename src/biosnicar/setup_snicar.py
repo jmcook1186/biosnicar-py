@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
 import yaml
+from pathlib import Path
 
 from biosnicar.classes import (
     Ice,
     Illumination,
     Impurity,
     ModelConfig,
-    Outputs,
     PlotConfig,
     RTConfig,
 )
@@ -28,7 +28,13 @@ def setup_snicar(input_file):
         display_config: instance of DisplayConfig class
 
     """
+    # define input file
+    if input_file == "default":
+        BIOSNICAR_SRC_PATH = Path(__file__).resolve().parent
+        input_file = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
 
+    else:
+        input_file = input_file
     impurities = build_impurities_array(input_file)
     (
         ice,
@@ -73,7 +79,6 @@ def build_classes(input_file):
 
 
 def build_impurities_array(input_file):
-
     """Creates an array of instances of Impurity.
 
     creates an array of impurities - each one an instance of Impurity with
@@ -101,6 +106,8 @@ def build_impurities_array(input_file):
         impurities.append(Impurity(file, coated, cfactor, unit, name, conc))
 
     return impurities
+
+    print("SETUP OK")
 
 
 if __name__ == "__main__":
