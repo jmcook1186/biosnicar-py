@@ -9,10 +9,9 @@ from column_OPs import get_layer_OPs, mix_in_impurities
 from display import display_out_data, plot_albedo
 from setup_snicar import setup_snicar
 from toon_rt_solver import toon_solver
-from validate_inputs import validate_inputs
 
 
-def get_albedo(input, solver, plot):
+def get_albedo(solver, plot):
     (
         ice,
         illumination,
@@ -20,7 +19,7 @@ def get_albedo(input, solver, plot):
         model_config,
         plot_config,
         impurities,
-    ) = setup_snicar(input)
+    ) = setup_snicar()
 
     # now get the optical properties of the ice column
     ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
@@ -39,5 +38,5 @@ def get_albedo(input, solver, plot):
 
     if plot:
         plot_albedo(plot_config, model_config, outputs.albedo)
-
+    display_out_data(outputs)
     return outputs.albedo

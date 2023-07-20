@@ -515,7 +515,7 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
         if impurity.unit == 1:
 
             mss_aer[0 : ice.nbr_lyr, i] = (
-                np.array(impurity.conc) / 917 * 10 ** 6
+                np.array(impurity.conc) / 917 * 10**6
             ) * impurity.cfactor
 
         else:
@@ -575,5 +575,5 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     return tau, ssa, g, L_snw
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
