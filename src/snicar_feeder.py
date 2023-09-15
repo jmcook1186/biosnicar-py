@@ -181,7 +181,9 @@ def snicar_feeder(Inputs):
         # flx_dwn_sfc is the spectral irradiance in W m-2 and is
         # pre-calculated (flx_frc_sfc*flx_bb_sfc in original code)
         flx_slr = incoming_file["flx_frc_sfc"].values
+        flx_slr_abs = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
+        flx_slr_abs[flx_slr_abs <= 0] = 1e-30
         flx_slr = flx_slr
         Fs = flx_slr / (mu_not * np.pi)
         Fd = np.zeros(nbr_wvl)
@@ -208,6 +210,7 @@ def snicar_feeder(Inputs):
             raise ValueError("Invalid choice of atmospheric profile")
 
         flx_slr = incoming_file["flx_frc_sfc"].values
+        flx_slr_abs = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
         flx_slr = flx_slr
         Fd = flx_slr / (mu_not * np.pi)
@@ -221,6 +224,7 @@ def snicar_feeder(Inputs):
     MAC_snw = np.empty([Inputs.nbr_lyr, nbr_wvl])
     g_snw = np.empty([Inputs.nbr_lyr, nbr_wvl])
     abs_cff_mss_ice = np.empty([nbr_wvl])
+    abs_cff_mss_water = np.empty([nbr_wvl])
 
     # load refractive index of bubbly ice + Inputs.directory for granular OPs
     refidx_file = xr.open_dataset(dir_ri_ice + "rfidx_ice.nc")
@@ -307,23 +311,24 @@ def snicar_feeder(Inputs):
                     raise ValueError("Water coating can only be applied to spheres")
 
                 # water coating calculations (coated spheres)
-                fn_ice = Inputs.dir_base + "/Data/OP_data/480band/rfidx_ice.nc"
-                fn_water = (
-                    Inputs.dir_base
-                    + "Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
-                )
-                res = wcs.miecoated_driver(
-                    rice=Inputs.grain_rds[i],
-                    rwater=Inputs.rwater[i],
-                    fn_ice=fn_ice,
-                    rf_ice=Inputs.rf_ice,
-                    fn_water=fn_water,
-                    wvl=wvl,
-                )
-
-                ssa_snw[i, :] = res["ssa"]
-                g_snw[i, :] = res["asymmetry"]
-
+                #fn_ice = Inputs.dir_base + "/Data/OP_data/480band/rfidx_ice.nc"
+                #fn_water = (
+                #    Inputs.dir_base
+                #    + "Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+                #)
+                #res = wcs.miecoated_driver(
+                #    rice=Inputs.grain_rds[i],
+                #    rwater=Inputs.rwater[i],
+                #    fn_ice=fn_ice,
+                #    rf_ice=Inputs.rf_ice,
+                #    fn_water=fn_water,
+                #    wvl=wvl,
+                #)
+		#ssa_snw[i, :] = res["ssa"]
+                #g_snw[i, :] = res["asymmetry"]
+                file = xr.open_dataset("Data/OP_data/480band/coated_ice_spherical_grains/coated_grain_{}.nc".format(Inputs.rwater[i]))
+                ssa_snw[i, :] = file['ss_alb'].values
+                g_snw[i, :] = file['asm_prm'].values
                 with xr.open_dataset(file_ice) as temp:
                     ext_cff_mss = temp["ext_cff_mss"].values
                     MAC_snw[i, :] = ext_cff_mss
@@ -625,7 +630,7 @@ def snicar_feeder(Inputs):
                     g_snw[g_snw > 0.99] = 0.99  # avoid unreasonable
                     # values (so far only occur in large-size spheroid cases)
 
-        else:  # solid ice layer (Inputs.layer_type == 1)
+        elif Inputs.layer_type[i] == 1:  # solid ice layer (Inputs.layer_type == 1)
 
             if Inputs.cdom_layer[i]:
                 cdom_refidx_im = np.array(
@@ -642,11 +647,37 @@ def snicar_feeder(Inputs):
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
             g_snw[i, :] = file["asm_prm"].values
-            abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
+            # abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
+            fn_water = "Data/OP_data/ref_indx_liquid_water_segelstein1981.csv" 
+            ref_index_water = pd.read_csv(fn_water)
+            k_water_interp = np.interp(x=wvl, xp=ref_index_water.wvl, fp=ref_index_water.k)
+            abs_cff_mss_ice[:] = ((4 * np.pi * (refidx_im * (1- Inputs.lwc) + k_water_interp * Inputs.lwc)
+                                   ) / (wvl * 1e-6)) / 917
             vlm_frac_air = (917 - Inputs.rho_layers[i]) / 917
             MAC_snw[i, :] = (
                 (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
             ) + abs_cff_mss_ice
+            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
+                i, :
+            ]
+
+        elif Inputs.layer_type[i] == 2:  # liquid water
+            rd = f"{Inputs.grain_rds[i]}"
+            rd = rd.rjust(4, "0")
+            file_ice = str(dir_bubbly_ice + "bbl_{}.nc").format(rd)
+            file = xr.open_dataset(file_ice)
+            sca_cff_vlm = file["sca_cff_vlm"].values
+            g_snw[i, :] = file["asm_prm"].values/file["asm_prm"].values
+            
+            
+            fn_water = "Data/OP_data/ref_indx_liquid_water_segelstein1981.csv" 
+            ref_index_water = pd.read_csv(fn_water)
+            k_water_interp = np.interp(x=wvl, xp=ref_index_water.wvl, fp=ref_index_water.k)
+            abs_cff_mss_water[:] = ((4 * np.pi * k_water_interp) / (wvl * 1e-6)) / 917
+            vlm_frac_air = (917 - Inputs.rho_layers[i]) / 917
+            MAC_snw[i, :] = (
+                (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
+            ) + abs_cff_mss_water 
             ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
                 i, :
             ]
@@ -797,6 +828,7 @@ def snicar_feeder(Inputs):
             g_sum[i, :] + (g_snw[i, :] * ssa_snw[i, :] * tau_snw[i, :])
         )
 
+    opt_thick = np.sum(tau*flx_slr_abs)/np.sum(flx_slr_abs)
     Inputs.tau = tau
     Inputs.ssa = ssa
     Inputs.g = g
@@ -825,7 +857,7 @@ def snicar_feeder(Inputs):
 
     Outputs = c.namedtuple(
         "Outputs",
-        ["wvl", "albedo", "BBA", "BBAVIS", "BBANIR", "abs_slr", "heat_rt", "abs_ice"],
+        ["wvl", "albedo", "BBA", "BBAVIS", "BBANIR", "abs_slr", "heat_rt", "abs_ice", "opt_thick", "F_up", "F_dwn"],
     )
 
     if Inputs.toon:
@@ -849,7 +881,7 @@ def snicar_feeder(Inputs):
             Outputs.BBAVIS,
             Outputs.BBANIR,
             Outputs.abs_slr,
-            Outputs.heat_rt,
+            Outputs.heat_rt, Outputs.F_up, Outputs.F_dwn
         ) = adding_doubling.adding_doubling_solver(Inputs)
-
+    Outputs.opt_thick = opt_thick
     return Outputs

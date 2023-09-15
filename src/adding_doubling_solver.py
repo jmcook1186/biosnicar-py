@@ -13,8 +13,6 @@ def adding_doubling_solver(Inputs):
     """
 
     import matplotlib.pyplot as plt
-    plt.figure(1)
-    plt.plot(Inputs.Fs)
 
     import numpy as np
 
@@ -106,7 +104,7 @@ def adding_doubling_solver(Inputs):
     # if there are non-zeros in layer type, load in the precalculated diffuse fresnel
     # reflection
     # (precalculated as large no. of gaussian points required for convergence)
-    if np.sum(Inputs.layer_type) > 0:
+    if np.sum(np.array(Inputs.layer_type) == 1) > 0:
 
         lyrfrsnl = Inputs.layer_type.index(1)
 
@@ -637,4 +635,4 @@ def adding_doubling_solver(Inputs):
     # abs_ground_nir  = F_abs_nir_btm
     #   near-IR absorption by underlying substrate [W/m2]
 
-    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt
+    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt, F_up, F_dwn
