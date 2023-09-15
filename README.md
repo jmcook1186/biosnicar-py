@@ -1,7 +1,5 @@
 # BioSNICAR
-
-
-<b>NOTICE (Jan 2022): We have done a lot of work refactoring and updating this code recently to make it cleaner, faster and more user-friendly. Some of the docs are currently lagging behind - we are working on this - please bear with us! </b>
+<b> You are in the BioSNICAR CLASSIC branch. This is an entirely valid branch of BioSNICAR that maintains a "functional" programmign style inherited from older FORTRAN/Matlab implementations of SNICAR. Users of those versions may feel at home here. We will keep this branch maintained but it will probably ossify soon as most of our development will be on the main "object oriented" implementation on the main branch. Thanks for your interest in BiOSNICAR!"
 
 <img src="./Assets/example-output.jpg" width=500>
 
