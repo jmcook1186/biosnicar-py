@@ -635,8 +635,4 @@ def adding_doubling_solver(Inputs):
     # abs_ground_nir  = F_abs_nir_btm
     #   near-IR absorption by underlying substrate [W/m2]
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 27e40de0e8180e4a25efbb7b702caa67b5320c89
     return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt, F_up, F_dwn
