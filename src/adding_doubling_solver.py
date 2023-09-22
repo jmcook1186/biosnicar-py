@@ -100,8 +100,8 @@ def adding_doubling_solver(Inputs):
     rupdir[:, Inputs.nbr_lyr] = Inputs.R_sfc  # reflectivity to direct radiation for layers below
     rupdif[:, Inputs.nbr_lyr] = Inputs.R_sfc  # reflectivity to diffuse radiation for layers below
 
-    # if there are non zeros in layer type, grab the index of the first fresnel layer
-    # if there are non-zeros in layer type, load in the precalculated diffuse fresnel
+    # if there ones in layer type, grab the index of the first fresnel layer
+    # if there ones in layer type, load in the precalculated diffuse fresnel
     # reflection
     # (precalculated as large no. of gaussian points required for convergence)
     if np.sum(np.array(Inputs.layer_type) == 1) > 0:
@@ -119,8 +119,7 @@ def adding_doubling_solver(Inputs):
         #  - in this case use the Toon solver instead!
         if Inputs.verbosity == 1:
             print(
-                "There are no ice layers in this model configuration\
-                  - suggest adding a solid ice layer or using faster Toon method"
+                "There are no fresnel layers in this model configuration"
             )
 
     mu0 = Inputs.mu_not * np.ones(480)  # cosine of beam angle is equal to incident beam

@@ -310,7 +310,7 @@ def snicar_feeder(Inputs):
                 if Inputs.grain_shp[i] != 0:
                     raise ValueError("Water coating can only be applied to spheres")
 
-                water coating calculations (coated spheres)
+                # water coating calculations (coated spheres)
                 fn_ice = Inputs.dir_base + "/Data/OP_data/480band/rfidx_ice.nc"
                 fn_water = (
                     Inputs.dir_base
@@ -324,7 +324,7 @@ def snicar_feeder(Inputs):
                     fn_water=fn_water,
                     wvl=wvl,
                 )
-		        ssa_snw[i, :] = res["ssa"]
+                ssa_snw[i, :] = res["ssa"]
                 g_snw[i, :] = res["asymmetry"]
                 
                 # alternatively read files directly (not available)
@@ -633,7 +633,7 @@ def snicar_feeder(Inputs):
                     g_snw[g_snw > 0.99] = 0.99  # avoid unreasonable
                     # values (so far only occur in large-size spheroid cases)
 
-        elif Inputs.layer_type[i] == 1:  # solid ice layer 
+        elif Inputs.layer_type[i] == 1:  # solid ice layer with fresnel layer
 
             if Inputs.cdom_layer[i]:
                 cdom_refidx_im = np.array(
@@ -650,20 +650,12 @@ def snicar_feeder(Inputs):
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
             g_snw[i, :] = file["asm_prm"].values
-            # abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
-            ref_index_water = pd.read_csv("Data/OP_data/refractive_index_water_273K.csv" )
-            abs_cff_mss_ice[:] = (((4 * np.pi * (refidx_im * (1 - Inputs.lwc) 
-                                                 + ref_index_water.k.values * Inputs.lwc)
-                                   ) / (wvl * 1e-6)) 
-                                  / (917 * (1 - Inputs.lwc)
-                                     + 1000 * Inputs.lwc)
-                                  )
-            vlm_frac_air = (((917 * (1 - Inputs.lwc) + 1000 * Inputs.lwc) 
-                            - Inputs.rho_layers[i]) 
-                            / (917 * (1 - Inputs.lwc) + 1000 * Inputs.lwc))
+            abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
+            vlm_frac_air = (917 - Inputs.rho_layers[i]) / 917
             MAC_snw[i, :] = (
                 (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
             ) + abs_cff_mss_ice
+          
             ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
                 i, :
             ]
@@ -674,8 +666,8 @@ def snicar_feeder(Inputs):
             file_ice = str(dir_bubbly_ice + "bbl_{}.nc").format(rd)
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
-            g_snw[i, :] = np.ones(file["asm_prm"].values)
-            ref_index_water = pd.read_csv("Data/OP_data/refractive_index_water_273K.csv" )
+            g_snw[i, :] = file["asm_prm"].values
+            ref_index_water = pd.read_csv(f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
             abs_cff_mss_water[:] = ((4 * np.pi * ref_index_water.k.values) / (wvl * 1e-6)) / 1000
             vlm_frac_air = (1000 - Inputs.rho_layers[i]) / 1000
             MAC_snw[i, :] = (
@@ -684,7 +676,44 @@ def snicar_feeder(Inputs):
             ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
                 i, :
             ]
+        
+        elif Inputs.layer_type[i] == 3:  # solid ice layer without fresnel layer
 
+            rd = f"{Inputs.grain_rds[i]}"
+            rd = rd.rjust(4, "0")
+            file_ice = str(dir_bubbly_ice + "bbl_{}.nc").format(rd)
+            file = xr.open_dataset(file_ice)
+            sca_cff_vlm = file["sca_cff_vlm"].values
+            g_snw[i, :] = file["asm_prm"].values
+            # abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
+            ref_index_water = pd.read_csv(f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
+            # neglecting air mass:
+            vlm_frac_ice = (Inputs.rho_layers[i] - Inputs.lwc * 1000) / 917
+            vlm_frac_air = (1 
+                            - Inputs.lwc 
+                            - vlm_frac_ice
+                            )
+            # neglecting air absorption:
+            abs_cff_mss_ice[:] = ( 
+                (vlm_frac_ice * 917 / Inputs.rho_layers[i]) * (4 * np.pi * refidx_im / (wvl * 1e-6)) / 917
+                + (Inputs.lwc * 1000 / Inputs.rho_layers[i]) * (4 * np.pi * ref_index_water.k.values / (wvl * 1e-6)) / 1000
+                )
+            # abs_cff_mss_ice[:] = (4 * np.pi / (wvl * 1e-6) * (( vlm_frac_ice * 917 / Inputs.rho_layers[i] * refidx_im
+            #                                   + Inputs.lwc * 1000 / Inputs.rho_layers[i] * ref_index_water.k.values) /
+            #                                   ( 917 * vlm_frac_ice * 917 / Inputs.rho_layers[i] 
+            #                                    + 1000 * Inputs.lwc * 1000 / Inputs.rho_layers[i]
+            #                                   )
+            #                                   )
+            #     )
+        
+            MAC_snw[i, :] = (
+                (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
+            ) + abs_cff_mss_ice
+          
+            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
+                i, :
+            ]
+                
     # ----------------------------------------------------------------------------------
     # Read in impurity optical properties
     # ----------------------------------------------------------------------------------

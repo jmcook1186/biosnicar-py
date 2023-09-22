@@ -55,6 +55,7 @@ Inputs = c.namedtuple(
         "R_sfc",
         "dz",
         "rho_layers",
+        "lwc",
         "grain_rds",
         "side_length",
         "depth",
@@ -169,10 +170,10 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 # 4) RADIATIVE TRANSFER CONFIGURATION
 # --------------------------------------------------------------------------------------
 
-Inputs.direct = 1  # 1 = direct-beam, 0 = Diffuse flux
+Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
 Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
-Inputs.solzen = 49  # solar zenith angle between 0 (nadir) and 89 (horizon)
+Inputs.solzen = 55  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
 # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
 #    0 = mid-latitude winter
@@ -195,19 +196,23 @@ Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
 Inputs.add_double = True  # toggle addintg-doubling solver
 
 
-Inputs.dz = [0.001, 0.1]  # thickness of each vertical layer (unit = m)
+Inputs.dz = [0.0001, 0.1, 0.0000000001]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [0, 0]  # Fresnel layers (set all to 0 if toon = True)
-Inputs.cdom_layer = [0, 0]  # Only for layer type == 1
-Inputs.rho_layers = [916, 600]  # density of each layer (unit = kg m-3)
+Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
+                               # 2 = liquid water, 3 = solid bubbly ice w/out fresnel layer, 
+                               # 4 = solid bubbly ice w/out fresnel layer & water 'bubbles'
+Inputs.lwc = 0.02
+Inputs.cdom_layer = [0, 0, 0]  # Only for layer type == 1
+Inputs.rho_layers = [916.999, 381, 916.999]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
-# Inputs.R_sfc = np.array([0.1 for i in range(Inputs.nbr_wvl)])
 Inputs.R_sfc = np.genfromtxt(
    Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
     delimiter="csv",
 )
+# Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
+
 
 # --------------------------------------------------------------------------------------
 # 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
@@ -226,23 +231,23 @@ Inputs.rf_ice = 2
 # 3 = koch snowflake,
 # 4 = hexagonal prisms
 
-Inputs.grain_shp = [0, 0]  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [4000,4000]  # effective grain or bubble radius
-Inputs.rwater = [0, 0]  # radius of optional liquid water coating
+Inputs.grain_shp = 0*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
+Inputs.grain_rds = [4000,3000,4000]  # effective grain or bubble radius
+Inputs.rwater = 0*len(Inputs.dz)  # radius of optional liquid water coating
 
 # For 4:
-Inputs.side_length = [10000, 10000]
-Inputs.depth = [10000, 10000]
+Inputs.side_length = 100000*len(Inputs.dz)
+Inputs.depth = 100000*len(Inputs.dz)
 
 # Shape factor = ratio of nonspherical grain effective
 # radii to that of equal-volume sphere
 # only activated when sno_shp > 1 (i.e. nonspherical)
 # 0=use recommended default value (He et al. 2017)
 # use user-specified value (between 0 and 1)
-Inputs.shp_fctr = [0, 0]
+Inputs.shp_fctr = 00*len(Inputs.dz)
 
 # Aspect ratio (ratio of width to length)
-Inputs.grain_ar = [0, 0]
+Inputs.grain_ar = 00*len(Inputs.dz)
 
 # --------------------------------------------------------------------------------------
 # 5) SET LAP CHARACTERISTICS
@@ -331,8 +336,6 @@ Inputs.file_glacier_algae = "GA_Chevrollier2022_r4.9_L18.8.nc"
 # To use cells/mL for algae, set GA_units == 1.
 # The script will loop over the different mixing scenarios
 # 1 g/L = 109 ng/L = 106 ng /g
-# conc=5000000*4.3
-conc=175000*4.5
 
 Inputs.mss_cnc_soot1 = [0]* len(Inputs.dz)
 Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
@@ -361,10 +364,9 @@ Inputs.mss_cnc_GreenlandCentral4 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral5 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_Cook_Greenland_dust_L = [0] * len(Inputs.dz)
 Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Cook_Greenland_dust_H = [0,0]
-Inputs.mss_cnc_snw_alg = [150000,0]#'(150000, [0.001, 0.1], [916, 600], [0, 0], 4000, 49)'
-
-Inputs.mss_cnc_glacier_algae = [0,0]
+Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
+Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
+Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
 
 
 # --------------------------------------------------------------------------------------
@@ -491,8 +493,7 @@ if PRINT_BAND_RATIOS:
 if PRINT_BBA:
     print("\nBROADBAND ALBEDO = ", BBA)
 
-plt.style.use("seaborn")
-sns.set_style("white")
+
 rc = {
     "figure.figsize": (8, 6),
     "axes.facecolor": "white",
@@ -508,7 +509,11 @@ rc = {
     "ytick.left": True,
 }
 plt.rcParams.update(rc)
-plt.plot(wvl[15:230], albedo[15:230], '--')#, plt.plot(wvl, albedo_1g_corr),plt.plot(wvl, albedo_1g, label="1g"),plt.plot(wvl, albedo_clean, label="clean"), 
+plt.plot(wvl[15:230], albedo[15:230], '--')
+plt.plot(wvl[15:230], albedo_test[15:230])
+# plt.plot(wvl[15:230], albedo_test2[15:230])
+
+
 plt.ylabel("Albedo", fontsize=18), plt.xlabel(
     "Wavelength (µm)", fontsize=18
 ), plt.xlim(0.3, 2.5), plt.ylim(0, 1), plt.xticks(fontsize=15), plt.yticks(
@@ -521,9 +526,4 @@ plt.axvline(
 
 if SAVE_FIGS:
     plt.savefig(str(savepath + "spectral_albedo.png"))
-    
-#%%
-import pandas as pd
-field_spectra=pd.read_csv('/Users/au660413/Documents/AU_PhD/ms1_algae_albedo/modelling/QQT_spectra_Chevrollier2022.csv')
-name_spectrum='060821_S1_HCRF'
-measurement=np.array(field_spectra[name_spectrum])[5::10]
+
