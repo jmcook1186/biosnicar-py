@@ -198,12 +198,12 @@ Inputs.add_double = True  # toggle addintg-doubling solver
 
 Inputs.dz = [0.0001, 0.1, 0.0000000001]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
+Inputs.layer_type = [2, 4, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
                                # 2 = liquid water, 3 = solid bubbly ice w/out fresnel layer, 
                                # 4 = solid bubbly ice w/out fresnel layer & water 'bubbles'
-Inputs.lwc = 0.02
-Inputs.cdom_layer = [0, 0, 0]  # Only for layer type == 1
-Inputs.rho_layers = [916.999, 381, 916.999]  # density of each layer (unit = kg m-3)
+Inputs.lwc = 0
+Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
+Inputs.rho_layers = [916.999, 600, 916.999]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
@@ -231,9 +231,9 @@ Inputs.rf_ice = 2
 # 3 = koch snowflake,
 # 4 = hexagonal prisms
 
-Inputs.grain_shp = 0*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [4000,3000,4000]  # effective grain or bubble radius
-Inputs.rwater = 0*len(Inputs.dz)  # radius of optional liquid water coating
+Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
+Inputs.grain_rds = [4000,1000,4000]  # effective grain or bubble radius
+Inputs.rwater = [0]*len(Inputs.dz)  # radius of optional liquid water coating
 
 # For 4:
 Inputs.side_length = 100000*len(Inputs.dz)
@@ -509,9 +509,12 @@ rc = {
     "ytick.left": True,
 }
 plt.rcParams.update(rc)
-plt.plot(wvl[15:230], albedo[15:230], '--')
 plt.plot(wvl[15:230], albedo_test[15:230])
-# plt.plot(wvl[15:230], albedo_test2[15:230])
+plt.plot(wvl[15:230], albedo_test2[15:230])
+# plt.plot(wvl[15:230], albedo_test3[15:230])
+plt.plot(wvl[15:230], albedo[15:230], '--')
+
+
 
 
 plt.ylabel("Albedo", fontsize=18), plt.xlabel(
