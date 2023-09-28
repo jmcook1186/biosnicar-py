@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import math as m
 
-def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc): 
+def call_SNICAR(z1, density, grain_size, sza, lwfilm_depth, lwc): 
     
     import collections as c
     from pathlib import Path
@@ -158,15 +158,17 @@ def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc):
     Inputs.add_double = True  # toggle addintg-doubling solver
     Inputs.dz = [lwfilm_depth, z1] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-    Inputs.layer_type = [2,1]  # Fresnel layers (set all to 0 if toon = True)
+    Inputs.layer_type = [2,3]  # Fresnel layers (set all to 0 if toon = True)
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-    Inputs.rho_layers = [916.99,density]  # density of each layer (unit = kg m-3)
+    Inputs.rho_layers = [916.999,density]  # density of each layer (unit = kg m-3)
     Inputs.lwc = lwc
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
         delimiter="csv",
     )
+    # Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
+
 
     # define source of ice refractive index data.
     # 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
@@ -179,23 +181,23 @@ def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc):
     # 3 = koch snowflake,
     # 4 = hexagonal prisms
     
-    Inputs.grain_shp = [0,0]  # grain shape (He et al. 2016, 2017)
+    Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
     Inputs.grain_rds = [grain_size, grain_size] #[20000, grain_size]  # effective grain or bubble radius
-    Inputs.rwater = [0, 0] # int(Inputs.grain_rds[1]*1.055)]  # radius of optional liquid water coating
+    Inputs.rwater = [0]*len(Inputs.dz) # int(Inputs.grain_rds[1]*1.055)]  # radius of optional liquid water coating
 
     # For 4:
-    Inputs.side_length = [10000,0,0 ]
-    Inputs.depth = [10000, 0, 0]
+    Inputs.side_length = [10000]*len(Inputs.dz)
+    Inputs.depth = [10000]*len(Inputs.dz)
     
     # Shape factor = ratio of nonspherical grain effective
     # radii to that of equal-volume sphere
     # only activated when sno_shp > 1 (i.e. nonspherical)
     # 0=use recommended default value (He et al. 2017)
     # use user-specified value (between 0 and 1)
-    Inputs.shp_fctr = [0, 0]
+    Inputs.shp_fctr = [0]*len(Inputs.dz)
     
     # Aspect ratio (ratio of width to length)
-    Inputs.grain_ar = [0, 0]
+    Inputs.grain_ar = [0]*len(Inputs.dz)
     
     # --------------------------------------------------------------------------------------
     # 5) SET LAP CHARACTERISTICS
@@ -213,7 +215,7 @@ def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc):
     # determine C_factor (can be None or a number)
     # this is the concentrating factor that accounts for
     # resolution difference in field samples and model layers
-    Inputs.c_factor_GA = int(0.02 / lwfilm_depth)
+    Inputs.c_factor_GA = 0 # int(0.02 / lwfilm_depth)
     Inputs.c_factor_SA = 0
 
     # Set names of files containing the optical properties of these LAPs:
@@ -313,7 +315,7 @@ def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_glacier_algae = [alg,0]
+    Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
 
 
     # --------------------------------------------------------------------------------------
@@ -322,21 +324,15 @@ def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc):
 
 
     Outputs = snicar_feeder(Inputs)
-    if Inputs.layer_type[1] == 1:
+    if Inputs.layer_type[1] == 3:
         SSA = (6* (917 - Inputs.rho_layers[1]) / 917 / 
        (Inputs.rho_layers[1] * Inputs.grain_rds[1] * 2 * 10 ** (-6)))
     if Inputs.layer_type[1] == 0:
         SSA = 3/(Inputs.rho_layers[1] * (Inputs.grain_rds[1]* 10 ** (-6)))
     albedo = Outputs.albedo
-    opt_thick= Outputs.opt_thick
-    illum_top_mm_total = np.sum(Outputs.F_up, axis=0)
-    illum_top_mm = illum_top_mm_total[1]
     BBA = Outputs.BBA
     data = np.append(albedo, BBA)
-    #data = np.append(data,density[1])
-    #data = np.append(data,Inputs.grain_rds[1])
     data = np.append(data,SSA)
-    #data = np.append(data, illum_top_mm)
     
     #calculate band ratios using spectral responses from S3
     #signal calculated at each wvl by linear interp and 
@@ -376,57 +372,70 @@ def call_SNICAR(z1, density, grain_size, alg, sza, lwfilm_depth, lwc):
 
 
 
-densities=[300+i*40 for i in range(0,16)] # [300+i*20 for i in range(0,21)]
-grain_sizes= [1000, 2000, 3000,4000,5000,6000,7000,8000,
-9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000]
-#grain_sizes=[1500,2000, 2500,3000,
-#3500, 4000, 4500, 5000,5500,6000,6500,7000,7500,8000,
-#8500, 9000,9500, 10000, 10500, 11000, 11500, 12000, 12500,13000, 13500,14000,
-#14500, 15000,15500,16000,16500,17000, 17500, 18000, 18500, 19000, 19500, 20000]
+# densities=[300+i*40 for i in range(0,16)] # [300+i*20 for i in range(0,21)]
+# grain_sizes= [1000, 2000, 3000,4000,5000,6000,7000,8000,
+# 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000]
+# #grain_sizes=[1500,2000, 2500,3000,
+# #3500, 4000, 4500, 5000,5500,6000,6500,7000,7500,8000,
+# #8500, 9000,9500, 10000, 10500, 11000, 11500, 12000, 12500,13000, 13500,14000,
+# #14500, 15000,15500,16000,16500,17000, 17500, 18000, 18500, 19000, 19500, 20000]
 
-dz = [round(elem, 3) 
-for elem in np.concatenate((np.arange(0.01,0.1, 0.002), np.arange(0.1,0.15, 0.005), np.arange(0.15, 0.31, 0.01)))]
+# dz = [round(elem, 3) 
+# for elem in np.concatenate((np.arange(0.01,0.1, 0.002), np.arange(0.1,0.15, 0.005), np.arange(0.15, 0.31, 0.01)))]
 
-dz1 = [round(elem, 3) 
-	for elem in np.arange(0.03,0.6, 0.02)]
-#dz2 = [round(elem, 3) 
-#	for elem in np.concatenate((np.arange(0.001,0.005, 0.001),np.arange(0.01,1, 0.025)))]
-# remove values that produce SSA too high
-SSA = ({(density, grain_size): (6* (917 - density) / 917 / 
-       (density * grain_size * 2 * 10 ** (-6))) 
-        for density in densities for grain_size in grain_sizes})
-SSA = ({(density, grain_size): 3/(density * (grain_size* 10 ** (-6)))
-	for density in densities for grain_size in grain_sizes})
-params_to_remove = [] #k for k in SSA.keys() if SSA[k] > 4]
-algae = [0,5000,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,120000,140000,150000]
-sza_list = [[42], [44], [46], [48], [50], [52], [54], [56], [58], [60]]
+# dz1 = [round(elem, 3) 
+# 	for elem in np.arange(0.03,0.6, 0.02)]
+# # dz1 = [round(elem, 3) for elem in np.concatenate((np.arange(0.02,0.1, 0.02), np.arange(0.1, 1.05, 0.1)))]
+
+# #dz2 = [round(elem, 3) 
+# #	for elem in np.concatenate((np.arange(0.001,0.005, 0.001),np.arange(0.01,1, 0.025)))]
+# # remove values that produce SSA too high
+# SSA = ({(density, grain_size): (6* (917 - density) / 917 / 
+#        (density * grain_size * 2 * 10 ** (-6))) 
+#         for density in densities for grain_size in grain_sizes})
+# SSA = ({(density, grain_size): 3/(density * (grain_size* 10 ** (-6)))
+# 	for density in densities for grain_size in grain_sizes})
+# params_to_remove = [] #k for k in SSA.keys() if SSA[k] > 4]
+# algae = [0,5000,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,120000,140000,150000]
+# sza_list = [[42], [44], [46], [48], [50], [52], [54], [56], [58], [60]]
 
 
 ## LUT for emulator with additional feature
-densities = [300+i*50 for i in range(0,13)]
-grain_sizes = [500, 1000, 2000, 4000,  6000, 8000, 10000,  12000,  14000, 16000, 18000, 20000]
-dz1 = [round(elem, 3) for elem in np.concatenate((np.arange(0.02,0.1, 0.02), np.arange(0.1, 1.05, 0.1)))]
-algae = [0,5000,10000, 30000, 50000,70000, 90000, 110000, 130000, 150000]
-lwfilm_dz = [0.000005, 0.00001,0.000025, 0.00005,0.000075, 0.0001,0.00025, 0.0005,0.00075, 0.001]
-sza_list = [[42],  [46],  [50], [54], [58], [62], [66]]
-lwcs = [0, 0.01,0.025, 0.05,0.075, 0.1,0.125, 0.15,0.175, 0.2]
+densities = [340+i*20 for i in range(0,29)]
+depths = [0.03, 0.04, 0.05, 0.5]
+grain_sizes = [1000, 2000, 3000,
+               4000, 5000,  6000, 
+               7000, 8000, 9000, 
+               10000,  11000, 12000,  
+               13000, 14000, 15000, 
+               16000, 17000, 18000, 
+               19000, 20000]
+lwfilm_dz = [0.0000001, 0.00005, 0.0005, 0.0001, 0.001]
+sza_list = [[49],  [48],  [47], 
+            [51], [50], [52], [53],
+            [54], [46], [42], [43],
+            ['diff']
+            ]
+lwcs = [0,0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
+        0.07, 0.08, 0.09, 0.1]
 
 import time 
+
 for sza in sza_list:
 	start = time.time()
-	paramlist = sorted(set((itertools.product(dz1,densities,grain_sizes,algae, sza, lwfilm_dz, lwcs))))
-	updated_paramlist = sorted(set([params for params in paramlist 
-                     if not (params[1], params[2]) in params_to_remove]))
+	paramlist = sorted(set((itertools.product(depths,densities,grain_sizes, sza, lwfilm_dz, lwcs))))
+# 	updated_paramlist = sorted(set([params for params in paramlist 
+                     # if not (params[1], params[2]) in params_to_remove]))
 	if __name__ == '__main__':
 		pool = mp.Pool(60)
 		print('starting simulation on {} cores'.format(60))
-		data = pool.starmap(call_SNICAR,updated_paramlist)
+		data = pool.starmap(call_SNICAR,paramlist)
 		pool.close()  
 		pool.join() 
 		df = pd.DataFrame.from_records(data)
 		df = df.transpose()
-		df.columns = [str(i) for i in updated_paramlist]
-		df.to_feather(f'/data/lou/060923_lut_{sza[0]}_varying_lwfilm_lwc_bubblyice.feather', compression='zstd')
+		df.columns = [str(i) for i in paramlist]
+		df.to_feather(f'/data/lou/280923_lut_{sza[0]}_equivalent_lwc.feather', compression='zstd')
 	print('time for 1 lut: {}'.format(time.time() - start))
 
 
