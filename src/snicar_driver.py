@@ -170,10 +170,10 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 # 4) RADIATIVE TRANSFER CONFIGURATION
 # --------------------------------------------------------------------------------------
 
-Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
+Inputs.direct = 1  # 1 = direct-beam, 0 = Diffuse flux
 Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
-Inputs.solzen = 55  # solar zenith angle between 0 (nadir) and 89 (horizon)
+Inputs.solzen = 53  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
 # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
 #    0 = mid-latitude winter
@@ -193,22 +193,25 @@ Inputs.incoming_i = 1
 # --------------------------------------------------------------------------------------
 
 Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
-Inputs.add_double = True  # toggle addintg-doubling solver
+Inputs.add_double = True  # toggle adding-doubling solver
 
-
-Inputs.dz = [0.0001, 0.1, 0.0000000001]  # thickness of each vertical layer (unit = m)
+# garder film pour LAPs but too small to be detected
+# get varying fresnel layer depth with also undetected depth
+# --> how do I vary this depth??...
+# then have layer of ice with water until vertical boundary
+Inputs.dz = [0.00001, 0.005, 1]  # thickness of each vertical layer (unit = m)
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [2, 4, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
+Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
                                # 2 = liquid water, 3 = solid bubbly ice w/out fresnel layer, 
                                # 4 = solid bubbly ice w/out fresnel layer & water 'bubbles'
-Inputs.lwc = 0
+Inputs.lwc = 0.1
 Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-Inputs.rho_layers = [916.999, 600, 916.999]  # density of each layer (unit = kg m-3)
+Inputs.rho_layers = [916.999, 500, 500]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
 Inputs.R_sfc = np.genfromtxt(
-   Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
+    Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
     delimiter="csv",
 )
 # Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
@@ -232,22 +235,22 @@ Inputs.rf_ice = 2
 # 4 = hexagonal prisms
 
 Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [4000,1000,4000]  # effective grain or bubble radius
+Inputs.grain_rds = [20000,6000, 6000]  # effective grain or bubble radius
 Inputs.rwater = [0]*len(Inputs.dz)  # radius of optional liquid water coating
 
 # For 4:
-Inputs.side_length = 100000*len(Inputs.dz)
-Inputs.depth = 100000*len(Inputs.dz)
+Inputs.side_length = [1000]*len(Inputs.dz)
+Inputs.depth = [1000]*len(Inputs.dz)
 
 # Shape factor = ratio of nonspherical grain effective
 # radii to that of equal-volume sphere
 # only activated when sno_shp > 1 (i.e. nonspherical)
 # 0=use recommended default value (He et al. 2017)
 # use user-specified value (between 0 and 1)
-Inputs.shp_fctr = 00*len(Inputs.dz)
+Inputs.shp_fctr = [0]*len(Inputs.dz)
 
 # Aspect ratio (ratio of width to length)
-Inputs.grain_ar = 00*len(Inputs.dz)
+Inputs.grain_ar = [0]*len(Inputs.dz)
 
 # --------------------------------------------------------------------------------------
 # 5) SET LAP CHARACTERISTICS
@@ -509,12 +512,17 @@ rc = {
     "ytick.left": True,
 }
 plt.rcParams.update(rc)
+# plt.plot(wvl[15:230], albedo_test[15:230]) # 0.01
+plt.plot(wvl[15:230], albedo_test2[15:230]) # 0.02
+plt.plot(wvl[15:230], albedo_test3[15:230]) # 0.03
+# plt.plot(wvl[15:230], albedo_test4[15:230]) # 0.04
+# plt.plot(wvl[15:230], albedo_test5[15:230]) # 0.05
+# plt.plot(wvl[15:230], albedo_test6[15:230]) # 0.06
+# plt.plot(wvl[15:230], albedo_test7[15:230]) # 0.07
+
+
 plt.plot(wvl[15:230], albedo_test[15:230])
-plt.plot(wvl[15:230], albedo_test2[15:230])
-# plt.plot(wvl[15:230], albedo_test3[15:230])
-plt.plot(wvl[15:230], albedo[15:230], '--')
-
-
+plt.plot(wvl[15:230], albedo[15:230], '--') # 0.25m
 
 
 plt.ylabel("Albedo", fontsize=18), plt.xlabel(
@@ -523,7 +531,7 @@ plt.ylabel("Albedo", fontsize=18), plt.xlabel(
     fontsize=15
 ), 
 plt.axvline(
-    x=0.68, color="g", linestyle="dashed"
+    x=0.95, color="g", linestyle="dashed"
 )
 
 
