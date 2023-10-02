@@ -12,6 +12,8 @@ import multiprocessing as mp
 import pandas as pd
 import numpy as np
 import math as m
+import time 
+
 
 def call_SNICAR(z, density, grain_size, sza, lwc): 
     
@@ -400,45 +402,63 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
 # sza_list = [[42], [44], [46], [48], [50], [52], [54], [56], [58], [60]]
 
 
-## LUT for emulator with additional feature
+#############################################################################
+################ INPUTS
+#############################################################################
+path_to_save_files = '/Users/au660413/Desktop/github/biosnicar-py'
 densities = [330+i*20 for i in range(0,30)]
-grain_sizes = [500,600,700, 800, 900,
+grain_sizes = [100, 200, 300, 400, 
+               500,600,700, 800, 900,
                1000, 2000, 3000,
                4000, 5000,  6000, 
                7000, 8000, 9000, 
-               10000,  11000, 12000,  
+               10000, 11000, 12000,  
                13000, 14000, 15000, 
                16000, 17000, 18000, 
                19000, 20000]
 # lwfilm_dz = [0.0000001, 0.00005, 0.0005, 0.0001, 0.001]
-sza_list = [[54],  [52], 
-            [46], [42], [43]
+sza_list = [[42],  [52], 
+            [46], [54], [43]]
             #['diff']
-            ] # 49
-depths = [1e-6, 1e-5, 1e-4, 5e-4, 1e-3, 2.5e-3, 
-          5e-3, 7.5e-3, 1e-2, 2.5e-2, 5e-2, 7.5e-2,
+            #] # 49
+depths = [1e-6, 
+          1e-5, 2.5e-5,
+          5e-5, 7.5e-5,
+          1e-4, 2.5e-4, 
+          5e-4, 7.5e-4,
+          1e-3, 2.5e-3, 
+          5e-3, 7.5e-3, 
+          1e-2, 1.5e-2, 
+          2e-2, 2.5e-2,
+          3e-2, 3.5e-2,
+          4e-2, 4.5e-2,
+          5e-2, 5.5e-2,
+          6e-2, 7e-2,  
+          8e-2, 9e-2,
           1e-1, 1] 
 lwcs = [0,0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
-        0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15]
+        0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 
+        0.16, 0.17, 0.18, 0.19, 0.2]
 
-import time 
-
-
+#############################################################################
+################ CALL MODEL
+#############################################################################
 for sza in sza_list:
 	start = time.time()
 	paramlist = sorted(set((itertools.product(depths,densities,grain_sizes, sza, lwcs))))
 # 	updated_paramlist = sorted(set([params for params in paramlist 
                      # if not (params[1], params[2]) in params_to_remove]))
 	if __name__ == '__main__':
-		pool = mp.Pool(15)
-		print('starting simulation on {} cores'.format(60))
+		nb_cores = 15
+		pool = mp.Pool(nb_cores)
+		print(f'starting simulation on {nb_cores} cores')
 		data = pool.starmap(call_SNICAR,paramlist)
 		pool.close()  
 		pool.join() 
 		df = pd.DataFrame.from_records(data)
 		df = df.transpose()
 		df.columns = [str(i) for i in paramlist]
-		df.to_feather(f'/Users/au660413/Desktop/github/biosnicar-py/021023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', compression='zstd')
+		df.to_feather(f'{path_to_save_files}/021023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', compression='zstd')
 		print('time for 1 lut: {}'.format(time.time() - start))
 
 

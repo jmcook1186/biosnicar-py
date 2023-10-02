@@ -173,7 +173,7 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 Inputs.direct = 1  # 1 = direct-beam, 0 = Diffuse flux
 Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
-Inputs.solzen = 53  # solar zenith angle between 0 (nadir) and 89 (horizon)
+Inputs.solzen = 42  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
 # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
 #    0 = mid-latitude winter
@@ -199,14 +199,14 @@ Inputs.add_double = True  # toggle adding-doubling solver
 # get varying fresnel layer depth with also undetected depth
 # --> how do I vary this depth??...
 # then have layer of ice with water until vertical boundary
-Inputs.dz = [1e-7, 0.5,1]  # thickness of each vertical layer (unit = m) # 0.04
+Inputs.dz = [1e-13, 1, 1]  # thickness of each vertical layer (unit = m) # 0.04
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
 Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
                                # 2 = liquid water, 3 = solid bubbly ice w/out fresnel layer, 
                                # 4 = solid bubbly ice w/out fresnel layer & water 'bubbles'
-Inputs.lwc = 0.1
+Inputs.lwc = 0.3
 Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-Inputs.rho_layers = [916.999, 650, 650]  # density of each layer (unit = kg m-3)
+Inputs.rho_layers = [916.999, 910, 910]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
@@ -235,7 +235,7 @@ Inputs.rf_ice = 2
 # 4 = hexagonal prisms
 
 Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [20000,2000, 2000]  # effective grain or bubble radius
+Inputs.grain_rds = [20000,20000, 20000]  # effective grain or bubble radius
 Inputs.rwater = [0]*len(Inputs.dz)  # radius of optional liquid water coating
 
 # For 4:
@@ -514,7 +514,7 @@ rc = {
 plt.rcParams.update(rc)
 # plt.plot(wvl[15:230], albedo_test[15:230]) # 0.01
 plt.plot(wvl[15:230], albedo_test2[15:230]) # 0.02
-plt.plot(wvl[15:230], albedo_test3[15:230]) # 0.03
+# plt.plot(wvl[15:230], albedo_test3[15:230]) # 0.03
 # plt.plot(wvl[15:230], albedo_test4[15:230]) # 0.04
 # plt.plot(wvl[15:230], albedo_test5[15:230]) # 0.05
 # plt.plot(wvl[15:230], albedo_test6[15:230]) # 0.06
@@ -523,11 +523,11 @@ plt.plot(wvl[15:230], albedo_test3[15:230]) # 0.03
 
 plt.plot(wvl[15:230], albedo_test[15:230])
 plt.plot(wvl[15:230], albedo[15:230], '--') # 0.25m
-
+plt.plot(spectra.index/1000, spectra['260721_S7'])
 
 plt.ylabel("Albedo", fontsize=18), plt.xlabel(
     "Wavelength (µm)", fontsize=18
-), plt.xlim(0.3, 2.5), plt.ylim(0, 1), plt.xticks(fontsize=15), plt.yticks(
+), plt.xlim(0.355, 2), plt.ylim(0, 0.5), plt.xticks(fontsize=15), plt.yticks(
     fontsize=15
 ), 
 plt.axvline(
