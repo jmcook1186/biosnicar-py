@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import math as m
 
-def call_SNICAR(z1, density, grain_size, sza, lwfilm_depth, lwc): 
+def call_SNICAR(z, density, grain_size, sza, lwc): 
     
     import collections as c
     from pathlib import Path
@@ -156,11 +156,11 @@ def call_SNICAR(z1, density, grain_size, sza, lwfilm_depth, lwc):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [lwfilm_depth, z1] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [1e-7, z, 1] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-    Inputs.layer_type = [2,3]  # Fresnel layers (set all to 0 if toon = True)
+    Inputs.layer_type = [2,3,1]  # Fresnel layers (set all to 0 if toon = True)
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-    Inputs.rho_layers = [916.999,density]  # density of each layer (unit = kg m-3)
+    Inputs.rho_layers = [916.999,density, density]  # density of each layer (unit = kg m-3)
     Inputs.lwc = lwc
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
@@ -182,7 +182,7 @@ def call_SNICAR(z1, density, grain_size, sza, lwfilm_depth, lwc):
     # 4 = hexagonal prisms
     
     Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-    Inputs.grain_rds = [grain_size, grain_size] #[20000, grain_size]  # effective grain or bubble radius
+    Inputs.grain_rds = [grain_size, grain_size, grain_size] #[20000, grain_size]  # effective grain or bubble radius
     Inputs.rwater = [0]*len(Inputs.dz) # int(Inputs.grain_rds[1]*1.055)]  # radius of optional liquid water coating
 
     # For 4:
@@ -401,33 +401,36 @@ def call_SNICAR(z1, density, grain_size, sza, lwfilm_depth, lwc):
 
 
 ## LUT for emulator with additional feature
-densities = [340+i*20 for i in range(0,29)]
-depths = [0.03, 0.04, 0.05, 0.5]
-grain_sizes = [1000, 2000, 3000,
+densities = [330+i*20 for i in range(0,30)]
+grain_sizes = [500,600,700, 800, 900,
+               1000, 2000, 3000,
                4000, 5000,  6000, 
                7000, 8000, 9000, 
                10000,  11000, 12000,  
                13000, 14000, 15000, 
                16000, 17000, 18000, 
                19000, 20000]
-lwfilm_dz = [0.0000001, 0.00005, 0.0005, 0.0001, 0.001]
-sza_list = [[49],  [48],  [47], 
-            [51], [50], [52], [53],
-            [54], [46], [42], [43],
-            ['diff']
-            ]
+# lwfilm_dz = [0.0000001, 0.00005, 0.0005, 0.0001, 0.001]
+sza_list = [[54],  [52], 
+            [46], [42], [43]
+            #['diff']
+            ] # 49
+depths = [1e-6, 1e-5, 1e-4, 5e-4, 1e-3, 2.5e-3, 
+          5e-3, 7.5e-3, 1e-2, 2.5e-2, 5e-2, 7.5e-2,
+          1e-1, 1] 
 lwcs = [0,0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
-        0.07, 0.08, 0.09, 0.1]
+        0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15]
 
 import time 
 
+
 for sza in sza_list:
 	start = time.time()
-	paramlist = sorted(set((itertools.product(depths,densities,grain_sizes, sza, lwfilm_dz, lwcs))))
+	paramlist = sorted(set((itertools.product(depths,densities,grain_sizes, sza, lwcs))))
 # 	updated_paramlist = sorted(set([params for params in paramlist 
                      # if not (params[1], params[2]) in params_to_remove]))
 	if __name__ == '__main__':
-		pool = mp.Pool(60)
+		pool = mp.Pool(15)
 		print('starting simulation on {} cores'.format(60))
 		data = pool.starmap(call_SNICAR,paramlist)
 		pool.close()  
@@ -435,7 +438,7 @@ for sza in sza_list:
 		df = pd.DataFrame.from_records(data)
 		df = df.transpose()
 		df.columns = [str(i) for i in paramlist]
-		df.to_feather(f'/data/lou/280923_lut_{sza[0]}_equivalent_lwc.feather', compression='zstd')
-	print('time for 1 lut: {}'.format(time.time() - start))
+		df.to_feather(f'/Users/au660413/Desktop/github/biosnicar-py/021023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', compression='zstd')
+		print('time for 1 lut: {}'.format(time.time() - start))
 
 

@@ -199,14 +199,14 @@ Inputs.add_double = True  # toggle adding-doubling solver
 # get varying fresnel layer depth with also undetected depth
 # --> how do I vary this depth??...
 # then have layer of ice with water until vertical boundary
-Inputs.dz = [0.00001, 0.005, 1]  # thickness of each vertical layer (unit = m)
+Inputs.dz = [1e-7, 0.5,1]  # thickness of each vertical layer (unit = m) # 0.04
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
 Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
                                # 2 = liquid water, 3 = solid bubbly ice w/out fresnel layer, 
                                # 4 = solid bubbly ice w/out fresnel layer & water 'bubbles'
 Inputs.lwc = 0.1
 Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-Inputs.rho_layers = [916.999, 500, 500]  # density of each layer (unit = kg m-3)
+Inputs.rho_layers = [916.999, 650, 650]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
@@ -235,7 +235,7 @@ Inputs.rf_ice = 2
 # 4 = hexagonal prisms
 
 Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [20000,6000, 6000]  # effective grain or bubble radius
+Inputs.grain_rds = [20000,2000, 2000]  # effective grain or bubble radius
 Inputs.rwater = [0]*len(Inputs.dz)  # radius of optional liquid water coating
 
 # For 4:
