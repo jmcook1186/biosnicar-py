@@ -138,6 +138,8 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
     if Inputs.direct == 1:
     	Inputs.solzen = sza  # solar zenith angle between 0 (nadir) and 89 (horizon)
+    if Inputs.direct == 0:
+    	Inputs.solzen = 50  # solar zenith angle between 0 (nadir) and 89 (horizon)
     # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
     #    0 = mid-latitude winter
     #    1 = mid-latitude summer
@@ -401,37 +403,39 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
 # algae = [0,5000,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,120000,140000,150000]
 # sza_list = [[42], [44], [46], [48], [50], [52], [54], [56], [58], [60]]
 
-
 #############################################################################
 ################ INPUTS
 #############################################################################
 path_to_save_files = '/Users/au660413/Desktop/github/biosnicar-py'
-densities = [360+i*20 for i in range(0,27)]
-grain_sizes = [500,600,700, 800, 900,
+densities = [360+i*20 for i in range(0,28)] # 28
+grain_sizes = [500, 600,700, 800, 900,
                1000, 2000, 3000,
                4000, 5000,  6000, 
                7000, 8000, 9000, 
                10000, 11000, 12000,  
                13000, 14000, 15000, 
                16000, 17000, 18000, 
-               19000, 20000]
-sza_list = [[42],  [52], 
-            [46], [54], [43]]
-            #['diff']
-            #] # 49
-depths = [1e-6, 1e-5, 
-          1e-4, 2e-4, 
+               19000, 20000] # 25
+sza_list = [[42], [43], [46], 
+            [50], [52], [54], 
+            ['diff']] # 49
+depths = [1e-5, 1e-4, 
+          2e-4, 2.5e-4, 
           3e-4, 4e-4, 
-          5e-4, 1e-3, 
-          2.5e-3, 5e-3, 
-          7.5e-3, 
+          5e-4, 
+          1e-3, 2.5e-3, 
+          5e-3, 7.5e-3, 
           1e-2, 1.5e-2, 
-          2e-2,3e-2, 
-          5e-2, 1] 
-lwfilm_dz = [1e-10, 0.0001, 0.0005]
-lwcs = [0, 0.02, 0.04, 0.06, 
-        0.08,  0.1,  0.12,  0.14,  
-        0.16, 0.18, 0.2, 0.25] 
+          2e-2, 3e-2,
+          4e-2, 5e-2,
+          6e-2, 0.1,
+          1] # 20
+lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
+lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
+        0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
+        0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.225, 
+        0.25, 0.275, 0.23] #25
+
 
 #############################################################################
 ################ CALL MODEL
@@ -451,7 +455,7 @@ for sza in sza_list:
 		df = pd.DataFrame.from_records(data)
 		df = df.transpose()
 		df.columns = [str(i) for i in paramlist]
-		df.to_feather(f'{path_to_save_files}/031023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', compression='zstd')
+		df.to_feather(f'{path_to_save_files}/051023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', compression='zstd')
 		print('time for 1 lut: {}'.format(time.time() - start))
 
 

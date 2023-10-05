@@ -191,7 +191,6 @@ def snicar_feeder(Inputs):
     else:
 
         if Inputs.incoming_i == 0:
-
             incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mlw_cld.nc"))
         elif Inputs.incoming_i == 1:
             incoming_file = xr.open_dataset(str(dir_fsds + "swnb_480bnd_mls_cld.nc"))
@@ -213,7 +212,7 @@ def snicar_feeder(Inputs):
         flx_slr_abs = incoming_file["flx_dwn_sfc"].values
         flx_slr[flx_slr <= 0] = 1e-30
         flx_slr = flx_slr
-        Fd = flx_slr / (mu_not * np.pi)
+        Fd = flx_slr 
         Fs = np.zeros(nbr_wvl)
 
     # ----------------------------------------------------------------------------------
