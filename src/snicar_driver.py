@@ -56,6 +56,7 @@ Inputs = c.namedtuple(
         "dz",
         "rho_layers",
         "lwc",
+        "lwc_type",
         "grain_rds",
         "side_length",
         "depth",
@@ -170,7 +171,7 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 # 4) RADIATIVE TRANSFER CONFIGURATION
 # --------------------------------------------------------------------------------------
 
-Inputs.direct = 0  # 1 = direct-beam, 0 = Diffuse flux
+Inputs.direct = 1  # 1 = direct-beam, 0 = Diffuse flux
 Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
 Inputs.solzen = 50  # solar zenith angle between 0 (nadir) and 89 (horizon)
@@ -201,10 +202,13 @@ Inputs.add_double = True  # toggle adding-doubling solver
 # then have layer of ice with water until vertical boundary
 Inputs.dz = [1e-10, 2e-4, 1]  # thickness of each vertical layer (unit = m) # 0.04
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 1 = solid bubbly ice w/ fresnel layer,  
-                               # 2 = liquid water, 3 = solid bubbly ice w/out fresnel layer, 
-                               # 4 = solid bubbly ice w/out fresnel layer & water 'bubbles'
-Inputs.lwc = 0.06
+Inputs.layer_type = [2, 4, 1]  # 0 = ice grain layer, 
+                               # 1 = solid bubbly ice w/ fresnel layer on top,  
+                               # 2 = liquid water film, 
+                               # 3 = solid bubbly ice w/out fresnel layer
+Inputs.lwc = 0.1
+Inputs.lwc_type = 1 # 0 = optically equivalent lwc, 
+                    # 1 = water bubbles w/ same size as air bubbles
 Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
 Inputs.rho_layers = [916.999, 780, 780]  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
