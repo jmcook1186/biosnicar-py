@@ -162,10 +162,15 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     Inputs.add_double = True  # toggle addintg-doubling solver
     Inputs.dz = [lwfilm_dz, z, 1] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-    Inputs.layer_type = [2,3,1]  # Fresnel layers (set all to 0 if toon = True)
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [916.999,density, density]  # density of each layer (unit = kg m-3)
+    Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 
+                                   # 1 = solid bubbly ice w/ fresnel layer,  
+                                   # 2 = liquid water film, 
+                                   # 3 = solid bubbly ice w/out fresnel layer
     Inputs.lwc = lwc
+    Inputs.lwc_type = 0 # 0 = optically equivalent lwc, 
+                        # 1 = water bubbles w/ same size as air bubbles
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
@@ -328,15 +333,14 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
 
 
     Outputs = snicar_feeder(Inputs)
-    if Inputs.layer_type[1] == 3:
-        SSA = (6* (917 - Inputs.rho_layers[1]) / 917 / 
-       (Inputs.rho_layers[1] * Inputs.grain_rds[1] * 2 * 10 ** (-6)))
-    if Inputs.layer_type[1] == 0:
-        SSA = 3/(Inputs.rho_layers[1] * (Inputs.grain_rds[1]* 10 ** (-6)))
+    # if Inputs.layer_type[1] == 1:
+        # SSA = (6* (917 - Inputs.rho_layers[1]) / 917 / 
+       # (Inputs.rho_layers[1] * Inputs.grain_rds[1] * 2 * 10 ** (-6)))
+    # if Inputs.layer_type[1] == 0:
+        # SSA = 3/(Inputs.rho_layers[1] * (Inputs.grain_rds[1]* 10 ** (-6)))
     albedo = Outputs.albedo
     BBA = Outputs.BBA
     data = np.append(albedo, BBA)
-    data = np.append(data,SSA)
     
     #calculate band ratios using spectral responses from S3
     #signal calculated at each wvl by linear interp and 
@@ -372,7 +376,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     #     bands[band-1]=np.nansum(np.array(albedo_interp[f'band{band}'])*np.array(srf[f'band{band}']))              
     #data = np.append(data,bands)
     #data = np.append(data,ga)
-    return data
+    return data.astype(np.float16)
 
 
 
@@ -407,20 +411,20 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
 ################ INPUTS
 #############################################################################
 path_to_save_files = '/Users/au660413/Desktop/github/biosnicar-py'
-densities = [330+i*20 for i in range(0,30)] # 30
-# needs to go below 500 (300 enough?)
-grain_sizes = [300, 400, 500, 600,700, 800, 900,
+densities = [330+i*10 for i in range(0,59)]
+grain_sizes = [100, 200, 300, 400, 500, 600, 700, 800, 900,
                1000, 2000, 3000,
                4000, 5000,  6000, 
                7000, 8000, 9000, 
                10000, 11000, 12000,  
                13000, 14000, 15000, 
                16000, 17000, 18000, 
-               19000, 20000] # 27
-sza_list = [[44], [52], 
-            [42], [43], 
-            [46], [54], 
-            ['diff']] # 
+               19000, 20000] 
+sza_list = [[44], [49], 
+            [43], [48], 
+            [50], [52], 
+            [42], [51],
+            [46], ['diff']] 
 depths = [5e-5, 1e-4,  
           2e-4, 2.5e-4, 
           3e-4, 4e-4, 
@@ -437,8 +441,7 @@ lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
 lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
         0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
         0.15,0.175, 0.2, 0.225, 
-        0.25] # 20
-
+        0.25, 0.275, 0.23] # 20
 
 #############################################################################
 ################ CALL MODEL
@@ -446,8 +449,6 @@ lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06,
 for sza in sza_list:
 	start = time.time()
 	paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza, lwcs))))
-# 	updated_paramlist = sorted(set([params for params in paramlist 
-                     # if not (params[1], params[2]) in params_to_remove]))
 	if __name__ == '__main__':
 		nb_cores = 16
 		pool = mp.Pool(nb_cores)
@@ -458,7 +459,8 @@ for sza in sza_list:
 		df = pd.DataFrame.from_records(data)
 		df = df.transpose()
 		df.columns = [str(i) for i in paramlist]
-		df.to_feather(f'{path_to_save_files}/061023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', compression='zstd')
+		df.to_feather(f'{path_to_save_files}/091023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', 
+                compression='zstd')
 		print('time for 1 lut: {}'.format(time.time() - start))
 
 
