@@ -344,7 +344,6 @@ def snicar_feeder(Inputs):
                     ext_cff_mss = temp["ext_cff_mss"].values
                     MAC_snw[i, :] = ext_cff_mss
                     asm_prm = temp["asm_prm"].values
-
                     g_snw[i, :] = asm_prm
 
                     # Correct g for aspherical particles - He et al.(2017)
@@ -662,7 +661,7 @@ def snicar_feeder(Inputs):
                 abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
                 MAC_snw[i, :] = (
                     (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
-                ) + abs_cff_mss_ice #* (vlm_frac_ice * 917 / Inputs.rho_layers[i])
+                ) + abs_cff_mss_ice # * (vlm_frac_ice * 917 / Inputs.rho_layers[i])
               
                 ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
                     i, :
@@ -678,7 +677,7 @@ def snicar_feeder(Inputs):
                     )
                 MAC_snw[i, :] = (
                     (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
-                ) + abs_cff_mss_ice #* (vlm_frac_ice * 917 / Inputs.rho_layers[i])
+                ) + abs_cff_mss_ice 
               
                 ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
                     i, :
@@ -773,7 +772,7 @@ def snicar_feeder(Inputs):
                     )
                 MAC_snw[i, :] = (
                     (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
-                ) + abs_cff_mss_ice #* (vlm_frac_ice * 917 / Inputs.rho_layers[i])
+                ) + abs_cff_mss_ice 
               
                 ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
                     i, :
@@ -808,43 +807,45 @@ def snicar_feeder(Inputs):
                                   ) / MAC_snw[
                     i, :
                 ]
-            
-
-            # rd = f"{Inputs.grain_rds[i]}"
-            # rd = rd.rjust(4, "0")
-            # file_ice = str(dir_bubbly_ice + "bbl_{}.nc").format(rd)
-            # file = xr.open_dataset(file_ice)
-            # sca_cff_vlm = file["sca_cff_vlm"].values
-            # g_snw[i, :] = file["asm_prm"].values
-            # # abs_cff_mss_ice[:] = ((4 * np.pi * refidx_im) / (wvl * 1e-6)) / 917
-            # ref_index_water = pd.read_csv(f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
-            # # neglecting air mass:
-            # vlm_frac_ice = (Inputs.rho_layers[i] - Inputs.lwc * 1000) / 917
-            # vlm_frac_air = (1 
-            #                 - Inputs.lwc 
-            #                 - vlm_frac_ice
-            #                 )
-            # # neglecting air absorption:
-            # abs_cff_mss_ice[:] = ( 
-            #     (vlm_frac_ice * 917 / Inputs.rho_layers[i]) * (4 * np.pi * refidx_im / (wvl * 1e-6)) / 917
-            #     + (Inputs.lwc * 1000 / Inputs.rho_layers[i]) * (4 * np.pi * ref_index_water.k.values / (wvl * 1e-6)) / 1000
-            #     )
-            # # abs_cff_mss_ice[:] = (4 * np.pi / (wvl * 1e-6) * (( vlm_frac_ice * 917 / Inputs.rho_layers[i] * refidx_im
-            # #                                   + Inputs.lwc * 1000 / Inputs.rho_layers[i] * ref_index_water.k.values) /
-            # #                                   ( 917 * vlm_frac_ice * 917 / Inputs.rho_layers[i] 
-            # #                                    + 1000 * Inputs.lwc * 1000 / Inputs.rho_layers[i]
-            # #                                   )
-            # #                                   )
-            # #     )
-        
-            # MAC_snw[i, :] = (
-            #     (sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]
-            # ) + abs_cff_mss_ice #* (vlm_frac_ice * 917 / Inputs.rho_layers[i])
-          
-            # ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / Inputs.rho_layers[i]) / MAC_snw[
-            #     i, :
-            # ]
                 
+        elif Inputs.layer_type[i] == 4:  # granular layer with mixed air and water bubbles
+            vlm_frac_ice = (Inputs.rho_layers[i] - Inputs.lwc * 1000) / 917
+            vlm_frac_air = (1 
+                            - Inputs.lwc 
+                            - vlm_frac_ice
+                            )
+            ssps_ice = xr.open_dataset(str( dir_spherical_ice_files
+                                           + dir_op
+                                           + "{}.nc".format(str(
+                                               Inputs.grain_rds[i]).rjust(
+                                                   4, "0"))
+                                                   )
+                                                   )
+            ssps_water = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_in_air/water_grain_in_air_{Inputs.grain_rds[i]}.nc")
+            
+            ssa = ((ssps_water["ss_alb"].values * Inputs.lwc
+                   + ssps_ice["ss_alb"].values * vlm_frac_ice) /
+                   (Inputs.lwc + vlm_frac_ice))
+            
+            ssa_snw[i, :] = ssa
+            
+            g = ((ssps_water["asm_prm"].values * Inputs.lwc
+                   + ssps_ice["asm_prm"].values * vlm_frac_ice) /
+                   (Inputs.lwc + vlm_frac_ice))
+            
+            g_snw[i, :] = g
+            
+            ext_cff_mss = (
+                (ssps_water["ext_cff_mss"].values * Inputs.lwc * 1000 / Inputs.rho_layers[i]
+                 + ssps_ice["ext_cff_mss"].values * vlm_frac_ice * 917 / Inputs.rho_layers[i])
+                / (Inputs.lwc * 1000 / Inputs.rho_layers[i]
+                   + vlm_frac_ice * 917 / Inputs.rho_layers[i])
+                )
+            
+            MAC_snw[i, :] = ssps_ice["ext_cff_mss"].values
+        
+                
+
     # ----------------------------------------------------------------------------------
     # Read in impurity optical properties
     # ----------------------------------------------------------------------------------

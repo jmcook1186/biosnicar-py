@@ -200,14 +200,14 @@ Inputs.add_double = True  # toggle adding-doubling solver
 # get varying fresnel layer depth with also undetected depth
 # --> how do I vary this depth??...
 # then have layer of ice with water until vertical boundary
-Inputs.dz = [1e-10, 2e-4, 1]  # thickness of each vertical layer (unit = m) # 0.04
+Inputs.dz = [1e-10, 1, 1]  # thickness of each vertical layer (unit = m) # 0.04
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [2, 4, 1]  # 0 = ice grain layer, 
+Inputs.layer_type = [2, 3, 3]  # 0 = ice grain layer, 
                                # 1 = solid bubbly ice w/ fresnel layer on top,  
                                # 2 = liquid water film, 
                                # 3 = solid bubbly ice w/out fresnel layer
 Inputs.lwc = 0.1
-Inputs.lwc_type = 1 # 0 = optically equivalent lwc, 
+Inputs.lwc_type = 0 # 0 = optically equivalent lwc, 
                     # 1 = water bubbles w/ same size as air bubbles
 Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
 Inputs.rho_layers = [916.999, 780, 780]  # density of each layer (unit = kg m-3)
@@ -516,8 +516,6 @@ rc = {
     "ytick.left": True,
 }
 plt.rcParams.update(rc)
-plt.plot(wvl[15:230], albedo_test[15:230]) 
-
 plt.plot(wvl[15:230], albedo[15:230], '--') # 0.25m
 
 plt.ylabel("Albedo", fontsize=18), plt.xlabel(
