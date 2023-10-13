@@ -411,37 +411,58 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
 ################ INPUTS
 #############################################################################
 path_to_save_files = '/Users/au660413/Desktop/github/biosnicar-py'
-densities = [330+i*10 for i in range(0,59)]
+# densities = [330+i*10 for i in range(0,59)]
+# grain_sizes = [100, 200, 300, 400, 500, 600, 700, 800, 900,
+#                1000, 2000, 3000,
+#                4000, 5000,  6000, 
+#                7000, 8000, 9000, 
+#                10000, 11000, 12000,  
+#                13000, 14000, 15000, 
+#                16000, 17000, 18000, 
+#                19000, 20000] 
+# sza_list = [[43], [42], 
+#             [46], [48], 
+#             [52], [44], 
+#             [47], [54],
+#             [49], ['diff']] 
+# depths = [5e-5, 1e-4,  
+#           2e-4, 2.5e-4, 
+#           3e-4, 4e-4, 
+#           5e-4, 1e-3,
+#           2.5e-3, 
+#           4e-3, 5e-3, 
+#           6e-3,7e-3,
+#           8e-3, 
+#           1e-2, 1.5e-2, 
+#           3e-2, 4.5e-2, 
+#           6e-2, 0.1,
+#           1] 
+# lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
+# lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
+#         0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
+#         0.15,0.175, 0.2, 0.225, 
+#         0.25, 0.275, 0.23] 
+
+densities = [300+i*10 for i in range(0,51)]
 grain_sizes = [100, 200, 300, 400, 500, 600, 700, 800, 900,
-               1000, 2000, 3000,
-               4000, 5000,  6000, 
-               7000, 8000, 9000, 
-               10000, 11000, 12000,  
-               13000, 14000, 15000, 
-               16000, 17000, 18000, 
-               19000, 20000] 
-sza_list = [[44], [49], 
-            [43], [48], 
-            [50], [52], 
-            [42], [51],
-            [46], ['diff']] 
-depths = [5e-5, 1e-4,  
-          2e-4, 2.5e-4, 
-          3e-4, 4e-4, 
-          5e-4, 1e-3,
-          2.5e-3, 
-          4e-3, 5e-3, 
-          6e-3,7e-3,
-          8e-3, 
-          1e-2, 1.5e-2, 
-          3e-2, 4.5e-2, 
-          6e-2, 0.1,
-          1] # 21
-lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
+                1000, 2000, 3000,
+                4000, 5000,  6000, 
+                7000, 8000, 9000, 
+                10000, 11000, 12000,  
+                13000, 14000, 15000, 
+                16000, 17000, 18000, 
+                19000, 20000] 
+depths = [1]
+lwfilm_dz = [1e-10]
 lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
         0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
         0.15,0.175, 0.2, 0.225, 
-        0.25, 0.275, 0.23] # 20
+        0.25, 0.275, 0.23] 
+sza_list = [[43], [46], 
+            ['diff'], [48], 
+            [49], [44], 
+            [47], [52],
+            [54], [42]] 
 
 #############################################################################
 ################ CALL MODEL
@@ -450,7 +471,7 @@ for sza in sza_list:
 	start = time.time()
 	paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza, lwcs))))
 	if __name__ == '__main__':
-		nb_cores = 16
+		nb_cores = 100
 		pool = mp.Pool(nb_cores)
 		print(f'starting simulation on {nb_cores} cores')
 		data = pool.starmap(call_SNICAR,paramlist)
@@ -459,7 +480,7 @@ for sza in sza_list:
 		df = pd.DataFrame.from_records(data)
 		df = df.transpose()
 		df.columns = [str(i) for i in paramlist]
-		df.to_feather(f'{path_to_save_files}/091023_lut_{sza[0]}_equivalent_lwc_varying_fresnel_depth.feather', 
+		df.to_feather(f'{path_to_save_files}/131023_lut_{sza[0]}_mixed_water_ice_spheres.feather', 
                 compression='zstd')
 		print('time for 1 lut: {}'.format(time.time() - start))
 
