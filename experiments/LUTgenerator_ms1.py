@@ -164,7 +164,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [916.999,density, density]  # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 
+    Inputs.layer_type = [2, 4, 4]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
