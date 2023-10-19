@@ -19,7 +19,6 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     
     import collections as c
     from pathlib import Path
-    import numpy as np
     from snicar_feeder import snicar_feeder
 
     # --------------------------------------------------------------------------------------
@@ -439,10 +438,10 @@ depths = [5e-5, 1e-4,
           6e-2, 0.1,
           1] 
 lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
-lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
-        0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
-        0.15,0.175, 0.2, 0.225, 
-        0.25, 0.275, 0.23] 
+lwcs = [[0], [0.01], [0.02], [0.03], [0.04], [0.05], [0.06], 
+        [0.07], [0.08], [0.09], [0.1], [0.11], [0.12], [0.13], [0.14],  
+        [0.15],[0.175], [0.2], [0.225], 
+        [0.25], [0.275], [0.23]] 
 
 ## PARAMS FOR MIXED SPHERES ICE WATER 
 # densities = [300+i*10 for i in range(0,77)]
