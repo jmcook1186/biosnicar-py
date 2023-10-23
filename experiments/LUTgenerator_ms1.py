@@ -455,7 +455,7 @@ lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06,
         0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
         0.15,0.175, 0.2, 0.225, 
         0.25, 0.275, 0.23] 
-sza_list = [[40], [45], [50], [55], [60]] 
+sza_list = [40, 45, 50, 55, 60] 
 algs = [0,2500, 5000,10000,
         15000, 20000, 25000,
         30000,35000, 
@@ -488,21 +488,38 @@ algs = [0,2500, 5000,10000,
 #                 compression='zstd') 
 #          print('time for 1 lut: {}'.format(time.time() - start))
          
-for sza in sza_list:
-    start = time.time()
-    paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza, algs))))
-    if __name__ == '__main__':
-        nb_cores = 80
-        pool = mp.Pool(nb_cores)
-        print(f'starting simulation on {nb_cores} cores')
-        data = pool.starmap(call_SNICAR,paramlist)
-        pool.close()  
-        pool.join() 
-        df = pd.DataFrame.from_records(data)
-        df = df.transpose()
-        df.columns = [str(i) for i in paramlist]
-        df.to_feather(f'{path_to_save_files}/231023_lut_{sza[0]}_snow_with_sa.feather', 
-                      compression='zstd')
-        print('time for 1 lut: {}'.format(time.time() - start))
+# for sza in sza_list:
+#     start = time.time()
+#     paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza, algs))))
+#     if __name__ == '__main__':
+#         nb_cores = 80
+#         pool = mp.Pool(nb_cores)
+#         print(f'starting simulation on {nb_cores} cores')
+#         data = pool.starmap(call_SNICAR,paramlist)
+#         pool.close()  
+#         pool.join() 
+#         df = pd.DataFrame.from_records(data)
+#         df = df.transpose()
+#         df.columns = [str(i) for i in paramlist]
+#         df.to_feather(f'{path_to_save_files}/231023_lut_{sza[0]}_snow_with_sa.feather', 
+#                       compression='zstd')
+#         print('time for 1 lut: {}'.format(time.time() - start))
+
+start = time.time()
+paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, algs))))
+
+if __name__ == '__main__':
+    nb_cores = 80
+    pool = mp.Pool(nb_cores)
+    print(f'starting simulation on {nb_cores} cores')
+    data = pool.starmap(call_SNICAR,paramlist)
+    pool.close()  
+    pool.join() 
+    df = pd.DataFrame.from_records(data)
+    df = df.transpose()
+    df.columns = [str(i) for i in paramlist]
+    df.to_feather(f'{path_to_save_files}/231023_lut_snow_with_sa.feather', 
+                  compression='zstd')
+    print('time for 1 lut: {}'.format(time.time() - start))
 
 
