@@ -15,7 +15,7 @@ import math as m
 import time 
 
 
-def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, alg): 
+def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc): 
     
     import collections as c
     from pathlib import Path
@@ -159,16 +159,16 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, alg):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [lwfilm_dz, 1] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [lwfilm_dz, z, 1] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-    Inputs.rho_layers = [916.999,density]  # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [2, 0]  # 0 = ice grain layer, 
+    Inputs.rho_layers = [916.999,density,density]  # density of each layer (unit = kg m-3)
+    Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
-    Inputs.lwc = 0
-    Inputs.lwc_type = 0 # 0 = optically equivalent lwc, 
+    Inputs.lwc = lwc
+    Inputs.lwc_type = 1 # 0 = optically equivalent lwc, 
                         # 1 = water bubbles w/ same size as air bubbles
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
@@ -190,7 +190,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, alg):
     # 4 = hexagonal prisms
     
     Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-    Inputs.grain_rds = [grain_size, grain_size] # effective grain or bubble radius
+    Inputs.grain_rds = [grain_size, grain_size, grain_size] # effective grain or bubble radius
     Inputs.rwater = [0]*len(Inputs.dz) # int(Inputs.grain_rds[1]*1.055)]  # radius of optional liquid water coating
 
     # For 4:
@@ -323,7 +323,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, alg):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_snw_alg = [alg, 0] 
+    Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz) 
 
 
 
@@ -411,7 +411,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, alg):
 ################ INPUTS
 #############################################################################
 path_to_save_files = '/data/lou'
-## PARAMS FOR EQUIVALENT/WATER SPHERES IN ICE LUTS
+## PARAMS FOR EQUIVALENT WATER IN ICE LUTS
 # densities = [330+i*10 for i in range(0,59)]
 # grain_sizes = [100, 200, 300, 400, 500, 600, 700, 800, 900,
 #                 1000, 2000, 3000,
@@ -444,49 +444,106 @@ path_to_save_files = '/data/lou'
 #         [0.15],[0.175], [0.2], [0.225], 
 #         [0.25], [0.275], [0.23]] 
 
+## PARAMS FOR WATER BBL IN ICE LUTS
+densities = [300+i*10 for i in range(0,62)]
+grain_sizes = [[50],
+ [75],
+ [100],
+ [200],
+ [300],
+ [400],
+ [500],
+ [600],
+ [700],
+ [800],
+ [900],
+ [1000],
+ [2000],
+ [3000],
+ [4000],
+ [5000],
+ [6000],
+ [7000],
+ [8000],
+ [9000],
+ [10000],
+ [11000],
+ [12000],
+ [13000],
+ [14000],
+ [15000],
+ [16000],
+ [17000],
+ [18000],
+ [19000],
+ [20000]] 
+sza_list = [43, 48, 
+            52, 44, 
+            ]# [52], [44], 
+            # [47], [54],
+            # [49], ['diff']] 43, 48, 52, 44
+depths = [5e-5, 1e-4,  
+          2e-4, 2.5e-4, 
+          3e-4, 4e-4, 
+          5e-4, 1e-3,
+          2.5e-3, 
+          4e-3, 5e-3, 
+          6e-3, 7e-3,
+          8e-3, 
+          1e-2, 1.5e-2, 
+          3e-2, 4.5e-2, 
+          6e-2, 0.1,
+          1] 
+lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
+lwcs = [[0], [0.01], [0.03],  [0.06], 
+        [0.07], [0.08], [0.09], [0.1], 
+        [0.11], [0.12], [0.13], [0.14],  
+        [0.15],[0.175], [0.2], [0.225], 
+        [0.25], [0.275], [0.23]]
+
 ## PARAMS FOR CHLA ABS FEATURE 
-densities = [300+i*50 for i in range(0,10)]
-grain_sizes = [50, 100, 250, 500, 750,
-                1000, 2000, 3000,
-                4000, 5000] 
-depths = [1]
-lwfilm_dz = [0.00001]
-lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
-        0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
-        0.15,0.175, 0.2, 0.225, 
-        0.25, 0.275, 0.23] 
-sza_list = [40, 45, 50, 55, 60] 
-algs = [0,2500, 5000,10000,
-        15000, 20000, 25000,
-        30000,35000, 
-        40000,45000, 
-        50000,55000,
-        60000,65000, 
-        70000,75000,
-        80000,85000,
-        90000,95000,
-        100000]
+# densities = [300+i*50 for i in range(0,10)]
+# grain_sizes = [50, 100, 250, 500, 750,
+#                 1000, 2000, 3000,
+#                 4000, 5000] 
+# depths = [1]
+# lwfilm_dz = [0.00001]
+# lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
+#         0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
+#         0.15,0.175, 0.2, 0.225, 
+#         0.25, 0.275, 0.23] 
+# sza_list = [40, 45, 50, 55, 60] 
+# algs = [0,2500, 5000,10000,
+#         15000, 20000, 25000,
+#         30000,35000, 
+#         40000,45000, 
+#         50000,55000,
+#         60000,65000, 
+#         70000,75000,
+#         80000,85000,
+#         90000,95000,
+#         100000]
 
 #############################################################################
 ################ CALL MODEL
 #############################################################################
 
-# for lwc in lwcs:
-#  	start = time.time()
-#  	paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, lwc))))
-#  	if __name__ == '__main__':
-#          nb_cores = 80
-#          pool = mp.Pool(nb_cores)
-#          print(f'starting simulation on {nb_cores} cores')
-#          data = pool.starmap(call_SNICAR,paramlist)
-#          pool.close()  
-#          pool.join()
-#          df = pd.DataFrame.from_records(data)
-#          df = df.transpose()
-#          df.columns = [str(i) for i in paramlist]
-#          df.to_feather(f'{path_to_save_files}/191023_lut_{lwc}_lwc_water_bbl_in_ice_varying_fresnel_depth.feather', 
-#                 compression='zstd') 
-#          print('time for 1 lut: {}'.format(time.time() - start))
+for bbl_size in grain_sizes:
+ 	start = time.time()
+ 	paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, bbl_size, sza_list, lwcs))))
+ 	if __name__ == '__main__':
+          nb_cores = 80
+          pool = mp.Pool(nb_cores)
+          print(f'starting simulation on {nb_cores} cores')
+          data = pool.starmap(call_SNICAR,paramlist)
+          pool.close()  
+          pool.join()
+          df = pd.DataFrame.from_records(data)
+          df = df.transpose()
+          df.columns = [str(i) for i in paramlist]
+          df.to_feather(f'{path_to_save_files}/271023_lut_{bbl_size[0]}_radius_water_bbl_in_ice_varying_fresnel_depth.feather', 
+                compression='zstd') 
+          print('time for 1 lut: {}'.format(time.time() - start))
          
 # for sza in sza_list:
 #     start = time.time()
@@ -505,21 +562,21 @@ algs = [0,2500, 5000,10000,
 #                       compression='zstd')
 #         print('time for 1 lut: {}'.format(time.time() - start))
 
-start = time.time()
-paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, algs))))
+# start = time.time()
+# paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, algae))))
 
-if __name__ == '__main__':
-    nb_cores = 80
-    pool = mp.Pool(nb_cores)
-    print(f'starting simulation on {nb_cores} cores')
-    data = pool.starmap(call_SNICAR,paramlist)
-    pool.close()  
-    pool.join() 
-    df = pd.DataFrame.from_records(data)
-    df = df.transpose()
-    df.columns = [str(i) for i in paramlist]
-    df.to_feather(f'{path_to_save_files}/231023_lut_snow_with_sa.feather', 
-                  compression='zstd')
-    print('time for 1 lut: {}'.format(time.time() - start))
+# if __name__ == '__main__':
+#     nb_cores = 80
+#     pool = mp.Pool(nb_cores)
+#     print(f'starting simulation on {nb_cores} cores')
+#     data = pool.starmap(call_SNICAR,paramlist)
+#     pool.close()  
+#     pool.join() 
+#     df = pd.DataFrame.from_records(data)
+#     df = df.transpose()
+#     df.columns = [str(i) for i in paramlist]
+#     df.to_feather(f'{path_to_save_files}/271023_lut_snow_with_sa.feather', 
+#                   compression='zstd')
+#     print('time for 1 lut: {}'.format(time.time() - start))
 
 
