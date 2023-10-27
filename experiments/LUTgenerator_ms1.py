@@ -168,8 +168,9 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
     Inputs.lwc = lwc
-    Inputs.lwc_type = 1 # 0 = optically equivalent lwc, 
+    Inputs.lwc_type = 2 # 0 = optically equivalent lwc, 
                         # 1 = water bubbles w/ same size as air bubbles
+                        # 2 = mixed
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
@@ -412,43 +413,8 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
 #############################################################################
 path_to_save_files = '/data/lou'
 ## PARAMS FOR EQUIVALENT WATER IN ICE LUTS
-# densities = [330+i*10 for i in range(0,59)]
-# grain_sizes = [100, 200, 300, 400, 500, 600, 700, 800, 900,
-#                 1000, 2000, 3000,
-#                 4000, 5000,  6000, 
-#                 7000, 8000, 9000, 
-#                 10000, 11000, 12000,  
-#                 13000, 14000, 15000, 
-#                 16000, 17000, 18000, 
-#                 19000, 20000] 
-# sza_list = [[43], [42], 
-#             [46], [48], 
-#             [52], [44], 
-#             [47], [54],
-#             [49], ['diff']] 
-# depths = [5e-5, 1e-4,  
-#           2e-4, 2.5e-4, 
-#           3e-4, 4e-4, 
-#           5e-4, 1e-3,
-#           2.5e-3, 
-#           4e-3, 5e-3, 
-#           6e-3,7e-3,
-#           8e-3, 
-#           1e-2, 1.5e-2, 
-#           3e-2, 4.5e-2, 
-#           6e-2, 0.1,
-#           1] 
-# lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
-# lwcs = [[0], [0.01], [0.02], [0.03], [0.04], [0.05], [0.06], 
-#         [0.07], [0.08], [0.09], [0.1], [0.11], [0.12], [0.13], [0.14],  
-#         [0.15],[0.175], [0.2], [0.225], 
-#         [0.25], [0.275], [0.23]] 
-
-## PARAMS FOR WATER BBL IN ICE LUTS
-densities = [300+i*10 for i in range(0,62)]
-grain_sizes = [[50],
- [75],
- [100],
+densities = [330+i*10 for i in range(0,59)]
+grain_sizes = [[100],
  [200],
  [300],
  [400],
@@ -476,30 +442,86 @@ grain_sizes = [[50],
  [17000],
  [18000],
  [19000],
- [20000]] 
-sza_list = [43, 48, 
-            52, 44, 
-            ]# [52], [44], 
-            # [47], [54],
-            # [49], ['diff']] 43, 48, 52, 44
+ [20000]]
+sza_list = [[43], [42], 
+            [46], [48], 
+            [52], [44], 
+            [47], [54],
+            [49], ['diff']] 
 depths = [5e-5, 1e-4,  
           2e-4, 2.5e-4, 
           3e-4, 4e-4, 
           5e-4, 1e-3,
           2.5e-3, 
           4e-3, 5e-3, 
-          6e-3, 7e-3,
+          6e-3,7e-3,
           8e-3, 
           1e-2, 1.5e-2, 
           3e-2, 4.5e-2, 
           6e-2, 0.1,
           1] 
 lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
-lwcs = [[0], [0.01], [0.03],  [0.06], 
-        [0.07], [0.08], [0.09], [0.1], 
-        [0.11], [0.12], [0.13], [0.14],  
+lwcs = [[0], [0.01], [0.02], [0.03], [0.04], [0.05], [0.06], 
+        [0.07], [0.08], [0.09], [0.1], [0.11], [0.12], [0.13], [0.14],  
         [0.15],[0.175], [0.2], [0.225], 
-        [0.25], [0.275], [0.23]]
+        [0.25], [0.275], [0.23]] 
+
+## PARAMS FOR WATER BBL IN ICE LUTS
+# densities = [300+i*10 for i in range(0,62)]
+# grain_sizes = [[50],
+#  [75],
+#  [100],
+#  [200],
+#  [300],
+#  [400],
+#  [500],
+#  [600],
+#  [700],
+#  [800],
+#  [900],
+#  [1000],
+#  [2000],
+#  [3000],
+#  [4000],
+#  [5000],
+#  [6000],
+#  [7000],
+#  [8000],
+#  [9000],
+#  [10000],
+#  [11000],
+#  [12000],
+#  [13000],
+#  [14000],
+#  [15000],
+#  [16000],
+#  [17000],
+#  [18000],
+#  [19000],
+#  [20000]] 
+# sza_list = [43, 48, 
+#             52, 44, 
+#             ]# [52], [44], 
+#             # [47], [54],
+#             # [49], ['diff']] 43, 48, 52, 44
+# depths = [5e-5, 1e-4,  
+#           2e-4, 2.5e-4, 
+#           3e-4, 4e-4, 
+#           5e-4, 1e-3,
+#           2.5e-3, 
+#           4e-3, 5e-3, 
+#           6e-3, 7e-3,
+#           8e-3, 
+#           1e-2, 1.5e-2, 
+#           3e-2, 4.5e-2, 
+#           6e-2, 0.1,
+#           1] 
+# lwfilm_dz = [1e-10] #[1e-10, 0.0001, 0.0005]
+# lwcs = [[0], [0.01], [0.03],  [0.06], 
+#         [0.07], [0.08], [0.09], [0.1], 
+#         [0.11], [0.12], [0.13], [0.14],  
+#         [0.15],[0.175], [0.2], [0.225], 
+#         [0.25], [0.275], [0.23]]
 
 ## PARAMS FOR CHLA ABS FEATURE 
 # densities = [300+i*50 for i in range(0,10)]
@@ -541,7 +563,7 @@ for bbl_size in grain_sizes:
           df = pd.DataFrame.from_records(data)
           df = df.transpose()
           df.columns = [str(i) for i in paramlist]
-          df.to_feather(f'{path_to_save_files}/271023_lut_{bbl_size[0]}_radius_water_bbl_in_ice_varying_fresnel_depth.feather', 
+          df.to_feather(f'{path_to_save_files}/281023_lut_{bbl_size[0]}_radius_mix_bbl_opt_equ.feather', 
                 compression='zstd') 
           print('time for 1 lut: {}'.format(time.time() - start))
          
