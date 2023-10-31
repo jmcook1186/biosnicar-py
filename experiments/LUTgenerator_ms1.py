@@ -15,7 +15,7 @@ import math as m
 import time 
 
 
-def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc): 
+def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part): 
     
     import collections as c
     from pathlib import Path
@@ -44,6 +44,8 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
             "dz",
             "rho_layers",
             "lwc",
+            "lwc_type",
+            "lwc_pct_bubbles",
             "grain_rds",
             "side_length",
             "depth",
@@ -159,7 +161,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [lwfilm_dz, z, 1] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [lwfilm_dz, z, 10] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [916.999,density,density]  # density of each layer (unit = kg m-3)
@@ -171,6 +173,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
     Inputs.lwc_type = 2 # 0 = optically equivalent lwc, 
                         # 1 = water bubbles w/ same size as air bubbles
                         # 2 = mixed
+    Inputs.lwc_pct_bubbles = lwc_part # amount of water as bubbles
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
@@ -334,49 +337,10 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc):
 
 
     Outputs = snicar_feeder(Inputs)
-    # if Inputs.layer_type[1] == 1:
-        # SSA = (6* (917 - Inputs.rho_layers[1]) / 917 / 
-       # (Inputs.rho_layers[1] * Inputs.grain_rds[1] * 2 * 10 ** (-6)))
-    # if Inputs.layer_type[1] == 0:
-        # SSA = 3/(Inputs.rho_layers[1] * (Inputs.grain_rds[1]* 10 ** (-6)))
     albedo = Outputs.albedo
     BBA = Outputs.BBA
-    data = np.append(albedo, BBA)
+    data = np.float32(np.append(albedo[70:170], BBA))
     
-    #calculate band ratios using spectral responses from S3
-    #signal calculated at each wvl by linear interp and 
-    #multiplied by weight and finally summed 
-    #srf = pd.read_csv('experiments/srf_resampled.csv')
-    #albedo_interp = pd.DataFrame().reindex_like(srf)
-    #bands = np.zeros(21)
-    #for band in range(1,22): 
-    #     wvl_band = srf[f'wvl{band}']
-    #     albedo_interp[f'wvl{band}']=srf[f'wvl{band}']
-         # systematically find two values of albedo to interpolate
-    #     for i,val in enumerate(wvl_band):
-    #           if not m.isnan(val):
-    #           #if the wavelength finishes by 5, can be picked from albedo directly 
-    #                if (val%5==0 and val%10!=0):
-    #                    albedo_interp.iloc[i][f'band{band}'] = albedo[int((val-5)/10-20)]
-    #           #if the wavelength doesnt, find closest values to interp:
-    #                
-    #                else:
-    #                    wvl_up=0
-    #                    wvl_down=0
-    #                    if  val%10==0:
-    #                        wvl_down = val - 5
-    #                        wvl_up = val + 5
-    #                    elif (val - val%5)%10 == 0:
-    #                        wvl_up = val + 5 - val%5
-    #                        wvl_down = wvl_up - 10
-    #                    else:
-    #                        wvl_down = val - val%5
-    #                        wvl_up = wvl_down + 10
-    #                    new_alb = albedo[int((wvl_down-5)/10-20)] +  (val-wvl_down) * (albedo[int((wvl_up-5)/10-20)]-albedo[int((wvl_down-5)/10-20)]) / (wvl_up-wvl_down)
-    #                    albedo_interp.iloc[i][f'band{band}'] = new_alb
-    #     bands[band-1]=np.nansum(np.array(albedo_interp[f'band{band}'])*np.array(srf[f'band{band}']))              
-    #data = np.append(data,bands)
-    #data = np.append(data,ga)
     return data.astype(np.float16)
 
 
@@ -442,7 +406,7 @@ grain_sizes = [[100],
  [17000],
  [18000],
  [19000],
- [20000]]
+ [20000]] # 29 * 29 * 14 * 15
 sza_list = [43, 42, 
             46, 48, 
             52, 44, 
@@ -482,7 +446,7 @@ lwcs = [0,
  0.225,
  0.25,
  0.275,
- 0.23]
+ 0.3]
 
 ## PARAMS FOR WATER BBL IN ICE LUTS
 # densities = [300+i*10 for i in range(0,62)]
@@ -539,7 +503,7 @@ lwcs = [0,
 #         [0.07], [0.08], [0.09], [0.1], 
 #         [0.11], [0.12], [0.13], [0.14],  
 #         [0.15],[0.175], [0.2], [0.225], 
-#         [0.25], [0.275], [0.23]]
+#         [0.25], [0.275], [0.3]]
 
 ## PARAMS FOR CHLA ABS FEATURE 
 # densities = [300+i*50 for i in range(0,10)]
@@ -548,10 +512,6 @@ lwcs = [0,
 #                 4000, 5000] 
 # depths = [1]
 # lwfilm_dz = [0.00001]
-# lwcs = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 
-#         0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14,  
-#         0.15,0.175, 0.2, 0.225, 
-#         0.25, 0.275, 0.23] 
 # sza_list = [40, 45, 50, 55, 60] 
 # algs = [0,2500, 5000,10000,
 #         15000, 20000, 25000,
@@ -564,44 +524,132 @@ lwcs = [0,
 #         90000,95000,
 #         100000]
 
+#### LOWER SIZE FOR TRIALS 
+densities = [400+i*25 for i in range(0,21)] # 21
+lwfilm_dz = [1e-10]
+sza_list = [42, 
+            'diff', 
+            52, 
+            54, 
+            46, 
+            43, 
+            44, 
+            47, 
+            45] # 9
+depths = [5e-5, 
+          3e-4,
+          6.3e-4,
+          1e-3,
+          1.5e-3,
+          2.3e-3,
+          3.5e-3,
+          5e-3, 
+          6e-3,
+          8e-3,
+          1.2e-2,
+          1] # 12
+lwcs = [0,
+0.02,
+0.04,
+0.06,
+0.08,
+0.1,
+0.12,
+0.14,
+0.16,
+0.18,
+0.2,
+0.225,
+0.25,
+0.275,
+0.3] # 15 
+lwc_partitions = [0,
+                 0.35, 
+                 0.65, 
+                 0.85,
+                 1] # 4
+# grain_sizes = [[100],
+#  [200],
+#  [300],
+#  [400],
+#  [500],
+#  [600],
+#  [700],
+#  [800],
+#  [900],
+#  [1000],
+#  [1100],
+#  [1200],
+#  [1300],
+#  [1400],
+#  [1500],
+#  [1750],
+#  [2000],
+#  [2250],
+#  [2500],
+#  [3000],
+#  [3500],
+#  [4000],
+#  [5000],
+#  [6000],
+#  [7000],
+#  [8000],
+#  [9000],
+#  [10000],
+#  [11000],
+#  [12000],
+#  [14000],
+#  [16000],
+#  [18000],
+#  [20000]]
+
+grain_sizes = [[100]]
+
+
+
 #############################################################################
 ################ CALL MODEL
 #############################################################################
+for radius in grain_sizes:
+    start = time.time()
+    paramlist = list(set((itertools.product(depths, lwfilm_dz, 
+                                              densities, radius, 
+                                              sza_list, lwcs, lwc_partitions))))
+    if __name__ == '__main__':
+        nb_cores = 80
+        pool = mp.Pool(nb_cores)
+        print(f'starting simulation on {nb_cores} cores')
+        data = pool.starmap(call_SNICAR, paramlist)
+        pool.close()  
+        pool.join() 
+        df = pd.DataFrame.from_records(data)
+        df = df.transpose()
+        df.columns = [str(i) for i in paramlist]
+        df.to_feather(f'{path_to_save_files}/311023_lut_{radius[0]}_varying_lwc_type_mixing.feather', 
+                      compression='zstd')
+        print('time for 1 lut: {}'.format(time.time() - start))
 
-for bbl_size in grain_sizes:
- 	start = time.time()
- 	paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, bbl_size, sza_list, lwcs))))
- 	if __name__ == '__main__':
-          nb_cores = 80
-          pool = mp.Pool(nb_cores)
-          print(f'starting simulation on {nb_cores} cores')
-          data = pool.starmap(call_SNICAR,paramlist)
-          pool.close()  
-          pool.join()
-          df = pd.DataFrame.from_records(data)
-          df = df.transpose()
-          df.columns = [str(i) for i in paramlist]
-          df.to_feather(f'{path_to_save_files}/281023_lut_{bbl_size[0]}_radius_mix_bbl_opt_equ.feather', 
-                compression='zstd') 
-          print('time for 1 lut: {}'.format(time.time() - start))
+
+# for bbl_size in grain_sizes:
+#  	start = time.time()
+#  	paramlist = sorted(set((itertools.product(depths, lwfilm_dz, 
+#                                             densities, bbl_size, 
+#                                             sza_list, lwcs ,
+#                                             lwc_partition))))
+#  	if __name__ == '__main__':
+#           nb_cores = 80
+#           pool = mp.Pool(nb_cores)
+#           print(f'starting simulation on {nb_cores} cores')
+#           data = pool.starmap(call_SNICAR,paramlist)
+#           pool.close()  
+#           pool.join()
+#           df = pd.DataFrame.from_records(data)
+#           df = df.transpose()
+#           df.columns = [str(i) for i in paramlist]
+#           df.to_feather(f'{path_to_save_files}/281023_lut_{bbl_size[0]}_radius_mix_bbl_opt_equ.feather', 
+#                 compression='zstd') 
+#           print('time for 1 lut: {}'.format(time.time() - start))
          
-# for sza in sza_list:
-#     start = time.time()
-#     paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza, algs))))
-#     if __name__ == '__main__':
-#         nb_cores = 80
-#         pool = mp.Pool(nb_cores)
-#         print(f'starting simulation on {nb_cores} cores')
-#         data = pool.starmap(call_SNICAR,paramlist)
-#         pool.close()  
-#         pool.join() 
-#         df = pd.DataFrame.from_records(data)
-#         df = df.transpose()
-#         df.columns = [str(i) for i in paramlist]
-#         df.to_feather(f'{path_to_save_files}/231023_lut_{sza[0]}_snow_with_sa.feather', 
-#                       compression='zstd')
-#         print('time for 1 lut: {}'.format(time.time() - start))
-
 # start = time.time()
 # paramlist = sorted(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, algae))))
 
