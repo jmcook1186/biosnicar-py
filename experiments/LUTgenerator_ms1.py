@@ -341,7 +341,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part):
     BBA = Outputs.BBA
     data = np.float32(np.append(albedo[70:170], BBA))
     
-    return data.astype(np.float16)
+    return data
 
 
 
