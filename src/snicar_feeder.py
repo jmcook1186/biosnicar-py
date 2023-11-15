@@ -918,7 +918,7 @@ def snicar_feeder(Inputs):
                                     / Inputs.rho_layers[i]
                                   ) / MAC_snw[i, :])
                 
-        elif Inputs.layer_type[i] == 4:  # granular layer with mixed ice and water bubbles
+        elif Inputs.layer_type[i] == 4:  # granular layer with mixed ice and water spheres
             vlm_frac_ice = (Inputs.rho_layers[i] - Inputs.lwc * 1000) / 917
             vlm_frac_air = (1 
                             - Inputs.lwc 

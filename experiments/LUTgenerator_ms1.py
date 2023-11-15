@@ -15,7 +15,7 @@ import math as m
 import time 
 
 
-def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part): 
+def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, alg): 
     
     import collections as c
     from pathlib import Path
@@ -161,25 +161,25 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [lwfilm_dz, z, 10] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [lwfilm_dz, z] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-    Inputs.rho_layers = [916.999,density,density]  # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 
+    Inputs.rho_layers = [916.999,density]  # density of each layer (unit = kg m-3)
+    Inputs.layer_type = [2, 4]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
     Inputs.lwc = lwc
-    Inputs.lwc_type = 2 # 0 = optically equivalent lwc, 
+    Inputs.lwc_type = 0 # 0 = optically equivalent lwc, 
                         # 1 = water bubbles w/ same size as air bubbles
                         # 2 = mixed
-    Inputs.lwc_pct_bubbles = lwc_part # amount of water as bubbles
+    Inputs.lwc_pct_bubbles = 0 # amount of water as bubbles
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
         delimiter="csv",
     )
-    # Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
+    Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
 
 
     # define source of ice refractive index data.
@@ -194,7 +194,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part):
     # 4 = hexagonal prisms
     
     Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-    Inputs.grain_rds = [grain_size, grain_size, grain_size] # effective grain or bubble radius
+    Inputs.grain_rds = [grain_size]*len(Inputs.dz) # effective grain or bubble radius
     Inputs.rwater = [0]*len(Inputs.dz) # int(Inputs.grain_rds[1]*1.055)]  # radius of optional liquid water coating
 
     # For 4:
@@ -327,7 +327,7 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz) 
+    Inputs.mss_cnc_snw_alg = [alg, 0]
 
 
 
@@ -339,38 +339,12 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part):
     Outputs = snicar_feeder(Inputs)
     albedo = Outputs.albedo
     BBA = Outputs.BBA
-    data = np.float16(np.append(albedo[70:170], BBA))
+    # data = np.float16(np.append(albedo[70:170], BBA))
+    data = np.float16(np.append(albedo, BBA))
+
     
     return data
 
-
-
-# densities=[300+i*40 for i in range(0,16)] # [300+i*20 for i in range(0,21)]
-# grain_sizes= [1000, 2000, 3000,4000,5000,6000,7000,8000,
-# 9000, 10000, 11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000]
-# #grain_sizes=[1500,2000, 2500,3000,
-# #3500, 4000, 4500, 5000,5500,6000,6500,7000,7500,8000,
-# #8500, 9000,9500, 10000, 10500, 11000, 11500, 12000, 12500,13000, 13500,14000,
-# #14500, 15000,15500,16000,16500,17000, 17500, 18000, 18500, 19000, 19500, 20000]
-
-# dz = [round(elem, 3) 
-# for elem in np.concatenate((np.arange(0.01,0.1, 0.002), np.arange(0.1,0.15, 0.005), np.arange(0.15, 0.31, 0.01)))]
-
-# dz1 = [round(elem, 3) 
-# 	for elem in np.arange(0.03,0.6, 0.02)]
-# # dz1 = [round(elem, 3) for elem in np.concatenate((np.arange(0.02,0.1, 0.02), np.arange(0.1, 1.05, 0.1)))]
-
-# #dz2 = [round(elem, 3) 
-# #	for elem in np.concatenate((np.arange(0.001,0.005, 0.001),np.arange(0.01,1, 0.025)))]
-# # remove values that produce SSA too high
-# SSA = ({(density, grain_size): (6* (917 - density) / 917 / 
-#        (density * grain_size * 2 * 10 ** (-6))) 
-#         for density in densities for grain_size in grain_sizes})
-# SSA = ({(density, grain_size): 3/(density * (grain_size* 10 ** (-6)))
-# 	for density in densities for grain_size in grain_sizes})
-# params_to_remove = [] #k for k in SSA.keys() if SSA[k] > 4]
-# algae = [0,5000,10000,20000,30000,40000,50000,60000,70000,80000,90000,100000,120000,140000,150000]
-# sza_list = [[42], [44], [46], [48], [50], [52], [54], [56], [58], [60]]
 
 #############################################################################
 ################ INPUTS
@@ -378,297 +352,302 @@ def call_SNICAR(z, lwfilm_dz, density, grain_size, sza, lwc, lwc_part):
 path_to_save_files = '/data/lou'
 
 ## PARAMS FOR CHLA ABS FEATURE 
-# densities = [300+i*50 for i in range(0,10)]
-# grain_sizes = [50, 100, 250, 500, 750,
-#                 1000, 2000, 3000,
-#                 4000, 5000] 
-# depths = [1]
-# lwfilm_dz = [0.00001]
-# sza_list = [40, 45, 50, 55, 60] 
-# algs = [0,2500, 5000,10000,
-#         15000, 20000, 25000,
-#         30000,35000, 
-#         40000,45000, 
-#         50000,55000,
-#         60000,65000, 
-#         70000,75000,
-#         80000,85000,
-#         90000,95000,
-#         100000]
+densities = [500+i*25 for i in range(0,11)]
+grain_sizes = [250, 300, 350, 400,
+             450, 500, 550, 600,
+             650, 700, 750,
+             800, 900, 1000, 1100,
+             1200, 1300, 1400, 1500,
+             2000]
+depths = [0.1]
+lwfilm_dz = [0.00001]
+lwcs = [0, 0.02, 0.04, 0.06, 0.08, 0.1] 
+sza_list = [40, 45, 50, 55, 60] 
+algs = [0,2500, 5000, 7500, 10000,
+        12500,
+        15000, 20000, 25000,
+        30000,35000, 
+        40000,45000, 
+        50000,55000,
+        60000,65000, 
+        70000,75000,
+        80000,85000,
+        90000,95000,
+        100000]
 
-#### LUT PARAMETERS FIELD SPECTRA
-densities = [400+i*25 for i in range(0,21)] # 21
-lwfilm_dz = [1e-10]
-sza_list = [42, 
-            'diff', 
-            52, 
-            54, 
-            46, 
-            43, 
-            44, 
-            47, 
-            45] # 9
-depths = [5e-5, # MAYBE ADD 2e-4
-          3e-4,
-          6.3e-4,
-          1e-3,
-          1.5e-3,
-          2.3e-3,
-          3.5e-3,
-          5e-3, 
-          6e-3,
-          8e-3,
-          1.2e-2,
-          1] # 12
-lwcs = [0,
-0.02,
-0.04,
-0.06,
-0.08,
-0.1,
-0.12,
-0.14,
-0.16,
-0.18,
-0.2,
-0.225,
-0.25,
-0.275,
-0.3] # 15 
-lwc_partitions = [0,
-                 0.35, 
-                 0.65, 
-                 0.85,
-                 1] # 5
-grain_sizes = [[200],
-  [250],
-  [300],
-  [350],
-  [400],
-  [450],
-  [500],
-  [550],
-  [600],
-  [650],
-  [700],
-  [750],
-  [800],
-  [850],
-  [900],
-  [950],
-  [1000],
-  [1070],
-  [1130],
-  [1200],
-  [1300],
-  [1400],
-  [1500],
-  [1750],
-  [2000],
-  [2250],
-  [2500],
-  [3000],
-  [3500],
-  [4000],
-  [4500],
-  [5000],
-  [6000],
-  [7000],
-  [8000],
-  [9000],
-  [11000],
-  [13000],
-  [16000],
-  [20000]]
 
-#### LUT PARAMETERS PRISMA
-densities = [400+i*25 for i in range(0,21)] # [550+i*25 for i in range(0,15)]
-lwfilm_dz = [1e-10]
-sza_list = [47] # 1
-depths = [5e-5, 
-          3e-4,
-          6.3e-4,
-          1e-3,
-          1.5e-3,
-          2.3e-3,
-          3.5e-3,
-          5e-3, 
-          6e-3,
-          8e-3,
-          1.2e-2,
-          1] # 12
-lwcs = [[0],
- [0.02],
- [0.04],
- [0.06],
- [0.08],
- [0.1],
- [0.12],
- [0.14],
- [0.16],
- [0.18],
- [0.2],
- [0.225],
- [0.25],
- [0.275],
- [0.3]] # 15 
-lwc_partitions = [0,
-                 0.35, 
-                 0.65, 
-                 0.85,
-                 1] # 5
-grain_sizes = [200,
- 210,
- 220,
- 230,
- 240,
- 250,
- 260,
- 270,
- 280,
- 290,
- 300,
- 310,
- 320,
- 330,
- 340,
- 350,
- 360,
- 370,
- 380,
- 390,
- 400,
- 410,
- 420,
- 430,
- 440,
- 450,
- 460,
- 470,
- 480,
- 490,
- 500,
- 510,
- 520,
- 530,
- 540,
- 550,
- 560,
- 570,
- 580,
- 590,
- 600,
- 610,
- 620,
- 620,
- 640,
- 650,
- 660,
- 670,
- 680,
- 690,
- 700,
- 710,
- 720,
- 740,
- 780,
- 820,
- 840,
- 860,
- 880,
- 900,
- 910,
- 920,
- 930,
- 940,
- 950,
- 960,
- 970,
- 980,
- 990,
- 1000,
- 1010,
- 1020,
- 1030,
- 1040,
- 1050,
- 1060,
- 1070,
- 1080,
- 1090,
- 1100,
- 1110,
- 1120,
- 1130,
- 1140,
- 1150,
- 1160,
- 1170,
- 1180,
- 1190,
- 1200,
- 1210,
- 1220,
- 1230,
- 1240,
- 1250,
- 1260,
- 1270,
- 1280,
- 1290,
- 1300,
- 1350,
- 1360,
- 1370,
- 1380,
- 1390,
- 1400,
- 1410,
- 1420,
- 1430,
- 1440,
- 1450,
- 1460,
- 1470,
- 1480,
- 1490,
- 1500,
- 1750,
- 2000,
- 2500,
- 3000,
- 3500,
- 4000,
- 4500,
- 5000,
- 5500,
- 7500,
- 10000,
- 20000]
+# #### LUT PARAMETERS FIELD SPECTRA
+# densities = [400+i*25 for i in range(0,21)] # 21
+# lwfilm_dz = [1e-10]
+# sza_list = [42, 
+#             'diff', 
+#             52, 
+#             54, 
+#             46, 
+#             43, 
+#             44, 
+#             47, 
+#             45] # 9
+# depths = [5e-5, # MAYBE ADD 2e-4
+#           3e-4,
+#           6.3e-4,
+#           1e-3,
+#           1.5e-3,
+#           2.3e-3,
+#           3.5e-3,
+#           5e-3, 
+#           6e-3,
+#           8e-3,
+#           1.2e-2,
+#           1] # 12
+# lwcs = [0,
+# 0.02,
+# 0.04,
+# 0.06,
+# 0.08,
+# 0.1,
+# 0.12,
+# 0.14,
+# 0.16,
+# 0.18,
+# 0.2,
+# 0.225,
+# 0.25,
+# 0.275,
+# 0.3] # 15 
+# lwc_partitions = [0,
+#                  0.35, 
+#                  0.65, 
+#                  0.85,
+#                  1] # 5
+# grain_sizes = [[200],
+#   [250],
+#   [300],
+#   [350],
+#   [400],
+#   [450],
+#   [500],
+#   [550],
+#   [600],
+#   [650],
+#   [700],
+#   [750],
+#   [800],
+#   [850],
+#   [900],
+#   [950],
+#   [1000],
+#   [1070],
+#   [1130],
+#   [1200],
+#   [1300],
+#   [1400],
+#   [1500],
+#   [1750],
+#   [2000],
+#   [2250],
+#   [2500],
+#   [3000],
+#   [3500],
+#   [4000],
+#   [4500],
+#   [5000],
+#   [6000],
+#   [7000],
+#   [8000],
+#   [9000],
+#   [11000],
+#   [13000],
+#   [16000],
+#   [20000]]
+
+# #### LUT PARAMETERS PRISMA
+# densities = [400+i*25 for i in range(0,21)] # [550+i*25 for i in range(0,15)]
+# lwfilm_dz = [1e-10]
+# sza_list = [47] # 1
+# depths = [5e-5, 
+#           3e-4,
+#           6.3e-4,
+#           1e-3,
+#           1.5e-3,
+#           2.3e-3,
+#           3.5e-3,
+#           5e-3, 
+#           6e-3,
+#           8e-3,
+#           1.2e-2,
+#           1] # 12
+# lwcs = [[0],
+#  [0.02],
+#  [0.04],
+#  [0.06],
+#  [0.08],
+#  [0.1],
+#  [0.12],
+#  [0.14],
+#  [0.16],
+#  [0.18],
+#  [0.2],
+#  [0.225],
+#  [0.25],
+#  [0.275],
+#  [0.3]] # 15 
+# lwc_partitions = [0,
+#                  0.35, 
+#                  0.65, 
+#                  0.85,
+#                  1] # 5
+# grain_sizes = [200,
+#  210,
+#  220,
+#  230,
+#  240,
+#  250,
+#  260,
+#  270,
+#  280,
+#  290,
+#  300,
+#  310,
+#  320,
+#  330,
+#  340,
+#  350,
+#  360,
+#  370,
+#  380,
+#  390,
+#  400,
+#  410,
+#  420,
+#  430,
+#  440,
+#  450,
+#  460,
+#  470,
+#  480,
+#  490,
+#  500,
+#  510,
+#  520,
+#  530,
+#  540,
+#  550,
+#  560,
+#  570,
+#  580,
+#  590,
+#  600,
+#  610,
+#  620,
+#  620,
+#  640,
+#  650,
+#  660,
+#  670,
+#  680,
+#  690,
+#  700,
+#  710,
+#  720,
+#  740,
+#  780,
+#  820,
+#  840,
+#  860,
+#  880,
+#  900,
+#  910,
+#  920,
+#  930,
+#  940,
+#  950,
+#  960,
+#  970,
+#  980,
+#  990,
+#  1000,
+#  1010,
+#  1020,
+#  1030,
+#  1040,
+#  1050,
+#  1060,
+#  1070,
+#  1080,
+#  1090,
+#  1100,
+#  1110,
+#  1120,
+#  1130,
+#  1140,
+#  1150,
+#  1160,
+#  1170,
+#  1180,
+#  1190,
+#  1200,
+#  1210,
+#  1220,
+#  1230,
+#  1240,
+#  1250,
+#  1260,
+#  1270,
+#  1280,
+#  1290,
+#  1300,
+#  1350,
+#  1360,
+#  1370,
+#  1380,
+#  1390,
+#  1400,
+#  1410,
+#  1420,
+#  1430,
+#  1440,
+#  1450,
+#  1460,
+#  1470,
+#  1480,
+#  1490,
+#  1500,
+#  1750,
+#  2000,
+#  2500,
+#  3000,
+#  3500,
+#  4000,
+#  4500,
+#  5000,
+#  5500,
+#  7500,
+#  10000,
+#  20000]
 
 
 
 #############################################################################
 ################ CALL MODEL
 #############################################################################
-for lwc in lwcs:
-    start = time.time()
-    paramlist = list(set((itertools.product(depths, lwfilm_dz, 
-                                              densities, grain_sizes, 
-                                              sza_list, lwc, lwc_partitions))))
-    if __name__ == '__main__':
-        nb_cores = 150
-        pool = mp.Pool(nb_cores)
-        print(f'starting simulation on {nb_cores} cores')
-        data = pool.starmap(call_SNICAR, paramlist)
-        # pool.close()  
-        # pool.join() 
-        df = pd.DataFrame.from_records(data)
-        df = df.transpose()
-        df.columns = [str(i) for i in paramlist]
-        df.to_feather(f'{path_to_save_files}/110123_lut_{lwc[0]}_lwc_for_prisma.feather', 
-                      compression='zstd')
-        print('time for 1 lut: {}'.format(time.time() - start))
+start = time.time()
+paramlist = list(set((itertools.product(depths, lwfilm_dz, 
+                                          densities, grain_sizes, 
+                                          sza_list, lwcs, algs))))
+if __name__ == '__main__':
+    nb_cores = 150
+    pool = mp.Pool(nb_cores)
+    print(f'starting simulation on {nb_cores} cores')
+    data = pool.starmap(call_SNICAR, paramlist)
+    # pool.close()  
+    # pool.join() 
+    df = pd.DataFrame.from_records(data)
+    df = df.transpose()
+    df.columns = [str(i) for i in paramlist]
+    df.to_feather(f'{path_to_save_files}/111523_lut_snow_with_sa.feather', 
+                  compression='zstd')
+    print('time for 1 lut: {}'.format(time.time() - start))
 
 
 # for bbl_size in grain_sizes:
