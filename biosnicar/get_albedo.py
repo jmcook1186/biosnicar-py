@@ -3,15 +3,15 @@
 
 import numpy as np
 from pathlib import Path
-from validate_inputs import validate_inputs
-from adding_doubling_solver import adding_doubling_solver
-from column_OPs import get_layer_OPs, mix_in_impurities
-from display import display_out_data, plot_albedo
-from setup_snicar import setup_snicar
-from toon_rt_solver import toon_solver
+from biosnicar.validate_inputs import validate_inputs
+from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.display import display_out_data, plot_albedo
+from biosnicar.setup_snicar import setup_snicar
+from biosnicar.toon_rt_solver import toon_solver
 
 
-def get_albedo(solver, plot, validate):
+def get(solver, plot, validate):
     (
         ice,
         illumination,
