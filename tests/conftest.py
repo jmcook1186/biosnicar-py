@@ -64,7 +64,7 @@ def new_benchmark_ad_clean():
 
 @pytest.fixture
 def input_file():
-    return "./src/biosnicar/inputs.yaml"
+    return "biosnicar/inputs.yaml"
 
 
 if __name__ == "__main__":

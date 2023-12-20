@@ -3,7 +3,6 @@ import os
 
 from setuptools import find_packages, setup
 
-
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
     # intentionally *not* adding an encoding option to open, See:
@@ -23,11 +22,11 @@ def get_version(rel_path):
 
 setup(
     name="biosnicar",
-    package_dir={"": "src"},
-    packages=find_packages(where="src"),
-    version=get_version("src/biosnicar/__init__.py"),
+    package_dir={"": "biosnicar"},
+    packages=find_packages(where="biosnicar"),
+    version=get_version("biosnicar/__init__.py"),
     author="BioSNICAR team",
-    author_email="jcook@envs.au.dk",
+    author_email="biosnicar@proton.me",
     description="Snow and ice albedo modelling in Python",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

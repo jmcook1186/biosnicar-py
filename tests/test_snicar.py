@@ -513,7 +513,7 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
-    This fuzzer spoecifically checks rtm config and illumination parameters. The
+    This fuzzer specifically checks rtm config and illumination parameters. The
     range of values is set in the parameterize decorators on this function and can
     be adjusted to test for specific failures or to increase test coverage. The
     defaults are designed to balance coverage with execution time. This func can be
