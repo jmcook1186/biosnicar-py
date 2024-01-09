@@ -3,23 +3,23 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - xarray
-  - dask
-  - netCDF4
-  - bottleneck
-  - scipy
   - pip
   - pip:
-      - miepython
-      - click==8
-      - statsmodels
-      - seaborn
-      - plotnine
-      - pre-commit
-      - flask
-      - gunicorn
-      - requests
-      - flask-cors
-      - bump2version
-      - streamlit
+    - python-dotenv
+    - streamlit
+    - pandas
+    - dask[complete]
+    - matplotlib
+    - miepython
+    - netCDF4
+    - scipy
+    - seaborn
+    - xarray
+    - plotnine
+    - statsmodels
+    - pytest
+    - tqdm
+    - pyyaml
+    - bump2version
+    - plotly
 prefix: /opt/conda
