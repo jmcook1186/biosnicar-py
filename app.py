@@ -86,7 +86,7 @@ def run_snicar(
         dict: Dict with result for display.
     """
 
-    input_file = "app/streamlit/inputs.yaml"
+    input_file = "app_inputs.yaml"
 
     if layer == "grains":
         layer = 0

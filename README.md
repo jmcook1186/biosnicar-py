@@ -44,7 +44,7 @@ Instructions for using the app are provided below.
 
 To run the deployed version of the app simply direct your browser to [bit.ly/biosnicar](bit.ly/biosnicar). Alternatively, run the app locally by following these instructions:
 
-The code for the Streamlit app is in `~/app/streamlit/app.py`.
+The code for the Streamlit app is in `~/app.py`.
 
 In a terminal, navigate to the top-level BioSNICAR directory and run:
 
