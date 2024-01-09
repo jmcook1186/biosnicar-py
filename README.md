@@ -16,7 +16,7 @@ Detailed documentation is available at https://biosnicar.vercel.app. This README
 
 There are two ways to run the BioSNICAR model: 1) use the app; 2) run the code. The app is designed to be extremely user-friendly and requires no coding skills. The app simply runs in the browser and is operated with a simple graphical user interface. You can use the deployed version by visiting
 
-[bit.ly/biosnicar](bit.ly/biosnicar)
+[bit.ly/bio-snicar](bit.ly/bio-snicar)
 
 Alternatively, you can run the app locally. Power users will prefer to run the code directly to give access to all of BioSNICAR's functions. Both running the code and the app (if running locally) require a Python development environment with specific packages installed. The following section describes how to set up that environment.
 
@@ -42,7 +42,7 @@ Instructions for using the app are provided below.
 
 #### Run the app
 
-To run the deployed version of the app simply direct your browser to [bit.ly/biosnicar](bit.ly/biosnicar). Alternatively, run the app locally by following these instructions:
+To run the deployed version of the app simply direct your browser to [bit.ly/bio-snicar](bit.ly/bio-snicar). Alternatively, run the app locally by following these instructions:
 
 The code for the Streamlit app is in `~/app.py`.
 
