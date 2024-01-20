@@ -226,6 +226,8 @@ def snicar_feeder(Inputs):
     abs_cff_mss_water = np.empty([nbr_wvl])
 
     # load refractive index of bubbly ice + Inputs.directory for granular OPs
+    ref_index_water = pd.read_csv(
+        f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
     refidx_file = xr.open_dataset(dir_ri_ice + "rfidx_ice.nc")
     fresnel_diffuse_file = xr.open_dataset(dir_ri_ice + "fl_reflection_diffuse.nc")
     if Inputs.rf_ice == 0:
@@ -670,7 +672,6 @@ def snicar_feeder(Inputs):
                                   / Inputs.rho_layers[i]) / MAC_snw[i, :])
 
             elif (Inputs.lwc !=0 and Inputs.lwc_type == 0):
-                ref_index_water = pd.read_csv(f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
 
                 # neglecting air absorption:
                 abs_cff_mss_ice[:] = ( 
@@ -696,7 +697,7 @@ def snicar_feeder(Inputs):
                 g_air = file["asm_prm"].values 
                 
                 # water bubbles
-                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains/water_grain_{Inputs.grain_rds[i]}.nc")
+                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_updated/water_grain_in_ice_{Inputs.grain_rds[i]}.nc")
                 sca_cff_vlm_water = file["sca_cff_vlm"].values
                 ext_cff_vlm_water = file["ext_cff_vlm"].values
                 abs_cff_vlm_water = file["abs_cff_vlm"].values
@@ -732,7 +733,7 @@ def snicar_feeder(Inputs):
                 g_air = file["asm_prm"].values 
                 
                 # water bubbles
-                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains/water_grain_{Inputs.grain_rds[i]}.nc")
+                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_updated/water_grain_in_ice_{Inputs.grain_rds[i]}.nc")
                 sca_cff_vlm_water = file["sca_cff_vlm"].values
                 ext_cff_vlm_water = file["ext_cff_vlm"].values
                 abs_cff_vlm_water = file["abs_cff_vlm"].values
@@ -780,9 +781,7 @@ def snicar_feeder(Inputs):
             file_ice = str(dir_bubbly_ice + "bbl_{}.nc").format(rd)
             file = xr.open_dataset(file_ice)
             sca_cff_vlm = file["sca_cff_vlm"].values
-            g_snw[i, :] = file["asm_prm"].values
-            ref_index_water = pd.read_csv(f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
-            
+            g_snw[i, :] = file["asm_prm"].values            
             abs_cff_mss_water[:] = (((4 * np.pi * ref_index_water.k.values) / 
                                     (wvl * 1e-6)) / 1000)
             vlm_frac_air = (1000 - Inputs.rho_layers[i]) / 1000
@@ -821,8 +820,6 @@ def snicar_feeder(Inputs):
                                  / MAC_snw[i, :])
     
             elif (Inputs.lwc !=0 and Inputs.lwc_type == 0):
-                ref_index_water = pd.read_csv(f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
-
                 # neglecting air absorption:
                 abs_cff_mss_ice[:] = ((vlm_frac_ice * 917 
                                        / Inputs.rho_layers[i]) 
@@ -849,7 +846,7 @@ def snicar_feeder(Inputs):
                 g_air = file["asm_prm"].values 
                 
                 # water bubbles
-                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains/water_grain_{Inputs.grain_rds[i]}.nc")
+                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_updated/water_grain_in_ice_{Inputs.grain_rds[i]}.nc")
                 sca_cff_vlm_water = file["sca_cff_vlm"].values
                 ext_cff_vlm_water = file["ext_cff_vlm"].values
                 g_water = file["asm_prm"].values 
@@ -878,7 +875,9 @@ def snicar_feeder(Inputs):
                 g_air = file["asm_prm"].values 
                 
                 # water bubbles
-                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains/water_grain_{Inputs.grain_rds[i]}.nc")
+                # file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains/water_grain_{Inputs.grain_rds[i]}.nc")
+                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_updated/water_grain_in_ice_{Inputs.grain_rds[i]}.nc")
+
                 sca_cff_vlm_water = file["sca_cff_vlm"].values
                 ext_cff_vlm_water = file["ext_cff_vlm"].values
                 abs_cff_vlm_water = file["abs_cff_vlm"].values
@@ -932,7 +931,7 @@ def snicar_feeder(Inputs):
                                                    )
                                                    )
             ssps_water = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_in_air/water_grain_in_air_{Inputs.grain_rds[i]}.nc")
-            
+
             g = ((ssps_water["asm_prm"].values * Inputs.lwc
                    + ssps_ice["asm_prm"].values * vlm_frac_ice) /
                    (Inputs.lwc + vlm_frac_ice))

@@ -17,7 +17,7 @@ def calc_mie_params(radius, n_in, k_in, n_ext):
     X = 2 * np.pi * radius / wvl  # unitless
     n = n_in / n_ext
     k = k_in / n_ext
-    qext, qsca, qback, g = mie(n - 1j * k, X) # cross sections in um2 
+    qext, qsca, qback, g = mie(n - 1j * k, X) 
     qabs = qext - qsca
     assym = g
     ss_alb = qsca / qext
