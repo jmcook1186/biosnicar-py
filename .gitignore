@@ -13,3 +13,8 @@ __pycache__/
 
 # test output
 py_mat_comparison.png
+
+# OPs using Bohren and Huffman 1983
+
+Data/OP_data/480band/bubbly_ice_files_BH83
+Data/OP_data/480band/ice_spherical_grains_BH83
