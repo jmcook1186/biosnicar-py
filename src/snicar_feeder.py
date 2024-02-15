@@ -105,6 +105,10 @@ def snicar_feeder(Inputs):
     dir_spherical_ice_files = str(
         Inputs.dir_base + "Data/OP_data/480band/ice_spherical_grains/"
     )
+    dir_spherical_water_files = str(
+        Inputs.dir_base + "Data/OP_data/480band/water_spherical_grains/"
+    )
+    
     dir_hexagonal_ice_files = str(
         Inputs.dir_base + "Data/OP_data/480band/ice_hexagonal_columns/"
     )
@@ -227,7 +231,7 @@ def snicar_feeder(Inputs):
 
     # load refractive index of bubbly ice + Inputs.directory for granular OPs
     ref_index_water = pd.read_csv(
-        f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K.csv" )
+        f"{Inputs.dir_base}/Data/OP_data/refractive_index_water_273K_Rowe2020.csv" )
     refidx_file = xr.open_dataset(dir_ri_ice + "rfidx_ice.nc")
     fresnel_diffuse_file = xr.open_dataset(dir_ri_ice + "fl_reflection_diffuse.nc")
     if Inputs.rf_ice == 0:
@@ -249,7 +253,7 @@ def snicar_feeder(Inputs):
         fl_r_dif_b = fresnel_diffuse_file["R_dif_fb_ice_Wrn08"].values
 
     elif Inputs.rf_ice == 2:
-        dir_op = "ice_Pic16/ice_Pic16_"
+        dir_op = "ice_Pic16/ice_grain_"
         if Inputs.verbosity == 1:
             print("Using Picard 16 refractive index")
         refidx_re = refidx_file["re_Pic16"].values
@@ -744,21 +748,25 @@ def snicar_feeder(Inputs):
                             - Inputs.lwc[i] 
                             - vlm_frac_ice
                             )
-            ssps_ice = xr.open_dataset(str( dir_spherical_ice_files
+            ssps_ice = xr.open_dataset(str(dir_spherical_ice_files
                                            + dir_op
                                            + "{}.nc".format(str(
                                                Inputs.grain_rds[i]).rjust(
                                                    4, "0"))
                                                    )
                                                    )
-            ssps_water = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_in_air/water_grain_in_air_{Inputs.grain_rds[i]}.nc")
-
+            ssps_water = xr.open_dataset(str(dir_spherical_water_files
+                                           + "water_grain_{}.nc".format(str(
+                                               Inputs.grain_rds[i]).rjust(
+                                                   4, "0"))
+                                                   )
+                                                   )
+                
             g = ((ssps_water["asm_prm"].values * Inputs.lwc[i]
                    + ssps_ice["asm_prm"].values * vlm_frac_ice) /
                    (Inputs.lwc[i] + vlm_frac_ice))
             
             g_snw[i, :] = g
-            
             
             ext_cff_mss = (
                 (ssps_water["ext_cff_vlm"].values * Inputs.lwc[i]
@@ -801,38 +809,29 @@ def snicar_feeder(Inputs):
         # coated particles: use ext_cff_mss_ncl for MAC
         if files[aer] == Inputs.file_brwnC2 or files[aer] == Inputs.file_soot2:
             mac_aer[aer, :] = impurity_properties["ext_cff_mss_ncl"].values
+            mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
 
-        else:
-            mac_aer[aer, :] = impurity_properties["ext_cff_mss"].values
-
-        if files[aer] == Inputs.file_glacier_algae:
+        elif files[aer] == Inputs.file_glacier_algae and Inputs.GA_units == 1:
             # if GA_units == 1, GA concentration provided in cells/mL
             # mss_aer should be in cells/kg
             # thus mss_aer is divided by kg/mL ice = 917*10**(-6)
             # with density of ice 917 kg m3
-            if Inputs.GA_units == 1:
+            mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
+                917 * 10 ** (-6)
+            )
 
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
-                    917 * 10 ** (-6)
-                )
-
-            else:
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
-
-        elif files[aer] == Inputs.file_snw_alg:
+        elif files[aer] == Inputs.file_snw_alg and Inputs.SA_units == 1:
             # if SA_units == 1, SA concentration provided in cells/mL
             # but mss_aer should be in cells/kg
             # thus mss_aer is divided by kg/mL ice = 917*10**(-6)
-            # with density of ice 917 kg m3
-            if Inputs.SA_units == 1:
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
-                    917 * 10 ** (-6)
-                )
-
-            else:
-                mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
+            # and the MAC is the extinction cross section in m2/cell
+            mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
+                917 * 10 ** (-6)
+            )
+            mac_aer[aer, :] = impurity_properties["ext_xsc"].values
 
         else:
+            mac_aer[aer, :] = impurity_properties["ext_cff_mss"].values
             # conversion to kg/kg ice from ng/g
             mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
 

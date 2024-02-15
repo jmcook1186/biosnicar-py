@@ -3,8 +3,9 @@
 """
 Created on Sat Nov  6 18:42:05 2021
 
-@author: au660413
+@author: Lou-Anne Chevrollier, University of Aarhus
 """
+
 import sys 
 sys.path.append("./src")
 import itertools
@@ -15,7 +16,7 @@ import math as m
 import time 
 
 
-def call_SNICAR(z, density, grain_size, sza, lwc): 
+def call_SNICAR(z, density, grain_size, sza, lwc, alg): 
     
     import collections as c
     from pathlib import Path
@@ -160,14 +161,15 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [z, 100] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [0.02, z] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [density]*len(Inputs.dz) # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [3, 1]  # 0 = ice grain layer, 
+    Inputs.layer_type = [4, 4]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
+                                   # 4 = mixed water and ice grains
     Inputs.lwc = [lwc]*len(Inputs.dz)
     Inputs.lwc_pct_bubbles = 1 # amount of water as bubbles
     Inputs.nbr_wvl = 480
@@ -284,7 +286,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     # Dark Zone dust 3 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL (COMING SOON)
     Inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_HIGH_20190911.nc"
     # Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-    Inputs.file_snw_alg = "SA_Chevrollier2022_r8.99.nc"
+    Inputs.file_snw_alg = "snow_algae_empirical_Chevrollier2023.nc"
     # Glacier Algae (Cook et al. 2020)
     Inputs.file_glacier_algae =  "GA_Chevrollier2022_r4.9_L18.8.nc"
 
@@ -323,7 +325,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
+    Inputs.mss_cnc_snw_alg = [alg, 0] 
 
 
 
@@ -335,10 +337,9 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     Outputs = snicar_feeder(Inputs)
     albedo = Outputs.albedo
     BBA = Outputs.BBA
-    data = np.float16(np.append(albedo[70:170], BBA))
-    # data = np.float16(np.append(albedo, BBA))
+    # data = np.float16(np.append(albedo[70:170], BBA))
+    data = np.float16(np.append(albedo, BBA))
 
-    
     return data
 
 
@@ -348,17 +349,31 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
 path_to_save_files = '/data/lou'
 
 ## PARAMS FOR CHLA ABS FEATURE 
-# densities = [500+i*25 for i in range(0,11)]
-# grain_sizes = [250, 300, 350, 400,
-#              450, 500, 550, 600,
+densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
+lwcs = [0.05] # maybe can be fixed or rm
+sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
+algs = [1e3, 5e3, 1e4, 2e4, 3e4, 4e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
+        1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
+        2e5, 2.25e5, 2.5e5, 2.75e5, 3e5, 3.25e5, 3.5e5, 3.75e5, 4e5, 4.25e5,
+        4.5e5, 4.75e5, 5e5, 5.5e5, 6e5, 6.5e5, 7e5, 7.5e5, 8e5, 8.5e5, 9e5, 9.5e5,
+        1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6, 1.6e6, 1.7e6, 1.8e6, 1.9e6,
+        2e6, 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
+        4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
+        1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
+        5e7, 6.5e7, 1e8, 2e8, 1e9]
+grain_sizes = [500 + i * 40 for i in range(64)] 
+depths = [1]
+
+## PARAMS FOR RED SPECTRA NIR INVERSION
+# densities = [500+i*20 for i in range(0,11)]
+# lwcs = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2] 
+# depths = [1]
+# sza_list = [43, 42, 44, 40, 48, 'diff']  # 39, 46, 47
+# grain_sizes = [500, 550, 600,
 #              650, 700, 750,
 #              800, 900, 1000, 1100,
 #              1200, 1300, 1400, 1500,
-#              2000]
-# depths = [0.1]
-# lwfilm_dz = [0.00001]
-# lwcs = [0, 0.02, 0.04, 0.06, 0.08, 0.1] 
-# sza_list = [40, 45, 50, 55, 60] 
+#              2000, 3000]
 # algs = [0,2500, 5000, 7500, 10000,
 #         12500,
 #         15000, 20000, 25000,
@@ -530,268 +545,267 @@ path_to_save_files = '/data/lou'
 # ] # 78
 
 # #### LUT PARAMETERS PRISMA
-densities = [
-380, 
-400, 
-420, 
-440, 
-460, 
-480, 
-500,
-520, 
-540, 
-560, 
-580, 
-600, 
-620, 
-640, 
-660, 
-680, 
-700, 
-720, 
-740, 
-760, 
-780, 
-800, 
-820, 
-840, 
-860, 
-880,
-900, 
-916.9
-] # 28
+# densities = [
+# 380, 
+# 400, 
+# 420, 
+# 440, 
+# 460, 
+# 480, 
+# 500,
+# 520, 
+# 540, 
+# 560, 
+# 580, 
+# 600, 
+# 620, 
+# 640, 
+# 660, 
+# 680, 
+# 700, 
+# 720, 
+# 740, 
+# 760, 
+# 780, 
+# 800, 
+# 820, 
+# 840, 
+# 860, 
+# 880,
+# 900, 
+# 916.9
+# ] # 28
 
-sza_list = [47]
+# sza_list = [47]
 
-depths = [
-5e-5, 
-3e-4,
-6.3e-4,
-1e-3,
-1.5e-3,
-2e-3,
-2.5e-3,
-3e-3,
-3.5e-3,
-4.2e-3,
-5e-3, 
-6e-3,
-8e-3,
-1.1e-2,
-1] # 15
+# depths = [
+# 5e-5, 
+# 3e-4,
+# 6.3e-4,
+# 1e-3,
+# 1.5e-3,
+# 2e-3,
+# 2.5e-3,
+# 3e-3,
+# 3.5e-3,
+# 4.2e-3,
+# 5e-3, 
+# 6e-3,
+# 8e-3,
+# 1.1e-2,
+# 1] # 15
 
-lwcs = [
-[0],
-[0.02],
-[0.04],
-[0.06],
-[0.08],
-[0.1],
-[0.12],
-[0.14],
-[0.16],
-[0.18],
-[0.2],
-[0.22],
-[0.24],
-[0.26],
-[0.28],
-[0.3]
-] # 16
+# lwcs = [
+# [0],
+# [0.02],
+# [0.04],
+# [0.06],
+# [0.08],
+# [0.1],
+# [0.12],
+# [0.14],
+# [0.16],
+# [0.18],
+# [0.2],
+# [0.22],
+# [0.24],
+# [0.26],
+# [0.28],
+# [0.3]
+# ] # 16
 
-grain_sizes = [
-50,
-55,
-60,
-65,
-70,
-75,
-80,
-85,
-90,
-95,
-100,
-110,
-120,
-130,
-140,
-150,
-160,
-170,
-180,
-190,
-200,
-210,
-220,
-230,
-240,
-250,
-260,
-270,
-280,
-290,
-300,
-310,
-320,
-330,
-340,
-350,
-360,
-370,
-380,
-390,
-400,
-410,
-420,
-430,
-440,
-450,
-460,
-470,
-480,
-490,
-500,
-520,
-540,
-560,
-580,
-600,
-620,
-640,
-660,
-680,
-700,
-720,
-740,
-760,
-780,
-800,
-820,
-840,
-860,
-880,
-900,
-920,
-940,
-960,
-980,
-1000,
-1020,
-1040,
-1060,
-1080,
-1100,
-1120,
-1140,
-1160,
-1180,
-1200,
-1220,
-1240,
-1260,
-1280,
-1300,
-1320,
-1340,
-1360,
-1380,
-1400,
-1420,
-1440,
-1460,
-1480,
-1500,
-1550,
-1600,
-1650,
-1700,
-1750,
-1800,
-1850,
-1900,
-1950,
-2000,
-2050,
-2100,
-2150,
-2200,
-2250,
-2300,
-2350,
-2400,
-2450,
-2500,
-2550,
-2600,
-2650,
-2700,
-2750,
-2800,
-2850,
-2900,
-2950,
-3000,    
-3250,
-3500,  
-4000,
-4500,
-5000,
-5500,
-6000,
-6500,
-7000,
-7500,
-8000,
-8500,
-9000,
-10000,
-20000
-]
+# grain_sizes = [
+# 50,
+# 55,
+# 60,
+# 65,
+# 70,
+# 75,
+# 80,
+# 85,
+# 90,
+# 95,
+# 100,
+# 110,
+# 120,
+# 130,
+# 140,
+# 150,
+# 160,
+# 170,
+# 180,
+# 190,
+# 200,
+# 210,
+# 220,
+# 230,
+# 240,
+# 250,
+# 260,
+# 270,
+# 280,
+# 290,
+# 300,
+# 310,
+# 320,
+# 330,
+# 340,
+# 350,
+# 360,
+# 370,
+# 380,
+# 390,
+# 400,
+# 410,
+# 420,
+# 430,
+# 440,
+# 450,
+# 460,
+# 470,
+# 480,
+# 490,
+# 500,
+# 520,
+# 540,
+# 560,
+# 580,
+# 600,
+# 620,
+# 640,
+# 660,
+# 680,
+# 700,
+# 720,
+# 740,
+# 760,
+# 780,
+# 800,
+# 820,
+# 840,
+# 860,
+# 880,
+# 900,
+# 920,
+# 940,
+# 960,
+# 980,
+# 1000,
+# 1020,
+# 1040,
+# 1060,
+# 1080,
+# 1100,
+# 1120,
+# 1140,
+# 1160,
+# 1180,
+# 1200,
+# 1220,
+# 1240,
+# 1260,
+# 1280,
+# 1300,
+# 1320,
+# 1340,
+# 1360,
+# 1380,
+# 1400,
+# 1420,
+# 1440,
+# 1460,
+# 1480,
+# 1500,
+# 1550,
+# 1600,
+# 1650,
+# 1700,
+# 1750,
+# 1800,
+# 1850,
+# 1900,
+# 1950,
+# 2000,
+# 2050,
+# 2100,
+# 2150,
+# 2200,
+# 2250,
+# 2300,
+# 2350,
+# 2400,
+# 2450,
+# 2500,
+# 2550,
+# 2600,
+# 2650,
+# 2700,
+# 2750,
+# 2800,
+# 2850,
+# 2900,
+# 2950,
+# 3000,    
+# 3250,
+# 3500,  
+# 4000,
+# 4500,
+# 5000,
+# 5500,
+# 6000,
+# 6500,
+# 7000,
+# 7500,
+# 8000,
+# 8500,
+# 9000,
+# 10000,
+# 20000
+# ]
 
 
 
 #############################################################################
 ################ CALL MODEL
 #############################################################################
-# start = time.time()
-# paramlist = list(set((itertools.product(depths, lwfilm_dz, 
-#                                           densities, grain_sizes, 
-#                                           sza_list, lwcs, algs))))
-# if __name__ == '__main__':
-#     nb_cores = 150
-#     pool = mp.Pool(nb_cores)
-#     print(f'starting simulation on {nb_cores} cores')
-#     data = pool.starmap(call_SNICAR, paramlist)
-#     # pool.close()  
-#     # pool.join() 
-#     df = pd.DataFrame.from_records(data)
-#     df = df.transpose()
-#     df.columns = [str(i) for i in paramlist]
-#     df.to_feather(f'{path_to_save_files}/111523_lut_snow_with_sa.feather', 
-#                   compression='zstd')
-#     print('time for 1 lut: {}'.format(time.time() - start))
+start = time.time()
+paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
+                                          sza_list, lwcs, algs))))
+if __name__ == '__main__':
+    nb_cores = 150
+    pool = mp.Pool(nb_cores)
+    print(f'starting simulation on {nb_cores} cores')
+    data = pool.starmap(call_SNICAR, paramlist)
+    # pool.close()  
+    # pool.join() 
+    df = pd.DataFrame.from_records(data)
+    df = df.transpose()
+    df.columns = [str(i) for i in paramlist]
+    df.to_feather(f'{path_to_save_files}/021524_lut_snow_with_snw_alg.feather', 
+                  compression='zstd')
+    print('time for 1 lut: {}'.format(time.time() - start))
 
 
-for lwc in lwcs:
- 	start = time.time()
- 	paramlist = list(set((itertools.product(depths,  
-                                            densities, 
-                                            grain_sizes, 
-                                            sza_list, 
-                                            lwc))))
- 	if __name__ == '__main__':
-          nb_cores = 200
-          pool = mp.Pool(nb_cores)
-          print(f'starting simulation on {nb_cores} cores')
-          data = pool.starmap(call_SNICAR,paramlist)
-          pool.close()  
-          pool.join()
-          df = pd.DataFrame.from_records(data)
-          df = df.transpose()
-          df.columns = [str(i) for i in paramlist]
-          df.to_feather(f'{path_to_save_files}/020523_lut_{lwc[0]}_lwc_for_prisma.feather', 
-                compression='zstd') 
-          print('time for 1 lut: {}'.format(time.time() - start))
+# for lwc in lwcs:
+#  	start = time.time()
+#  	paramlist = list(set((itertools.product(depths,  
+#                                             densities, 
+#                                             grain_sizes, 
+#                                             sza_list, 
+#                                             lwc))))
+#  	if __name__ == '__main__':
+#           nb_cores = 200
+#           pool = mp.Pool(nb_cores)
+#           print(f'starting simulation on {nb_cores} cores')
+#           data = pool.starmap(call_SNICAR,paramlist)
+#           pool.close()  
+#           pool.join()
+#           df = pd.DataFrame.from_records(data)
+#           df = df.transpose()
+#           df.columns = [str(i) for i in paramlist]
+#           df.to_feather(f'{path_to_save_files}/020523_lut_{lwc[0]}_lwc_for_prisma.feather', 
+#                 compression='zstd') 
+#           print('time for 1 lut: {}'.format(time.time() - start))
          
 # start = time.time()
 # paramlist = list(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, algae))))
