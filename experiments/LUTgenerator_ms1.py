@@ -16,7 +16,7 @@ import math as m
 import time 
 
 
-def call_SNICAR(z, density, grain_size, sza, lwc, alg): 
+def call_SNICAR(z, density, grain_size, sza, lwc): 
     
     import collections as c
     from pathlib import Path
@@ -161,11 +161,11 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [0.02, z] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [z, 100] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [density]*len(Inputs.dz) # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [4, 4]  # 0 = ice grain layer, 
+    Inputs.layer_type = [3, 1]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
@@ -325,7 +325,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_snw_alg = [alg, 0] 
+    Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
 
 
 
@@ -337,8 +337,8 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
     Outputs = snicar_feeder(Inputs)
     albedo = Outputs.albedo
     BBA = Outputs.BBA
-    # data = np.float16(np.append(albedo[70:170], BBA))
-    data = np.append(albedo, BBA)
+    data = np.float16(np.append(albedo[70:170], BBA))
+    # data = np.append(albedo, BBA)
 
     return data
 
@@ -349,27 +349,27 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
 path_to_save_files = '/data/lou'
 
 ## PARAMS FOR CHLA ABS FEATURE 
-densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
-lwcs = [0.05] # maybe can be fixed or rm
-sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
-algs = [0, 2.5e2, 5e2, 7.5e2,
-        1e3, 2e3, 3e3, 4e3, 5e3, 7.5e3,
-        1e4, 1.5e4, 2e4, 2.5e4, 3e4, 3.5e4, 4e4, 4.5e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
-        1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
-        2e5, 2.25e5, 2.5e5, 2.75e5, 
-        3e5, 3.25e5, 3.5e5, 3.75e5, 
-        4e5, 4.25e5, 4.5e5, 4.75e5, 
-        5e5, 6e5, 7e5, 8e5, 9e5,
-        1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
-        # 1.6e6, 1.7e6, 1.8e6, 1.9e6, 2e6, 
-        # 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
-        # 4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
-        # 1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
-        # 5e7, 6.5e7, 1e8, 2e8, 1e9
-        ]
-algs = [int(a) for a in algs]
-grain_sizes = [500 + i * 40 for i in range(64)] 
-depths = [1]
+# densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
+# lwcs = [0.05] # maybe can be fixed or rm
+# sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
+# algs = [0, 2.5e2, 5e2, 7.5e2,
+#         1e3, 2e3, 3e3, 4e3, 5e3, 7.5e3,
+#         1e4, 1.5e4, 2e4, 2.5e4, 3e4, 3.5e4, 4e4, 4.5e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
+#         1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
+#         2e5, 2.25e5, 2.5e5, 2.75e5, 
+#         3e5, 3.25e5, 3.5e5, 3.75e5, 
+#         4e5, 4.25e5, 4.5e5, 4.75e5, 
+#         5e5, 6e5, 7e5, 8e5, 9e5,
+#         1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
+#         # 1.6e6, 1.7e6, 1.8e6, 1.9e6, 2e6, 
+#         # 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
+#         # 4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
+#         # 1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
+#         # 5e7, 6.5e7, 1e8, 2e8, 1e9
+#         ]
+# algs = [int(a) for a in algs]
+# grain_sizes = [500 + i * 40 for i in range(64)] 
+# depths = [1]
 
 ## PARAMS FOR RED SPECTRA NIR INVERSION
 # densities = [500+i*20 for i in range(0,11)]
@@ -385,161 +385,94 @@ depths = [1]
 
 
 # #### LUT PARAMETERS FIELD SPECTRA
-# densities = [
-# 380, 
-# 400, 
-# 420, 
-# 440, 
-# 460, 
-# 480, 
-# 500,
-# 520, 
-# 540, 
-# 560, 
-# 580, 
-# 600, 
-# 620, 
-# 640, 
-# 660, 
-# 680, 
-# 700, 
-# 720, 
-# 740, 
-# 760, 
-# 780, 
-# 800, 
-# 820, 
-# 840, 
-# 860, 
-# 880,
-# 900, 
-# 916.9
-# ] # 28
+densities = list(np.append(np.arange(380, 901, 20), 916.9)) # 28
 
-# sza_list = [42, 
-# 'diff', 
-# 52, 
-# 54, 
-# 46, 
-# 43, 
-# 44, 
-# 47, 
-# 45] # 9
+sza_list = [42, 'diff', 52, 54, 46, 43, 44, 47, 45] # 9
 
-# depths = [
-# 5e-5, 
-# 3e-4,
-# 6.3e-4,
-# 1e-3,
-# 1.5e-3,
-# 2e-3,
-# 2.5e-3,
-# 3e-3,
-# 3.5e-3,
-# 4.2e-3,
-# 5e-3, 
-# 6e-3,
-# 8e-3,
-# 1.1e-2,
-# 1] # 15
+depths = [5e-5, 3e-4, 6.3e-4, 1e-3, 1.5e-3, 2e-3, 2.5e-3, 3e-3, 3.5e-3,
+4.2e-3, 5e-3, 6e-3, 8e-3, 1.1e-2, 1] # 15
 
-# lwcs = [0,
-# 0.02,
-# 0.04,
-# 0.06,
-# 0.08,
-# 0.1,
-# 0.12,
-# 0.14,
-# 0.16,
-# 0.18,
-# 0.2,
-# 0.22,
-# 0.24,
-# 0.26,
-# 0.28,
-# 0.3] # 16
+lwcs = list(np.arange(0, 0.31, 0.02)) # 16
 
-# grain_sizes = [
-# [50],
-# [55],
-# [60],
-# [65],
-# [70],
-# [75],
-# [80],
-# [85],
-# [90],
-# [95],
-# [100],
-# [110],
-# [120],
-# [130],
-# [140],
-# [150],
-# [160],
-# [170],
-# [180],
-# [190],
-# [200],
-# [210],
-# [220],
-# [230],
-# [240],
-# [250],
-# [260],
-# [270],
-# [280],
-# [290],
-# [300],
-# [325],
-# [350],
-# [375],
-# [400],
-# [425],
-# [450],
-# [475],
-# [500],
-# [550],
-# [600],
-# [650],
-# [700],
-# [750],
-# [800],
-# [850],
-# [900],
-# [950],
-# [1000],
-# [1100],
-# [1200],
-# [1300],
-# [1400],
-# [1500],
-# [1600],
-# [1700],
-# [1800],
-# [1900],
-# [2000],
-# [2100],
-# [2200],
-# [2300],
-# [2500],
-# [2750],
-# [3000],
-# [3250],
-# [3500],
-# [4000],
-# [4500],
-# [5000],
-# [6000],
-# [7000],
-# [8000],
-# [9000],
-# [11000],
-# [13000],
-# [16000],
-# [20000]
-# ] # 78
+grain_sizes = [
+[50],
+[55],
+[60],
+[65],
+[70],
+[75],
+[80],
+[85],
+[90],
+[95],
+[100],
+[110],
+[120],
+[130],
+[140],
+[150],
+[160],
+[170],
+[180],
+[190],
+[200],
+[210],
+[220],
+[230],
+[240],
+[250],
+[260],
+[270],
+[280],
+[290],
+[300],
+[320],
+[340],
+[360],
+[380],
+[400],
+[420],
+[440],
+[460],
+[480],
+[500],
+[550],
+[600],
+[650],
+[700],
+[750],
+[800],
+[850],
+[900],
+[950],
+[1000],
+[1100],
+[1200],
+[1300],
+[1400],
+[1500],
+[1600],
+[1700],
+[1800],
+[1900],
+[2000],
+[2250],
+[2500],
+[2750],
+[3000],
+[3500],
+[4000],
+[4500],
+[5000],
+[6000],
+[7000],
+[8000],
+[9000],
+[11000],
+[13000],
+[16000],
+[20000]
+] # 77
 
 # #### LUT PARAMETERS PRISMA
 # densities = [
@@ -765,31 +698,30 @@ depths = [1]
 #############################################################################
 ################ CALL MODEL
 #############################################################################
-start = time.time()
-paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
-                                          sza_list, lwcs, algs))))
-if __name__ == '__main__':
-    nb_cores = 80
-    pool = mp.Pool(nb_cores)
-    print(f'starting simulation on {nb_cores} cores')
-    data = pool.starmap(call_SNICAR, paramlist)
-    # pool.close()  
-    # pool.join() 
-    df = pd.DataFrame.from_records(data)
-    df = df.transpose()
-    df.columns = [str(i) for i in paramlist]
-    df.to_feather(f'{path_to_save_files}/021624_lut_snow_with_snw_alg.feather', 
-                  compression='zstd')
-    print('time for 1 lut: {}'.format(time.time() - start))
+# start = time.time()
+# paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
+#                                           sza_list, lwcs, algs))))
+# if __name__ == '__main__':
+#     nb_cores = 80
+#     pool = mp.Pool(nb_cores)
+#     print(f'starting simulation on {nb_cores} cores')
+#     data = pool.starmap(call_SNICAR, paramlist)
+#     # pool.close()  
+#     # pool.join() 
+#     df = pd.DataFrame.from_records(data)
+#     df = df.transpose()
+#     df.columns = [str(i) for i in paramlist]
+#     df.to_feather(f'{path_to_save_files}/021624_lut_snow_with_snw_alg.feather', 
+#                   compression='zstd')
+#     print('time for 1 lut: {}'.format(time.time() - start))
 
-
-# for lwc in lwcs:
+# for grain_size in grain_sizes:
 #  	start = time.time()
 #  	paramlist = list(set((itertools.product(depths,  
 #                                             densities, 
-#                                             grain_sizes, 
+#                                             grain_size, 
 #                                             sza_list, 
-#                                             lwc))))
+#                                             lwcs))))
 #  	if __name__ == '__main__':
 #           nb_cores = 200
 #           pool = mp.Pool(nb_cores)
@@ -800,30 +732,9 @@ if __name__ == '__main__':
 #           df = pd.DataFrame.from_records(data)
 #           df = df.transpose()
 #           df.columns = [str(i) for i in paramlist]
-#           df.to_feather(f'{path_to_save_files}/020523_lut_{lwc[0]}_lwc_for_prisma.feather', 
+#           df.to_feather(f'{path_to_save_files}/020523_lut_{grain_size[0]}_um_for_field_spectra.feather', 
 #                 compression='zstd') 
 #           print('time for 1 lut: {}'.format(time.time() - start))
          
-# start = time.time()
-# paramlist = list(set((itertools.product(depths, lwfilm_dz, densities, grain_sizes, sza_list, algae))))
-
-# if __name__ == '__main__':
-#     nb_cores = 80
-#     pool = mp.Pool(nb_cores)
-#     print(f'starting simulation on {nb_cores} cores')
-#     data = pool.starmap(call_SNICAR,paramlist)
-#     pool.close()  
-#     pool.join() 
-#     df = pd.DataFrame.from_records(data)
-#     df = df.transpose()
-#     df.columns = [str(i) for i in paramlist]
-#     df.to_feather(f'{path_to_save_files}/271023_lut_snow_with_sa.feather', 
-#                   compression='zstd')
-#     print('time for 1 lut: {}'.format(time.time() - start))
-
-## 20.15mn on 100 cores for 136080 runs casted to float 16 -- size 128MB
-## 17.8mn on 100 cores for 136080 runs not casted -- size 228MB
-## 21 mn on 100 cores for 136080 runs to float 32 -- size 162 MB
-## 27 mn on 100 cores for 136080 runs casted to float 16 but full size -- size 248MB
 
 
