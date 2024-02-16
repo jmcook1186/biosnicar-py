@@ -349,42 +349,33 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
 path_to_save_files = '/data/lou'
 
 ## PARAMS FOR CHLA ABS FEATURE 
-densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
-lwcs = [0.05] # maybe can be fixed or rm
-sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
-algs = [1e3, 5e3, 1e4, 2e4, 3e4, 4e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
-        1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
-        2e5, 2.25e5, 2.5e5, 2.75e5, 3e5, 3.25e5, 3.5e5, 3.75e5, 4e5, 4.25e5,
-        4.5e5, 4.75e5, 5e5, 5.5e5, 6e5, 6.5e5, 7e5, 7.5e5, 8e5, 8.5e5, 9e5, 9.5e5,
-        1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6, 1.6e6, 1.7e6, 1.8e6, 1.9e6,
-        2e6, 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
-        4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
-        1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
-        5e7, 6.5e7, 1e8, 2e8, 1e9]
-grain_sizes = [500 + i * 40 for i in range(64)] 
-depths = [1]
+# densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
+# lwcs = [0.05] # maybe can be fixed or rm
+# sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
+# algs = [0, 1e3, 5e3, 1e4, 2e4, 3e4, 4e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
+#         1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
+#         2e5, 2.25e5, 2.5e5, 2.75e5, 3e5, 3.25e5, 3.5e5, 3.75e5, 4e5, 4.25e5,
+#         4.5e5, 4.75e5, 5e5, 5.5e5, 6e5, 6.5e5, 7e5, 7.5e5, 8e5, 8.5e5, 9e5, 9.5e5,
+#         1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6, 1.6e6, 1.7e6, 1.8e6, 1.9e6,
+#         2e6, 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
+#         4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
+#         1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
+#         5e7, 6.5e7, 1e8, 2e8, 1e9]
+# algs = [int(a) for a in algs]
+# grain_sizes = [500 + i * 40 for i in range(64)] 
+# depths = [1]
 
 ## PARAMS FOR RED SPECTRA NIR INVERSION
-# densities = [500+i*20 for i in range(0,11)]
-# lwcs = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2] 
-# depths = [1]
-# sza_list = [43, 42, 44, 40, 48, 'diff']  # 39, 46, 47
-# grain_sizes = [500, 550, 600,
-#              650, 700, 750,
-#              800, 900, 1000, 1100,
-#              1200, 1300, 1400, 1500,
-#              2000, 3000]
-# algs = [0,2500, 5000, 7500, 10000,
-#         12500,
-#         15000, 20000, 25000,
-#         30000,35000, 
-#         40000,45000, 
-#         50000,55000,
-#         60000,65000, 
-#         70000,75000,
-#         80000,85000,
-#         90000,95000,
-#         100000]
+densities = [500+i*20 for i in range(0,11)]
+lwcs = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2] 
+depths = [1]
+algs = [0]
+grain_sizes = list(np.concatenate([np.arange(300, 1000, 20), 
+                              np.arange(1000, 2000, 40), 
+                              np.arange(2000, 3000, 60), 
+                              np.arange(3000, 4010, 80)]))
+sza_list = [43, 42, 44, 40, 48, 'diff', 39, 46, 47, 38, 41, 49, 50, 52, 53, 54]  
+
 
 
 # #### LUT PARAMETERS FIELD SPECTRA
@@ -781,7 +772,7 @@ if __name__ == '__main__':
     df = pd.DataFrame.from_records(data)
     df = df.transpose()
     df.columns = [str(i) for i in paramlist]
-    df.to_feather(f'{path_to_save_files}/021524_lut_snow_with_snw_alg.feather', 
+    df.to_feather(f'{path_to_save_files}/021624_lut_snow_nir_inversions.feather', 
                   compression='zstd')
     print('time for 1 lut: {}'.format(time.time() - start))
 
