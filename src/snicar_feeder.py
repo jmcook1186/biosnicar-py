@@ -681,7 +681,8 @@ def snicar_feeder(Inputs):
                 g_air = file["asm_prm"].values 
                 
                 # water bubbles
-                file = xr.open_dataset(f"{Inputs.dir_base}/Data/OP_data/480band/water_spherical_grains_in_ice/water_grain_in_ice_{Inputs.grain_rds[i]}.nc")
+                file = xr.open_dataset(str(dir_bubbly_ice + 
+                                           "bbl_water_{}.nc").format(rd))
 
                 sca_cff_vlm_water = file["sca_cff_vlm"].values
                 ext_cff_vlm_water = file["ext_cff_vlm"].values
