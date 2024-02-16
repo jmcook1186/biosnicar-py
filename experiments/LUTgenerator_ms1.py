@@ -715,26 +715,26 @@ grain_sizes = [
 #                   compression='zstd')
 #     print('time for 1 lut: {}'.format(time.time() - start))
 
-# for grain_size in grain_sizes:
-#  	start = time.time()
-#  	paramlist = list(set((itertools.product(depths,  
-#                                             densities, 
-#                                             grain_size, 
-#                                             sza_list, 
-#                                             lwcs))))
-#  	if __name__ == '__main__':
-#           nb_cores = 200
-#           pool = mp.Pool(nb_cores)
-#           print(f'starting simulation on {nb_cores} cores')
-#           data = pool.starmap(call_SNICAR,paramlist)
-#           pool.close()  
-#           pool.join()
-#           df = pd.DataFrame.from_records(data)
-#           df = df.transpose()
-#           df.columns = [str(i) for i in paramlist]
-#           df.to_feather(f'{path_to_save_files}/020523_lut_{grain_size[0]}_um_for_field_spectra.feather', 
-#                 compression='zstd') 
-#           print('time for 1 lut: {}'.format(time.time() - start))
+for grain_size in grain_sizes:
+ 	start = time.time()
+ 	paramlist = list(set((itertools.product(depths,  
+                                            densities, 
+                                            grain_size, 
+                                            sza_list, 
+                                            lwcs))))
+ 	if __name__ == '__main__':
+          nb_cores = 200
+          pool = mp.Pool(nb_cores)
+          print(f'starting simulation on {nb_cores} cores')
+          data = pool.starmap(call_SNICAR,paramlist)
+          pool.close()  
+          pool.join()
+          df = pd.DataFrame.from_records(data)
+          df = df.transpose()
+          df.columns = [str(i) for i in paramlist]
+          df.to_feather(f'{path_to_save_files}/020523_lut_{grain_size[0]}_um_for_field_spectra.feather', 
+                compression='zstd') 
+          print('time for 1 lut: {}'.format(time.time() - start))
          
 
 
