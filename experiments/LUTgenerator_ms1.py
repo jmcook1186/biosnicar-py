@@ -16,7 +16,7 @@ import math as m
 import time 
 
 
-def call_SNICAR(z, density, grain_size, sza, lwc): 
+def call_SNICAR(z, density, grain_size, sza, lwc, alg): 
     
     import collections as c
     from pathlib import Path
@@ -161,11 +161,11 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [z, 100] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [0.02, z] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [density]*len(Inputs.dz) # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [3, 1]  # 0 = ice grain layer, 
+    Inputs.layer_type = [4, 4]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
@@ -225,7 +225,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     # determine C_factor (can be None or a number)
     # this is the concentrating factor that accounts for
     # resolution difference in field samples and model layers
-    Inputs.c_factor_GA = 0 # int(0.02 / lwfilm_depth)
+    Inputs.c_factor_GA = 0 
     Inputs.c_factor_SA = 0
 
     # Set names of files containing the optical properties of these LAPs:
@@ -325,7 +325,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
+    Inputs.mss_cnc_snw_alg = [alg, 0]
 
 
 
@@ -337,8 +337,8 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
     Outputs = snicar_feeder(Inputs)
     albedo = Outputs.albedo
     BBA = Outputs.BBA
-    data = np.float16(np.append(albedo[70:170], BBA))
-    # data = np.append(albedo, BBA)
+    # data = np.float16(np.append(albedo[70:170], BBA))
+    data = np.append(albedo, BBA)
 
     return data
 
@@ -349,27 +349,27 @@ def call_SNICAR(z, density, grain_size, sza, lwc):
 path_to_save_files = '/data/lou'
 
 ## PARAMS FOR CHLA ABS FEATURE 
-# densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
-# lwcs = [0.05] # maybe can be fixed or rm
-# sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
-# algs = [0, 2.5e2, 5e2, 7.5e2,
-#         1e3, 2e3, 3e3, 4e3, 5e3, 7.5e3,
-#         1e4, 1.5e4, 2e4, 2.5e4, 3e4, 3.5e4, 4e4, 4.5e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
-#         1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
-#         2e5, 2.25e5, 2.5e5, 2.75e5, 
-#         3e5, 3.25e5, 3.5e5, 3.75e5, 
-#         4e5, 4.25e5, 4.5e5, 4.75e5, 
-#         5e5, 6e5, 7e5, 8e5, 9e5,
-#         1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
-#         # 1.6e6, 1.7e6, 1.8e6, 1.9e6, 2e6, 
-#         # 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
-#         # 4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
-#         # 1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
-#         # 5e7, 6.5e7, 1e8, 2e8, 1e9
-#         ]
-# algs = [int(a) for a in algs]
-# grain_sizes = [500 + i * 40 for i in range(64)] 
-# depths = [1]
+densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
+lwcs = [0.05] # maybe can be fixed or rm
+sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
+algs = [0, 2.5e2, 5e2, 7.5e2,
+        1e3, 2e3, 3e3, 4e3, 5e3, 7.5e3,
+        1e4, 1.5e4, 2e4, 2.5e4, 3e4, 3.5e4, 4e4, 4.5e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
+        1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
+        2e5, 2.25e5, 2.5e5, 2.75e5, 
+        3e5, 3.25e5, 3.5e5, 3.75e5, 
+        4e5, 4.25e5, 4.5e5, 4.75e5, 
+        5e5, 6e5, 7e5, 8e5, 9e5,
+        1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
+        # 1.6e6, 1.7e6, 1.8e6, 1.9e6, 2e6, 
+        # 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
+        # 4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
+        # 1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
+        # 5e7, 6.5e7, 1e8, 2e8, 1e9
+        ]
+algs = [int(a) for a in algs]
+grain_sizes = [500 + i * 40 for i in range(64)] 
+depths = [1]
 
 ## PARAMS FOR RED SPECTRA NIR INVERSION
 # densities = [500+i*20 for i in range(0,11)]
@@ -475,81 +475,81 @@ path_to_save_files = '/data/lou'
 # ] # 77
 
 # #### LUT PARAMETERS PRISMA
-densities = list(np.append(np.arange(380, 901, 20), 916.9)) # 28
+# densities = list(np.append(np.arange(380, 901, 20), 916.9)) # 28
 
-sza_list = [47]
+# sza_list = [47]
 
-depths = [5e-5, 3e-4, 6.3e-4, 1e-3, 1.5e-3, 2e-3, 2.5e-3, 3e-3, 3.5e-3,
-4.2e-3, 5e-3, 6e-3, 8e-3, 1.1e-2, 1] # 15
+# depths = [5e-5, 3e-4, 6.3e-4, 1e-3, 1.5e-3, 2e-3, 2.5e-3, 3e-3, 3.5e-3,
+# 4.2e-3, 5e-3, 6e-3, 8e-3, 1.1e-2, 1] # 15
 
-lwcs = [
-[0],
-[0.02],
-[0.04],
-[0.06],
-[0.08],
-[0.1],
-[0.12],
-[0.14],
-[0.16],
-[0.18],
-[0.2],
-[0.22],
-[0.24],
-[0.26],
-[0.28],
-[0.3]
-] # 16
+# lwcs = [
+# [0],
+# [0.02],
+# [0.04],
+# [0.06],
+# [0.08],
+# [0.1],
+# [0.12],
+# [0.14],
+# [0.16],
+# [0.18],
+# [0.2],
+# [0.22],
+# [0.24],
+# [0.26],
+# [0.28],
+# [0.3]
+# ] # 16
 
-grain_sizes = list(np.concatenate([np.arange(50, 100, 5), 
-                                   np.arange(100, 500, 10), 
-                                   np.arange(500, 1500, 20), 
-                                   np.arange(1500, 3000, 50), 
-                                   np.arange(3000, 9500, 500), 
-                                   np.arange(10000, 20001, 10000)])
+# grain_sizes = list(np.concatenate([np.arange(50, 100, 5), 
+#                                    np.arange(100, 500, 10), 
+#                                    np.arange(500, 1500, 20), 
+#                                    np.arange(1500, 3000, 50), 
+#                                    np.arange(3000, 9500, 500), 
+#                                    np.arange(10000, 20001, 10000)]))
 
 
 
 #############################################################################
 ################ CALL MODEL
 #############################################################################
-# start = time.time()
-# paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
-#                                           sza_list, lwcs, algs))))
-# if __name__ == '__main__':
-#     nb_cores = 80
-#     pool = mp.Pool(nb_cores)
-#     print(f'starting simulation on {nb_cores} cores')
-#     data = pool.starmap(call_SNICAR, paramlist)
-#     # pool.close()  
-#     # pool.join() 
-#     df = pd.DataFrame.from_records(data)
-#     df = df.transpose()
-#     df.columns = [str(i) for i in paramlist]
-#     df.to_feather(f'{path_to_save_files}/021624_lut_snow_with_snw_alg.feather', 
-#                   compression='zstd')
-#     print('time for 1 lut: {}'.format(time.time() - start))
+start = time.time()
+paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
+                                          sza_list, lwcs, algs))))
+if __name__ == '__main__':
+    nb_cores = 100
+    pool = mp.Pool(nb_cores)
+    print(f'starting simulation on {nb_cores} cores')
+    data = pool.starmap(call_SNICAR, paramlist)
+    # pool.close()  
+    # pool.join() 
+    df = pd.DataFrame.from_records(data)
+    df = df.transpose()
+    df.columns = [str(i) for i in paramlist]
+    df.to_feather(f'{path_to_save_files}/021924_lut_snow_with_snw_alg.feather', 
+                  compression='zstd')
+    print('time for 1 lut: {}'.format(time.time() - start))
 
-for lwc in lwcs:
- 	start = time.time()
- 	paramlist = list(set((itertools.product(depths,  
-                                            densities, 
-                                            grain_size, 
-                                            sza_list, 
-                                            lwc))))
- 	if __name__ == '__main__':
-          nb_cores = 100
-          pool = mp.Pool(nb_cores)
-          print(f'starting simulation on {nb_cores} cores')
-          data = pool.starmap(call_SNICAR,paramlist)
-          pool.close()  
-          pool.join()
-          df = pd.DataFrame.from_records(data)
-          df = df.transpose()
-          df.columns = [str(i) for i in paramlist]
-          df.to_feather(f'{path_to_save_files}/021723_lut_{lut[0]}_lwc_for_prisma.feather', 
-                compression='zstd') 
-          print('time for 1 lut: {}'.format(time.time() - start))
+# for lwc in lwcs:
+#  	start = time.time()
+#  	paramlist = list(set((itertools.product(depths,  
+#                                             densities, 
+#                                             grain_sizes, 
+#                                             sza_list, 
+#                                             lwc))))
+#  	if __name__ == '__main__':
+#           nb_cores = 100
+#           pool = mp.Pool(nb_cores)
+#           print(f'starting simulation on {nb_cores} cores')
+#           data = pool.starmap(call_SNICAR,paramlist)
+#           pool.close()  
+#           pool.join()
+#           df = pd.DataFrame.from_records(data)
+#           df = df.transpose()
+#           df.columns = [str(i) for i in paramlist]
+#           df.to_feather(f'{path_to_save_files}/021723_lut_{lwc[0]}_lwc_for_prisma.feather', 
+#                 compression='zstd') 
+#           print('time for 1 lut: {}'.format(time.time() - start))
          
 
 
