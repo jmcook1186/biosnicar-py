@@ -15,8 +15,7 @@ import numpy as np
 import math as m
 import time 
 
-
-def call_SNICAR(z, density, grain_size, sza, lwc, alg): 
+def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust): 
     
     import collections as c
     from pathlib import Path
@@ -296,7 +295,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
     # To use cells/mL for algae, set GA_units == 1.
     # The script will loop over the different mixing scenarios
     
-    Inputs.mss_cnc_soot1 = [0] * len(Inputs.dz)
+    Inputs.mss_cnc_soot1 = [bc, 0] 
     Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_brwnC1 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_brwnC2 = [0] * len(Inputs.dz)
@@ -315,7 +314,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
     Inputs.mss_cnc_Skiles_dust2 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Skiles_dust3 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Skiles_dust4 = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_Skiles_dust5 = [0] * len(Inputs.dz)
+    Inputs.mss_cnc_Skiles_dust5 = [dust, 0]
     Inputs.mss_cnc_GreenlandCentral1 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_GreenlandCentral2 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_GreenlandCentral3 = [0] * len(Inputs.dz)
@@ -338,7 +337,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
     albedo = Outputs.albedo
     BBA = Outputs.BBA
     # data = np.float16(np.append(albedo[70:170], BBA))
-    data = np.append(albedo, BBA)
+    data = np.float16(np.append(albedo, BBA))
 
     return data
 
@@ -349,9 +348,9 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg):
 path_to_save_files = '/data/lou'
 
 ## PARAMS FOR CHLA ABS FEATURE 
-densities = [500+i*50 for i in range(0,5)] # maybe this can even be removed
-lwcs = [0.05] # maybe can be fixed or rm
-sza_list = [40, 45, 50, 55, 60] # maybe can be removed, use diff instead
+densities = [600] # maybe this can even be removed
+lwcs = [0.06] # maybe can be fixed or rm
+sza_list = ['diff'] # maybe can be removed, use diff instead
 algs = [0, 2.5e2, 5e2, 7.5e2,
         1e3, 2e3, 3e3, 4e3, 5e3, 7.5e3,
         1e4, 1.5e4, 2e4, 2.5e4, 3e4, 3.5e4, 4e4, 4.5e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
@@ -360,16 +359,27 @@ algs = [0, 2.5e2, 5e2, 7.5e2,
         3e5, 3.25e5, 3.5e5, 3.75e5, 
         4e5, 4.25e5, 4.5e5, 4.75e5, 
         5e5, 6e5, 7e5, 8e5, 9e5,
-        1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
+        1e6
+        #, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
         # 1.6e6, 1.7e6, 1.8e6, 1.9e6, 2e6, 
         # 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
         # 4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
         # 1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
         # 5e7, 6.5e7, 1e8, 2e8, 1e9
-        ]
+        ] # 46
 algs = [int(a) for a in algs]
-grain_sizes = [500 + i * 40 for i in range(64)] 
+grain_sizes = list(np.concatenate([np.arange(300, 500, 60),
+                                   np.arange(540, 900, 120),
+                              np.arange(900, 1500, 170), 
+                              np.arange(1580, 3500, 220)]))
 depths = [1]
+bcs = [0, 100, 200 , 300, 400,  
+      500, 600, 700,  800,  900, 
+      1000, 1100, 1200, 1300, 1400, 1500]
+
+dusts = [0, 6e4, 1.25e5,  2e5,  3e5, 4e5, 5e5, 6e5, 7e5, 8e5, 9e5, 1e6]
+
+# bc: below 1500 is OK. dust size 5: below 1e6 is ok. meshing to determine. 
 
 ## PARAMS FOR RED SPECTRA NIR INVERSION
 # densities = [500+i*20 for i in range(0,11)]
@@ -515,7 +525,7 @@ depths = [1]
 #############################################################################
 start = time.time()
 paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
-                                          sza_list, lwcs, algs))))
+                                          sza_list, lwcs, algs, bcs, dusts))))
 if __name__ == '__main__':
     nb_cores = 100
     pool = mp.Pool(nb_cores)
@@ -526,7 +536,7 @@ if __name__ == '__main__':
     df = pd.DataFrame.from_records(data)
     df = df.transpose()
     df.columns = [str(i) for i in paramlist]
-    df.to_feather(f'{path_to_save_files}/021924_lut_snow_with_snw_alg.feather', 
+    df.to_feather(f'{path_to_save_files}/022224_lut_snow_with_snw_alg.feather', 
                   compression='zstd')
     print('time for 1 lut: {}'.format(time.time() - start))
 
