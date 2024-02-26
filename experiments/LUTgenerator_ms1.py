@@ -384,17 +384,25 @@ path_to_save_files = '/data/lou'
 densities = [600]
 sza_list = ['diff']
 depths = [1]  
-lwcs = [0.08]  # 4,  could be removed
-grain_sizes = list(np.concatenate([np.arange(560, 1000, 20), 
-                               np.arange(1000, 2000, 40), 
-                               np.arange(2000, 2260, 60)])) # 52
-algs = list(np.concatenate([np.arange(0, 1.95e4, 1.5e3), 
+lwcs = [0.08]  # 3
+grain_sizes = list(np.concatenate([np.arange(600, 1000, 20), 
+                               np.arange(1000, 2050, 40)])) # 47
+algs = list(np.concatenate([[0], 
+                            np.arange(1.5e3, 9e3, 0.5e3),
+                            np.arange(9e3, 1.95e4, 1.5e3), 
                                np.arange(2e4, 5.75e4, 0.22e4), 
-                                np.arange(6e4, 9.7e4, 0.3e4),
-                               np.arange(1e5, 1.15e5, 0.5e4)])) # 47
-bcs = list(np.arange(0, 1575, 75)) # 21
-dusts = [[int(elem)] for elem in np.concatenate([np.arange(0, 4.7e5, 0.4e5), 
-                               np.arange(5e5, 1.25e6, 0.6e5)])] # 25
+                                np.arange(6e4, 1.25e5, 0.5e4)])) # 54
+
+dusts = [[int(elem)] for elem in np.concatenate([np.arange(0, 1e5, 0.4e5), 
+                                                 np.arange(1e5, 2e5, 0.2e5),
+                                                 np.arange(2e5, 1.2e6, 0.6e5)])] # 25
+
+bcs = list(np.concatenate([np.arange(0, 200, 50), 
+                           np.arange(200, 650, 25),
+                           np.arange(650, 1250, 50),
+                           np.arange(1300, 2000, 100)
+                           ])) # 41
+    
 
 ## PARAMS FOR RED SPECTRA NIR INVERSION
 # densities = [500+i*20 for i in range(0,11)]
@@ -553,7 +561,7 @@ for dust in dusts:
         df = pd.DataFrame.from_records(data)
         df = df.transpose()
         df.columns = [str(i) for i in paramlist]
-        df.to_feather(f'{path_to_save_files}/022324_lut_inversoin_snw_alg.feather', 
+        df.to_feather(f'{path_to_save_files}/022624_lut_inversion_snw_alg_{dust[0]}.feather', 
                       compression='zstd')
         print('time for 1 lut: {}'.format(time.time() - start))
 
