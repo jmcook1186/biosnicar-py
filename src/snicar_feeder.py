@@ -683,7 +683,6 @@ def snicar_feeder(Inputs):
                 # water bubbles
                 file = xr.open_dataset(str(dir_bubbly_ice + 
                                            "bbl_water_{}.nc").format(rd))
-
                 sca_cff_vlm_water = file["sca_cff_vlm"].values
                 ext_cff_vlm_water = file["ext_cff_vlm"].values
                 abs_cff_vlm_water = file["abs_cff_vlm"].values
@@ -820,6 +819,7 @@ def snicar_feeder(Inputs):
             mss_aer[0:Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) / (
                 917 * 10 ** (-6)
             )
+            mac_aer[aer, :] = impurity_properties["ext_cff_mss"].values
 
         elif files[aer] == Inputs.file_snw_alg and Inputs.SA_units == 1:
             # if SA_units == 1, SA concentration provided in cells/mL

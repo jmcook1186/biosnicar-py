@@ -176,7 +176,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
         delimiter="csv",
     )
-    Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
+    # Inputs.R_sfc = np.array([0 for i in range(Inputs.nbr_wvl)])
 
 
     # define source of ice refractive index data.
@@ -229,9 +229,9 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
 
     # Set names of files containing the optical properties of these LAPs:
     # uncoated BC (Bohren and Huffman, 1983)
-    Inputs.file_soot1 = "mie_sot_ChC90_dns_1317.nc"
+    Inputs.file_soot1 = "bc_ChCB_rn40_dns1270.nc"
     # coated BC (Bohren and Huffman, 1983)
-    Inputs.file_soot2 = "miecot_slfsot_ChC90_dns_1317.nc"
+    Inputs.file_soot2 = "bc_ChCB_rn40_dns1270_slfcots.nc"
     # uncoated brown carbon (Kirchstetter et al. (2004).)
     Inputs.file_brwnC1 = "brC_Kirch_BCsd.nc"
     # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
@@ -561,7 +561,7 @@ for dust in dusts:
         df = pd.DataFrame.from_records(data)
         df = df.transpose()
         df.columns = [str(i) for i in paramlist]
-        df.to_feather(f'{path_to_save_files}/022624_lut_inversion_snw_alg_{dust[0]}.feather', 
+        df.to_feather(f'{path_to_save_files}/022724_lut_inversion_snw_alg_{dust[0]}.feather', 
                       compression='zstd')
         print('time for 1 lut: {}'.format(time.time() - start))
 
