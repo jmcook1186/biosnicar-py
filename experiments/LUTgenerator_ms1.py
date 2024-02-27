@@ -231,7 +231,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     # uncoated BC (Bohren and Huffman, 1983)
     Inputs.file_soot1 = "bc_ChCB_rn40_dns1270.nc"
     # coated BC (Bohren and Huffman, 1983)
-    Inputs.file_soot2 = "bc_ChCB_rn40_dns1270_slfcots.nc"
+    Inputs.file_soot2 = "bc_ChCB_rn40_dns1270_slfcot.nc"
     # uncoated brown carbon (Kirchstetter et al. (2004).)
     Inputs.file_brwnC1 = "brC_Kirch_BCsd.nc"
     # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
