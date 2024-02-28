@@ -384,25 +384,41 @@ path_to_save_files = '/data/lou'
 densities = [600]
 sza_list = ['diff']
 depths = [1]  
-lwcs = [0.08]  # 3
-grain_sizes = list(np.concatenate([np.arange(600, 1000, 20), 
-                               np.arange(1000, 2050, 40)])) # 47
+# lwcs = [0.08]
+# grain_sizes = list(np.concatenate([np.arange(600, 1000, 20), 
+#                                np.arange(1000, 2050, 40)])) # 47
+# algs = list(np.concatenate([[0], 
+#                             np.arange(1.5e3, 9e3, 0.5e3),
+#                             np.arange(9e3, 1.95e4, 1.5e3), 
+#                                np.arange(2e4, 5.75e4, 0.22e4), 
+#                                 np.arange(6e4, 1.25e5, 0.5e4)])) # 54
+
+# dusts = [[int(elem)] for elem in np.concatenate([np.arange(0, 1e5, 0.4e5), 
+#                                                  np.arange(1e5, 2e5, 0.2e5),
+#                                                  np.arange(2e5, 1.2e6, 0.6e5)])] # 25
+
+# bcs = list(np.concatenate([np.arange(0, 200, 50), 
+#                            np.arange(200, 650, 25),
+#                            np.arange(650, 1250, 50),
+#                            np.arange(1300, 2000, 100)
+#                            ])) # 41
+
+lwcs = [0, 0.03, 0.06, 0.09, 0.12, 0.15] # 6
+grain_sizes = list(np.concatenate([np.arange(500, 1000, 50), 
+                               np.arange(1020, 1500, 80),
+                               np.arange(1500, 2050, 100)])) # 22
+
 algs = list(np.concatenate([[0], 
-                            np.arange(1.5e3, 9e3, 0.5e3),
-                            np.arange(9e3, 1.95e4, 1.5e3), 
-                               np.arange(2e4, 5.75e4, 0.22e4), 
-                                np.arange(6e4, 1.25e5, 0.5e4)])) # 54
+                            np.arange(2e3, 1e4, 2e3),
+                            np.arange(1e4, 1.95e4, 3e3), 
+                               np.arange(2.2e4, 7.5e4, 0.5e4), 
+                                np.arange(7.7e4, 1.4e5, 1e4)])) # 27
+dusts = [[int(elem)] for elem in np.concatenate([np.arange(0, 1e5, 0.25e5), 
+                                                 np.arange(1e5, 5e5, 0.5e5),
+                                                 np.arange(5e5, 8e5, 1e5),
+                                                 np.arange(8e5, 1.6e6, 1.5e5)])] # 21
+bcs = list(np.arange(0, 2100, 100)) # 21
 
-dusts = [[int(elem)] for elem in np.concatenate([np.arange(0, 1e5, 0.4e5), 
-                                                 np.arange(1e5, 2e5, 0.2e5),
-                                                 np.arange(2e5, 1.2e6, 0.6e5)])] # 25
-
-bcs = list(np.concatenate([np.arange(0, 200, 50), 
-                           np.arange(200, 650, 25),
-                           np.arange(650, 1250, 50),
-                           np.arange(1300, 2000, 100)
-                           ])) # 41
-    
 
 ## PARAMS FOR RED SPECTRA NIR INVERSION
 # densities = [500+i*20 for i in range(0,11)]
@@ -552,7 +568,7 @@ for dust in dusts:
         start = time.time()
         paramlist = list(set((itertools.product(depths, densities, grain_sizes, 
                                                   sza_list, lwcs, algs, bcs, dust))))
-        nb_cores = 100
+        nb_cores = 150
         pool = mp.Pool(nb_cores)
         print(f'starting simulation on {nb_cores} cores')
         data = pool.starmap(call_SNICAR, paramlist)
@@ -561,7 +577,7 @@ for dust in dusts:
         df = pd.DataFrame.from_records(data)
         df = df.transpose()
         df.columns = [str(i) for i in paramlist]
-        df.to_feather(f'{path_to_save_files}/022724_lut_inversion_snw_alg_{dust[0]}.feather', 
+        df.to_feather(f'{path_to_save_files}/022824_lut_emulator_snw_alg_{dust[0]}.feather', 
                       compression='zstd')
         print('time for 1 lut: {}'.format(time.time() - start))
 
