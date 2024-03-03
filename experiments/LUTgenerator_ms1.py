@@ -337,7 +337,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     albedo = Outputs.albedo
     BBA = Outputs.BBA
     # data = np.float16(np.append(albedo[70:170], BBA))
-    data = np.float16(np.append(albedo, BBA))
+    data = np.append(albedo, BBA)
 
     return data
 
@@ -346,6 +346,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
 ################ INPUTS
 #############################################################################
 path_to_save_files = '/data/lou'
+path_to_save_files = '/Users/au660413/Documents/AU_PhD/rodalger-project/data'
 
 ## PARAMS FOR CHLA ABS FEATURE 
 # densities = [600] # maybe this can even be removed
@@ -400,10 +401,6 @@ grain_sizes = [[int(elem)] for elem in np.concatenate([
     np.arange(1060, 1500, 100),
     np.arange(1560, 2500, 160)])] # 23
 
-list(np.concatenate([np.arange(350, 800, 50), 
-                               np.arange(820, 1000, 80),
-                               np.arange(1060, 1500, 100),
-                               np.arange(1560, 2500, 160)]))
 
 # algs = list(np.concatenate([[0], 
 #                             np.arange(2e3, 1e4, 2e3),
@@ -579,22 +576,28 @@ dusts = list(np.concatenate([np.arange(0, 1e5, 0.4e5),
 ################ CALL MODEL
 #############################################################################
 
+
 for grain_size in grain_sizes: 
     if __name__ == '__main__':
         start = time.time()
         paramlist = list(set((itertools.product(depths, densities, grain_size, 
                                                   sza_list, lwcs, algs, bcs, dusts))))
-        nb_cores = 200
+        nb_cores = 150
         pool = mp.Pool(nb_cores)
         print(f'starting simulation on {nb_cores} cores')
-        data = pool.starmap(call_SNICAR, paramlist)
-        # pool.close()  
-        # pool.join() 
-        df = pd.DataFrame.from_records(data)
-        df = df.transpose()
-        df.columns = [str(i) for i in paramlist]
-        df.to_feather(f'{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.feather', 
-                      compression='zstd')
+        data = pool.starmap(call_SNICAR, 
+                            paramlist,
+                            chunksize = 500
+                            )
+        np.save(f"{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.npy", 
+                np.array(np.float16(data)))
+        np.save(f"{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}_names.npy", 
+                [str(i) for i in paramlist])
+        # df = pd.DataFrame.from_records(data)
+        # df = df.transpose()
+        # df.columns = [str(i) for i in paramlist]
+        # df.to_feather(f'{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.feather', 
+                      # compression='zstd')
         print('time for 1 lut: {}'.format(time.time() - start))
 
 # for lwc in lwcs:
