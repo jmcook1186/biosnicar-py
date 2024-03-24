@@ -153,15 +153,12 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
     if ice.shp[i] != 0:
         raise ValueError("Water coating can only be applied to spheres")
 
-    fn_ice = model_config["PATHS"]["DIR_BASE"] + model_config["PATHS"]["FN_ICE"]
-    fn_water = model_config["PATHS"]["DIR_BASE"] + model_config["PATHS"]["FN_WATER"]
-
     res = wcs.miecoated_driver(
         rice=ice.rds[i],
-        water=ice.water[i],
-        fn_ice=fn_ice,
-        rf_ice=ice.rf_ice,
-        fn_water=fn_water,
+        rwater=ice.water[i],
+        fn_ice=model_config.dir_base+model_config.fn_ice,
+        rf_ice=ice.rf,
+        fn_water=model_config.dir_base+model_config.fn_water,
         wvl=model_config.wavelengths,
     )
 
