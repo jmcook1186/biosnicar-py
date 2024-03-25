@@ -66,10 +66,12 @@ def get_layer_OPs(ice, model_config):
                     + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
                 )
 
+            model_config.file_ice = file_ice
+
             # if liquid water coatings are applied
             if ice.water[i] > ice.rds[i]:
-                ssa_snw[i, ice.nbr_wvl], g_snw[i], mac_snw[i] = add_water_coating(
-                    ice, model_config, ssa_snw, g_snw, mac_snw, i
+                ssa_snw[i, :], g_snw[i,:], mac_snw[i,:] = add_water_coating(
+                    ice, model_config, ssa_snw[i,:], g_snw[i,:], mac_snw[i,:], i
                 )
 
             else:
@@ -162,12 +164,14 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
         wvl=model_config.wavelengths,
     )
 
-    ssa_snw[i, :] = res["ssa"]
-    g_snw[i, :] = res["asymmetry"]
 
-    with xr.open_dataset(file_ice) as temp:
+    ssa_snw = res["ssa"]
+    g_snw = res["asymmetry"]
+
+    with xr.open_dataset(model_config.file_ice) as temp:
+
         ext_cff_mss = temp["ext_cff_mss"].values
-        mac_snw[i, :] = ext_cff_mss
+        mac_snw = ext_cff_mss
 
     return ssa_snw, g_snw, mac_snw
 
