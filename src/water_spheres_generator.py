@@ -5,7 +5,7 @@
 
 This code is used to generate the optical properties of an air bubble or grain
 size distribution of effective radius re and save them in a netcdf file that
-can directly be used in the SNICAR model. The methodology follows that of 
+can directly be used in the SNICAR/biosnicar model. The methodology follows that of 
 Flanner et al. 2021 (https://doi.org/10.5194/gmd-14-7673-2021), except that 
 the Mie solver used is that of Wiscombe 1979 (doi:10.5065/D6ZP4414),
 implemented in python by Scott Prahl in the package miepython, available at: 
@@ -22,9 +22,13 @@ import pandas as pd
 from miepython import mie, ez_mie
 import xarray as xr
 import glob
-import time 
+import time
 
-## GLOBAL VARIABLES
+
+##############################################################################
+# Inputs of the Mie solver
+##############################################################################
+
 wvl = np.arange(0.205e-6, 5e-6, 0.01e-6)
 ref_index_ice = xr.open_dataset("../Data/OP_data/480band/rfidx_ice.nc")
 ref_index_water = pd.read_csv(
@@ -40,7 +44,86 @@ n_air = np.ones(480) + 1e-6 * (
 description = "Wiscombe 1979 solver implemented by Scott Prahl (miepython)"
 
 
-## FUNCTIONS 
+path_to_save_temp = "../Data/OP_data/480band/tmp8"  # path to temporary individual ops
+air_bbl, water_bbl, ice_grain, water_grain = True, False, False, False
+small_sizes = True  # small is below 5000um for bubbles and 1500um for grains
+
+if air_bbl:
+    path_to_save_ops = "../Data/OP_data/480band/bubbly_ice_files"
+    filename = "bbl"
+    medium_type = "ice_Pic16"
+    particle_type = "air_stp"
+    particle_density = 1.293
+    n_in = n_air
+    k_in = np.zeros(480)
+    n_ext = n_ice
+    if small_sizes:
+        sz_min = 5e-08
+        sz_max = 3e-02
+        sz_nbr = 10000
+    else:
+        sz_min = 5e-05
+        sz_max = 1e-01
+        sz_nbr = 500
+
+if water_bbl:
+    path_to_save_ops = "../Data/OP_data/480band/bubbly_ice_files"
+    filename = "bbl_water"
+    medium_type = "ice_Pic16"
+    particle_type = "bbl_water"
+    particle_density = 1000
+    n_in = n_water
+    k_in = k_water
+    n_ext = n_ice
+    if small_sizes:
+        sz_min = 5e-08
+        sz_max = 3e-02
+        sz_nbr = 10000
+    else:
+        sz_min = 5e-05
+        sz_max = 1e-01
+        sz_nbr = 500
+
+if ice_grain:
+    path_to_save_ops = "../Data/OP_data/480band/ice_spherical_grains/ice_Pic16"
+    filename = "ice_grain"
+    medium_type = "air_stp"
+    particle_type = "ice_Pic16"
+    particle_density = 917
+    n_in = n_ice
+    k_in = k_ice
+    n_ext = n_air
+    if small_sizes:
+        sz_min = 5e-08
+        sz_max = 1e-02
+        sz_nbr = 5000
+    else:
+        sz_min = 2e-05
+        sz_max = 1e-01
+        sz_nbr = 500
+
+if water_grain:
+    path_to_save_ops = "../Data/OP_data/480band/water_spherical_grains"
+    filename = "water_grain"
+    medium_type = "air_stp"
+    particle_type = "water_grain"
+    particle_density = 1000
+    n_in = n_water
+    k_in = k_water
+    n_ext = n_air
+    if small_sizes:
+        sz_min = 5e-08
+        sz_max = 1e-02
+        sz_nbr = 5000
+    else:
+        sz_min = 2e-05
+        sz_max = 1e-01
+        sz_nbr = 500
+
+##############################################################################
+# Functions
+##############################################################################
+
 
 def net_cdf_out(
     wvl,
@@ -72,8 +155,8 @@ def net_cdf_out(
     to be used in the SNICAR 480bands model.
     The single scattering properties are pre-computed with Mie theory using
     the miepython solver created by Scott Prahl's from the algorithm
-    of Wiscombe 1979, and then mixed using a lognormal distribution 
-    following Flanner et al. 2021. 
+    of Wiscombe 1979, and then mixed using a lognormal distribution
+    following Flanner et al. 2021.
     """
 
     file = xr.Dataset(
@@ -162,8 +245,11 @@ def net_cdf_out(
         "units": "number",
     }
     file.to_netcdf(
-    str(f'{path_to_save}/{filename}_{str(int(np.round(eff_radius_analytic*1e6))).zfill(4)}.nc'))
-    
+        str(
+            f"{path_to_save}/{filename}_{str(int(np.round(eff_radius_analytic*1e6))).zfill(4)}.nc"
+        )
+    )
+
     # return file
 
 
@@ -206,89 +292,6 @@ def n(r, re):
     return n * dxm, rn
 
 
-#%%
-
-##############################################################################
-# Inputs of the Mie solver
-##############################################################################
-
-path_to_save_temp = "../Data/OP_data/480band/tmp8" # temporary individual ops
-air_bbl, water_bbl, ice_grain, water_grain = True, False, False, False
-small_sizes = True # small is below 5000um for bubbles and 1500um for grains
-
-if air_bbl: 
-    path_to_save_ops = "../Data/OP_data/480band/bubbly_ice_files" 
-    filename = "bbl"
-    medium_type = "ice_Pic16" 
-    particle_type = "air_stp" 
-    particle_density = 1.293 
-    n_in = n_air
-    k_in = np.zeros(480)
-    n_ext = n_ice 
-    if small_sizes: 
-        sz_min = 5e-08 
-        sz_max = 3e-02
-        sz_nbr = 10000
-    else: 
-        sz_min = 5e-05
-        sz_max = 1e-01
-        sz_nbr = 500
-    
-if water_bbl: 
-    path_to_save_ops = "../Data/OP_data/480band/bubbly_ice_files" 
-    filename = "bbl_water"  
-    medium_type = "ice_Pic16"
-    particle_type = "bbl_water"
-    particle_density = 1000
-    n_in = n_water
-    k_in = k_water
-    n_ext = n_ice
-    if small_sizes: 
-        sz_min = 5e-08 
-        sz_max = 3e-02
-        sz_nbr = 10000
-    else: 
-        sz_min = 5e-05
-        sz_max = 1e-01
-        sz_nbr = 500
-    
-if ice_grain: 
-    path_to_save_ops = "../Data/OP_data/480band/ice_spherical_grains/ice_Pic16" 
-    filename = "ice_grain"  
-    medium_type = "air_stp"
-    particle_type = "ice_Pic16"
-    particle_density = 917
-    n_in = n_ice
-    k_in = k_ice
-    n_ext = n_air
-    if small_sizes: 
-        sz_min = 5e-08
-        sz_max = 1e-02
-        sz_nbr = 5000
-    else: 
-        sz_min = 2e-05
-        sz_max = 1e-01
-        sz_nbr = 500
-
-if water_grain:
-    path_to_save_ops = "../Data/OP_data/480band/water_spherical_grains" 
-    filename = "water_grain"  
-    medium_type = "air_stp"
-    particle_type = "water_grain"
-    particle_density = 1000
-    n_in = n_water
-    k_in = k_water
-    n_ext = n_air
-    if small_sizes: 
-        sz_min = 5e-08
-        sz_max = 1e-02
-        sz_nbr = 5000
-    else: 
-        sz_min = 2e-05
-        sz_max = 1e-01
-        sz_nbr = 500
-
-
 ##############################################################################
 # Compute OPs of single-size spheres
 ##############################################################################
@@ -297,17 +300,14 @@ rds = np.logspace(np.log10(sz_min), np.log10(sz_max), sz_nbr)
 
 start = time.time()
 for i, radius in enumerate(rds):
-    qext, qsca, qback, g = ez_mie(n_in - 1j * k_in,
-                              2 * radius,
-                              wvl,
-                              n_ext)
-    print(f'{np.round(i / len(rds) * 100, 2)} % DONE')
-    
+    qext, qsca, qback, g = ez_mie(n_in - 1j * k_in, 2 * radius, wvl, n_ext)
+    print(f"{np.round(i / len(rds) * 100, 2)} % DONE")
+
     file = np.concatenate(([qext], [g], [qsca]), axis=0)
-    np.save(f'{path_to_save_temp}/{filename}_{radius*1e6}', file)
-    
+    np.save(f"{path_to_save_temp}/{filename}_{radius*1e6}", file)
+
 end = time.time()
-print(end-start)
+print(end - start)
 
 op_filenames = glob.glob(f"{path_to_save_temp}/*.npy")
 radii_ordered = [float(f.split("_")[-1][:-4]) for f in op_filenames]
@@ -316,61 +316,57 @@ op_filenames_ordered = list(
 )
 op_data = np.array([np.load(fname) for fname in op_filenames_ordered])
 
-#%%
-
 ##############################################################################
 # Compute OPs of lognormal distributions of spheres and save netcdf files
 ##############################################################################
 
-for re in np.concatenate([np.arange(10e-6, 100e-6, 5e-6), 
-                          np.arange(100e-6, 5000e-6, 10e-6)]):
-    
+for re in np.concatenate(
+    [np.arange(10e-6, 100e-6, 5e-6), np.arange(100e-6, 5000e-6, 10e-6)]
+):
+
     qext = op_data[:, 0, :]
     asm_prm = op_data[:, 1, :]
     qsca = op_data[:, 2, :]
-    
+
     number_distribution, rn = n(rds, re)
-    
+
     resolved_re = np.sum(rds**3 * number_distribution) / np.sum(
         rds**2 * number_distribution
     )
-    
+
     mass_distribution = number_distribution * rds**3
     mass_distribution = mass_distribution / np.sum(mass_distribution)
-    
-    
+
     qext_wvl = qext.T
     qsca_wvl = qsca.T
     asm_prm_wvl = asm_prm.T
-    
-    
+
     ext_xsc_wvl = qext_wvl * np.pi * (rds**2)
     sca_xsc_wvl = qsca_wvl * np.pi * (rds**2)
-    
+
     ext_cff_vlm_wvl = 0.75 * qext_wvl / rds
     sca_cff_vlm_wvl = 0.75 * qsca_wvl / rds
-    
+
     ext_cff_mss_wvl = 0.75 * qext_wvl / (particle_density * rds)
     sca_cff_mss_wvl = 0.75 * qsca_wvl / (particle_density * rds)
-    
-    
+
     ext_xsc_out = np.sum(ext_xsc_wvl * number_distribution, axis=1)
     sca_xsc_out = np.sum(sca_xsc_wvl * number_distribution, axis=1)
     abs_xsc_out = ext_xsc_out - sca_xsc_out
     ss_alb_out = sca_xsc_out / ext_xsc_out
-    
+
     ext_cff_mss_out = np.sum(ext_cff_mss_wvl * mass_distribution, axis=1)
     sca_cff_mss_out = np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
     abs_cff_mss_out = ext_cff_mss_out - sca_cff_mss_out
-    
+
     ext_cff_vlm_out = np.sum(ext_cff_vlm_wvl * mass_distribution, axis=1)
     sca_cff_vlm_out = np.sum(sca_cff_vlm_wvl * mass_distribution, axis=1)
     abs_cff_vlm_out = ext_cff_vlm_out - sca_cff_vlm_out
-    
+
     asm_prm_out = np.sum(
         (asm_prm_wvl * sca_cff_mss_wvl) * mass_distribution, axis=1
     ) / np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
-    
+
     net_cdf_out(
         wvl,
         rds,
@@ -395,17 +391,5 @@ for re in np.concatenate([np.arange(10e-6, 100e-6, 5e-6),
         particle_type,
         filename,
     )
-    
-    print(re)
 
-#%%
-# check with snicar data
-
-# base_path = "/Users/au660413/Desktop/github/biosnicar-py/Data/OP_data"
-
-# plt.figure()
-# file = xr.open_dataset(f"{base_path}/480band/bubbly_ice_files_BH83/bbl_8000.nc")
-# plt.plot(file["asm_prm"], label="snicar file, re = 5000um")
-# file = xr.open_dataset(f"{base_path}/480band/bubbly_ice_files/bbl_8000.nc")
-# plt.plot(file["asm_prm"], "--", label="lognormal")
-
+    # print(re)

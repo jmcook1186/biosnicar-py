@@ -56,7 +56,7 @@ Inputs = c.namedtuple(
         "dz",
         "rho_layers",
         "lwc",
-        "lwc_type",
+        "lwc_pct_bubbles",
         "grain_rds",
         "side_length",
         "depth",
@@ -174,7 +174,7 @@ POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
 Inputs.direct = 1  # 1 = direct-beam, 0 = Diffuse flux
 Inputs.aprx_typ = 1  # 1 = Eddington, 2 = Quadrature, 3 = Hemispheric Mean
 Inputs.delta = 1  # 1 = Apply delta approximation, 0 = No delta
-Inputs.solzen = 50  # solar zenith angle between 0 (nadir) and 89 (horizon)
+Inputs.solzen = 49  # solar zenith angle between 0 (nadir) and 89 (horizon)
 
 # CHOOSE ATMOSPHERIC PROfile for surface-incident flux:
 #    0 = mid-latitude winter
@@ -196,21 +196,18 @@ Inputs.incoming_i = 1
 Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
 Inputs.add_double = True  # toggle adding-doubling solver
 
-# garder film pour LAPs but too small to be detected
-# get varying fresnel layer depth with also undetected depth
-# --> how do I vary this depth??...
-# then have layer of ice with water until vertical boundary
-Inputs.dz = [1e-10, 1, 1]  # thickness of each vertical layer (unit = m) # 0.04
+Inputs.dz = [0.02, 100]  # thickness of each vertical layer (unit = m) # 0.04
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [2, 3, 1]  # 0 = ice grain layer, 
-                               # 1 = solid bubbly ice w/ fresnel layer on top,  
-                               # 2 = liquid water film, 
-                               # 3 = solid bubbly ice w/out fresnel layer
-Inputs.lwc = 0.1
-Inputs.lwc_type = 2 # 0 = optically equivalent lwc, 
-                    # 1 = water bubbles w/ same size as air bubbles
-Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
-Inputs.rho_layers = [916.999, 500, 500]  # density of each layer (unit = kg m-3)
+Inputs.layer_type = [3,1]  # 0 = ice grain layer of different shapes,
+# 1 = solid bubbly ice w/ fresnel layer on top,
+# 2 = liquid water film,
+# 3 = solid bubbly ice w/out fresnel layer
+# 4 = wet snow mixing ice and water spheres
+Inputs.lwc = [0.08] * len(Inputs.dz)
+Inputs.lwc_pct_bubbles = 0  # amount of water as bubbles
+
+Inputs.cdom_layer = [0] * len(Inputs.dz)  # Only for layer type == 1
+Inputs.rho_layers = [650 / (1 - 1000/917*0.08)] * len(Inputs.dz)  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
@@ -238,23 +235,23 @@ Inputs.rf_ice = 2
 # 3 = koch snowflake,
 # 4 = hexagonal prisms
 
-Inputs.grain_shp = [0]*len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
-Inputs.grain_rds = [2000,2000, 2000]  # effective grain or bubble radius
-Inputs.rwater = [0]*len(Inputs.dz)  # radius of optional liquid water coating
+Inputs.grain_shp = [0] * len(Inputs.dz)  # grain shape (He et al. 2016, 2017)
+Inputs.grain_rds = [1000] * len(Inputs.dz)  # effective grain or bubble radius
+Inputs.rwater = [0] * len(Inputs.dz)  # radius of optional liquid water coating
 
 # For 4:
-Inputs.side_length = [1000]*len(Inputs.dz)
-Inputs.depth = [1000]*len(Inputs.dz)
+Inputs.side_length = [1300] * len(Inputs.dz)
+Inputs.depth = [1000] * len(Inputs.dz)
 
 # Shape factor = ratio of nonspherical grain effective
 # radii to that of equal-volume sphere
 # only activated when sno_shp > 1 (i.e. nonspherical)
 # 0=use recommended default value (He et al. 2017)
 # use user-specified value (between 0 and 1)
-Inputs.shp_fctr = [0]*len(Inputs.dz)
+Inputs.shp_fctr = [0] * len(Inputs.dz)
 
 # Aspect ratio (ratio of width to length)
-Inputs.grain_ar = [0]*len(Inputs.dz)
+Inputs.grain_ar = [0] * len(Inputs.dz)
 
 # --------------------------------------------------------------------------------------
 # 5) SET LAP CHARACTERISTICS
@@ -279,7 +276,7 @@ Inputs.c_factor_SA = 0
 # uncoated BC (Bohren and Huffman, 1983)
 Inputs.file_soot1 = "bc_ChCB_rn40_dns1270.nc"
 # coated BC (Bohren and Huffman, 1983)
-Inputs.file_soot2 = "miecot_slfsot_ChC90_dns_1317.nc"
+Inputs.file_soot2 = "bc_ChCB_rn40_dns1270_slfcot.nc"
 # uncoated brown carbon (Kirchstetter et al. (2004).)
 Inputs.file_brwnC1 = "brC_Kirch_BCsd.nc"
 # sulfate-coated brown carbon (Kirchstetter et al. (2004).)
@@ -332,10 +329,10 @@ Inputs.file_Cook_Greenland_dust_L = "dust_greenland_Cook_LOW_20190911.nc"
 Inputs.file_Cook_Greenland_dust_C = "dust_greenland_Cook_CENTRAL_20190911.nc"
 # Dark Zone dust 3 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL (COMING SOON)
 Inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_CENTRAL_20190911.nc"
-# Snow Algae (Cook et al. 2017a, spherical, C nivalis)
-Inputs.file_snw_alg = "SA_Chevrollier2022_r8.99.nc"
-# Glacier Algae (Cook et al. 2020)
-Inputs.file_glacier_algae = "GA_Chevrollier2022_r4.9_L18.8.nc"
+# Snow algae
+Inputs.file_snw_alg = "snow_algae_empirical_Chevrollier2023.nc"
+# Glacier algae
+Inputs.file_glacier_algae = "ice_algae_empirical2.nc"
 
 # Indicate mass mixing ratios scenarios for each impurity
 # default units are ng(species)/g(ice), or ppb
@@ -344,7 +341,7 @@ Inputs.file_glacier_algae = "GA_Chevrollier2022_r4.9_L18.8.nc"
 # The script will loop over the different mixing scenarios
 # 1 g/L = 109 ng/L = 106 ng /g
 
-Inputs.mss_cnc_soot1 = [0]* len(Inputs.dz)
+Inputs.mss_cnc_soot1 = [0, 0]  # * len(Inputs.dz)
 Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_brwnC1 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_brwnC2 = [0] * len(Inputs.dz)
@@ -359,21 +356,21 @@ Inputs.mss_cnc_ash3 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_ash4 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_ash5 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_ash_st_helens = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust1 = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust2 = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust3 = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust4 = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust5 = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust1 = [0, 0]  # * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust2 = [0, 0]  # * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust3 = [0, 0]  # * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust4 = [0, 0]  # * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust5 = [0, 0]  #  * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral1 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral2 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral3 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral4 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral5 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_Cook_Greenland_dust_L = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)  #
 Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
-Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
-Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
+Inputs.mss_cnc_snw_alg = [0, 0]
+Inputs.mss_cnc_glacier_algae = [8e4, 0]
 
 
 # --------------------------------------------------------------------------------------
@@ -430,8 +427,8 @@ if Inputs.solzen > 89:  # pylint: disable=W0143
         zenith angle < 90 degrees. Solzen set to 89."
     )
 for lyr in range(len(Inputs.dz)):
-    if Inputs.cdom_layer[lyr] == 1 and Inputs.layer_type[lyr] == 0: 
-       raise ValueError("CDOM option only available for solid ice layers")
+    if Inputs.cdom_layer[lyr] == 1 and Inputs.layer_type[lyr] == 0:
+        raise ValueError("CDOM option only available for solid ice layers")
 # --------------------------------------------------------------------------------------
 # CONFIG  AND CALL SNICAR
 # --------------------------------------------------------------------------------------
@@ -516,19 +513,36 @@ rc = {
     "ytick.left": True,
 }
 plt.rcParams.update(rc)
-plt.plot(wvl[15:230], albedo[15:230], '--') # 0.25m
+plt.figure()
+plt.plot(wvl, albedo, color="blue")  # 0 %
+# plt.scatter(wvl, albedo, color="black", s=2)  # 0 %
+
+plt.plot(wvl, albedo_test, color='black') # 0 %
+# plt.scatter(wvl, albedo_test2, color='orange', s=2) # 0 %
+# plt.scatter(wvl, albedo_test3, color='pink', s=2) # 0 %
 
 
-plt.ylabel("Albedo", fontsize=18), plt.xlabel(
-    "Wavelength (µm)", fontsize=18
-), plt.xlim(0.3, 2), plt.ylim(0, 1), plt.xticks(fontsize=15), plt.yticks(
-    fontsize=15
-), 
-plt.axvline(
-    x=0.95, color="g", linestyle="dashed"
-)
+# import pandas as pd
+# reflectance = pd.read_csv(
+#     '/Users/au660413/Documents/AU_PhD/dust_wc_work/dust_albedo_gh/spectroscopy/data/reflectance_spectra_processed.csv', index_col=0)
+
+# plt.plot(reflectance.index/1000, reflectance.filter(like='22_S21'), color='black') # 0 %
+
+
+# import pandas as pd
+# spec = pd.read_csv('/Users/au660413/Documents/AU_PhD/rodalger-project/data/farc_fieldwork_0723/field-spectrometry/spectra/formated/all_hcrf_spectra.csv',
+#                     index_col=0).filter(like='HCRF25')
+# spectrum = '080123_SNOW4' + '_HCRF25'
+# plt.plot(spec.index/1000, spec[spectrum], color='orange', alpha=1)
+
+
+plt.ylabel("Albedo", fontsize=18), plt.xlabel("Wavelength (µm)", fontsize=18),
+plt.xlim(0.35, 1.8),
+plt.ylim(0, 1), plt.xticks(fontsize=15), plt.yticks(fontsize=15),
+# plt.axvline(
+#     x=0.95, color="g", linestyle="dashed"
+# )
 
 
 if SAVE_FIGS:
     plt.savefig(str(savepath + "spectral_albedo.png"))
-
