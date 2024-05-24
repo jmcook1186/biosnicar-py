@@ -58,6 +58,8 @@ class Impurity:
 
         if coated:
             mac_stub = "ext_cff_mss_ncl"
+        elif name == "ga":
+            mac_stub = "ext_xsc"
         else:
             mac_stub = "ext_cff_mss"
 
