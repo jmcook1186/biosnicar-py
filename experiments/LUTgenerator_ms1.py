@@ -15,7 +15,8 @@ import numpy as np
 import math as m
 import time 
 
-def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust): 
+
+def call_SNICAR(z, density, grain_size, sza, lwc, lwc_bbl): 
     
     import collections as c
     from pathlib import Path
@@ -160,17 +161,17 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     
     Inputs.toon = False  # toggle toon et al tridiagonal matrix solver
     Inputs.add_double = True  # toggle addintg-doubling solver
-    Inputs.dz = [0.02, z] # thickness of each vertical layer (unit = m)
+    Inputs.dz = [z, 100] # thickness of each vertical layer (unit = m)
     Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
     Inputs.cdom_layer = [0]*len(Inputs.dz)  # Only for layer type == 1
     Inputs.rho_layers = [density]*len(Inputs.dz) # density of each layer (unit = kg m-3)
-    Inputs.layer_type = [4, 4]  # 0 = ice grain layer, 
+    Inputs.layer_type = [3, 1]  # 0 = ice grain layer, 
                                    # 1 = solid bubbly ice w/ fresnel layer,  
                                    # 2 = liquid water film, 
                                    # 3 = solid bubbly ice w/out fresnel layer
                                    # 4 = mixed water and ice grains
     Inputs.lwc = [lwc]*len(Inputs.dz)
-    Inputs.lwc_pct_bubbles = 1 # amount of water as bubbles
+    Inputs.lwc_pct_bubbles = lwc_bbl # amount of water as bubbles
     Inputs.nbr_wvl = 480
     Inputs.R_sfc = np.genfromtxt(
         Inputs.dir_base + "Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv",
@@ -295,7 +296,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     # To use cells/mL for algae, set GA_units == 1.
     # The script will loop over the different mixing scenarios
     
-    Inputs.mss_cnc_soot1 = [bc, 0] 
+    Inputs.mss_cnc_soot1 = [0, 0] 
     Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_brwnC1 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_brwnC2 = [0] * len(Inputs.dz)
@@ -314,7 +315,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     Inputs.mss_cnc_Skiles_dust2 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Skiles_dust3 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Skiles_dust4 = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_Skiles_dust5 = [dust, 0]
+    Inputs.mss_cnc_Skiles_dust5 = [0, 0]
     Inputs.mss_cnc_GreenlandCentral1 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_GreenlandCentral2 = [0] * len(Inputs.dz)
     Inputs.mss_cnc_GreenlandCentral3 = [0] * len(Inputs.dz)
@@ -324,7 +325,7 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)
     Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
     Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
-    Inputs.mss_cnc_snw_alg = [alg, 0]
+    Inputs.mss_cnc_snw_alg = [0, 0]
 
 
 
@@ -336,8 +337,8 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
     Outputs = snicar_feeder(Inputs)
     albedo = Outputs.albedo
     BBA = Outputs.BBA
-    # data = np.float16(np.append(albedo[70:170], BBA))
-    data = np.append(albedo, BBA)
+    data = np.float16(np.append(albedo[70:170], BBA))
+    # data = np.append(albedo, BBA)
 
     return data
 
@@ -346,222 +347,83 @@ def call_SNICAR(z, density, grain_size, sza, lwc, alg, bc, dust):
 ################ INPUTS
 #############################################################################
 path_to_save_files = '/data/lou'
-path_to_save_files = '/Users/au660413/Documents/AU_PhD/rodalger-project/data'
-
-## PARAMS FOR CHLA ABS FEATURE 
-# densities = [600] # maybe this can even be removed
-# lwcs = [0.06] # maybe can be fixed or rm
-# sza_list = ['diff'] # maybe can be removed, use diff instead
-# algs = [0, 2.5e2, 5e2, 7.5e2,
-#         1e3, 2e3, 3e3, 4e3, 5e3, 7.5e3,
-#         1e4, 1.5e4, 2e4, 2.5e4, 3e4, 3.5e4, 4e4, 4.5e4, 5e4, 6e4, 7e4, 8e4, 9e4, 
-#         1e5, 1.2e5,  1.4e5, 1.6e5, 1.8e5,  
-#         2e5, 2.25e5, 2.5e5, 2.75e5, 
-#         3e5, 3.25e5, 3.5e5, 3.75e5, 
-#         4e5, 4.25e5, 4.5e5, 4.75e5, 
-#         5e5, 6e5, 7e5, 8e5, 9e5,
-#         1e6
-#         #, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 1.5e6,
-#         # 1.6e6, 1.7e6, 1.8e6, 1.9e6, 2e6, 
-#         # 2.2e6, 2.4e6, 2.6e6, 2.8e6, 3e6, 3.25e6, 3.5e6, 3.75e6, 4e6,
-#         # 4.5e6, 5e6, 5.5e6, 6e6, 6.5e6, 7e6, 7.5e6, 8e6, 9e6, 1e7,
-#         # 1.1e7, 1.2e7, 1.3e7, 1.4e7, 1.6e7, 1.8e7, 2.1e7, 2.5e7, 3.1e7, 4e7,
-#         # 5e7, 6.5e7, 1e8, 2e8, 1e9
-#         ] # 46
-# algs = [int(a) for a in algs]
-# grain_sizes = list(np.concatenate([np.arange(300, 500, 60),
-#                                    np.arange(540, 900, 120),
-#                               np.arange(900, 1500, 170), 
-#                               np.arange(1580, 3500, 220)]))
-# depths = [1]
-# bcs = [0, 100, 200 , 300, 400,  
-#       500, 600, 700,  800,  900, 
-#       1000, 1100, 1200, 1300, 1400, 1500]
-
-# dusts = [0, 6e4, 1.25e5,  2e5,  3e5, 4e5, 5e5, 6e5, 7e5, 8e5, 9e5, 1e6]
 
 
 ## PARAMS FOR RED SPECTRA ALL INVERSION
-densities = [600]
-depths = [1]  
+# densities = [600]
+# depths = [1]  
 
-# sza_list = ['diff']
-sza_list = [35, 40, 45, 50, 55, 60] # 6
+# sza_list = [35, 40, 45, 50, 55, 60] # 6
 
 # lwcs = [0, 0.03, 0.06, 0.09, 0.12, 0.15] # 6
-lwcs = [0, 0.03, 0.06, 0.09, 0.12, 0.15] # 6
 
-# grain_sizes = list(np.concatenate([np.arange(500, 1000, 50), 
-#                                np.arange(1020, 1500, 80),
-#                                np.arange(1500, 2050, 100)])) # 22
-
-grain_sizes = [[int(elem)] for elem in np.concatenate([
-    np.arange(350, 800, 50), 
-    np.arange(820, 1000, 80),
-    np.arange(1060, 1500, 100),
-    np.arange(1560, 2500, 160)])] # 23
+# grain_sizes = [[int(elem)] for elem in np.concatenate([
+#     np.arange(350, 800, 50), 
+#     np.arange(820, 1000, 80),
+#     np.arange(1060, 1500, 100),
+#     np.arange(1560, 2500, 160)])] # 23
 
 
 # algs = list(np.concatenate([[0], 
-#                             np.arange(2e3, 1e4, 2e3),
-#                             np.arange(1e4, 1.95e4, 3e3), 
-#                                np.arange(2.2e4, 7.5e4, 0.5e4), 
-#                                 np.arange(7.7e4, 1.4e5, 1e4)])) # 27
-
-algs = list(np.concatenate([[0], 
-                            np.arange(2e3, 1e4, 2.5e3),
-                            np.arange(1.2e4, 2e4, 3.5e3), 
-                               np.arange(2.2e4, 5e4, 0.5e4), 
-                                np.arange(5.5e4, 1.4e5, 1e4)])) # 23
+#                             np.arange(2e3, 1e4, 2.5e3),
+#                             np.arange(1.2e4, 2e4, 3.5e3), 
+#                                np.arange(2.2e4, 5e4, 0.5e4), 
+#                                 np.arange(5.5e4, 1.4e5, 1e4)])) # 23
 
 
-# bcs = list(np.arange(0, 2100, 100)) # 21
-bcs = list(np.concatenate([np.arange(0, 900, 100),
-                            np.arange(900, 2100, 160)
-                            ])) # 17
+# bcs = list(np.concatenate([np.arange(0, 900, 100),
+#                             np.arange(900, 2100, 160)
+#                             ])) # 17
 
-# dusts = [[int(elem)] for elem in np.concatenate([np.arange(0, 1e5, 0.25e5), 
-#                                                  np.arange(1e5, 5e5, 0.5e5),
-#                                                  np.arange(5e5, 8e5, 1e5),
-#                                                  np.arange(8e5, 1.6e6, 1.5e5)])] # 21
 
-dusts = list(np.concatenate([np.arange(0, 1e5, 0.4e5), 
-                                                 np.arange(1.3e5, 5e5, 0.6e5),
-                                                 np.arange(6e5, 8e5, 1e5),
-                                                 np.arange(8e5, 1.3e6, 1.5e5),
-                                                 np.arange(1.45e6, 1.75e6, 1.75e5)])) # 18
+# dusts = list(np.concatenate([np.arange(0, 1e5, 0.4e5), 
+#                                                  np.arange(1.3e5, 5e5, 0.6e5),
+#                                                  np.arange(6e5, 8e5, 1e5),
+#                                                  np.arange(8e5, 1.3e6, 1.5e5),
+#                                                  np.arange(1.45e6, 1.75e6, 1.75e5)])) # 18
 
 
 
-## PARAMS FOR RED SPECTRA NIR INVERSION
-# densities = [500+i*20 for i in range(0,11)]
-# lwcs = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2] 
-# depths = [1]
-# algs = [0]
-# grain_sizes = list(np.concatenate([np.arange(300, 1000, 20), 
-#                               np.arange(1000, 2000, 40), 
-#                               np.arange(2000, 3000, 60), 
-#                               np.arange(3000, 4010, 80)]))
-# sza_list = [43, 42, 44, 40, 48, 'diff', 39, 46, 47, 38, 41, 49, 50, 52, 53, 54]  
+# #### LUT PARAMETERS LWC WORK
+densities = [330, 450, 560] # 3
 
+sza_list = [47]
 
+depths = [5e-05,
+ 0.0005,
+ 0.001,
+ 0.0015,
+ 0.002,
+ 0.0025,
+ 0.003,
+ 0.0035,
+ 0.0042,
+ 0.005,
+ 0.006,
+ 0.007,
+ 0.0084,
+ 0.01,
+ 0.0125,
+ 0.016,
+ 0.022,
+ 1] # 18
 
-# #### LUT PARAMETERS FIELD SPECTRA
-# densities = list(np.append(np.arange(380, 901, 20), 916.9)) # 28
-
-# sza_list = [42, 'diff', 52, 54, 46, 43, 44, 47, 45] # 9
-
-# depths = [5e-5, 3e-4, 6.3e-4, 1e-3, 1.5e-3, 2e-3, 2.5e-3, 3e-3, 3.5e-3,
-# 4.2e-3, 5e-3, 6e-3, 8e-3, 1.1e-2, 1] # 15
-
-# lwcs = list(np.arange(0, 0.31, 0.02)) # 16
-
-# grain_sizes = [
-# [50],
-# [55],
-# [60],
-# [65],
-# [70],
-# [75],
-# [80],
-# [85],
-# [90],
-# [95],
-# [100],
-# [110],
-# [120],
-# [130],
-# [140],
-# [150],
-# [160],
-# [170],
-# [180],
-# [190],
-# [200],
-# [210],
-# [220],
-# [230],
-# [240],
-# [250],
-# [260],
-# [270],
-# [280],
-# [290],
-# [300],
-# [320],
-# [340],
-# [360],
-# [380],
-# [400],
-# [420],
-# [440],
-# [460],
-# [480],
-# [500],
-# [550],
-# [600],
-# [650],
-# [700],
-# [750],
-# [800],
-# [850],
-# [900],
-# [950],
-# [1000],
-# [1100],
-# [1200],
-# [1300],
-# [1400],
-# [1500],
-# [1600],
-# [1700],
-# [1800],
-# [1900],
-# [2000],
-# [2250],
-# [2500],
-# [2750],
-# [3000],
-# [3500],
-# [4000],
-# [4500],
-# [5000],
-# [6000],
-# [7000],
-# [8000],
-# [9000],
-# [11000],
-# [13000],
-# [16000],
-# [20000]
-# ] # 77
-
-# #### LUT PARAMETERS PRISMA
-# densities = list(np.append(np.arange(380, 901, 20), 916.9)) # 28
-
-# sza_list = [47]
-
-# depths = [5e-5, 3e-4, 6.3e-4, 1e-3, 1.5e-3, 2e-3, 2.5e-3, 3e-3, 3.5e-3,
-# 4.2e-3, 5e-3, 6e-3, 8e-3, 1.1e-2, 1] # 15
-
-# lwcs = [
-# [0],
-# [0.02],
-# [0.04],
-# [0.06],
-# [0.08],
-# [0.1],
-# [0.12],
-# [0.14],
-# [0.16],
-# [0.18],
-# [0.2],
-# [0.22],
-# [0.24],
-# [0.26],
-# [0.28],
-# [0.3]
-# ] # 16
+lwcs = [0,
+ 0.02,
+ 0.04,
+ 0.06,
+ 0.08,
+ 0.1,
+ 0.12,
+ 0.14,
+ 0.16,
+ 0.18,
+ 0.2,
+ 0.22,
+ 0.24,
+ 0.26,
+ 0.28,
+ 0.3] # 16
 
 # grain_sizes = list(np.concatenate([np.arange(50, 100, 5), 
 #                                     np.arange(100, 500, 10), 
@@ -570,6 +432,17 @@ dusts = list(np.concatenate([np.arange(0, 1e5, 0.4e5),
 #                                     np.arange(3000, 9500, 500), 
 #                                     np.arange(10000, 20001, 10000)]))
 
+grain_sizes = list(np.concatenate([
+                       np.arange(500, 1000, 40),
+                       np.arange(1020, 1500, 60),
+                       np.arange(1500, 3500, 100),
+                       np.arange(3500, 5000, 200),
+                       np.arange(5000, 10000, 500),
+                      np.arange(10000, 17000, 1000),
+                      np.arange(17000, 25000, 2000)
+                     ])) # 70
+
+lwc_type = [0, 0.3, 0.6, 0.8, 1]
 
 
 #############################################################################
@@ -577,49 +450,50 @@ dusts = list(np.concatenate([np.arange(0, 1e5, 0.4e5),
 #############################################################################
 
 
-for grain_size in grain_sizes: 
-    if __name__ == '__main__':
-        start = time.time()
-        paramlist = list(set((itertools.product(depths, densities, grain_size, 
-                                                  sza_list, lwcs, algs, bcs, dusts))))
-        nb_cores = 150
-        pool = mp.Pool(nb_cores)
-        print(f'starting simulation on {nb_cores} cores')
-        data = pool.starmap(call_SNICAR, 
-                            paramlist,
-                            chunksize = 500
-                            )
-        np.save(f"{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.npy", 
-                np.array(np.float16(data)))
-        np.save(f"{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}_names.npy", 
-                [str(i) for i in paramlist])
-        # df = pd.DataFrame.from_records(data)
-        # df = df.transpose()
-        # df.columns = [str(i) for i in paramlist]
-        # df.to_feather(f'{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.feather', 
-                      # compression='zstd')
-        print('time for 1 lut: {}'.format(time.time() - start))
+# for grain_size in grain_sizes: 
+#     if __name__ == '__main__':
+#         start = time.time()
+#         paramlist = list(set((itertools.product(depths, densities, grain_size, 
+#                                                   sza_list, lwcs, algs, bcs, dusts))))
+#         nb_cores = 150
+#         pool = mp.Pool(nb_cores)
+#         print(f'starting simulation on {nb_cores} cores')
+#         data = pool.starmap(call_SNICAR, 
+#                             paramlist,
+#                             chunksize = 500
+#                             )
+#         np.save(f"{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.npy", 
+#                 np.array(np.float16(data)))
+#         np.save(f"{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}_names.npy", 
+#                 [str(i) for i in paramlist])
+#         # df = pd.DataFrame.from_records(data)
+#         # df = df.transpose()
+#         # df.columns = [str(i) for i in paramlist]
+#         # df.to_feather(f'{path_to_save_files}/030224_lut_emulator_snw_alg_{grain_size[0]}.feather', 
+#                       # compression='zstd')
+#         print('time for 1 lut: {}'.format(time.time() - start))
 
-# for lwc in lwcs:
-#  	start = time.time()
-#  	paramlist = list(set((itertools.product(depths,  
-#                                             densities, 
-#                                             grain_sizes, 
-#                                             sza_list, 
-#                                             lwc))))
-#  	if __name__ == '__main__':
-#           nb_cores = 100
-#           pool = mp.Pool(nb_cores)
-#           print(f'starting simulation on {nb_cores} cores')
-#           data = pool.starmap(call_SNICAR,paramlist)
-#           pool.close()  
-#           pool.join()
-#           df = pd.DataFrame.from_records(data)
-#           df = df.transpose()
-#           df.columns = [str(i) for i in paramlist]
-#           df.to_feather(f'{path_to_save_files}/021723_lut_{lwc[0]}_lwc_for_prisma.feather', 
-#                 compression='zstd') 
-#           print('time for 1 lut: {}'.format(time.time() - start))
+for lwc_t in lwc_type:
+ 	start = time.time()
+ 	paramlist = list(set((itertools.product(depths,  
+                                            densities, 
+                                            grain_sizes, 
+                                            sza_list, 
+                                            lwcs,
+                                            lwc_t))))
+ 	if __name__ == '__main__':
+          nb_cores = 100
+          pool = mp.Pool(nb_cores)
+          print(f'starting simulation on {nb_cores} cores')
+          data = pool.starmap(call_SNICAR,paramlist)
+          pool.close()  
+          pool.join()
+          df = pd.DataFrame.from_records(data)
+          df = df.transpose()
+          df.columns = [str(i) for i in paramlist]
+          df.to_feather(f'{path_to_save_files}/061024_lut_{lwc_t[0]}_lwc.feather', 
+                compression='zstd') 
+          print('time for 1 lut: {}'.format(time.time() - start))
          
 
 
