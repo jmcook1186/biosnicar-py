@@ -26,7 +26,7 @@ def generate_snicar_params(
 
     params = c.namedtuple(
         "params",
-        "rho, shp, c_factor, lyr, toon, add_double, incoming, grain_rds, direct, aprx_typ, layer_type, dz, mss_cnc_glacier_algae, bc, mss_cnc_dust1, mss_cnc_dust5, solzen",
+        "rho, shp, lyr, toon, add_double, incoming, grain_rds, direct, aprx_typ, layer_type, dz, mss_cnc_glacier_algae, bc, mss_cnc_dust1, mss_cnc_dust5, solzen",
     )
     params.lyr = 0
     params.rds = reff
@@ -44,18 +44,22 @@ def generate_snicar_params(
     params.toon = 0
     params.add_double = 1
     params.shp = 0
-    params.c_factor = 20
     return params
 
 
 def call_snicar(params):
+    
+    # --------------------------------------------------------------------------------------
+    # 1) Initialize Inputs of the model
+    # --------------------------------------------------------------------------------------
 
     inputs = c.namedtuple(
-        "inputs",
+        "Inputs",
         [
             "dir_base",
             "verbosity",
             "rf_ice",
+            "mie_solver",
             "incoming_i",
             "direct",
             "layer_type",
@@ -68,6 +72,8 @@ def call_snicar(params):
             "R_sfc",
             "dz",
             "rho_layers",
+            "lwc",
+            "lwc_pct_bubbles",
             "grain_rds",
             "side_length",
             "depth",
@@ -79,8 +85,6 @@ def call_snicar(params):
             "grain_ar",
             "GA_units",
             "SA_units",
-            "c_factor_GA",
-            "c_factor_SA",
             "mss_cnc_soot1",
             "mss_cnc_soot2",
             "mss_cnc_brwnC1",
@@ -154,32 +158,34 @@ def call_snicar(params):
         ],
     )
 
-    ##############################
-    ## 2) Set working directory
-    ##############################
+
+    # --------------------------------------------------------------------------------------
+    # 2) Set working directory
+    # --------------------------------------------------------------------------------------
 
     # set dir_base to the location of the BioSNICAR_GO_PY folder
     dir_base_path = Path(__file__).parent.parent
     inputs.dir_base = str(dir_base_path) + "/"
     savepath = inputs.dir_base  # base path for saving figures
-    write_config_to_textfile = False  # toggle to save config to file
+    WRITE_CONFIG_TO_TEXTFILE = False  # toggle to save config to file
     inputs.verbosity = 0  # 1 to print real-time updates
 
-    ################################
-    ## 3) Choose plot/print options
-    ################################
 
-    show_figs = False  # toggle to display spectral albedo figure
-    save_figs = False  # toggle to save spectral albedo figure to file
-    print_BBA = False  # toggle to print broadband albedo to terminal
-    print_band_ratios = False  # toggle to print various band ratios to terminal
-    smooth = False  # apply optional smoothing function (Savitzky-Golay filter)
-    window_size = 9  # if applying smoothing filter, define window size
-    poly_order = 3  # if applying smoothing filter, define order of polynomial
+    # --------------------------------------------------------------------------------------
+    # 3) Choose plot/print options
+    # --------------------------------------------------------------------------------------
 
-    #######################################
-    ## 4) RADIATIVE TRANSFER CONFIGURATION
-    #######################################
+    SHOW_FIGS = True  # toggle to display spectral albedo figure
+    SAVE_FIGS = False  # toggle to save spectral albedo figure to file
+    PRINT_BBA = True  # toggle to print broadband albedo to terminal
+    PRINT_BAND_RATIOS = True  # toggle to print various band ratios to terminal
+    SMOOTH = False  # apply optional smoothing function (Savitzky-Golay filter)
+    WINDOW_SIZE = 9  # if applying smoothing filter, define window size
+    POLY_ORDER = 3  # if applying smooting filter, define order of polynomial
+
+    # --------------------------------------------------------------------------------------
+    # 4) RADIATIVE TRANSFER CONFIGURATION
+    # --------------------------------------------------------------------------------------
 
     inputs.direct = (
         params.direct
@@ -203,12 +209,12 @@ def call_snicar(params):
     # NOTE that clear-sky spectral fluxes are loaded when direct_beam=1,
     # and cloudy-sky spectral fluxes are loaded when direct_beam=0
     inputs.incoming_i = params.incoming
-
-    ###############################################################
-    ## 4) SET UP ICE/SNOW LAYERS
+    
+    # --------------------------------------------------------------------------------------
+    # 4) SET UP ICE/SNOW LAYERS
     # For granular layers only, choose toon
-    # For granular layers + Fresnel layers below, choose add_double
-    ###############################################################
+    # For granular layers + Fresnel layers, choose add_double
+    # --------------------------------------------------------------------------------------
 
     inputs.toon = params.toon  # toggle toon et al tridiagonal matrix solver
     inputs.add_double = params.add_double  # toggle adding-doubling solver
@@ -217,15 +223,25 @@ def call_snicar(params):
     inputs.nbr_lyr = len(params.dz)  # number of snow layers
     inputs.layer_type = [params.lyr] * len(
         params.dz
-    )  # Fresnel layers for the add_double option, set all to 0 for the toon option
-    inputs.cdom_layer = [0, 0]  # Only for layer type == 1, CDOM data from L Halbach
+    )  
+    # 0 = ice grain layer of different shapes,
+    # 1 = solid bubbly ice w/ fresnel layer on top,
+    # 2 = liquid water film,
+    # 3 = solid bubbly ice w/out fresnel layer
+    # 4 = wet snow mixing ice and water spheres
+    inputs.lwc = [0] * len(inputs.dz)
+    inputs.lwc_pct_bubbles = 0  # amount of water as bubbles
+
+    inputs.cdom_layer = [0] * len(inputs.dz)  # Only for layer type == 1
     inputs.rho_layers = params.rho  # density of each layer (unit = kg m-3)
     inputs.nbr_wvl = 480
-    # inputs.R_sfc = np.array([0.1 for i in range(inputs.nbr_wvl)]) # reflectance of undrlying surface - set across all wavelengths
+
+    # reflectance of underlying surface - set across all wavelengths
     rain_polished_ice_spectrum_file = (
         dir_base_path.joinpath("Data")
         .joinpath("OP_data")
         .joinpath("480band")
+        .joinpath("r_sfc")
         .joinpath("rain_polished_ice_spectrum.csv")
     )
 
@@ -234,13 +250,21 @@ def call_snicar(params):
         delimiter="csv",
     )  # import underlying ice from file
 
-    ###############################################################################
-    ## 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
+
+    # --------------------------------------------------------------------------------------
+    # 5) SET UP OPTICAL & PHYSICAL PROPERTIES OF SNOW/ICE GRAINS
     # For hexagonal plates or columns of any size choose GeometricOptics
     # For sphere, spheroids, koch snowflake with optional water coating choose Mie
-    ###############################################################################
+    # --------------------------------------------------------------------------------------
 
-    inputs.rf_ice = 2  # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
+    # define source of ice refractive index data.
+    # 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
+    inputs.rf_ice = 2
+    
+    # define solver for Mie calculations
+    # 0 = Wiscombe 1979 (default)
+    # 1 = Bohren and Huffman 1983 (as per the Matlab version)
+    inputs.mie_solver = 1
 
     # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
     # For 0,1,2,3:
@@ -263,9 +287,9 @@ def call_snicar(params):
     # Aspect ratio (ratio of width to length)
     inputs.grain_ar = [0] * len(params.dz)
 
-    #######################################
-    ## 5) SET LAP CHARACTERISTICS
-    #######################################
+    # --------------------------------------------------------------------------------------
+    # 5) SET LAP CHARACTERISTICS
+    # --------------------------------------------------------------------------------------
 
     # Define total number of different LAPs/aerosols in model
     inputs.nbr_aer = 30
@@ -276,19 +300,13 @@ def call_snicar(params):
     inputs.GA_units = 1  # glacier algae
     inputs.SA_units = 1  # snow algae
 
-    # determine C_factor (can be None or a number)
-    # this is the concentrating factor that accounts for
-    # resolution difference in field samples and model layers
-    inputs.c_factor_GA = params.c_factor
-    inputs.c_factor_SA = 0
-
     # Set names of files containing the optical properties of these LAPs:
     inputs.file_soot1 = (
-        "bc_ChCB_rn40_dns1270.nc"  # uncoated BC (Bohren and Huffman, 1983)
+        "bc_ChCB_rn40_dns1270.nc"  # uncoated BC (Bohren and Huffman, 1983) 
     )
     inputs.file_soot2 = (
-        "miecot_slfsot_ChC90_dns_1317.nc"  # coated BC (Bohren and Huffman, 1983)
-    )
+        "bc_ChCB_rn40_dns1270_slfcot.nc"  # coated BC (Bohren and Huffman, 1983)
+    ) 
     inputs.file_brwnC1 = (
         "brC_Kirch_BCsd.nc"  # uncoated brown carbon (Kirchstetter et al. (2004).)
     )
@@ -339,8 +357,8 @@ def call_snicar(params):
     inputs.file_Cook_Greenland_dust_L = "dust_greenland_Cook_LOW_20190911.nc"  # GRIS dust (Cook et al. 2019 "LOW") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
     inputs.file_Cook_Greenland_dust_C = "dust_greenland_Cook_CENTRAL_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
     inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_HIGH_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.file_snw_alg = "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"  # Snow Algae (spherical, C nivalis)
-    inputs.file_glacier_algae = "Cook2020_glacier_algae_4_40.nc"  # glacier algae in cells/ml or ppb depending on GA_units
+    inputs.file_snw_alg = "snow_algae_empirical_Chevrollier2023.nc"  # Snow Algae (spherical, C nivalis)
+    inputs.file_glacier_algae = "ice_algae_empirical_Chevrollier2023.nc"  # glacier algae in cells/ml or ppb depending on GA_units
 
     # Add more glacier algae (not functional in current code)
     # (optical properties generated with GO), not included in the current model
@@ -431,8 +449,6 @@ def call_snicar(params):
     inputs.mss_cnc_glacier_algae = [0] * len(
         params.dz
     )  # glacier algae type1 (Cook et al. 2020)
-
-    nbr_aer = 30
 
     outputs = snicar_feeder(inputs)
 

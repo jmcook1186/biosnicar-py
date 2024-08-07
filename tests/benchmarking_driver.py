@@ -62,7 +62,7 @@ def test_v3():
                             if counter % 100 == 0:
                                 print(counter)
 
-    np.savetxt("./test_data/py_benchmark_data.csv", specOut, delimiter=",")
+    np.savetxt("./test_data/py_benchmark_data_toon.csv", specOut, delimiter=",")
 
     return
 
@@ -125,10 +125,10 @@ def test_v4():
                             if counter % 100 == 0:
                                 print(counter)
 
-    np.savetxt("/home/joe/Code/BioSNICAR_GO_PY/tests/test_data/py_benchmark_data.csv", specOut, delimiter=",")
+    np.savetxt("./test_data/py_benchmark_data.csv", specOut, delimiter=",")
 
     return
 
 
-#test_v3()
+test_v3()
 test_v4()
