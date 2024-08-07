@@ -39,8 +39,10 @@ def toon_solver(Inputs):
 
     if Inputs.delta:
         g_star = Inputs.g / (1 + Inputs.g)
-        ssa_star = ((1 - (Inputs.g ** 2)) * Inputs.ssa) / (1 - (Inputs.ssa * (Inputs.g ** 2)))
-        tau_star = (1 - (Inputs.ssa * (Inputs.g ** 2))) * Inputs.tau
+        ssa_star = ((1 - (Inputs.g**2)) * Inputs.ssa) / (
+            1 - (Inputs.ssa * (Inputs.g**2))
+        )
+        tau_star = (1 - (Inputs.ssa * (Inputs.g**2))) * Inputs.tau
 
     else:
         g_star = Inputs.g
@@ -66,7 +68,10 @@ def toon_solver(Inputs):
     S_sfc = (
         Inputs.R_sfc
         * Inputs.mu_not
-        * np.exp(-(tau_clm[Inputs.nbr_lyr - 1, :] + tau_star[Inputs.nbr_lyr - 1, :]) / Inputs.mu_not)
+        * np.exp(
+            -(tau_clm[Inputs.nbr_lyr - 1, :] + tau_star[Inputs.nbr_lyr - 1, :])
+            / Inputs.mu_not
+        )
         * np.pi
         * Inputs.Fs
     )
@@ -98,7 +103,7 @@ def toon_solver(Inputs):
         gamma3 = (1 - (np.sqrt(3) * g_star * Inputs.mu_not)) / 2
         gamma4 = 1 - gamma3
         mu_one = 0.5
-    
+
     else:
         raise ValueError("INVALID APRX_TYP: CHOOSE 1, 2 or 3")
 
@@ -106,7 +111,7 @@ def toon_solver(Inputs):
     # Note that the values of lam and GAMMA depend upon gamma1 and gamma2, which
     # vary depending upon the two-stream approximation used
     # variable "lambda" renamed "lam" to avoid confusion with lambda function
-    lam = np.sqrt(abs((gamma1 ** 2) - (gamma2 ** 2)))
+    lam = np.sqrt(abs((gamma1**2) - (gamma2**2)))
     GAMMA = gamma2 / (gamma1 + lam)
 
     # calculate coefficients required for tridiagonal matrix calculation
@@ -143,7 +148,7 @@ def toon_solver(Inputs):
                     ((gamma1[i, :] - (1 / Inputs.mu_not)) * gamma3[i, :])
                     + (gamma4[i, :] * gamma2[i, :])
                 )
-            ) / ((lam[i, :] ** 2) - (1 / (Inputs.mu_not ** 2)))
+            ) / ((lam[i, :] ** 2) - (1 / (Inputs.mu_not**2)))
 
             C_mns_btm[i, :] = (
                 ssa_star[i, :]
@@ -154,7 +159,7 @@ def toon_solver(Inputs):
                     ((gamma1[i, :] + (1 / Inputs.mu_not)) * gamma4[i, :])
                     + (gamma2[i, :] * gamma3[i, :])
                 )
-            ) / ((lam[i, :] ** 2) - (1 / Inputs.mu_not ** 2))
+            ) / ((lam[i, :] ** 2) - (1 / Inputs.mu_not**2))
 
             C_pls_top[i, :] = (
                 ssa_star[i, :]
@@ -165,7 +170,7 @@ def toon_solver(Inputs):
                     (gamma1[i, :] - (1 / Inputs.mu_not)) * gamma3[i, :]
                     + (gamma4[i, :] * gamma2[i, :])
                 )
-            ) / ((lam[1, :] ** 2) - (1 / Inputs.mu_not ** 2))
+            ) / ((lam[1, :] ** 2) - (1 / Inputs.mu_not**2))
 
             C_mns_top[i, :] = (
                 ssa_star[i, :]
@@ -176,7 +181,7 @@ def toon_solver(Inputs):
                     (gamma1[i, :] + (1 / Inputs.mu_not)) * gamma4[i, :]
                     + (gamma2[i, :] * gamma3[i, :])
                 )
-            ) / ((lam[i, :] ** 2) - (1 / Inputs.mu_not ** 2))
+            ) / ((lam[i, :] ** 2) - (1 / Inputs.mu_not**2))
 
         else:
             # no direct-beam flux:
@@ -217,8 +222,12 @@ def toon_solver(Inputs):
 
         # BOTTOM LAYER
         elif i == 2 * Inputs.nbr_lyr - 1:
-            A[i, :] = e1[Inputs.nbr_lyr - 1, :] - (Inputs.R_sfc * e3[Inputs.nbr_lyr - 1, :])
-            B[i, :] = e2[Inputs.nbr_lyr - 1, :] - (Inputs.R_sfc * e4[Inputs.nbr_lyr - 1, :])
+            A[i, :] = e1[Inputs.nbr_lyr - 1, :] - (
+                Inputs.R_sfc * e3[Inputs.nbr_lyr - 1, :]
+            )
+            B[i, :] = e2[Inputs.nbr_lyr - 1, :] - (
+                Inputs.R_sfc * e4[Inputs.nbr_lyr - 1, :]
+            )
             D[i, :] = 0.0
             E[i, :] = (
                 S_sfc[:]
@@ -292,7 +301,10 @@ def toon_solver(Inputs):
 
         # (Toon et al. eq 50)
         direct[i, :] = (
-            Inputs.mu_not * np.pi * Inputs.Fs * np.exp(-(tau_clm[i, :] + tau_star[i, :]) / Inputs.mu_not)
+            Inputs.mu_not
+            * np.pi
+            * Inputs.Fs
+            * np.exp(-(tau_clm[i, :] + tau_star[i, :]) / Inputs.mu_not)
         )
 
         # net flux (positive upward = F_up - F_down) at the base of each layer
@@ -392,7 +404,11 @@ def toon_solver(Inputs):
     # Energy conservation check:
     # % Incident direct + diffuse radiation equals(absorbed + transmitted +
     # bulk_reflected)
-    energy_sum = (Inputs.mu_not * np.pi * Inputs.Fs) + Inputs.Fd - (sum(F_abs) + F_btm_net + F_top_pls)
+    energy_sum = (
+        (Inputs.mu_not * np.pi * Inputs.Fs)
+        + Inputs.Fd
+        - (sum(F_abs) + F_btm_net + F_top_pls)
+    )
 
     # spectrally-integrated terms:
     # energy conservation total error

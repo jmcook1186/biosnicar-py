@@ -145,8 +145,20 @@ else:
 
 
 # # BUILD LUT
-LUT = utils.build_LUT(LUT_CFACTOR, LUT_ZEN, LUT_DZ, LUT_DENSITIES, LUT_RADII, LUT_ALGAE, WAVELENGTHS, SAVE_LUT,\
-                 APPLY_ARF, ARF_CI, ARF_HA, SAVEPATH)
+LUT = utils.build_LUT(
+    LUT_CFACTOR,
+    LUT_ZEN,
+    LUT_DZ,
+    LUT_DENSITIES,
+    LUT_RADII,
+    LUT_ALGAE,
+    WAVELENGTHS,
+    SAVE_LUT,
+    APPLY_ARF,
+    ARF_CI,
+    ARF_HA,
+    SAVEPATH,
+)
 
 
 # 5) run inverse model

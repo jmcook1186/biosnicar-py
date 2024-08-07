@@ -7,12 +7,9 @@ def adding_doubling_solver(Inputs):
     any use of this adding-doubling script should cite Chloe's paper.
 
     This is the appropriate solver for any configuration where solid ice layers and
-    fresnel reflection
-    are included.
+    fresnel reflection are included.
 
     """
-
-    import matplotlib.pyplot as plt
 
     import numpy as np
 

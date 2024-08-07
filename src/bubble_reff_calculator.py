@@ -54,7 +54,7 @@ for i in np.arange(0, len(rho), 1):
         D_eff[i] = (6 * V_air) / (rho[i] * ssa[i])  # D_eff in meters
 
 # Number of bubbles
-No = (6 * V_air) / (np.pi * D_eff ** 3) * np.exp(3 * SIGMA_TILDE_G ** 2)
+No = (6 * V_air) / (np.pi * D_eff**3) * np.exp(3 * SIGMA_TILDE_G**2)
 
 # convert effective diameter in meters to effective radius in microns
 r_eff_micron = D_eff / 2 * 1e6

@@ -1,25 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-@author: jmcook1186, lcvl41
-
-Contains functions relating to bio-optical model components of BioSNICAR_GO_py
-Called from BioOptical_driver.py
-
-"""
-
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from miepython import mie, ez_mie
-from plotnine import aes, geom_line, ggplot
+from miepython import ez_mie
 from scipy.signal import savgol_filter
 
 plt.style.use("seaborn")
 
+
 def gaussian(x, mu, sigma):
-    return 1/(np.sqrt(2.*np.pi)*sigma)*np.exp(-((x - mu)/sigma)**2/2)
+    return 1 / (np.sqrt(2.0 * np.pi) * sigma) * np.exp(-(((x - mu) / sigma) ** 2) / 2)
+
 
 def bioptical_calculations(
     ACS_calculated,
@@ -94,37 +87,36 @@ def bioptical_calculations(
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
     elif ACS_loaded_invivo:
-        ACS = np.array(pd.read_csv(ACS_file, header=None)).flatten()  # m2/mg, um3 or cell
-        
+        ACS = np.array(
+            pd.read_csv(ACS_file, header=None)
+        ).flatten()  # m2/mg, um3 or cell
+
     ################
     ## k calculation
     ################
 
     k_water_alg = k_water
-    k_water_alg[0:600] = 0 #200 to 800nm
+    k_water_alg[0:600] = 0  # 200 to 800nm
 
     if cellular:  # ACS in m2 / cell
         # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
-        k = (ACS * 10 ** (12) 
-             * wvl 
-             / (np.pi * 4) 
-             / cell_vol )  
-        n = n_algae 
-        
-        if baseline_correction_k_algae: 
+        k = ACS * 10 ** (12) * wvl / (np.pi * 4) / cell_vol
+        n = n_algae
+
+        if baseline_correction_k_algae:
             k[:40] = k[40]
 
     if biovolume:  # ACS in m2 / µm3
         # units: ACS (m2/µm3 to µm2/µm3) * wvl (µm)
         k = xw * k_water_alg + ACS * 10 ** (12) * wvl / (np.pi * 4)
-        n = n_algae 
+        n = n_algae
 
     if biomass:  # ACS in m2 / dry mg
         # units: ACS (m2/mg to m2/kg) * density (kg m-3) * wvl (µm to m)
-        k =  ACS * density_dry * wvl / (np.pi * 4) #+ xw * k_water 
-        n = n_algae 
-        ACS = ACS * 1000000 # m2 / g to m2 / kg
-        
+        k = ACS * density_dry * wvl / (np.pi * 4)  # + xw * k_water
+        n = n_algae
+        ACS = ACS * 1000000  # m2 / g to m2 / kg
+
     # apply optional smoothing filter with user defined window width
     # and polynomial order
     if smooth:
@@ -142,7 +134,7 @@ def bioptical_calculations(
     # rescaling variables to BioSNICAR resolution (10nm)
     wvl_rescaled_BioSNICAR = wvl[5::10]
     ACS_rescaled_BioSNICAR = ACS[5::10]
-    k_rescaled_BioSNICAR = k[5::10]  
+    k_rescaled_BioSNICAR = k[5::10]
     n_rescaled_BioSNICAR = n[5::10]
 
     data["wvl"] = wvl_rescaled_BioSNICAR
@@ -153,7 +145,7 @@ def bioptical_calculations(
     ################################
     ## optional: plotting and saving
     ################################
-    
+
     # optionally save files to savepath
     if savefiles:  # optional save dataframe to csv files
         data["k"].to_csv(
@@ -177,7 +169,6 @@ def bioptical_calculations(
             str("ACS (m$2$ cell$^{-1}$, m$^2$ µm$3$ or m$^2$ ng$3$ ))"), fontsize=24
         )
         plt.tight_layout()
-        
 
         plt.subplot(2, 1, 2)
         plt.plot(wvl[100:600] * 1000, k[100:600])
@@ -248,10 +239,10 @@ def ssp_calculations(
 
         # calculate cylinder dimensions
         diameter = 2 * r
-        V = L * (np.pi * r ** 2)  # volume of cylinder in µm3
+        V = L * (np.pi * r**2)  # volume of cylinder in µm3
         Reff = (V / ((4 / 3) * np.pi)) ** 1 / 3  # effective radius
         # (i.e. radius of sphere with equal volume to real cylinder)
-        Area_total = 2 * (np.pi * r ** 2) + (2 * np.pi * r) * (
+        Area_total = 2 * (np.pi * r**2) + (2 * np.pi * r) * (
             L
         )  # total surface area - 2 x ends plus circumference * length
         Area = Area_total / 4  # projected area
@@ -361,7 +352,7 @@ def ssp_calculations(
             g_1 = 0.0
             # (Fig. 7, box 3)
             for i in range(len(p_a_eq_1)):
-                g_1 += p_a_eq_1[i] * delta ** i
+                g_1 += p_a_eq_1[i] * delta**i
 
             p_delta = np.zeros(nq1)
             # (Fig. 7, box 4)
@@ -370,7 +361,7 @@ def ssp_calculations(
             Dg = 0.0
             # (Fig. 7, box 4)
             for i in range(nq1):
-                Dg += p_delta[i] * delta ** i
+                Dg += p_delta[i] * delta**i
             g_rt = 2.0 * (g_1 + Dg) - 1.0  # (Fig. 7, box 5)
 
             # --------- ref idx correction of asym parameter (Fig. 7, box 6)
@@ -408,12 +399,11 @@ def ssp_calculations(
             SSA_list.append(w)
             Assy_list.append(g_tot)
             absXS_list.append(absXS)
-            
+
             # convert to np arrays to return by the function
             assym = np.array(Assy_list).flatten()
             ss_alb = np.array(SSA_list).flatten()
-            qext = np.ones(4800)* 2 
-                       
+            qext = np.ones(4800) * 2
 
         if plots:
 
@@ -469,7 +459,7 @@ def ssp_calculations(
         ss_alb = qsca / qext
         ext_cff = qext * np.pi * (r * 10 ** (-6)) ** 2
         abs_cff = qabs * np.pi * (r * 10 ** (-6)) ** 2
-        
+
         if plots:
             plt.figure()
             plt.plot(wvl, g, label="assymetry parameter")

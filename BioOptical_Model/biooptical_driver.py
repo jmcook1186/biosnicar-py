@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-@author: joe, lou
 
-Driver for the bio-optical model developed by Cook et al. 2017, 2020 to
-calculate algae optical properties and save them to a netcdf files directly
-usable in BioSNICAR. The model workflow consists in three functions detailed
+Author: Joseph Cook (original writing); Lou-Anne Chevrollier
+
+Driver for the bio-optical model developed by Cook et al. 2017, 2020
+and Chevrollier et al. 2022 to calculate algae optical properties 
+and save them to a netcdf files directly usable in BioSNICAR. T
+he model workflow consists in three functions detailed
 below in case the user needs to use the functions separately.
 If the user wants to run the full model, the parameters to document
 are summarized at the beginning of the code.
@@ -48,10 +50,15 @@ https://www.researchgate.net/publication/259821840_ice_OP_parameterization
 In Mie mode, the optical properties are calculated using Mie scattering
 using Scott Prahl's miepython package https://github.com/scottprahl/miepython.
 """
-import numpy as np
-import pandas as pd
 
-from biooptical_Funcs import gaussian, bioptical_calculations, net_cdf_updater, ssp_calculations
+import numpy as np
+
+from biooptical_Funcs import (
+    gaussian,
+    bioptical_calculations,
+    net_cdf_updater,
+    ssp_calculations,
+)
 
 # %%
 
@@ -66,16 +73,16 @@ WVL = np.arange(0.200, 5, 0.001)  # spectral range of interest in µm
 # Chose ACS units and k correction
 BIOVOLUME = False
 BIOMASS = False
-CELLULAR = True
-BASELINE_CORRECTION_K_ALGAE = True
+CELLULAR = False
+BASELINE_CORRECTION_K_ALGAE = False
 
 # Chose if ACS is calculated from pigment abs coeff or loaded
-ACS_LOADED_INVIVO = True
+ACS_LOADED_INVIVO = False
 ACS_LOADED_RECONSTRUCTED = False
 ACS_CALCULATED = False
 
 # if ACS is loaded:
-ACS_FILE = './ACS_SA_Chevrollier2022.csv' 
+ACS_FILE = ""
 
 
 # if reconstructed ACS is directly loaded from pigment absorbance:
@@ -101,25 +108,22 @@ PIGMENTS_DATA = {
 }
 
 
-# Medium properties 
+# Medium properties
 N_MEDIUM = np.ones(480)
-K_WATER = 0 * np.ones(np.size(WVL)) # only used if biovolume-prescribed ACS
+K_WATER = 0 * np.ones(np.size(WVL))  # only used if biovolume-prescribed ACS
 
 # Algae properties
 N_ALGAE = 1.38 * np.ones(np.size(WVL))
-             
-
-# N_ALGAE =  1.38 / 1.33 * ref_idx_water.n.values # 1.38 * np.ones(np.size(ref_idx_water.n.values)) #
 DENSITY_DRY = 600
 DENSITY_WET = 1060
 
 # Set up normal distribution around R to average Mie resonance features
-R = 15 
+R = 15
 L = 20
 mu = R
-sigma = 0.1*R
+sigma = 0.1 * R
 radii = np.linspace(R - 4 * sigma, R + 4 * sigma, 200)
-cell_volumes = [4/3*np.pi*r**3 for r in radii] 
+cell_volumes = [4 / 3 * np.pi * r**3 for r in radii]
 normal_distribution = gaussian(radii, R, sigma)
 
 
@@ -150,7 +154,7 @@ SAVEPATH_OPS = DIR_BASE
 FIGNAME_OPS = "figname"
 
 # Saving OPs in netcdf
-NETCDF_SAVE = True
+NETCDF_SAVE = False
 SAVEPATH_NETCDF = "./biosnicar-py/Data/OP_data/480band/lap/"
 FILENAME_NETCDF = ""
 INFO = ""
@@ -159,8 +163,8 @@ INFO = ""
 
 asm_prm, ss_alb, acs, qext = [], [], [], []
 
-for i, radius, cell_vol in zip(np.arange(0,len(radii), 1), radii, cell_volumes):  
-    
+for i, radius, cell_vol in zip(np.arange(0, len(radii), 1), radii, cell_volumes):
+
     # --------------------------------------------------------------------------------------
     # CALCULATIONS OF ABSORPTION PROPERTIES
     # --------------------------------------------------------------------------------------
@@ -207,12 +211,12 @@ for i, radius, cell_vol in zip(np.arange(0,len(radii), 1), radii, cell_volumes):
         SAVEPLOTS_N_K_ACS,
         SAVEPATH_N_K_ACS_PLOTS,
     )
-     
+
     #
     # --------------------------------------------------------------------------------------
     # CALCULATIONS OF SCATTERING PROPERTIES
     # --------------------------------------------------------------------------------------
-    
+
     assym, ssa, q_ext = ssp_calculations(
         GO,
         MIE,
@@ -228,17 +232,28 @@ for i, radius, cell_vol in zip(np.arange(0,len(radii), 1), radii, cell_volumes):
         FIGNAME_OPS,
         REPORT_DIMS,
     )
-    
+
     asm_prm.append(assym)
     ss_alb.append(ssa)
     qext.append(q_ext)
     acs.append(ACS)
-    
 
-asm_prm_weighed = np.sum(np.array(asm_prm).T * normal_distribution, axis=1) / sum(normal_distribution)
-ss_alb_weighed = np.sum(np.array(ss_alb).T * normal_distribution, axis=1) / sum(normal_distribution)
-qext_weighed = np.sum(np.array(qext).T * normal_distribution, axis=1) / sum(normal_distribution) * np.pi * (R*1e-6)**2
-acs_weighed = np.sum(np.array(acs).T * normal_distribution, axis=1) / sum(normal_distribution)
+
+asm_prm_weighed = np.sum(np.array(asm_prm).T * normal_distribution, axis=1) / sum(
+    normal_distribution
+)
+ss_alb_weighed = np.sum(np.array(ss_alb).T * normal_distribution, axis=1) / sum(
+    normal_distribution
+)
+qext_weighed = (
+    np.sum(np.array(qext).T * normal_distribution, axis=1)
+    / sum(normal_distribution)
+    * np.pi
+    * (R * 1e-6) ** 2
+)
+acs_weighed = np.sum(np.array(acs).T * normal_distribution, axis=1) / sum(
+    normal_distribution
+)
 
 # %%
 # --------------------------------------------------------------------------------------

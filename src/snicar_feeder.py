@@ -1,6 +1,5 @@
 import collections as c
 import math
-
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -101,9 +100,19 @@ def snicar_feeder(Inputs):
     ]
 
     # working Inputs.directories
-    dir_spherical_ice_files = str(
-        Inputs.dir_base + "Data/OP_data/480band/ice_spherical_grains/"
-    )
+    if Inputs.mie_solver == 0:
+        dir_spherical_ice_files = str(
+            Inputs.dir_base + "Data/OP_data/480band/ice_spherical_grains/"
+        )
+        dir_bubbly_ice = str(Inputs.dir_base + "Data/OP_data/480band/bubbly_ice_files/")
+    elif Inputs.mie_solver == 1:
+        dir_spherical_ice_files = str(
+            Inputs.dir_base + "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        )
+        dir_bubbly_ice = str(
+            Inputs.dir_base + "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        )
+
     dir_spherical_water_files = str(
         Inputs.dir_base + "Data/OP_data/480band/water_spherical_grains/"
     )
@@ -112,7 +121,6 @@ def snicar_feeder(Inputs):
         Inputs.dir_base + "Data/OP_data/480band/ice_hexagonal_columns/"
     )
     dir_lap_files = str(Inputs.dir_base + "Data/OP_data/480band/lap/")
-    dir_bubbly_ice = str(Inputs.dir_base + "Data/OP_data/480band/bubbly_ice_files/")
     dir_fsds = str(Inputs.dir_base + "Data/OP_data/480band/fsds/")
     dir_ri_ice = str(Inputs.dir_base + "Data/OP_data/480band/")
 
@@ -253,7 +261,7 @@ def snicar_feeder(Inputs):
         fl_r_dif_b = fresnel_diffuse_file["R_dif_fb_ice_Wrn08"].values
 
     elif Inputs.rf_ice == 2:
-        dir_op = "ice_Pic16/ice_grain_"
+        dir_op = "ice_Pic16/ice_Pic16_"
         if Inputs.verbosity == 1:
             print("Using Picard 16 refractive index")
         refidx_re = refidx_file["re_Pic16"].values
@@ -734,7 +742,7 @@ def snicar_feeder(Inputs):
 
         # granular layer with mixed ice and water spheres
         elif Inputs.layer_type[i] == 4:
-            
+
             # neglecting air mass:
             vlm_frac_ice = (Inputs.rho_layers[i] - Inputs.lwc[i] * 1000) / 917
             vlm_frac_air = 1 - Inputs.lwc[i] - vlm_frac_ice
@@ -831,25 +839,6 @@ def snicar_feeder(Inputs):
             mac_aer[aer, :] = impurity_properties["ext_cff_mss"].values
             # conversion to kg/kg ice from ng/g
             mss_aer[0 : Inputs.nbr_lyr, aer] = np.array(mass_concentrations[aer]) * 1e-9
-
-        # if c_factor provided, then mss_aer multiplied by c_factor
-        if (
-            files[aer] == Inputs.file_glacier_algae
-            and isinstance(Inputs.c_factor_GA, (int, float))
-            and (Inputs.c_factor_GA > 0)
-        ):
-            mss_aer[0 : Inputs.nbr_lyr, aer] = (
-                Inputs.c_factor_GA * mss_aer[0 : Inputs.nbr_lyr, aer]
-            )
-
-        if (
-            files[aer] == Inputs.file_snw_alg
-            and isinstance(Inputs.c_factor_SA, (int, float))
-            and (Inputs.c_factor_SA > 0)
-        ):
-            mss_aer[0 : Inputs.nbr_lyr, aer] = (
-                Inputs.c_factor_SA * mss_aer[0 : Inputs.nbr_lyr, aer]
-            )
 
     # ----------------------------------------------------------------------------------
     # Begin solving Radiative Transfer

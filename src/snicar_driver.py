@@ -5,7 +5,7 @@ This script is used to configure the 2-stream radiative transfer
 model BioSNICAR_GO. Here variable values are defined, the model called
 and the results plotted.
 
-NB. Setting Mie = 1, GO = 0 and algal impurities = 0 is equivalent to
+NB. Setting mie_solver = 1 is equivalent to
 running the original SNICAR model of Flanner et al. (2007, 2009)
 
 NB: if using only granular layers, recommend using the faster toon et al
@@ -14,23 +14,20 @@ include any specular reflection components. If solid ice layers are
 included in the ice/snow column, the ADDING-DOUBLING solver must be used
 (i.e. add_double = True).
 
-glacier algae MAC files are provided in units of m2/cell, which requires
+Ice and snow algae MAC files are provided in units of m2/cell, which requires
 a unit conversion that is not applied to the other LAPS. The conversion
-is selectivlely applid by indexing to the last element in the LAP
-lists, meaning glacier algae must always be the final LAP, even if more
+is selectivlely applied by indexing to the last element in the LAP
+lists, meaning ice and snow algae must always be the final LAP, even if more
 LAPs are added in future.
 
-Author: Joseph Cook, June 2021
-"""
+Author: Joseph Cook (original writing - June 2021); Lou-Anne Chevrollier
 
+"""
 
 import collections as c
 from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
-
 from snicar_feeder import snicar_feeder
 
 # --------------------------------------------------------------------------------------
@@ -43,6 +40,7 @@ Inputs = c.namedtuple(
         "dir_base",
         "verbosity",
         "rf_ice",
+        "mie_solver",
         "incoming_i",
         "direct",
         "layer_type",
@@ -68,8 +66,6 @@ Inputs = c.namedtuple(
         "grain_ar",
         "GA_units",
         "SA_units",
-        "c_factor_GA",
-        "c_factor_SA",
         "mss_cnc_soot1",
         "mss_cnc_soot2",
         "mss_cnc_brwnC1",
@@ -198,16 +194,16 @@ Inputs.add_double = True  # toggle adding-doubling solver
 
 Inputs.dz = [0.02, 100]  # thickness of each vertical layer (unit = m) # 0.04
 Inputs.nbr_lyr = len(Inputs.dz)  # number of snow layers
-Inputs.layer_type = [3,1]  # 0 = ice grain layer of different shapes,
+Inputs.layer_type = [3, 3]  # 0 = ice grain layer of different shapes,
 # 1 = solid bubbly ice w/ fresnel layer on top,
 # 2 = liquid water film,
 # 3 = solid bubbly ice w/out fresnel layer
 # 4 = wet snow mixing ice and water spheres
-Inputs.lwc = [0.08] * len(Inputs.dz)
+Inputs.lwc = [0] * len(Inputs.dz)
 Inputs.lwc_pct_bubbles = 0  # amount of water as bubbles
 
 Inputs.cdom_layer = [0] * len(Inputs.dz)  # Only for layer type == 1
-Inputs.rho_layers = [650 / (1 - 1000/917*0.08)] * len(Inputs.dz)  # density of each layer (unit = kg m-3)
+Inputs.rho_layers = [300] * len(Inputs.dz)  # density of each layer (unit = kg m-3)
 Inputs.nbr_wvl = 480
 
 # reflectance of underlying surface - set across all wavelengths
@@ -227,6 +223,11 @@ Inputs.R_sfc = np.genfromtxt(
 # define source of ice refractive index data.
 # 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
 Inputs.rf_ice = 2
+
+# define solver for Mie calculations
+# 0 = Wiscombe 1979 (default)
+# 1 = Bohren and Huffman 1983 (as per the Matlab version)
+Inputs.mie_solver = 0
 
 # Ice grain shape can be
 # 0 = sphere,
@@ -265,12 +266,6 @@ Inputs.nbr_aer = 30
 # 1 = m2/cell for MAC, cell/mL for mss_cnc
 Inputs.GA_units = 1  # glacier algae
 Inputs.SA_units = 1  # snow algae
-
-# determine C_factor (can be None or a number)
-# this is the concentrating factor that accounts for
-# resolution difference in field samples and model layers
-Inputs.c_factor_GA = 0
-Inputs.c_factor_SA = 0
 
 # Set names of files containing the optical properties of these LAPs:
 # uncoated BC (Bohren and Huffman, 1983)
@@ -332,7 +327,7 @@ Inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_CENTRAL_20190911.nc"
 # Snow algae
 Inputs.file_snw_alg = "snow_algae_empirical_Chevrollier2023.nc"
 # Glacier algae
-Inputs.file_glacier_algae = "ice_algae_empirical2.nc"
+Inputs.file_glacier_algae = "ice_algae_empirical_Chevrollier2023.nc"
 
 # Indicate mass mixing ratios scenarios for each impurity
 # default units are ng(species)/g(ice), or ppb
@@ -341,7 +336,7 @@ Inputs.file_glacier_algae = "ice_algae_empirical2.nc"
 # The script will loop over the different mixing scenarios
 # 1 g/L = 109 ng/L = 106 ng /g
 
-Inputs.mss_cnc_soot1 = [0, 0]  # * len(Inputs.dz)
+Inputs.mss_cnc_soot1 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_soot2 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_brwnC1 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_brwnC2 = [0] * len(Inputs.dz)
@@ -356,11 +351,11 @@ Inputs.mss_cnc_ash3 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_ash4 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_ash5 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_ash_st_helens = [0] * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust1 = [0, 0]  # * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust2 = [0, 0]  # * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust3 = [0, 0]  # * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust4 = [0, 0]  # * len(Inputs.dz)
-Inputs.mss_cnc_Skiles_dust5 = [0, 0]  #  * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust1 = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust2 = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust3 = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust4 = [0] * len(Inputs.dz)
+Inputs.mss_cnc_Skiles_dust5 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral1 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral2 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_GreenlandCentral3 = [0] * len(Inputs.dz)
@@ -369,8 +364,8 @@ Inputs.mss_cnc_GreenlandCentral5 = [0] * len(Inputs.dz)
 Inputs.mss_cnc_Cook_Greenland_dust_L = [0] * len(Inputs.dz)
 Inputs.mss_cnc_Cook_Greenland_dust_C = [0] * len(Inputs.dz)  #
 Inputs.mss_cnc_Cook_Greenland_dust_H = [0] * len(Inputs.dz)
-Inputs.mss_cnc_snw_alg = [0, 0]
-Inputs.mss_cnc_glacier_algae = [8e4, 0]
+Inputs.mss_cnc_snw_alg = [0] * len(Inputs.dz)
+Inputs.mss_cnc_glacier_algae = [0] * len(Inputs.dz)
 
 
 # --------------------------------------------------------------------------------------
@@ -402,23 +397,9 @@ if Inputs.toon and Inputs.add_double:  # pylint: disable=W0143
 if Inputs.toon and Inputs.solzen < 40:  # pylint: disable=W0143
     raise ValueError("INVALID SOLZEN: outside valid range for toon solver")
 
-if np.sum(Inputs.layer_type) < 1 and Inputs.add_double:  # pylint: disable=W0143
-    # just warn user but let program continue - in some cases
-    # AD method preferable (stable over complete range of SZA)
-    print("\n****** WARNING ******\n")
-    print("No solid ice layers - toon solver is faster")
-    print("Toggle toon=True and add_double=False to use it.\n")
 
 if np.sum(Inputs.layer_type) > 0 and Inputs.toon:
     raise ValueError("There are ice layers - use the adding-doubling solver")
-
-if np.sum(Inputs.mss_cnc_snw_alg) != 0:  # pylint: disable=W0143
-    # remind user that snow algae optical properties h
-    # have not yet been empirically validated
-    print("\n****** WARNING ******")
-    print("the optical properties for the snow algae are theoretical.")
-    print("They were constructed from literature values")
-    print("They have not yet been validated empirically.\n\n")
 
 if Inputs.solzen > 89:  # pylint: disable=W0143
     Inputs.solzen = 89
@@ -426,9 +407,23 @@ if Inputs.solzen > 89:  # pylint: disable=W0143
         "Surface irradiance profiles exist for a solar\
         zenith angle < 90 degrees. Solzen set to 89."
     )
+
+if Inputs.mie_solver == 1 and (any(Inputs.lwc) > 0 or Inputs.lwc_pct_bubbles > 0):
+    raise ValueError("BH83 solver cannot be used with the LWC option")
+
+if Inputs.mie_solver == 1 and (any(Inputs.layer_type) == 4):
+    raise ValueError("BH83 solver cannot be used with the LWC option")
+
+if Inputs.mie_solver == 1 and (any(Inputs.layer_type) == 4):
+    raise ValueError("BH83 solver cannot be used with the LWC option")
+
+if Inputs.mie_solver == 0 and (Inputs.rf_ice < 2):
+    raise ValueError("miepython solver only available for Pic16 ice ref index")
+
 for lyr in range(len(Inputs.dz)):
     if Inputs.cdom_layer[lyr] == 1 and Inputs.layer_type[lyr] == 0:
-        raise ValueError("CDOM option only available for solid ice layers")
+        raise ValueError("Experimental CDOM option only available for solid ice layers")
+
 # --------------------------------------------------------------------------------------
 # CONFIG  AND CALL SNICAR
 # --------------------------------------------------------------------------------------
@@ -465,12 +460,6 @@ Outputs = snicar_feeder(Inputs)
 albedo = Outputs.albedo
 BBA = Outputs.BBA
 wvl = Outputs.wvl
-SSA = (
-    6
-    * (np.array([917] * len(Inputs.dz)) - np.array(Inputs.rho_layers))
-    / 917
-    / (np.array(Inputs.rho_layers) * np.array(Inputs.grain_rds) * 2 * 10 ** (-6))
-)
 
 if SMOOTH:
     from scipy.signal import savgol_filter
@@ -512,30 +501,11 @@ rc = {
     "xtick.bottom": True,
     "ytick.left": True,
 }
+
 plt.rcParams.update(rc)
 plt.figure()
-plt.plot(wvl, albedo, color="blue")  # 0 %
-# plt.scatter(wvl, albedo, color="black", s=2)  # 0 %
-
-plt.plot(wvl, albedo_test, color='black') # 0 %
-# plt.scatter(wvl, albedo_test2, color='orange', s=2) # 0 %
-# plt.scatter(wvl, albedo_test3, color='pink', s=2) # 0 %
-
-
-# import pandas as pd
-# reflectance = pd.read_csv(
-#     '/Users/au660413/Documents/AU_PhD/dust_wc_work/dust_albedo_gh/spectroscopy/data/reflectance_spectra_processed.csv', index_col=0)
-
-# plt.plot(reflectance.index/1000, reflectance.filter(like='22_S21'), color='black') # 0 %
-
-
-# import pandas as pd
-# spec = pd.read_csv('/Users/au660413/Documents/AU_PhD/rodalger-project/data/farc_fieldwork_0723/field-spectrometry/spectra/formated/all_hcrf_spectra.csv',
-#                     index_col=0).filter(like='HCRF25')
-# spectrum = '080123_SNOW4' + '_HCRF25'
-# plt.plot(spec.index/1000, spec[spectrum], color='orange', alpha=1)
-
-
+plt.plot(wvl, albedo, label="albedo")
+plt.legend()
 plt.ylabel("Albedo", fontsize=18), plt.xlabel("Wavelength (µm)", fontsize=18),
 plt.xlim(0.35, 1.8),
 plt.ylim(0, 1), plt.xticks(fontsize=15), plt.yticks(fontsize=15),
