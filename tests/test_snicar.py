@@ -8,7 +8,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import pytest
 
 from snicar_feeder import snicar_feeder
@@ -125,7 +124,6 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
     rds = 1000
     rho = 400
     solzen = 40
-    c_factor = 0
     dust = 0
     algae = 0
     dz = 0.2
@@ -147,7 +145,6 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
             algae,
             bc,
             dust,
-            c_factor,
             solzen,
             toon,
             ad,
@@ -164,10 +161,9 @@ def test_config_fuzzer(direct, aprx_typ, incoming, shp, rf, lyr, fuzz):
 @pytest.mark.parametrize("rds", [1000, 5000, 10000])
 @pytest.mark.parametrize("rho", [400, 600, 800])
 @pytest.mark.parametrize("solzen", [10, 40, 60])
-@pytest.mark.parametrize("c_factor", [0, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer_AD(rds, rho, solzen, c_factor, dust, algae, fuzz):
+def test_var_fuzzer_AD(rds, rho, solzen, dust, algae, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     """
@@ -197,7 +193,6 @@ def test_var_fuzzer_AD(rds, rho, solzen, c_factor, dust, algae, fuzz):
             algae,
             bc,
             dust,
-            c_factor,
             solzen,
             toon,
             ad,
@@ -214,10 +209,9 @@ def test_var_fuzzer_AD(rds, rho, solzen, c_factor, dust, algae, fuzz):
 @pytest.mark.parametrize("rds", [1000, 5000])
 @pytest.mark.parametrize("rho", [400, 600])
 @pytest.mark.parametrize("solzen", [30, 40])
-@pytest.mark.parametrize("c_factor", [0, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
+def test_var_fuzzer_toon(rds, rho, solzen, dust, algae, fuzz):
     """
     ensures code runs and gives valid BBA with combinations of input vals
     note that toon solver has a smaller valid range of solzens than
@@ -231,7 +225,7 @@ def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
     incoming = 4
     shp = 0
     rf = 2
-    lyr = (1,)
+    lyr = 0
     toon = True
     ad = False
 
@@ -249,7 +243,6 @@ def test_var_fuzzer_toon(rds, rho, solzen, c_factor, dust, algae, fuzz):
             algae,
             bc,
             dust,
-            c_factor,
             solzen,
             toon,
             ad,
@@ -276,7 +269,6 @@ def set_params(
     algae,
     bc,
     dust,
-    c_factor,
     solzen,
     toon,
     ad,
@@ -296,7 +288,6 @@ def set_params(
             "dz",
             "algae",
             "bc",
-            "c_factor",
             "solzen",
             "alg",
             "dust1",
@@ -317,7 +308,6 @@ def set_params(
     params.algae = [algae, 0]
     params.bc = [bc, 0]
     params.dust = [dust, 0]
-    params.c_factor_GA = c_factor
     params.solzen = solzen
     params.toon = toon
     params.add_double = ad
@@ -356,8 +346,6 @@ def call_snicar(params):
             "grain_ar",
             "GA_units",
             "SA_units",
-            "c_factor_GA",
-            "c_factor_SA",
             "mss_cnc_soot1",
             "mss_cnc_soot2",
             "mss_cnc_brwnC1",
@@ -494,7 +482,14 @@ def call_snicar(params):
     inputs.nbr_lyr = len(params.dz)  # number of snow layers
     inputs.layer_type = (
         params.lyr
-    )  # Fresnel layers for the add_double option, set all to 0 for the toon option
+    )  
+    # 0 = ice grain layer of different shapes,
+    # 1 = solid bubbly ice w/ fresnel layer on top,
+    # 2 = liquid water film,
+    # 3 = solid bubbly ice w/out fresnel layer
+    # 4 = wet snow mixing ice and water spheres
+    inputs.lwc = [0] * len(inputs.dz)
+    inputs.lwc_pct_bubbles = 0  # amount of water as bubbles
     inputs.cdom_layer = [0, 0]  # Only for layer type == 1, CDOM data from L Halbach
     inputs.rho_layers = params.rho  # density of each layer (unit = kg m-3)
     inputs.nbr_wvl = 480
@@ -503,6 +498,7 @@ def call_snicar(params):
         dir_base_path.joinpath("Data")
         .joinpath("OP_data")
         .joinpath("480band")
+        .joinpath("r_sfc")
         .joinpath("rain_polished_ice_spectrum.csv")
     )
 
@@ -518,6 +514,11 @@ def call_snicar(params):
     ###############################################################################
 
     inputs.rf_ice = 2  # define source of ice refractive index data. 0 = Warren 1984, 1 = Warren 2008, 2 = Picard 2016
+    
+    # define solver for Mie calculations
+    # 0 = Wiscombe 1979 (default)
+    # 1 = Bohren and Huffman 1983 (as per the Matlab version)
+    inputs.mie_solver = 1
 
     # Ice grain shape can be 0 = sphere, 1 = spheroid, 2 = hexagonal plate, 3 = koch snowflake, 4 = hexagonal prisms
     # For 0,1,2,3:
@@ -553,18 +554,12 @@ def call_snicar(params):
     inputs.GA_units = 1  # glacier algae
     inputs.SA_units = 1  # snow algae
 
-    # determine C_factor (can be None or a number)
-    # this is the concentrating factor that accounts for
-    # resolution difference in field samples and model layers
-    inputs.c_factor_GA = params.c_factor
-    inputs.c_factor_SA = 0
-
     # Set names of files containing the optical properties of these LAPs:
     inputs.file_soot1 = (
         "mie_sot_ChC90_dns_1317.nc"  # uncoated BC (Bohren and Huffman, 1983)
     )
     inputs.file_soot2 = (
-        "miecot_slfsot_ChC90_dns_1317.nc"  # coated BC (Bohren and Huffman, 1983)
+        "bc_ChCB_rn40_dns1270_slfcot.nc"  # coated BC (Bohren and Huffman, 1983)
     )
     inputs.file_brwnC1 = (
         "brC_Kirch_BCsd.nc"  # uncoated brown carbon (Kirchstetter et al. (2004).)
@@ -616,8 +611,8 @@ def call_snicar(params):
     inputs.file_Cook_Greenland_dust_L = "dust_greenland_Cook_LOW_20190911.nc"  # GRIS dust (Cook et al. 2019 "LOW") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
     inputs.file_Cook_Greenland_dust_C = "dust_greenland_Cook_CENTRAL_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "mean") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
     inputs.file_Cook_Greenland_dust_H = "dust_greenland_Cook_HIGH_20190911.nc"  # GRIS dust 1 (Cook et al. 2019 "HIGH") NOT FUNCTIONAL IN THIS RELEASE (COMING SOON)
-    inputs.file_snw_alg = "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"  # Snow Algae (spherical, C nivalis)
-    inputs.file_glacier_algae = "Cook2020_glacier_algae_4_40.nc"  # glacier algae in cells/ml or ppb depending on GA_units
+    inputs.file_snw_alg = "snow_algae_empirical_Chevrollier2023.nc"  # Snow Algae (spherical, C nivalis)
+    inputs.file_glacier_algae = "ice_algae_empirical_Chevrollier2023.nc"  # glacier algae in cells/ml or ppb depending on GA_units
 
     # Add more glacier algae (not functional in current code)
     # (optical properties generated with GO), not included in the current model
@@ -708,8 +703,6 @@ def call_snicar(params):
     inputs.mss_cnc_glacier_algae = (
         params.algae
     )  # glacier algae type1 (Cook et al. 2020)
-
-    nbr_aer = 30
 
     outputs = snicar_feeder(inputs)
 

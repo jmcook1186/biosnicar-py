@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-@author: jmcook1186, lcvl41
-
-Contains functions relating to bio-optical model components of BioSNICAR_GO_py
-Called from BioOptical_driver.py
-
-"""
-
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from miepython import mie
-from plotnine import aes, geom_line, ggplot
+from miepython import ez_mie
 from scipy.signal import savgol_filter
 
 plt.style.use("seaborn")
+
+
+def gaussian(x, mu, sigma):
+    return 1 / (np.sqrt(2.0 * np.pi) * sigma) * np.exp(-(((x - mu) / sigma) ** 2) / 2)
 
 
 def bioptical_calculations(
@@ -27,6 +22,7 @@ def bioptical_calculations(
     biovolume,
     biomass,
     cellular,
+    baseline_correction_k_algae,
     density_wet,
     density_dry,
     dir_base,
@@ -91,19 +87,24 @@ def bioptical_calculations(
             abs_coeff = abs_coeff * pckg_GA[0:-1]
 
     elif ACS_loaded_invivo:
-        ACS = (np.array(pd.read_csv(ACS_file))).flatten()  # m2/mg, um3 or cell
+        ACS = np.array(
+            pd.read_csv(ACS_file, header=None)
+        ).flatten()  # m2/mg, um3 or cell
 
     ################
     ## k calculation
     ################
 
     k_water_alg = k_water
-    k_water_alg[0:600] = 0 #200 to 800nm
+    k_water_alg[0:600] = 0  # 200 to 800nm
 
     if cellular:  # ACS in m2 / cell
         # units: ACS (m2/cell to µm2/cell) / cell volume (um3/cell) * wvl (µm)
-        k = xw * k_water_alg + ACS * 10 ** (12) * wvl / (np.pi * 4) / cell_vol
+        k = ACS * 10 ** (12) * wvl / (np.pi * 4) / cell_vol
         n = n_algae
+
+        if baseline_correction_k_algae:
+            k[:40] = k[40]
 
     if biovolume:  # ACS in m2 / µm3
         # units: ACS (m2/µm3 to µm2/µm3) * wvl (µm)
@@ -111,9 +112,20 @@ def bioptical_calculations(
         n = n_algae
 
     if biomass:  # ACS in m2 / dry mg
-        # units: ACS (m2/mg to m2/kg) * density (kg m3) * wvl (µm to m)
-        k = xw * k_water + ACS * density_dry * wvl / (np.pi * 4)
+        # units: ACS (m2/mg to m2/kg) * density (kg m-3) * wvl (µm to m)
+        k = ACS * density_dry * wvl / (np.pi * 4)  # + xw * k_water
         n = n_algae
+        ACS = ACS * 1000000  # m2 / g to m2 / kg
+
+    # apply optional smoothing filter with user defined window width
+    # and polynomial order
+    if smooth:
+        ACS[smoothStart:smoothStop] = savgol_filter(
+            ACS[smoothStart:smoothStop], window_size, poly_order
+        )
+        k[smoothStart:smoothStop] = savgol_filter(
+            k[smoothStart:smoothStop], window_size, poly_order
+        )
 
     ###############################
     ## ACS, k storage and rescaling
@@ -133,14 +145,6 @@ def bioptical_calculations(
     ################################
     ## optional: plotting and saving
     ################################
-
-    # apply optional smoothing filter with user defined window width
-    # and polynomial order
-    if smooth:
-        yhat = savgol_filter(
-            ACS[smoothStart:smoothStop], window_size, poly_order
-        )  # window size 51, polynomial order 3
-        ACS[smoothStart:smoothStop] = yhat
 
     # optionally save files to savepath
     if savefiles:  # optional save dataframe to csv files
@@ -216,6 +220,7 @@ def ssp_calculations(
     r,
     L,
     wvl,
+    n_medium,
     n_algae,
     k_algae,
     plots,
@@ -234,10 +239,10 @@ def ssp_calculations(
 
         # calculate cylinder dimensions
         diameter = 2 * r
-        V = L * (np.pi * r ** 2)  # volume of cylinder in µm3
+        V = L * (np.pi * r**2)  # volume of cylinder in µm3
         Reff = (V / ((4 / 3) * np.pi)) ** 1 / 3  # effective radius
         # (i.e. radius of sphere with equal volume to real cylinder)
-        Area_total = 2 * (np.pi * r ** 2) + (2 * np.pi * r) * (
+        Area_total = 2 * (np.pi * r**2) + (2 * np.pi * r) * (
             L
         )  # total surface area - 2 x ends plus circumference * length
         Area = Area_total / 4  # projected area
@@ -347,7 +352,7 @@ def ssp_calculations(
             g_1 = 0.0
             # (Fig. 7, box 3)
             for i in range(len(p_a_eq_1)):
-                g_1 += p_a_eq_1[i] * delta ** i
+                g_1 += p_a_eq_1[i] * delta**i
 
             p_delta = np.zeros(nq1)
             # (Fig. 7, box 4)
@@ -356,7 +361,7 @@ def ssp_calculations(
             Dg = 0.0
             # (Fig. 7, box 4)
             for i in range(nq1):
-                Dg += p_delta[i] * delta ** i
+                Dg += p_delta[i] * delta**i
             g_rt = 2.0 * (g_1 + Dg) - 1.0  # (Fig. 7, box 5)
 
             # --------- ref idx correction of asym parameter (Fig. 7, box 6)
@@ -394,9 +399,11 @@ def ssp_calculations(
             SSA_list.append(w)
             Assy_list.append(g_tot)
             absXS_list.append(absXS)
+
             # convert to np arrays to return by the function
             assym = np.array(Assy_list).flatten()
             ss_alb = np.array(SSA_list).flatten()
+            qext = np.ones(4800) * 2
 
         if plots:
 
@@ -446,23 +453,22 @@ def ssp_calculations(
 
     if Mie:
 
-        X = 2 * np.pi * r / wvl  # unitless
-        qext, qsca, qback, g = mie(n_algae - 1j * k_algae, X)
+        qext, qsca, qback, g = ez_mie(n_algae - 1j * k_algae, r, wvl, n_medium)
         qabs = qext - qsca
         assym = g
         ss_alb = qsca / qext
+        ext_cff = qext * np.pi * (r * 10 ** (-6)) ** 2
+        abs_cff = qabs * np.pi * (r * 10 ** (-6)) ** 2
 
         if plots:
-            qqabs = qabs * np.pi * r ** 2  # calculate cross section from efficiency
-            qqsca = qsca * np.pi * r ** 2  # calculate cross section from efficiency
-            qqext = qext * np.pi * r ** 2  # calculate cross section from efficiency
-            plt.figure(1)
-            plt.plot(wvl, qqabs, "b", label="absorption cross section")
-            plt.plot(wvl, qqsca, "g", label="scattering cross section")
-            plt.plot(wvl, qqext, "r", label="extinction cross section")
-            plt.xlim(0.2, 2.5)
-
-            plt.ylabel(r"Cross Section ($\mu$m$^2$)")
+            plt.figure()
+            plt.plot(wvl, g, label="assymetry parameter")
+            plt.figure()
+            plt.plot(wvl, ss_alb, label="SSA")
+            plt.figure()
+            plt.plot(wvl, ext_cff, "r", label="extinction cross section")
+            plt.xlim(0.2, 0.9)
+            plt.ylabel(r"Cross Section (m$^2$)")
             plt.xlabel("Wavelength (nm)")
             plt.legend(loc="best")
 
@@ -472,19 +478,19 @@ def ssp_calculations(
             else:
                 plt.show()
 
-    return assym, ss_alb
+    return assym, ss_alb, qext
 
 
 def net_cdf_updater(
-    GO, Mie, savepath, filename, wvl, g, ssa, ACS, L, r, density, information
+    GO, Mie, savepath, filename, wvl, g, ssa, ext_cff, ACS, L, r, density, information
 ):
 
     algfile = pd.DataFrame()
     algfile["asm_prm"] = np.squeeze(g)
     algfile["ss_alb"] = np.squeeze(ssa)
-    algfile["ext_cff_mss"] = ACS
+    algfile["ext_cff_mss"] = ext_cff
+    algfile["abs_cff"] = ACS
     algfile = algfile.to_xarray()
-    algfile.attrs["medium_type"] = "air"
     if GO:
         algfile.attrs["description"] = (
             "Optical properties for glacier algal cell: cylinder of radius "
@@ -497,7 +503,7 @@ def net_cdf_updater(
         ] = "Optical properties for snow algal " "cell: sphere of radius {}um".format(
             str(r)
         )
-    algfile.attrs["psd"] = "monodisperse"
+    algfile.attrs["psd"] = "gaussian centered on radius"
     algfile.attrs["radius_um"] = r
     algfile.attrs["density_kg_m3"] = density
     algfile.attrs["wvl"] = wvl

@@ -1,5 +1,5 @@
 def adding_doubling_solver(Inputs):
-    
+
     """
     This script is one of the two optional radiativ transfer solvers available in this
     package. This script deals with the adding-doubling method as translated from
@@ -7,14 +7,9 @@ def adding_doubling_solver(Inputs):
     any use of this adding-doubling script should cite Chloe's paper.
 
     This is the appropriate solver for any configuration where solid ice layers and
-    fresnel reflection
-    are included.
+    fresnel reflection are included.
 
     """
-
-    import matplotlib.pyplot as plt
-    plt.figure(1)
-    plt.plot(Inputs.Fs)
 
     import numpy as np
 
@@ -99,14 +94,18 @@ def adding_doubling_solver(Inputs):
     n_real = np.zeros(shape=480)
 
     # set the underlying ground albedo
-    rupdir[:, Inputs.nbr_lyr] = Inputs.R_sfc  # reflectivity to direct radiation for layers below
-    rupdif[:, Inputs.nbr_lyr] = Inputs.R_sfc  # reflectivity to diffuse radiation for layers below
+    rupdir[
+        :, Inputs.nbr_lyr
+    ] = Inputs.R_sfc  # reflectivity to direct radiation for layers below
+    rupdif[
+        :, Inputs.nbr_lyr
+    ] = Inputs.R_sfc  # reflectivity to diffuse radiation for layers below
 
-    # if there are non zeros in layer type, grab the index of the first fresnel layer
-    # if there are non-zeros in layer type, load in the precalculated diffuse fresnel
+    # if there ones in layer type, grab the index of the first fresnel layer
+    # if there ones in layer type, load in the precalculated diffuse fresnel
     # reflection
     # (precalculated as large no. of gaussian points required for convergence)
-    if np.sum(Inputs.layer_type) > 0:
+    if np.sum(np.array(Inputs.layer_type) == 1) > 0:
 
         lyrfrsnl = Inputs.layer_type.index(1)
 
@@ -120,15 +119,20 @@ def adding_doubling_solver(Inputs):
         # raise error if there are no solid ice layers
         #  - in this case use the Toon solver instead!
         if Inputs.verbosity == 1:
-            print(
-                "There are no ice layers in this model configuration\
-                  - suggest adding a solid ice layer or using faster Toon method"
-            )
+            print("There are no fresnel layers in this model configuration")
 
     mu0 = Inputs.mu_not * np.ones(480)  # cosine of beam angle is equal to incident beam
     # ice-adjusted real refractive index
-    temp1 = Inputs.refidx_re**2 - Inputs.refidx_im**2 + np.sin(np.arccos(Inputs.mu_not)) ** 2
-    temp2 = Inputs.refidx_re**2 - Inputs.refidx_im**2 - np.sin(np.arccos(Inputs.mu_not)) ** 2
+    temp1 = (
+        Inputs.refidx_re**2
+        - Inputs.refidx_im**2
+        + np.sin(np.arccos(Inputs.mu_not)) ** 2
+    )
+    temp2 = (
+        Inputs.refidx_re**2
+        - Inputs.refidx_im**2
+        - np.sin(np.arccos(Inputs.mu_not)) ** 2
+    )
     n_real = (np.sqrt(2) / 2) * (
         temp1 + (temp2**2 + 4 * Inputs.refidx_re**2 * Inputs.refidx_im**2) ** 0.5
     ) ** 0.5
@@ -146,7 +150,6 @@ def adding_doubling_solver(Inputs):
     # proceed down one layer at a time: if the total transmission to
     # the interface just above a given layer is less than trmin, then no
     # Delta-Eddington computation for that layer is done.
-
 
     for lyr in np.arange(0, Inputs.nbr_lyr, 1):  # loop through layers
 
@@ -197,7 +200,7 @@ def adding_doubling_solver(Inputs):
 
         # evaluate rdir, tdir for direct beam
         trnlay[:, lyr] = np.maximum(
-            np.ones(480)*exp_min, np.exp(-ts / mu0n)
+            np.ones(480) * exp_min, np.exp(-ts / mu0n)
         )  # transmission from TOA to interface
 
         #  Eq. 50: Briegleb and Light 2007  alpha and gamma for direct radiation
@@ -274,8 +277,10 @@ def adding_doubling_solver(Inputs):
         for wl in np.arange(0, Inputs.nbr_wvl, 1):
 
             if lyr == lyrfrsnl:
-                
-                refindx = Inputs.refidx_re + 1j * Inputs.refidx_im  # np.complex(Inputs.refidx_re,Inputs.refidx_im)
+
+                refindx = (
+                    Inputs.refidx_re + 1j * Inputs.refidx_im
+                )  # np.complex(Inputs.refidx_re,Inputs.refidx_im)
                 critical_angle = np.arcsin(refindx)
 
                 if np.arccos(Inputs.mu_not) < critical_angle[wl]:
@@ -308,7 +313,6 @@ def adding_doubling_solver(Inputs):
                 else:  # in this case, total internal reflection occurs
                     Tf_dir_a = 0
                     Rf_dir_a = 1
-
 
                 # precalculated diffuse reflectivities and transmissivities
                 # for incident radiation above and below fresnel layer, using
@@ -398,7 +402,6 @@ def adding_doubling_solver(Inputs):
 
         # Eq. 51  Briegleb and Light 2007
 
-
         trndir[:, lyr + 1] = (
             trndir[:, lyr] * trnlay[:, lyr]
         )  # solar beam transmission from top
@@ -441,7 +444,6 @@ def adding_doubling_solver(Inputs):
     # !                lyr+1
     # !       ---------------------
 
-    
     for lyr in np.arange(
         Inputs.nbr_lyr - 1, -1, -1
     ):  # starts at the bottom and works its way up to the top layer
@@ -469,12 +471,10 @@ def adding_doubling_solver(Inputs):
             rdif_a[:, lyr]
             + tdif_a[:, lyr] * rupdif[:, lyr + 1] * refkp1 * tdif_b[:, lyr]
         )
-    
 
     # fluxes at interface
 
     for lyr in np.arange(0, Inputs.nbr_lyr + 1, 1):
-        
 
         # Eq. 52  Briegleb and Light 2007
         # interface scattering
@@ -527,12 +527,16 @@ def adding_doubling_solver(Inputs):
 
     # ----- Calculate fluxes ----
 
-
-
     for n in np.arange(0, Inputs.nbr_lyr + 1, 1):
-        
-        F_up[:, n] = fdirup[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi) + fdifup[:, n] * Inputs.Fd
-        F_dwn[:, n] = fdirdn[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi) + fdifdn[:, n] * Inputs.Fd
+
+        F_up[:, n] = (
+            fdirup[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi)
+            + fdifup[:, n] * Inputs.Fd
+        )
+        F_dwn[:, n] = (
+            fdirdn[:, n] * (Inputs.Fs * Inputs.mu_not * np.pi)
+            + fdifdn[:, n] * Inputs.Fd
+        )
 
     F_net = F_up - F_dwn
 
@@ -574,13 +578,17 @@ def adding_doubling_solver(Inputs):
     F_abs_nir_btm = np.sum(F_btm_net[vis_max_idx : nir_max_idx + 1], axis=0)
 
     # Radiative heating rate:
-    heat_rt = F_abs_slr / (Inputs.L_snw * 2117)  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
+    heat_rt = F_abs_slr / (
+        Inputs.L_snw * 2117
+    )  # [K/s] 2117 = specific heat ice (J kg-1 K-1)
     heat_rt = heat_rt * 3600  # [K/hr]
 
     # Energy conservation check:
     # Incident direct+diffuse radiation equals (absorbed+transmitted+bulk_reflected)
     energy_sum = (
-        (Inputs.mu_not * np.pi * Inputs.Fs) + Inputs.Fd - (np.sum(F_abs, axis=1) + F_btm_net + F_top_pls)
+        (Inputs.mu_not * np.pi * Inputs.Fs)
+        + Inputs.Fd
+        - (np.sum(F_abs, axis=1) + F_btm_net + F_top_pls)
     )
 
     energy_conservation_error = sum(abs(energy_sum))
@@ -637,4 +645,4 @@ def adding_doubling_solver(Inputs):
     # abs_ground_nir  = F_abs_nir_btm
     #   near-IR absorption by underlying substrate [W/m2]
 
-    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt
+    return Inputs.wvl, albedo, alb_bb, alb_vis, alb_nir, F_abs_slr, heat_rt, F_up, F_dwn
