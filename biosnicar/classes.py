@@ -22,6 +22,7 @@ user changes attributes of Ice or Illumination classes.
 import math
 import os
 import numpy as np
+import pandas as pd
 import xarray as xr
 import yaml
 
@@ -45,9 +46,8 @@ class Impurity:
 
     """
 
-    def __init__(self, file, coated, cfactor, unit, name, conc):
+    def __init__(self, file, coated, unit, name, conc):
         self.name = name
-        self.cfactor = cfactor
         self.unit = unit
         self.conc = conc
         self.file = file
@@ -58,7 +58,7 @@ class Impurity:
 
         if coated:
             mac_stub = "ext_cff_mss_ncl"
-        elif name == "ga":
+        elif (name == "ga") or (name == "sa"):
             mac_stub = "ext_xsc"
         else:
             mac_stub = "ext_cff_mss"
@@ -114,8 +114,16 @@ class Ice:
         self.shp_fctr = inputs["ICE"]["SHP_FCTR"]
         self.ar = inputs["ICE"]["AR"]
         self.nbr_lyr = len(self.dz)
-
+        self.lwc = inputs["ICE"]["LWC"]
+        self.lwc_pct_bbl = inputs["ICE"]["LWC_PCT_BBL"]
+        self.ref_idx_im_water = pd.read_csv(
+            os.getcwd() + "/" + inputs["PATHS"]["RI_ICE"] + 
+            'refractive_index_water_273K_Rowe2020.csv'
+        ).k.values
+    
         self.calculate_refractive_index(input_file)
+        self.mie_solver = inputs["ICE"]["MIE_SOLVER"]
+        
 
     def calculate_refractive_index(self, input_file):
         """Calculates ice refractive index from initialized class attributes.
@@ -295,12 +303,14 @@ class ModelConfig:
         self.dir_base = str(os.getcwd() + "/")
         self.dir_wvl = inputs["PATHS"]["WVL"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
+        self.sphere_water_path = inputs["PATHS"]["SPHERE_WATER"]
         self.fn_ice = inputs["PATHS"]["FN_ICE"]
         self.fn_water = inputs["PATHS"]["FN_WATER"]
         self.hex_ice_path = inputs["PATHS"]["HEX_ICE"]
         self.bubbly_ice_path = inputs["PATHS"]["BUBBLY_ICE"]
         self.ri_ice_path = inputs["PATHS"]["RI_ICE"]
         self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
+        self.savefigpath = inputs["PLOT"]["SAVEPATH"]
         self.wavelengths = np.arange(0.205, 4.999, 0.01)
         self.nbr_wvl = len(self.wavelengths)
         self.vis_max_idx = inputs["RTM"]["VIS_MAX_IDX"]

@@ -489,7 +489,7 @@ def define_constants_arrays(tau, g, ssa, illumination, ice, model_config):
     # first fresnel layer and load in the precalculated diffuse fresnel
     # reflection
     # (precalculated as large no. of gaussian points required for convergence)
-    if np.sum(ice.layer_type) > 0:
+    if np.sum(ice.layer_type == 1) > 0:
         lyrfrsnl = ice.layer_type.index(1)
 
     else:

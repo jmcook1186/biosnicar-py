@@ -25,7 +25,6 @@ def setup_axes(plot_config):
 
 def plot_albedo(plot_config, model_config, albedo):
     rc = setup_axes(plot_config)
-    plt.style.use("seaborn")
     sns.set_style("white")
     plt.rcParams.update(rc)
     wvl = model_config.wavelengths
@@ -39,7 +38,7 @@ def plot_albedo(plot_config, model_config, albedo):
     )
 
     if plot_config.save:
-        plt.savefig(str(savepath + "spectral_albedo.png"))
+        plt.savefig(str(model_config.savefigpath + "spectral_albedo.png"))
 
     plt.show()
 

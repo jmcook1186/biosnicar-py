@@ -26,16 +26,22 @@ ICE:
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [2000, 2000]  # effective grain or bubble radius
   WATER: [0, 0]  # radius of optional liquid water coating
+  LWC: [0, 0] # LWC content in snow/ice (not using coated spheres, see the doc)
+  LWC_PCT_BBL: 0 # % of LWC in ice present as closed pores vs matrix water
   HEX_SIDE: [ 10000, 10000]
   HEX_LENGTH: [10000, 10000]
   SHP_FCTR: [ 0, 0]
   AR: [0, 0]
+  MIE_SOLVER: 0 # 0 for Wiscome 1980, 1 for Bohren Huffman 1983
 
 PATHS:
   WVL: "Data/OP_data/wavelengths.csv"
-  SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
+  SPHERE_ICE_W80:  "Data/OP_data/480band/ice_spherical_grains/"
+  SPHERE_ICE_BH83:  "Data/OP_data/480band/ice_spherical_grains/"
+  SPHERE_WATER:  "Data/OP_data/480band/water_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
-  BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
+  BUBBLY_ICE_W80: "Data/OP_data/480band/bubbly_ice_files/"
+  BUBBLY_ICE_BH83: "Data/OP_data/480band/bubbly_ice_files/"
   RI_ICE: "Data/OP_data/480band/"
   OP_DIR_STUBS: ["ice_Wrn84/ice_Wrn84_", "ice_Wrn08/ice_Wrn08_", "ice_Pic16/ice_Pic16_"]
   SFC: "/Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
@@ -55,19 +61,17 @@ IMPURITIES:
   
   SA:
     NAME: "sa"
-    FILE: "SA_Chevrollier2022_r8.99.nc"
-    CFACTOR: 1
+    FILE: "snow_algae_empirical_Chevrollier2023.nc"
     COATED: False
     UNIT: 1
-    CONC: [0 ,0]  
+    CONC: [40000 ,0]  
 
   GA:
     NAME: "ga"
-    FILE: "ice_algae_empirical.nc"
-    CFACTOR: 1
+    FILE: "ice_algae_empirical_Chevrollier2023.nc"
     COATED: False
     UNIT: 1
-    CONC: [40000 ,0]
+    CONC: [0 ,0]
 
 PLOT:
     FIG_SIZE: (8,6)
@@ -83,6 +87,7 @@ PLOT:
     XTICK_BTM: True
     YTICK_LEFT: True
     SAVE: False
+    SAVEPATH: ""
 
 BIOOPTICAL: 
     WET_DENSITY: 1060
