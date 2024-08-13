@@ -19,7 +19,7 @@ RTM:
 
 ICE:
   DZ: [0.02,0.146]  # thickness of each vertical layer (unit : m)
-  LAYER_TYPE: [1,1]  # Fresnel layers (set all to 0 if toon : True)
+  LAYER_TYPE: [3,1]  # 0: ice spheres, 1: solid ice w/frsnl, 3: w/out frsnl, 4: interspersed water/ice spheres
   CDOM: [0, 0]  # Only for layer type :: 1
   RHO: [700, 700]  # density of each layer (unit : kg m-3)
   RF: 2
@@ -27,21 +27,20 @@ ICE:
   RDS: [2000, 2000]  # effective grain or bubble radius
   WATER: [0, 0]  # radius of optional liquid water coating
   LWC: [0, 0] # LWC content in snow/ice (not using coated spheres, see the doc)
-  LWC_PCT_BBL: 0 # % of LWC in ice present as closed pores vs matrix water
-  HEX_SIDE: [ 10000, 10000]
+  LWC_PCT_BBL: 0.5 # % of LWC in ice present as closed pores vs matrix water
+  HEX_SIDE: [10000, 10000]
   HEX_LENGTH: [10000, 10000]
   SHP_FCTR: [ 0, 0]
   AR: [0, 0]
-  MIE_SOLVER: 0 # 0 for Wiscome 1980, 1 for Bohren Huffman 1983
 
 PATHS:
   WVL: "Data/OP_data/wavelengths.csv"
-  SPHERE_ICE_W80:  "Data/OP_data/480band/ice_spherical_grains/"
-  SPHERE_ICE_BH83:  "Data/OP_data/480band/ice_spherical_grains/"
+  # SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
+  SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains_BH83/"
   SPHERE_WATER:  "Data/OP_data/480band/water_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
-  BUBBLY_ICE_W80: "Data/OP_data/480band/bubbly_ice_files/"
-  BUBBLY_ICE_BH83: "Data/OP_data/480band/bubbly_ice_files/"
+  # BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
+  BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files_BH83/"
   RI_ICE: "Data/OP_data/480band/"
   OP_DIR_STUBS: ["ice_Wrn84/ice_Wrn84_", "ice_Wrn08/ice_Wrn08_", "ice_Pic16/ice_Pic16_"]
   SFC: "/Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
