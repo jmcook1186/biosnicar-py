@@ -122,7 +122,6 @@ class Ice:
         ).k.values
     
         self.calculate_refractive_index(input_file)
-        self.mie_solver = inputs["ICE"]["MIE_SOLVER"]
         
 
     def calculate_refractive_index(self, input_file):

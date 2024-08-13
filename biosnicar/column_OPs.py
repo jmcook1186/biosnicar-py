@@ -147,8 +147,8 @@ def get_layer_OPs(ice, model_config):
                 ext_cff_vlm_water = file_water["ext_cff_vlm"].values
                 g_water = file_water["asm_prm"].values
 
-                vlm_frac_lw_in_ice = ice.lwc[i] * (1 - ice.lwc_pct_bubbles)
-                vlm_frac_lw_in_bbl = ice.lwc[i] * ice.lwc_pct_bubbles
+                vlm_frac_lw_in_ice = ice.lwc[i] * (1 - ice.lwc_pct_bbl)
+                vlm_frac_lw_in_bbl = ice.lwc[i] * ice.lwc_pct_bbl
 
                 # neglecting air absorption:
                 abs_cff_mss_ice[:] = (vlm_frac_ice * 917 / ice.rho[i]) * (
