@@ -64,6 +64,12 @@ def test_AD_solver(new_benchmark_ad, input_file):
             plot_config,
             impurities,
         ) = setup_snicar("default")
+        
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -104,6 +110,8 @@ def test_AD_solver(new_benchmark_ad, input_file):
                                 ice.nbr_lyr = 5
                                 ice.layer_type = [layer_type] * len(ice.dz)
                                 ice.rho = [density] * len(ice.dz)
+                                ice.lwc = [0] * len(ice.dz)
+                                ice.lwc_pct_bbl = [0] * len(ice.dz)
                                 ice.rds = [reff] * len(ice.dz)
                                 illumination.solzen = zen
                                 illumination.calculate_irradiance()
@@ -177,6 +185,12 @@ def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
             plot_config,
             impurities,
         ) = setup_snicar("default")
+        
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -219,6 +233,8 @@ def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
                                 ice.nbr_lyr = 5
                                 ice.layer_type = [layer_type] * len(ice.dz)
                                 ice.rho = [density] * len(ice.dz)
+                                ice.lwc = [0] * len(ice.dz)
+                                ice.lwc_pct_bbl = [0] * len(ice.dz)
                                 ice.rds = [reff] * len(ice.dz)
                                 illumination.solzen = zen
                                 illumination.calculate_irradiance()
@@ -388,6 +404,8 @@ def match_matlab_config(ice, illumination, rt_config, model_config, input_file):
     ice.layer_type = [0] * nbr_lyr
     ice.rds = [ice.rds[0]] * nbr_lyr
     ice.rho = [ice.rho[0]] * nbr_lyr
+    ice.lwc = [0] * nbr_lyr
+    ice.lwc_pct_bbl = [0] * nbr_lyr
     ice.dz = [0.1] * nbr_lyr
 
     illumination.incoming = 4
@@ -405,7 +423,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config, input_file):
     impurities = []
 
     conc = [0] * nbr_lyr
-    impurity0 = Impurity("bc_ChCB_rn40_dns1270.nc", False, 1, 0, "bc", conc)
+    impurity0 = Impurity("bc_ChCB_rn40_dns1270.nc", False, 0, "bc", conc)
     impurities.append(impurity0)
 
     assert (impurities[0].name == "bc") and (
@@ -542,6 +560,12 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
             plot_config,
             impurities,
         ) = setup_snicar("default")
+        
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -574,10 +598,9 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
 @pytest.mark.parametrize("rds", [1000, 5000, 10000])
 @pytest.mark.parametrize("rho", [400, 600, 800])
 @pytest.mark.parametrize("zen", [50, 60, 70])
-@pytest.mark.parametrize("cfactor", [1, 30])
 @pytest.mark.parametrize("dust", [0, 50000])
 @pytest.mark.parametrize("algae", [0, 50000])
-def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
+def test_var_fuzzer(rds, rho, zen, dust, algae, fuzz, input_file):
     """Checks model runs correctly with range of input value combinations.
 
     Fuzzer checks that model functions correctly across range of configurations.
@@ -591,7 +614,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
         rds: effective grain radius (um) of ice grains (lyr_typ==0) or air bubbles (lyr_typ==1)
         rho: density of ice layer (kg/m3)
         zen: zenith angle of direct beam (degrees from vertical)
-        cfactor: concentrating factor used to convert field-measured to modelled LAP concentration
         dust: concentration of mineral dust in each layer of the model (ppb)
         algae: concentration of glacir algae in each layer of the model (ppb)
 
@@ -611,6 +633,12 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
             plot_config,
             impurities,
         ) = setup_snicar("default")
+        
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
         )
@@ -622,7 +650,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
         impurity0 = Impurity(
             "mie_sot_ChC90_dns_1317.nc",
             False,
-            cfactor,
             0,
             "bc",
             conc1,
@@ -634,7 +661,6 @@ def test_var_fuzzer(rds, rho, zen, cfactor, dust, algae, fuzz, input_file):
         impurity1 = Impurity(
             "dust_balkanski_central_size1.nc",
             False,
-            cfactor,
             0,
             "dust1",
             conc2,

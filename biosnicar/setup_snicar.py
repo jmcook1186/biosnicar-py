@@ -99,11 +99,10 @@ def build_impurities_array(input_file):
     for i, id in enumerate(inputs["IMPURITIES"]):
         name = inputs["IMPURITIES"][id]["NAME"]
         file = inputs["IMPURITIES"][id]["FILE"]
-        cfactor = inputs["IMPURITIES"][id]["CFACTOR"]
         coated = inputs["IMPURITIES"][id]["COATED"]
         unit = inputs["IMPURITIES"][id]["UNIT"]
         conc = inputs["IMPURITIES"][id]["CONC"]
-        impurities.append(Impurity(file, coated, cfactor, unit, name, conc))
+        impurities.append(Impurity(file, coated, unit, name, conc))
 
     return impurities
 

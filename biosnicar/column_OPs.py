@@ -93,9 +93,11 @@ def get_layer_OPs(ice, model_config):
                     # to very small biases (<3%)
 
                     if (ice.shp[i] > 0) & (ice.shp[i] < 4):
-                        g_snw = correct_for_asphericity(ice, model_config, g_snw, i)
+                        g_snw = correct_for_asphericity(ice, g_snw, ssa_snw, i, model_config)
 
-        else:  # solid ice layer (ice.layer_type == 1)
+        # solid ice layer with air/water inclusions
+        
+        elif (ice.layer_type[i] == 1) or (ice.layer_type[i] == 3):
 
             if ice.cdom[i]:
                 cdom = pd.read_csv(
@@ -107,20 +109,121 @@ def get_layer_OPs(ice, model_config):
                 ice.ref_idx_im[3:54] = np.fmax(
                     ice.ref_idx_im[3:54], cdom_ref_idx_im_rescaled
                 )
+                
+            # neglecting air mass:
+            vlm_frac_ice = (ice.rho[i] - ice.lwc[i] * 1000) / 917
+            vlm_frac_air = 1 - ice.lwc[i] - vlm_frac_ice
 
-            rd = f"{ice.rds[i]}".rjust(4, "0")
-            file_ice = str(model_config.bubbly_ice_path + "bbl_{}.nc").format(rd)
-            file = xr.open_dataset(file_ice)
-            sca_cff_vlm = file["sca_cff_vlm"].values
-            g_snw[i, :] = file["asm_prm"].values
-            abs_cff_mss_ice[:] = (
-                (4 * np.pi * ice.ref_idx_im) / (model_config.wavelengths * 1e-6)
-            ) / 917
-            vlm_frac_air = (917 - ice.rho[i]) / 917
-            mac_snw[i, :] = (
-                (sca_cff_vlm * vlm_frac_air) / ice.rho[i]
-            ) + abs_cff_mss_ice
-            ssa_snw[i, :] = ((sca_cff_vlm * vlm_frac_air) / ice.rho[i]) / mac_snw[i, :]
+            # get effective radius
+            rd = f"{ice.rds[i]}"
+            rd = rd.rjust(4, "0")
+            file_ice_path = str(model_config.bubbly_ice_path + "bbl_{}.nc").format(rd)
+            file_ice = xr.open_dataset(file_ice_path)
+            
+            # air bbl ssps
+            sca_cff_vlm_air_bbl = file_ice["sca_cff_vlm"].values
+            g_air_bbl = file_ice["asm_prm"].values
+
+            if ice.lwc[i] == 0:
+            
+                abs_cff_mss_ice[:] = ((4 * np.pi * ice.ref_idx_im) / (model_config.wavelengths * 1e-6)) / 917
+                mac_snw[i, :] = (
+                    (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
+                ) + abs_cff_mss_ice
+
+                ssa_snw[i, :] = (
+                    (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
+                ) / mac_snw[i, :]
+                
+                g_snw[i, :] = g_air_bbl
+            
+            elif ice.lwc[i] != 0:
+
+                # water bubbles ssps
+                file_water = xr.open_dataset(
+                    str(model_config.bubbly_ice_path + "bbl_water_{}.nc").format(rd)
+                )
+                sca_cff_vlm_water = file_water["sca_cff_vlm"].values
+                ext_cff_vlm_water = file_water["ext_cff_vlm"].values
+                g_water = file_water["asm_prm"].values
+
+                vlm_frac_lw_in_ice = ice.lwc[i] * (1 - ice.lwc_pct_bbl)
+                vlm_frac_lw_in_bbl = ice.lwc[i] * ice.lwc_pct_bbl
+
+                # neglecting air absorption:
+                abs_cff_mss_ice[:] = (vlm_frac_ice * 917 / ice.rho[i]) * (
+                    4 * np.pi * ice.ref_idx_im / (model_config.wavelengths * 1e-6)
+                ) / 917 + (vlm_frac_lw_in_ice * 1000 / ice.rho[i]) * (
+                    4 * np.pi * ice.ref_idx_im_water / (model_config.wavelengths * 1e-6)
+                ) / 1000
+
+                # volume weighted assymetry parameter
+                g_snw[i, :] = (g_air_bbl * vlm_frac_air + g_water * vlm_frac_lw_in_bbl) / (
+                    vlm_frac_lw_in_bbl + vlm_frac_air
+                )
+
+                # volume weighted extinction coefficient
+                mac_snw[i, :] = (
+                    (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
+                    + (ext_cff_vlm_water * vlm_frac_lw_in_bbl) / ice.rho[i]
+                ) + abs_cff_mss_ice
+
+                # volume weighted scattering coefficient
+                ssa_snw[i, :] = (
+                    (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
+                    + (sca_cff_vlm_water * vlm_frac_lw_in_bbl) / ice.rho[i]
+                ) / mac_snw[i, :]
+                
+                
+        # granular layer with mixed ice and water spheres
+        elif ice.layer_type[i] == 4:
+
+            # neglecting air mass:
+            vlm_frac_ice = (ice.rho[i] - ice.lwc[i] * 1000) / 917
+            vlm_frac_air = 1 - ice.lwc[i] - vlm_frac_ice
+
+            # get effective radius
+            rd = f"{ice.rds[i]}"
+            rd = rd.rjust(4, "0")
+            ssps_ice = xr.open_dataset(
+                str(
+                    model_config.sphere_ice_path
+                    + ice.op_dir
+                    + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
+                )
+            )
+            ssps_water = xr.open_dataset(
+                str(
+                    model_config.sphere_water_path
+                    + "water_grain_{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
+                )
+            )
+
+            g = (
+                ssps_water["asm_prm"].values * ice.lwc[i]
+                + ssps_ice["asm_prm"].values * vlm_frac_ice
+            ) / (ice.lwc[i] + vlm_frac_ice)
+
+            g_snw[i, :] = g
+
+            ext_cff_mss = (
+                ssps_water["ext_cff_vlm"].values * ice.lwc[i]
+                + ssps_ice["ext_cff_vlm"].values * vlm_frac_ice
+            ) / (ice.rho[i])
+
+            mac_snw[i, :] = ext_cff_mss
+
+            ssa = (
+                (
+                    ssps_water["sca_cff_vlm"].values * ice.lwc[i]
+                    + ssps_ice["sca_cff_vlm"].values * vlm_frac_ice
+                )
+                / ice.rho[i]
+                / mac_snw[i, :]
+            )
+
+            ssa_snw[i, :] = ssa
+
 
     return ssa_snw, g_snw, mac_snw
 
@@ -176,7 +279,7 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
     return ssa_snw, g_snw, mac_snw
 
 
-def correct_for_asphericity(ice, g_snw, i):
+def correct_for_asphericity(ice, g_snw, ssa_snw, i, model_config):
     """Adjusts asymmetry parameter for aspherical grains.
 
     Implements work from Fu et al. 2007 and He et al. 2017.
@@ -444,8 +547,8 @@ def correct_for_asphericity(ice, g_snw, i):
     # interpolated into 480-bands of SNICAR
     # shape-preserving piecewise interpolation
     # into 480-bands
-    g_Cg_intp = pchip(g_wvl_center, g_snw_cg_tmp)(wvl)
-    gg_f07_intp = pchip(g_wvl_center, gg_snw_F07_tmp)(wvl)
+    g_Cg_intp = pchip(g_wvl_center, g_snw_cg_tmp)(model_config.wavelengths)
+    gg_f07_intp = pchip(g_wvl_center, gg_snw_F07_tmp)(model_config.wavelengths)
     g_snw_F07 = (
         gg_f07_intp + (1.0 - gg_f07_intp) / ssa_snw[i, :] / 2
     )  # Eq.2.2 in Fu (2007)
@@ -471,10 +574,6 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
     specific optical properties for that impurity. Its concentration is generally
     provided in ppb, but concentration of algae can also be given in cells/mL.
 
-    There is also a cfactor attribute that is used as a multiplier in this
-    function. This is a "concentrating factor" that can be applied to account
-    for the coarse resolution of field sampling compared to the fine resolution
-    of the model.
 
     Args:
         ssa_snw: single scattering albedo of eahc layer
@@ -517,12 +616,12 @@ def mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config):
 
             mss_aer[0 : ice.nbr_lyr, i] = (
                 np.array(impurity.conc) / 917 * 10**6
-            ) * impurity.cfactor
+            ) 
 
         else:
             mss_aer[0 : ice.nbr_lyr, i] = (
                 np.array(impurity.conc) * 1e-9
-            ) * impurity.cfactor
+            ) 
 
     # for each layer, the layer mass (L) is density * layer thickness
     # for each layer the optical ice.depth is
