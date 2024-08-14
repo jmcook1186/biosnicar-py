@@ -66,8 +66,9 @@ def test_AD_solver(new_benchmark_ad, input_file):
         ) = setup_snicar("default")
         
         # make sure the BH83 data is used as per Matlab's version
-        model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
-        model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
         
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
@@ -185,8 +186,10 @@ def test_AD_solver_clean(new_benchmark_ad_clean, input_file):
             impurities,
         ) = setup_snicar("default")
         
-        model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
-        model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
         
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
@@ -558,8 +561,10 @@ def test_config_fuzzer(dir, aprx, inc, ref, fuzz, input_file):
             impurities,
         ) = setup_snicar("default")
         
-        model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
-        model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
         
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
@@ -629,8 +634,10 @@ def test_var_fuzzer(rds, rho, zen, dust, algae, fuzz, input_file):
             impurities,
         ) = setup_snicar("default")
         
-        model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
-        model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
+        # make sure the BH83 data is used as per Matlab's version
+        # (to add once new OPs are available)
+        # model_config.sphere_ice_path = "Data/OP_data/480band/ice_spherical_grains_BH83/"
+        # model_config.bubbly_ice_path = "Data/OP_data/480band/bubbly_ice_files_BH83/"
         
         ice, illumination, impurities, rt_config, model_config = match_matlab_config(
             ice, illumination, rt_config, model_config, input_file
