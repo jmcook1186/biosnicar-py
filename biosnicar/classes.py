@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import yaml
-
+import biosnicar
 
 class Impurity:
     """Light absorbing impurity.
@@ -53,7 +53,8 @@ class Impurity:
         self.file = file
 
         self.impurity_properties = xr.open_dataset(
-            str(os.getcwd() + "/" + "/Data/OP_data/480band/lap/" + file)
+            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
+                 + "/Data/OP_data/480band/lap/" + file)
         )
 
         if coated:
@@ -103,7 +104,8 @@ class Ice:
         self.cdom = inputs["ICE"]["CDOM"]
         self.rho = inputs["ICE"]["RHO"]
         self.sfc = np.genfromtxt(
-            os.getcwd() + "/" + inputs["PATHS"]["SFC"], delimiter="csv"
+            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
+                 + "/" + inputs["PATHS"]["SFC"]), delimiter="csv"
         )
         self.rf = inputs["ICE"]["RF"]
         self.shp = inputs["ICE"]["SHP"]
@@ -117,9 +119,10 @@ class Ice:
         self.lwc = inputs["ICE"]["LWC"]
         self.lwc_pct_bbl = inputs["ICE"]["LWC_PCT_BBL"]
         self.ref_idx_im_water = pd.read_csv(
-            os.getcwd() + "/" + inputs["PATHS"]["RI_ICE"] + 
+            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
+                 + "/" + inputs["PATHS"]["RI_ICE"] + 
             'refractive_index_water_273K_Rowe2020.csv'
-        ).k.values
+        )).k.values
     
         self.calculate_refractive_index(input_file)
         
@@ -149,10 +152,13 @@ class Ice:
         with open(input_file, "r") as ymlfile:
             inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
-        refidx_file = xr.open_dataset(inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc")
+        refidx_file = xr.open_dataset(
+            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
+                 + "/" + inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc"))
         fresnel_diffuse_file = xr.open_dataset(
-            inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc"
-        )
+            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
+                 + "/" +
+            inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc"))
 
         rf = inputs["ICE"]["RF"]
         op_dir_stub = inputs["PATHS"]["OP_DIR_STUBS"][rf]
@@ -190,7 +196,8 @@ class Illumination:
         self.direct = inputs["RTM"]["DIRECT"]
         self.solzen = inputs["RTM"]["SOLZEN"]
         self.incoming = inputs["RTM"]["INCOMING"]
-        self.flx_dir = os.getcwd() + "/" + inputs["PATHS"]["FLX_DIR"]
+        self.flx_dir = str(os.path.dirname(os.path.dirname(biosnicar.__file__))
+                 + "/" + inputs["PATHS"]["FLX_DIR"])
         self.stubs = inputs["RTM"]["ILLUMINATION_FILE_STUBS"]
         self.nbr_wvl = inputs["RTM"]["NBR_WVL"]
 
@@ -299,7 +306,7 @@ class ModelConfig:
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
         self.poly_order = inputs["CTRL"]["POLY_ORDER"]
-        self.dir_base = str(os.getcwd() + "/")
+        self.dir_base = str(os.path.dirname(os.path.dirname(biosnicar.__file__)))+ "/"
         self.dir_wvl = inputs["PATHS"]["WVL"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.sphere_water_path = inputs["PATHS"]["SPHERE_WATER"]
