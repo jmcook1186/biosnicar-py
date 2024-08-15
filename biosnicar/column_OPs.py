@@ -117,7 +117,9 @@ def get_layer_OPs(ice, model_config):
             # get effective radius
             rd = f"{ice.rds[i]}"
             rd = rd.rjust(4, "0")
-            file_ice_path = str(model_config.bubbly_ice_path + "bbl_{}.nc").format(rd)
+            file_ice_path = str(model_config.dir_base +
+                                model_config.bubbly_ice_path 
+                                + "bbl_{}.nc").format(rd)
             file_ice = xr.open_dataset(file_ice_path)
             
             # air bbl ssps
@@ -141,7 +143,7 @@ def get_layer_OPs(ice, model_config):
 
                 # water bubbles ssps
                 file_water = xr.open_dataset(
-                    str(model_config.bubbly_ice_path + "bbl_water_{}.nc").format(rd)
+                    str(model_config.dir_base + model_config.bubbly_ice_path + "bbl_water_{}.nc").format(rd)
                 )
                 sca_cff_vlm_water = file_water["sca_cff_vlm"].values
                 ext_cff_vlm_water = file_water["ext_cff_vlm"].values
@@ -186,14 +188,14 @@ def get_layer_OPs(ice, model_config):
             rd = f"{ice.rds[i]}"
             rd = rd.rjust(4, "0")
             ssps_ice = xr.open_dataset(
-                str(
+                str(model_config.dir_base +
                     model_config.sphere_ice_path
                     + ice.op_dir
                     + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
                 )
             )
             ssps_water = xr.open_dataset(
-                str(
+                str(model_config.dir_base +
                     model_config.sphere_water_path
                     + "water_grain_{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
                 )
