@@ -1,5 +1,5 @@
 CTRL:
-  SMOOTH: True
+  SMOOTH: False 
   WINDOW_SIZE: 9
   POLY_ORDER: 3
 
@@ -15,7 +15,7 @@ RTM:
   NIR_MAX_IDX: 480
 
 ICE:
-  DZ: [0.001,0.2]  # thickness of each vertical layer (unit : m)
+  DZ: [0.02,1]  # thickness of each vertical layer (unit : m)
   LAYER_TYPE: [1,1]  # Fresnel layers (set all to 0 if toon : True)
   CDOM: [0, 0]  # Only for layer type :: 1
   RHO: [500, 500]  # density of each layer (unit : kg m-3)
@@ -23,7 +23,7 @@ ICE:
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [12500, 12500]  # effective grain or bubble radius
   WATER_COATING: [0, 0]  # radius of optional liquid water coating
-  LWC: [0, 0] # LWC content in snow/ice (not using coated spheres, see the doc)
+  LWC: [0.1, 0.1] # LWC content in snow/ice (not using coated spheres, see the doc)
   LWC_PCT_BBL: 0.5 # % of LWC in ice present as closed pores vs matrix water
   HEX_SIDE: [ 10000, 10000]
   HEX_LENGTH: [10000, 10000]
