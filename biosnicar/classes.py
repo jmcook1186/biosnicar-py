@@ -110,7 +110,7 @@ class Ice:
         self.rf = inputs["ICE"]["RF"]
         self.shp = inputs["ICE"]["SHP"]
         self.rds = inputs["ICE"]["RDS"]
-        self.water = inputs["ICE"]["WATER"]
+        self.water = inputs["ICE"]["WATER_COATING"]
         self.hex_side = inputs["ICE"]["HEX_SIDE"]
         self.hex_length = inputs["ICE"]["HEX_LENGTH"]
         self.shp_fctr = inputs["ICE"]["SHP_FCTR"]
@@ -198,7 +198,7 @@ class Illumination:
         self.incoming = inputs["RTM"]["INCOMING"]
         self.flx_dir = str(os.path.dirname(os.path.dirname(biosnicar.__file__))
                  + "/" + inputs["PATHS"]["FLX_DIR"])
-        self.stubs = inputs["RTM"]["ILLUMINATION_FILE_STUBS"]
+        self.stubs = inputs["PATHS"]["ILLUMINATION_FILE_STUBS"]
         self.nbr_wvl = inputs["RTM"]["NBR_WVL"]
 
         self.calculate_irradiance()

@@ -11,9 +11,6 @@ RTM:
   DELTA: True
   SOLZEN: 50
   INCOMING: 0
-  ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
-                          "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
-                          "swnb_480bnd_trp"]
   VIS_MAX_IDX: 39
   NIR_MAX_IDX: 480
 
@@ -25,7 +22,7 @@ ICE:
   RF: 2
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [2000, 2000]  # effective grain or bubble radius
-  WATER: [0, 0]  # radius of optional liquid water coating
+  WATER_COATING: [0, 0]  # radius of optional liquid water coating
   LWC: [0, 0] # LWC content in snow/ice (not using coated spheres, see the doc)
   LWC_PCT_BBL: 0.5 # % of LWC in ice present as closed pores vs matrix water
   HEX_SIDE: [10000, 10000]
@@ -47,6 +44,9 @@ PATHS:
   FN_ICE: "/Data/OP_data/480band/rfidx_ice.nc"
   FN_WATER: "/Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
   FLX_DIR: "Data/OP_data/480band/fsds/"
+  ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
+                          "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
+                          "swnb_480bnd_trp"]
 
 
 IMPURITIES:
