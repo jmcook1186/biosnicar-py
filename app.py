@@ -27,9 +27,8 @@ snow ❄️ ice 🧊 and life :space_invader: albedo model (v{biosnicar.__versio
 [GitHub](https://github.com/jmcook1186/biosnicar-py)
 [Documentation](https://biosnicar.vercel.app)
 
-*Note that impurities are assumed to exist in the upper 1 mm of the ice only, as this
-approximates the observed distribution of glacier algae. To access other configurations, 
-download and run the full model as Python code instead.*
+*Note that impurities are assumed to exist in the upper 2 cm of the snow or ice only, and that the grain shape in the granular layer set up is spherical.
+To access other configurations, download and run the full model as Python code instead.*
 """
 )
 st.markdown("""---""")
@@ -50,6 +49,7 @@ radius = st.sidebar.number_input(
 )
 
 density = st.sidebar.number_input("Density (kg/m^3)", 0, 1000, 700)
+lwc = st.sidebar.number_input("Liquid water content", 0.0, 1.0, 0.01)
 
 st.sidebar.header("Impurities")
 black_carbon = st.sidebar.number_input("Black carbon conc (ppb)", 0, 1000000, 0)
@@ -65,6 +65,7 @@ def run_snicar(
     thickness: float,
     radius: int,
     density: int,
+    lwc: float,
     black_carbon: int,
     glacier_algae: int,
     snow_algae: int,
@@ -89,7 +90,7 @@ def run_snicar(
     input_file = "app_inputs.yaml"
 
     if layer == "grains":
-        layer = 0
+        layer = 4
     elif layer == "solid ice":
         layer = 1
     else:
@@ -108,9 +109,10 @@ def run_snicar(
     # load base classes from default inputs.yaml
     # then adjust for user inputs
     ice.layer_type = [layer, layer]
-    ice.dz = [0.001, thickness]
+    ice.dz = [0.02, thickness-0.02]
     ice.rds = [radius, radius]
     ice.rho = [density, density]
+    ice.lwc = [lwc, lwc]
 
     impurities[0].conc = [black_carbon, 0]
     impurities[1].conc = [snow_algae, 0]
@@ -161,6 +163,7 @@ result = run_snicar(
     thickness,
     radius,
     density,
+    lwc,
     black_carbon,
     glacier_algae,
     snow_algae,

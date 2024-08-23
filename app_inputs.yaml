@@ -1,5 +1,5 @@
 CTRL:
-  SMOOTH: True
+  SMOOTH: False 
   WINDOW_SIZE: 9
   POLY_ORDER: 3
 
@@ -11,21 +11,20 @@ RTM:
   DELTA: True
   SOLZEN: 50
   INCOMING: 0
-  ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
-                          "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
-                          "swnb_480bnd_trp"]
   VIS_MAX_IDX: 39
   NIR_MAX_IDX: 480
 
 ICE:
-  DZ: [0.001,0.2]  # thickness of each vertical layer (unit : m)
+  DZ: [0.02,1]  # thickness of each vertical layer (unit : m)
   LAYER_TYPE: [1,1]  # Fresnel layers (set all to 0 if toon : True)
   CDOM: [0, 0]  # Only for layer type :: 1
   RHO: [500, 500]  # density of each layer (unit : kg m-3)
   RF: 2
   SHP: [0, 0]  # grain shape (He et al. 2016, 2017)
   RDS: [12500, 12500]  # effective grain or bubble radius
-  WATER: [0, 0]  # radius of optional liquid water coating
+  WATER_COATING: [0, 0]  # radius of optional liquid water coating
+  LWC: [0.1, 0.1] # LWC content in snow/ice (not using coated spheres, see the doc)
+  LWC_PCT_BBL: 0.5 # % of LWC in ice present as closed pores vs matrix water
   HEX_SIDE: [ 10000, 10000]
   HEX_LENGTH: [10000, 10000]
   SHP_FCTR: [ 0, 0]
@@ -34,6 +33,7 @@ ICE:
 PATHS:
   WVL: "Data/OP_data/wavelengths.csv"
   SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
+  SPHERE_WATER:  "Data/OP_data/480band/water_spherical_grains/"
   HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
   BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
   RI_ICE: "Data/OP_data/480band/"
@@ -42,31 +42,31 @@ PATHS:
   FN_ICE: "/Data/OP_data/480band/rfidx_ice.nc"
   FN_WATER: "/Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
   FLX_DIR: "Data/OP_data/480band/fsds/"
+  ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
+                          "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
+                          "swnb_480bnd_trp"]
 
 
 IMPURITIES:
   BC:
     NAME: "bc"
     FILE: "bc_ChCB_rn40_dns1270.nc"
-    CFACTOR: 1
     COATED: False
     UNIT: 0
     CONC: [0 ,0]
 
   SA:
     NAME: "sa"
-    FILE: "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc"
-    CFACTOR: 1
+    FILE: "snow_algae_empirical_Chevrollier2023.nc"
     COATED: False
-    UNIT: 0
+    UNIT: 1
     CONC: [0 ,0]
 
   GA:
     NAME: "ga"
-    FILE: "Cook2020_glacier_algae_4_40.nc"
-    CFACTOR: 1
+    FILE: "ice_algae_empirical_Chevrollier2023.nc"
     COATED: False
-    UNIT: 0
+    UNIT: 1
     CONC: [0 ,0]
 
 PLOT:
@@ -83,6 +83,7 @@ PLOT:
     XTICK_BTM: True
     YTICK_LEFT: True
     SAVE: False
+    SAVEPATH: ""
 
 BIOOPTICAL:
     WET_DENSITY: 1060
