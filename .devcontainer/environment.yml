@@ -3,7 +3,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - pip
   - pip:
     - python-dotenv
     - streamlit

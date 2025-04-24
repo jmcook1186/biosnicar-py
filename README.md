@@ -1,6 +1,6 @@
 # BioSNICAR
 
-<img src="./assets/example-output.jpg" width=500>
+<img src="./example-output.jpg" width=500>
 
 
 ## Introduction
@@ -54,7 +54,7 @@ In a terminal, navigate to the top-level biosnicar directory and run:
 
 This starts the Streamlit server running on `http://localhost:8501`.
 
-<img src="./assets/App.png" width=500>
+<img src="./app.png" width=500>
 
 
 ### Get albedo data
