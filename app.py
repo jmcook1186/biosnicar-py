@@ -90,7 +90,7 @@ def run_snicar(
     input_file = "app_inputs.yaml"
 
     if layer == "grains":
-        layer = 4
+        layer = 3
     elif layer == "solid ice":
         layer = 1
     else:
