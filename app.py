@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import biosnicar
-from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
 from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
 from biosnicar.setup_snicar import setup_snicar
 from biosnicar.validate_inputs import validate_inputs

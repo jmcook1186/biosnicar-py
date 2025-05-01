@@ -27,11 +27,11 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from biosnicar.adding_doubling_solver import adding_doubling_solver
+from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
 from biosnicar.classes import Impurity
 from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
 from biosnicar.setup_snicar import setup_snicar
-from biosnicar.toon_rt_solver import toon_solver
+from biosnicar.rt_solvers.toon_rt_solver import toon_solver
 
 
 def test_AD_solver(new_benchmark_ad, input_file):

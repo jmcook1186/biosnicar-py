@@ -14,6 +14,7 @@ in a bulk medium of ice a more nuanced calculation is required.
 The derivation of the calculations are explained in the pdf ./assets/SSA_derivation.pdf
 from Chloe Whicker (UMich).
 
+
 """
 
 import numpy as np

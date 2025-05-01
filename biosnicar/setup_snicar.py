@@ -44,6 +44,7 @@ def setup_snicar(input_file):
         plot_config,
     ) = build_classes(input_file)
 
+    print(model_config.window_size)
     return (
         ice,
         illumination,
