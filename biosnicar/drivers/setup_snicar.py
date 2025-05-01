@@ -31,7 +31,7 @@ def setup_snicar(input_file):
     # define input file
     if input_file == "default":
         BIOSNICAR_SRC_PATH = Path(__file__).resolve().parent
-        input_file = BIOSNICAR_SRC_PATH.joinpath("inputs.yaml").as_posix()
+        input_file = BIOSNICAR_SRC_PATH.joinpath("../inputs.yaml").as_posix()
 
     else:
         input_file = input_file

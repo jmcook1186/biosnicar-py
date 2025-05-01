@@ -30,7 +30,7 @@ import pytest
 from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
 from biosnicar.classes import Impurity
 from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.setup_snicar import setup_snicar
+from biosnicar.drivers.setup_snicar import setup_snicar
 from biosnicar.rt_solvers.toon_rt_solver import toon_solver
 
 
