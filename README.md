@@ -77,7 +77,7 @@ We have also maintained a separate version of the biosnicar codebase that uses a
 
 #### Choosing Inputs
 
-It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. For this reason, we have put together a guide. Please refer to the documentation at [https://biosnicar.vercel.app](biosnicar.vercel.app).
+It is straightforward to adjust the model configuration by updating the values in `inputs.yaml`. However there is a lot of nuance to setting up the model to provide realistic simulations, and the meaning of the various parameters is not always obvious. For this reason, we have put together a guide. Please refer to the documentation at [biosnicar.vercel.app](https://biosnicar.vercel.app).
 
 # Contributions
 
