@@ -7,7 +7,7 @@ import xarray as xr
 """
 
 ds = xr.open_dataset(
-    "/home/joe/Code/BioSNICAR_GO_PY/Data/GO_files/dust_greenland_C_20150308.nc"
+    "/Data/GO_files/dust_greenland_C_20150308.nc"
 )
 
 wavelengths = np.arange(0.2, 5, 0.01)

@@ -15,7 +15,7 @@ import pandas as pd
 import xarray as xr
 from scipy.interpolate import pchip
 
-import biosnicar.mie_coated_water_spheres as wcs
+import biosnicar.optical_properties.mie_coated_water_spheres as wcs
 
 
 def get_layer_OPs(ice, model_config):
@@ -97,7 +97,7 @@ def get_layer_OPs(ice, model_config):
 
         # solid ice layer with air/water inclusions
         
-        elif (ice.layer_type[i] == 1) or (ice.layer_type[i] == 3):
+        elif (ice.layer_type[i] == 1) or (ice.layer_type[i] == 2):
 
             if ice.cdom[i]:
                 cdom = pd.read_csv(
@@ -178,7 +178,7 @@ def get_layer_OPs(ice, model_config):
                 
                 
         # granular layer with mixed ice and water spheres
-        elif ice.layer_type[i] == 4:
+        elif ice.layer_type[i] == 3:
 
             # neglecting air mass:
             vlm_frac_ice = (ice.rho[i] - ice.lwc[i] * 1000) / 917

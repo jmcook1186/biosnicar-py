@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 import biosnicar
-from biosnicar.adding_doubling_solver import adding_doubling_solver
-from biosnicar.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.setup_snicar import setup_snicar
-from biosnicar.validate_inputs import validate_inputs
+from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
+from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
+from biosnicar.drivers.setup_snicar import setup_snicar
+from biosnicar.utils.validate_inputs import validate_inputs
 import plotly.express as px
 import streamlit as st
 
@@ -90,7 +90,7 @@ def run_snicar(
     input_file = "app_inputs.yaml"
 
     if layer == "grains":
-        layer = 4
+        layer = 3
     elif layer == "solid ice":
         layer = 1
     else:

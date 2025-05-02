@@ -20,106 +20,108 @@ the SNICAR model.
 
 import numpy as np
 import pandas as pd
-from miepython import mie, ez_mie
+import miepython as mie
 import xarray as xr
 import glob
 import time
-
 
 ##############################################################################
 # Inputs of the Mie solver
 ##############################################################################
 
-wvl = np.arange(0.205e-6, 5e-6, 0.01e-6)
-ref_index_ice = xr.open_dataset("../Data/OP_data/480band/rfidx_ice.nc")
-ref_index_water = pd.read_csv(
-    "../Data/OP_data/refractive_index_water_273K_Rowe2020.csv"
-)
-n_water = ref_index_water.n.values
-k_water = ref_index_water.k.values
-n_ice = ref_index_ice.re_Pic16.values
-k_ice = ref_index_ice.im_Pic16.values
-n_air = np.ones(480) + 1e-6 * (
-    (77.46 + 0.459 / ((wvl * 1e6) ** 2)) * 101325 * 0.01 / 273.16
-)
-description = "Wiscombe 1979 solver implemented by Scott Prahl (miepython)"
+def set_inputs_to_mie_solver():
+    wvl = np.arange(0.205e-6, 5e-6, 0.01e-6)
+    ref_index_ice = xr.open_dataset("Data/OP_data/480band/rfidx_ice.nc")
+    ref_index_water = pd.read_csv(
+        "Data/OP_data/480band/refractive_index_water_273K_Rowe2020.csv"
+    )
+    n_water = ref_index_water.n.values
+    k_water = ref_index_water.k.values
+    n_ice = ref_index_ice.re_Pic16.values
+    k_ice = ref_index_ice.im_Pic16.values
+    n_air = np.ones(480) + 1e-6 * (
+        (77.46 + 0.459 / ((wvl * 1e6) ** 2)) * 101325 * 0.01 / 273.16
+    )
+    description = "Wiscombe 1979 solver implemented by Scott Prahl (miepython)"
 
 
-path_to_save_temp = "../Data/OP_data/480band/tmp8"  # path to temporary individual ops
-air_bbl, water_bbl, ice_grain, water_grain = True, False, False, False
-small_sizes = True  # small is below 5000um for bubbles and 1500um for grains
+    path_to_save_temp = "Data/OP_data/480band/tmp8"  # path to temporary individual ops
+    air_bbl, water_bbl, ice_grain, water_grain = True, False, False, False
+    small_sizes = True  # small is below 5000um for bubbles and 1500um for grains
 
-if air_bbl:
-    path_to_save_ops = "../Data/OP_data/480band/bubbly_ice_files"
-    filename = "bbl"
-    medium_type = "ice_Pic16"
-    particle_type = "air_stp"
-    particle_density = 1.293
-    n_in = n_air
-    k_in = np.zeros(480)
-    n_ext = n_ice
-    if small_sizes:
-        sz_min = 5e-08
-        sz_max = 3e-02
-        sz_nbr = 10000
-    else:
-        sz_min = 5e-05
-        sz_max = 1e-01
-        sz_nbr = 500
+    if air_bbl:
+        path_to_save_ops = "Data/OP_data/480band/bubbly_ice_files"
+        filename = "bbl"
+        medium_type = "ice_Pic16"
+        particle_type = "air_stp"
+        particle_density = 1.293
+        n_in = n_air
+        k_in = np.zeros(480)
+        n_ext = n_ice
+        if small_sizes:
+            sz_min = 5e-08
+            sz_max = 3e-02
+            sz_nbr = 10000
+        else:
+            sz_min = 5e-05
+            sz_max = 1e-01
+            sz_nbr = 500
 
-if water_bbl:
-    path_to_save_ops = "../Data/OP_data/480band/bubbly_ice_files"
-    filename = "bbl_water"
-    medium_type = "ice_Pic16"
-    particle_type = "bbl_water"
-    particle_density = 1000
-    n_in = n_water
-    k_in = k_water
-    n_ext = n_ice
-    if small_sizes:
-        sz_min = 5e-08
-        sz_max = 3e-02
-        sz_nbr = 10000
-    else:
-        sz_min = 5e-05
-        sz_max = 1e-01
-        sz_nbr = 500
+    if water_bbl:
+        path_to_save_ops = "Data/OP_data/480band/bubbly_ice_files"
+        filename = "bbl_water"
+        medium_type = "ice_Pic16"
+        particle_type = "bbl_water"
+        particle_density = 1000
+        n_in = n_water
+        k_in = k_water
+        n_ext = n_ice
+        if small_sizes:
+            sz_min = 5e-08
+            sz_max = 3e-02
+            sz_nbr = 10000
+        else:
+            sz_min = 5e-05
+            sz_max = 1e-01
+            sz_nbr = 500
 
-if ice_grain:
-    path_to_save_ops = "../Data/OP_data/480band/ice_spherical_grains/ice_Pic16"
-    filename = "ice_Pic16"
-    medium_type = "air_stp"
-    particle_type = "ice_Pic16"
-    particle_density = 917
-    n_in = n_ice
-    k_in = k_ice
-    n_ext = n_air
-    if small_sizes:
-        sz_min = 5e-08
-        sz_max = 1e-02
-        sz_nbr = 5000
-    else:
-        sz_min = 2e-05
-        sz_max = 1e-01
-        sz_nbr = 500
+    if ice_grain:
+        path_to_save_ops = "../Data/OP_data/480band/ice_spherical_grains/ice_Pic16"
+        filename = "ice_Pic16"
+        medium_type = "air_stp"
+        particle_type = "ice_Pic16"
+        particle_density = 917
+        n_in = n_ice
+        k_in = k_ice
+        n_ext = n_air
+        if small_sizes:
+            sz_min = 5e-08
+            sz_max = 1e-02
+            sz_nbr = 5000
+        else:
+            sz_min = 2e-05
+            sz_max = 1e-01
+            sz_nbr = 500
 
-if water_grain:
-    path_to_save_ops = "../Data/OP_data/480band/water_spherical_grains"
-    filename = "water_grain"
-    medium_type = "air_stp"
-    particle_type = "water_grain"
-    particle_density = 1000
-    n_in = n_water
-    k_in = k_water
-    n_ext = n_air
-    if small_sizes:
-        sz_min = 5e-08
-        sz_max = 1e-02
-        sz_nbr = 5000
-    else:
-        sz_min = 2e-05
-        sz_max = 1e-01
-        sz_nbr = 500
+    if water_grain:
+        path_to_save_ops = "../Data/OP_data/480band/water_spherical_grains"
+        filename = "water_grain"
+        medium_type = "air_stp"
+        particle_type = "water_grain"
+        particle_density = 1000
+        n_in = n_water
+        k_in = k_water
+        n_ext = n_air
+        if small_sizes:
+            sz_min = 5e-08
+            sz_max = 1e-02
+            sz_nbr = 5000
+        else:
+            sz_min = 2e-05
+            sz_max = 1e-01
+            sz_nbr = 500
+
+    return wvl, ref_index_ice, ref_index_water, n_water, k_water, n_ice, k_ice, n_air, k_in, n_ext, sz_min, sz_max, sz_nbr, path_to_save_temp, air_bbl, water_bbl, ice_grain, water_grain, path_to_save_ops, filename, medium_type, particle_type, particle_density, description
 
 ##############################################################################
 # Functions
@@ -296,101 +298,103 @@ def n(r, re):
 ##############################################################################
 # Compute OPs of single-size spheres
 ##############################################################################
+def compute_ops_of_single_sized_spheres():
+    rds = np.logspace(np.log10(sz_min), np.log10(sz_max), sz_nbr)
 
-rds = np.logspace(np.log10(sz_min), np.log10(sz_max), sz_nbr)
+    start = time.time()
+    for i, radius in enumerate(rds):
+        qext, qsca, qback, g = mie.ez_mie(n_in - 1j * k_in, 2 * radius, wvl, n_ext)
+        print(f"{np.round(i / len(rds) * 100, 2)} % DONE")
 
-start = time.time()
-for i, radius in enumerate(rds):
-    qext, qsca, qback, g = ez_mie(n_in - 1j * k_in, 2 * radius, wvl, n_ext)
-    print(f"{np.round(i / len(rds) * 100, 2)} % DONE")
+        file = np.concatenate(([qext], [g], [qsca]), axis=0)
+        np.save(f"{path_to_save_temp}/{filename}_{radius*1e6}", file)
 
-    file = np.concatenate(([qext], [g], [qsca]), axis=0)
-    np.save(f"{path_to_save_temp}/{filename}_{radius*1e6}", file)
+    end = time.time()
+    print(end - start)
 
-end = time.time()
-print(end - start)
+    op_filenames = glob.glob(f"{path_to_save_temp}/*.npy")
+    radii_ordered = [float(f.split("_")[-1][:-4]) for f in op_filenames]
+    op_filenames_ordered = list(
+        pd.DataFrame(op_filenames, index=radii_ordered).sort_index().values.flatten()
+    )
+    op_data = np.array([np.load(fname) for fname in op_filenames_ordered])
 
-op_filenames = glob.glob(f"{path_to_save_temp}/*.npy")
-radii_ordered = [float(f.split("_")[-1][:-4]) for f in op_filenames]
-op_filenames_ordered = list(
-    pd.DataFrame(op_filenames, index=radii_ordered).sort_index().values.flatten()
-)
-op_data = np.array([np.load(fname) for fname in op_filenames_ordered])
+    return op_data
 
 ##############################################################################
 # Compute OPs of lognormal distributions of spheres and save netcdf files
 ##############################################################################
+def compute_ops_of_lognormal_distributions_of_spheres(op_data):
+    for re in np.concatenate(
+        [np.arange(10e-6, 100e-6, 5e-6), np.arange(100e-6, 5000e-6, 10e-6)]
+    ):
 
-for re in np.concatenate(
-    [np.arange(10e-6, 100e-6, 5e-6), np.arange(100e-6, 5000e-6, 10e-6)]
-):
+        qext = op_data[:, 0, :]
+        asm_prm = op_data[:, 1, :]
+        qsca = op_data[:, 2, :]
 
-    qext = op_data[:, 0, :]
-    asm_prm = op_data[:, 1, :]
-    qsca = op_data[:, 2, :]
+        number_distribution, rn = n(rds, re)
 
-    number_distribution, rn = n(rds, re)
+        resolved_re = np.sum(rds**3 * number_distribution) / np.sum(
+            rds**2 * number_distribution
+        )
 
-    resolved_re = np.sum(rds**3 * number_distribution) / np.sum(
-        rds**2 * number_distribution
-    )
+        mass_distribution = number_distribution * rds**3
+        mass_distribution = mass_distribution / np.sum(mass_distribution)
 
-    mass_distribution = number_distribution * rds**3
-    mass_distribution = mass_distribution / np.sum(mass_distribution)
+        qext_wvl = qext.T
+        qsca_wvl = qsca.T
+        asm_prm_wvl = asm_prm.T
 
-    qext_wvl = qext.T
-    qsca_wvl = qsca.T
-    asm_prm_wvl = asm_prm.T
+        ext_xsc_wvl = qext_wvl * np.pi * (rds**2)
+        sca_xsc_wvl = qsca_wvl * np.pi * (rds**2)
 
-    ext_xsc_wvl = qext_wvl * np.pi * (rds**2)
-    sca_xsc_wvl = qsca_wvl * np.pi * (rds**2)
+        ext_cff_vlm_wvl = 0.75 * qext_wvl / rds
+        sca_cff_vlm_wvl = 0.75 * qsca_wvl / rds
 
-    ext_cff_vlm_wvl = 0.75 * qext_wvl / rds
-    sca_cff_vlm_wvl = 0.75 * qsca_wvl / rds
+        ext_cff_mss_wvl = 0.75 * qext_wvl / (particle_density * rds)
+        sca_cff_mss_wvl = 0.75 * qsca_wvl / (particle_density * rds)
 
-    ext_cff_mss_wvl = 0.75 * qext_wvl / (particle_density * rds)
-    sca_cff_mss_wvl = 0.75 * qsca_wvl / (particle_density * rds)
+        ext_xsc_out = np.sum(ext_xsc_wvl * number_distribution, axis=1)
+        sca_xsc_out = np.sum(sca_xsc_wvl * number_distribution, axis=1)
+        abs_xsc_out = ext_xsc_out - sca_xsc_out
+        ss_alb_out = sca_xsc_out / ext_xsc_out
 
-    ext_xsc_out = np.sum(ext_xsc_wvl * number_distribution, axis=1)
-    sca_xsc_out = np.sum(sca_xsc_wvl * number_distribution, axis=1)
-    abs_xsc_out = ext_xsc_out - sca_xsc_out
-    ss_alb_out = sca_xsc_out / ext_xsc_out
+        ext_cff_mss_out = np.sum(ext_cff_mss_wvl * mass_distribution, axis=1)
+        sca_cff_mss_out = np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
+        abs_cff_mss_out = ext_cff_mss_out - sca_cff_mss_out
 
-    ext_cff_mss_out = np.sum(ext_cff_mss_wvl * mass_distribution, axis=1)
-    sca_cff_mss_out = np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
-    abs_cff_mss_out = ext_cff_mss_out - sca_cff_mss_out
+        ext_cff_vlm_out = np.sum(ext_cff_vlm_wvl * mass_distribution, axis=1)
+        sca_cff_vlm_out = np.sum(sca_cff_vlm_wvl * mass_distribution, axis=1)
+        abs_cff_vlm_out = ext_cff_vlm_out - sca_cff_vlm_out
 
-    ext_cff_vlm_out = np.sum(ext_cff_vlm_wvl * mass_distribution, axis=1)
-    sca_cff_vlm_out = np.sum(sca_cff_vlm_wvl * mass_distribution, axis=1)
-    abs_cff_vlm_out = ext_cff_vlm_out - sca_cff_vlm_out
+        asm_prm_out = np.sum(
+            (asm_prm_wvl * sca_cff_mss_wvl) * mass_distribution, axis=1
+        ) / np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
 
-    asm_prm_out = np.sum(
-        (asm_prm_wvl * sca_cff_mss_wvl) * mass_distribution, axis=1
-    ) / np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
+        net_cdf_out(
+            wvl,
+            rds,
+            particle_density,
+            asm_prm_out,
+            ss_alb_out,
+            ext_xsc_out,
+            sca_xsc_out,
+            abs_xsc_out,
+            ext_cff_vlm_out,
+            sca_cff_vlm_out,
+            abs_cff_vlm_out,
+            ext_cff_mss_out,
+            sca_cff_mss_out,
+            abs_cff_mss_out,
+            re,
+            resolved_re,
+            rn,
+            path_to_save_ops,
+            description,
+            medium_type,
+            particle_type,
+            filename,
+        )
 
-    net_cdf_out(
-        wvl,
-        rds,
-        particle_density,
-        asm_prm_out,
-        ss_alb_out,
-        ext_xsc_out,
-        sca_xsc_out,
-        abs_xsc_out,
-        ext_cff_vlm_out,
-        sca_cff_vlm_out,
-        abs_cff_vlm_out,
-        ext_cff_mss_out,
-        sca_cff_mss_out,
-        abs_cff_mss_out,
-        re,
-        resolved_re,
-        rn,
-        path_to_save_ops,
-        description,
-        medium_type,
-        particle_type,
-        filename,
-    )
-
-    # print(re)
+    return
