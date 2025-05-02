@@ -20,7 +20,7 @@ the SNICAR model.
 
 import numpy as np
 import pandas as pd
-from miepython import mie, ez_mie
+import miepython as mie
 import xarray as xr
 import glob
 import time
@@ -303,7 +303,7 @@ def compute_ops_of_single_sized_spheres():
 
     start = time.time()
     for i, radius in enumerate(rds):
-        qext, qsca, qback, g = ez_mie(n_in - 1j * k_in, 2 * radius, wvl, n_ext)
+        qext, qsca, qback, g = mie.ez_mie(n_in - 1j * k_in, 2 * radius, wvl, n_ext)
         print(f"{np.round(i / len(rds) * 100, 2)} % DONE")
 
         file = np.concatenate(([qext], [g], [qsca]), axis=0)

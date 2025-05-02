@@ -4,7 +4,7 @@
 To run configure these tests, update the values in conftest.py
 Then navigate to the tests folder and run
 
-`pytest`
+`pytest .`
 
 The tests will automatically run - green dots indicate tests
 passing successfully. A plot of N random spectra pairs will
