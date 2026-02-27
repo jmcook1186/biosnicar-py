@@ -120,19 +120,13 @@ by effective radius. Each refractive-index variant gets its own `.npz` file.
 
 ### Steps to add new ice grain optical properties
 
-1. Generate per-radius netCDF files using the Mie/GO code in
+1. Generate per-radius `.npz` files using the Mie/GO code in
    `biosnicar/optical_properties/`. Each file should contain `ss_alb`,
    `asm_prm`, and `ext_cff_mss` (all shape `(480,)`).
 
-2. Place them in the appropriate source directory (e.g.,
-   `Data/OP_data/480band/ice_spherical_grains/`).
-
-3. Run the LUT build script:
-   ```
-   python scripts/build_lookup_tables.py
-   ```
-   This consolidates individual files into the compact `.npz` archives in
-   `Data/OP_data/480band/luts/` and validates all values.
+2. Place them in the appropriate source directory and run the LUT build
+   script to consolidate them into the compact `.npz` archives in
+   `Data/OP_data/480band/luts/`.
 
 ---
 

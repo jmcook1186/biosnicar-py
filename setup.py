@@ -65,7 +65,6 @@ setup(
         "pandas",
         "scipy",
         "seaborn",
-        "xarray",
         "plotnine",
         "statsmodels",
     ],
