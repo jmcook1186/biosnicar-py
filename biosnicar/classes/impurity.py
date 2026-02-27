@@ -2,6 +2,21 @@ import os
 import numpy as np
 import biosnicar
 
+# Module-level cache: loaded once on first use
+_lap_data = None
+
+
+def _get_lap_data():
+    global _lap_data
+    if _lap_data is None:
+        npz_path = os.path.join(
+            os.path.dirname(os.path.dirname(biosnicar.__file__)),
+            "Data", "OP_data", "480band", "lap.npz",
+        )
+        _lap_data = np.load(npz_path)
+    return _lap_data
+
+
 class Impurity:
     """Light absorbing impurity.
 
@@ -26,12 +41,8 @@ class Impurity:
         self.conc = conc
         self.file = file
 
-        npz_file = os.path.splitext(file)[0] + ".npz"
-        npz_path = os.path.join(
-            os.path.dirname(os.path.dirname(biosnicar.__file__)),
-            "Data", "OP_data", "480band", "lap", npz_file,
-        )
-        impurity_properties = np.load(npz_path)
+        stem = os.path.splitext(file)[0]
+        lap = _get_lap_data()
 
         if coated:
             mac_stub = "ext_cff_mss_ncl"
@@ -40,8 +51,8 @@ class Impurity:
         else:
             mac_stub = "ext_cff_mss"
 
-        self.mac = impurity_properties[mac_stub]
-        self.ssa = impurity_properties["ss_alb"]
-        self.g = impurity_properties["asm_prm"]
+        self.mac = lap[f"{stem}__{mac_stub}"]
+        self.ssa = lap[f"{stem}__ss_alb"]
+        self.g = lap[f"{stem}__asm_prm"]
 
         assert len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480

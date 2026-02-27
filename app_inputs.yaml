@@ -50,21 +50,21 @@ PATHS:
 IMPURITIES:
   BC:
     NAME: "bc"
-    FILE: "bc_ChCB_rn40_dns1270.nc"
+    FILE: "bc_ChCB_rn40_dns1270.npz"
     COATED: False
     UNIT: 0
     CONC: [0 ,0]
 
   SA:
     NAME: "sa"
-    FILE: "snow_algae_empirical_Chevrollier2023.nc"
+    FILE: "snow_algae_empirical_Chevrollier2023.npz"
     COATED: False
     UNIT: 1
     CONC: [0 ,0]
 
   GA:
     NAME: "ga"
-    FILE: "ice_algae_empirical_Chevrollier2023.nc"
+    FILE: "ice_algae_empirical_Chevrollier2023.npz"
     COATED: False
     UNIT: 1
     CONC: [0 ,0]
