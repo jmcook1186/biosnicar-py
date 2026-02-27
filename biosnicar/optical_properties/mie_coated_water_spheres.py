@@ -6,7 +6,6 @@ German Research Centre for Geosciences (GFZ, <https://www.gfz-potsdam.de>)
 """
 import numpy as np
 import pandas as pd
-import xarray as xr
 import miepython as mie
 from scipy.interpolate import interp1d
 from scipy.special import jv, yv
@@ -252,21 +251,21 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
 
     # read in refractive indices of ice and liquid water
 
-    temp = xr.open_dataset(fn_ice)
+    temp = np.load(fn_ice)
     ref_index_ice = np.zeros(shape=(2, len(wvl)))
-    wvl_ice = temp["wvl"].values
+    wvl_ice = temp["wvl"]
 
     if rf_ice == 0:
-        n_ice = temp["re_Wrn84"].values
-        k_ice = temp["im_Wrn84"].values
+        n_ice = temp["re_Wrn84"]
+        k_ice = temp["im_Wrn84"]
 
     if rf_ice == 1:
-        n_ice = temp["re_Wrn08"].values
-        k_ice = temp["im_Wrn08"].values
+        n_ice = temp["re_Wrn08"]
+        k_ice = temp["im_Wrn08"]
 
     if rf_ice == 2:
-        n_ice = temp["re_Pic16"].values
-        k_ice = temp["im_Pic16"].values
+        n_ice = temp["re_Pic16"]
+        k_ice = temp["im_Pic16"]
 
     ref_index_water = pd.read_csv(fn_water)
     wvl_water = np.zeros(ref_index_water.shape[0])

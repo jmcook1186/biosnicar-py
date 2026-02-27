@@ -10,12 +10,54 @@ transfer solvers (Toon solver or adding-doubling solver).
 """
 
 
+import os
+
 import numpy as np
 import pandas as pd
-import xarray as xr
 from scipy.interpolate import pchip
 
 import biosnicar.optical_properties.mie_coated_water_spheres as wcs
+from biosnicar.optical_properties.op_lookup import get_hex_lut, get_lut
+
+
+def _ri_name(ice):
+    """Extract refractive index name (e.g. 'Pic16') from ice.op_dir."""
+    return ice.op_dir.split("/")[0].replace("ice_", "")
+
+
+def _sphere_lut_path(model_config, ice):
+    """Resolve path to sphere ice LUT .npz file."""
+    ri = _ri_name(ice)
+    if "BH83" in model_config.sphere_ice_path:
+        name = f"ice_sphere_BH83_{ri}.npz"
+    else:
+        name = f"ice_sphere_{ri}.npz"
+    return os.path.join(model_config.lut_dir, name)
+
+
+def _hex_lut_path(model_config, ice):
+    """Resolve path to hex column LUT .npz file."""
+    ri = _ri_name(ice)
+    return os.path.join(model_config.lut_dir, f"hex_{ri}.npz")
+
+
+def _bubbly_air_lut_path(model_config):
+    """Resolve path to bubbly air LUT .npz file."""
+    if "BH83" in model_config.bubbly_ice_path:
+        name = "bubbly_air_BH83.npz"
+    else:
+        name = "bubbly_air.npz"
+    return os.path.join(model_config.lut_dir, name)
+
+
+def _bubbly_water_lut_path(model_config):
+    """Resolve path to bubbly water LUT .npz file."""
+    return os.path.join(model_config.lut_dir, "bubbly_water.npz")
+
+
+def _water_sphere_lut_path(model_config):
+    """Resolve path to water sphere LUT .npz file."""
+    return os.path.join(model_config.lut_dir, "water_sphere.npz")
 
 
 def get_layer_OPs(ice, model_config):
@@ -49,41 +91,27 @@ def get_layer_OPs(ice, model_config):
         if ice.layer_type[i] == 0:  # granular layer
 
             if ice.shp[i] == 4:  # large hex prisms (geometric optics)
-                file_ice = str(
-                    model_config.dir_base
-                    + model_config.hex_ice_path
-                    + ice.op_dir
-                    + "{}_{}.nc".format(
-                        str(ice.hex_side[i]).rjust(4, "0"), str(ice.hex_length[i])
-                    )
-                )
+                lut = get_hex_lut(_hex_lut_path(model_config, ice))
+                ssa_snw[i, :] = lut.get(ice.hex_side[i], ice.hex_length[i], "ss_alb")
+                mac_snw[i, :] = lut.get(ice.hex_side[i], ice.hex_length[i], "ext_cff_mss")
+                g_snw[i, :] = lut.get(ice.hex_side[i], ice.hex_length[i], "asm_prm")
 
             elif ice.shp[i] < 4:
-                file_ice = str(
-                    model_config.dir_base
-                    + model_config.sphere_ice_path
-                    + ice.op_dir
-                    + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
-                )
+                sphere_lut = get_lut(_sphere_lut_path(model_config, ice))
+                radius = ice.rds[i]
 
-            model_config.file_ice = file_ice
+                # if liquid water coatings are applied
+                if ice.water[i] > ice.rds[i]:
+                    ext_cff_mss_ice = sphere_lut.get(radius, "ext_cff_mss")
+                    ssa_snw[i, :], g_snw[i,:], mac_snw[i,:] = add_water_coating(
+                        ice, model_config, ssa_snw[i,:], g_snw[i,:], mac_snw[i,:], i,
+                        ext_cff_mss_ice
+                    )
 
-            # if liquid water coatings are applied
-            if ice.water[i] > ice.rds[i]:
-                ssa_snw[i, :], g_snw[i,:], mac_snw[i,:] = add_water_coating(
-                    ice, model_config, ssa_snw[i,:], g_snw[i,:], mac_snw[i,:], i
-                )
-
-            else:
-
-                with xr.open_dataset(file_ice) as temp:
-                    ssa = temp["ss_alb"].values
-                    ssa_snw[i, :] = ssa
-                    ext_cff_mss = temp["ext_cff_mss"].values
-                    mac_snw[i, :] = ext_cff_mss
-                    asm_prm = temp["asm_prm"].values
-
-                    g_snw[i, :] = asm_prm
+                else:
+                    ssa_snw[i, :] = sphere_lut.get(radius, "ss_alb")
+                    mac_snw[i, :] = sphere_lut.get(radius, "ext_cff_mss")
+                    g_snw[i, :] = sphere_lut.get(radius, "asm_prm")
 
                     # Correct g for aspherical particles - He et al.(2017)
                     # Applies only when ice.shp!=0
@@ -96,7 +124,7 @@ def get_layer_OPs(ice, model_config):
                         g_snw = correct_for_asphericity(ice, g_snw, ssa_snw, i, model_config)
 
         # solid ice layer with air/water inclusions
-        
+
         elif (ice.layer_type[i] == 1) or (ice.layer_type[i] == 2):
 
             if ice.cdom[i]:
@@ -109,25 +137,19 @@ def get_layer_OPs(ice, model_config):
                 ice.ref_idx_im[3:54] = np.fmax(
                     ice.ref_idx_im[3:54], cdom_ref_idx_im_rescaled
                 )
-                
+
             # neglecting air mass:
             vlm_frac_ice = (ice.rho[i] - ice.lwc[i] * 1000) / 917
             vlm_frac_air = 1 - ice.lwc[i] - vlm_frac_ice
 
-            # get effective radius
-            rd = f"{ice.rds[i]}"
-            rd = rd.rjust(4, "0")
-            file_ice_path = str(model_config.dir_base +
-                                model_config.bubbly_ice_path 
-                                + "bbl_{}.nc").format(rd)
-            file_ice = xr.open_dataset(file_ice_path)
-            
             # air bbl ssps
-            sca_cff_vlm_air_bbl = file_ice["sca_cff_vlm"].values
-            g_air_bbl = file_ice["asm_prm"].values
+            bubbly_air = get_lut(_bubbly_air_lut_path(model_config))
+            radius = ice.rds[i]
+            sca_cff_vlm_air_bbl = bubbly_air.get(radius, "sca_cff_vlm")
+            g_air_bbl = bubbly_air.get(radius, "asm_prm")
 
             if ice.lwc[i] == 0:
-            
+
                 abs_cff_mss_ice[:] = ((4 * np.pi * ice.ref_idx_im) / (model_config.wavelengths * 1e-6)) / 917
                 mac_snw[i, :] = (
                     (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
@@ -136,18 +158,16 @@ def get_layer_OPs(ice, model_config):
                 ssa_snw[i, :] = (
                     (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
                 ) / mac_snw[i, :]
-                
+
                 g_snw[i, :] = g_air_bbl
-            
+
             elif ice.lwc[i] != 0:
 
                 # water bubbles ssps
-                file_water = xr.open_dataset(
-                    str(model_config.dir_base + model_config.bubbly_ice_path + "bbl_water_{}.nc").format(rd)
-                )
-                sca_cff_vlm_water = file_water["sca_cff_vlm"].values
-                ext_cff_vlm_water = file_water["ext_cff_vlm"].values
-                g_water = file_water["asm_prm"].values
+                bubbly_water = get_lut(_bubbly_water_lut_path(model_config))
+                sca_cff_vlm_water = bubbly_water.get(radius, "sca_cff_vlm")
+                ext_cff_vlm_water = bubbly_water.get(radius, "ext_cff_vlm")
+                g_water = bubbly_water.get(radius, "asm_prm")
 
                 vlm_frac_lw_in_ice = ice.lwc[i] * (1 - ice.lwc_pct_bbl)
                 vlm_frac_lw_in_bbl = ice.lwc[i] * ice.lwc_pct_bbl
@@ -175,8 +195,8 @@ def get_layer_OPs(ice, model_config):
                     (sca_cff_vlm_air_bbl * vlm_frac_air) / ice.rho[i]
                     + (sca_cff_vlm_water * vlm_frac_lw_in_bbl) / ice.rho[i]
                 ) / mac_snw[i, :]
-                
-                
+
+
         # granular layer with mixed ice and water spheres
         elif ice.layer_type[i] == 3:
 
@@ -184,41 +204,28 @@ def get_layer_OPs(ice, model_config):
             vlm_frac_ice = (ice.rho[i] - ice.lwc[i] * 1000) / 917
             vlm_frac_air = 1 - ice.lwc[i] - vlm_frac_ice
 
-            # get effective radius
-            rd = f"{ice.rds[i]}"
-            rd = rd.rjust(4, "0")
-            ssps_ice = xr.open_dataset(
-                str(model_config.dir_base +
-                    model_config.sphere_ice_path
-                    + ice.op_dir
-                    + "{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
-                )
-            )
-            ssps_water = xr.open_dataset(
-                str(model_config.dir_base +
-                    model_config.sphere_water_path
-                    + "water_grain_{}.nc".format(str(ice.rds[i]).rjust(4, "0"))
-                )
-            )
+            radius = ice.rds[i]
+            sphere_lut = get_lut(_sphere_lut_path(model_config, ice))
+            water_lut = get_lut(_water_sphere_lut_path(model_config))
 
             g = (
-                ssps_water["asm_prm"].values * ice.lwc[i]
-                + ssps_ice["asm_prm"].values * vlm_frac_ice
+                water_lut.get(radius, "asm_prm") * ice.lwc[i]
+                + sphere_lut.get(radius, "asm_prm") * vlm_frac_ice
             ) / (ice.lwc[i] + vlm_frac_ice)
 
             g_snw[i, :] = g
 
             ext_cff_mss = (
-                ssps_water["ext_cff_vlm"].values * ice.lwc[i]
-                + ssps_ice["ext_cff_vlm"].values * vlm_frac_ice
+                water_lut.get(radius, "ext_cff_vlm") * ice.lwc[i]
+                + sphere_lut.get(radius, "ext_cff_vlm") * vlm_frac_ice
             ) / (ice.rho[i])
 
             mac_snw[i, :] = ext_cff_mss
 
             ssa = (
                 (
-                    ssps_water["sca_cff_vlm"].values * ice.lwc[i]
-                    + ssps_ice["sca_cff_vlm"].values * vlm_frac_ice
+                    water_lut.get(radius, "sca_cff_vlm") * ice.lwc[i]
+                    + sphere_lut.get(radius, "sca_cff_vlm") * vlm_frac_ice
                 )
                 / ice.rho[i]
                 / mac_snw[i, :]
@@ -230,7 +237,7 @@ def get_layer_OPs(ice, model_config):
     return ssa_snw, g_snw, mac_snw
 
 
-def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
+def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i, ext_cff_mss_ice):
 
     """Recalculates layer optical properties where grains are coated in liquid water.
 
@@ -246,6 +253,7 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
         g_snw: asymmetry parameter for each layer
         mac_snw: mass absorption coefficient of each layer
         i: layer counter
+        ext_cff_mss_ice: pre-loaded extinction coefficient from sphere LUT
 
     Returns:
         ssa_snw: updated single scattering albedo for each layer
@@ -272,11 +280,7 @@ def add_water_coating(ice, model_config, ssa_snw, g_snw, mac_snw, i):
 
     ssa_snw = res["ssa"]
     g_snw = res["asymmetry"]
-
-    with xr.open_dataset(model_config.file_ice) as temp:
-
-        ext_cff_mss = temp["ext_cff_mss"].values
-        mac_snw = ext_cff_mss
+    mac_snw = ext_cff_mss_ice
 
     return ssa_snw, g_snw, mac_snw
 

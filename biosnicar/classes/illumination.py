@@ -1,7 +1,6 @@
 import os
 import math
 import numpy as np
-import xarray as xr
 import yaml
 import biosnicar
 
@@ -65,19 +64,18 @@ class Illumination:
             cloud_stub = "_clr_"
             coszen_stub = str("SZA" + str(self.solzen).rjust(2, "0"))
 
-        incoming_file = xr.open_dataset(
-            str(
-                self.flx_dir
-                + self.stubs[self.incoming]
-                + cloud_stub
-                + coszen_stub
-                + ".nc"
-            )
+        npz_path = str(
+            self.flx_dir
+            + self.stubs[self.incoming]
+            + cloud_stub
+            + coszen_stub
+            + ".npz"
         )
+        incoming_file = np.load(npz_path)
 
-        flx_slr = incoming_file["flx_frc_sfc"].values
+        flx_slr = incoming_file["flx_frc_sfc"].copy()
         flx_slr[flx_slr <= 0] = 1e-30
-        self.flx_slr = flx_slr 
+        self.flx_slr = flx_slr
         out = flx_slr / (self.mu_not * np.pi)
 
         if self.direct:
@@ -86,6 +84,4 @@ class Illumination:
         else:
             self.Fd = out
             self.Fs = np.zeros(self.nbr_wvl)
-        return
-
         return

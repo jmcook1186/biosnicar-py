@@ -41,7 +41,7 @@ PATHS:
   RI_ICE: "Data/OP_data/480band/"
   OP_DIR_STUBS: ["ice_Wrn84/ice_Wrn84_", "ice_Wrn08/ice_Wrn08_", "ice_Pic16/ice_Pic16_"]
   SFC: "/Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
-  FN_ICE: "/Data/OP_data/480band/rfidx_ice.nc"
+  FN_ICE: "/Data/OP_data/480band/rfidx_ice.npz"
   FN_WATER: "/Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
   FLX_DIR: "Data/OP_data/480band/fsds/"
   ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",

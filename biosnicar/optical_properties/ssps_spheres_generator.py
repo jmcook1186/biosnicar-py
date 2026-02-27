@@ -21,7 +21,6 @@ the SNICAR model.
 import numpy as np
 import pandas as pd
 import miepython as mie
-import xarray as xr
 import glob
 import time
 
@@ -31,14 +30,14 @@ import time
 
 def set_inputs_to_mie_solver():
     wvl = np.arange(0.205e-6, 5e-6, 0.01e-6)
-    ref_index_ice = xr.open_dataset("Data/OP_data/480band/rfidx_ice.nc")
+    ref_index_ice = np.load("Data/OP_data/480band/rfidx_ice.npz")
     ref_index_water = pd.read_csv(
         "Data/OP_data/480band/refractive_index_water_273K_Rowe2020.csv"
     )
     n_water = ref_index_water.n.values
     k_water = ref_index_water.k.values
-    n_ice = ref_index_ice.re_Pic16.values
-    k_ice = ref_index_ice.im_Pic16.values
+    n_ice = ref_index_ice["re_Pic16"]
+    k_ice = ref_index_ice["im_Pic16"]
     n_air = np.ones(480) + 1e-6 * (
         (77.46 + 0.459 / ((wvl * 1e6) ** 2)) * 101325 * 0.01 / 273.16
     )

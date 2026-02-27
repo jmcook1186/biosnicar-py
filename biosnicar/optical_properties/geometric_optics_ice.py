@@ -46,11 +46,10 @@ parameters as assumed in the conventional geometric optics approximation.
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import xarray as xr
 
 # Set paths
 SAVEPATH = "./Data/GO_files/480band/"
-DATAPATH = "./Data/rfidx_ice.nc"
+DATAPATH = "./Data/OP_data/480band/rfidx_ice.npz"
 RI_SOURCE = 2
 
 
@@ -79,20 +78,20 @@ def preprocess_RI(ri_source, path_to_ri):
         wavelengths: numpy array of wavelengths (um)
     """
 
-    refidx = xr.open_dataset(path_to_ri)
-    wavelengths = refidx["wvl"].values
+    refidx = np.load(path_to_ri)
+    wavelengths = refidx["wvl"]
 
     if ri_source == 0:
-        reals = refidx["re_Wrn84"].values
-        imags = refidx["im_Wrn84"].values
+        reals = refidx["re_Wrn84"]
+        imags = refidx["im_Wrn84"]
 
     elif ri_source == 1:
-        reals = refidx["re_Wrn08"].values
-        imags = refidx["im_Wrn08"].values
+        reals = refidx["re_Wrn08"]
+        imags = refidx["im_Wrn08"]
 
     elif ri_source == 2:
-        reals = refidx["re_Pic16"].values
-        imags = refidx["im_Pic16"].values
+        reals = refidx["re_Pic16"]
+        imags = refidx["im_Pic16"]
 
     return reals, imags, wavelengths
 
