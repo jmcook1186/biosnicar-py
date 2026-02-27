@@ -18,12 +18,12 @@ def print_args(args):
     print("Creating files:")
     for i in np.arange(args.radius_low, args.radius_high+args.resolution, args.resolution):
         if args.ice_type == 'both':
-            print(f"    ice_grain_{i}_um.nc")
-            print(f"    ice_bubble_{i}_um.nc")
+            print(f"    ice_grain_{i}_um.npz")
+            print(f"    ice_bubble_{i}_um.npz")
         elif args.ice_type == 'grains':
-            print(f"    ice_grain_{i}_um.nc")
+            print(f"    ice_grain_{i}_um.npz")
         elif args.ice_type == 'slab':
-            print(f"    ice_bubble_{i}_um.nc")
+            print(f"    ice_bubble_{i}_um.npz")
         else:
             print("ice type not recognized, please select grains, slab or both,")
     return
