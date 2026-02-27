@@ -7,6 +7,8 @@ Contains functions relating to bio-optical model components of BioSNICAR_GO_py.
 
 """
 
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -34,7 +36,7 @@ def run_biooptical_model(input_file):
         None
 
     Returns:
-        None but saves NetCDFs to /Data/480band/laps.
+        None but optionally saves optical properties to lap.npz.
 
     """
 
@@ -61,15 +63,14 @@ def run_biooptical_model(input_file):
     )
 
     # # --------------------------------------------------------------------------------------
-    # # SAVING DATA IN NETCDF
+    # # SAVING DATA TO LAP.NPZ
     # # --------------------------------------------------------------------------------------
 
-    net_cdf_updater(
+    update_lap_npz(
         bio_optical_config,
         assym,
         ss_alb,
         abs_cff_rescaled_BioSNICAR,
-        wvl_rescaled_BioSNICAR,
     )
 
     return
@@ -581,57 +582,56 @@ def plot_k_n_abs_cff(bio_optical_config, abs_cff, k):
             plt.savefig(str(bio_optical_config.savepath + "/abs_cffandK.png"))
 
 
-def net_cdf_updater(bio_optical_config, assym, ss_alb, abs_cff_rescaled, wvl_rescaled):
-    """Optionally saves netcdf file with optical properties usable in BioSNICAR.
+def update_lap_npz(bio_optical_config, assym, ss_alb, abs_cff_rescaled):
+    """Optionally saves optical properties into the consolidated lap.npz archive.
 
-    Saves the calculate optical properties to a NetCDF file with formatting that allows the
-    data to be loaded into BioSNICAR.
+    Adds single-scattering albedo, asymmetry parameter, and extinction arrays
+    for the new impurity into lap.npz, keyed by the configured impurity stem.
 
     Args:
         bio_optical_config: instance of BioOpticalConfig class
-        abs_cff_rescaled: absorption cross section in m2/cell, m2/um3 or m2/mg
-        assym: assym parameter
-        ss_alb: single scattering albedo
-        wvl_rescaled: wavelengths
+        assym: asymmetry parameter (480 bands)
+        ss_alb: single scattering albedo (480 bands)
+        abs_cff_rescaled: absorption cross section (480 bands)
 
     Returns:
         None
     """
+    if not bio_optical_config.save_to_lap:
+        return
 
-    if bio_optical_config.save_netcdf:
-        algfile = pd.DataFrame()
-        algfile["asm_prm"] = np.squeeze(assym)
-        algfile["ss_alb"] = np.squeeze(ss_alb)
-        algfile["ext_cff_mss"] = abs_cff_rescaled
-        algfile = algfile.to_xarray()
-        algfile.attrs["medium_type"] = "air"
-        if bio_optical_config.GO:
-            algfile.attrs["description"] = (
-                "Optical properties for glacier algal cell: cylinder of radius "
-                "{}um and length {}um".format(
-                    str(bio_optical_config.radius), str(bio_optical_config.length)
-                )
-            )
-            algfile.attrs["side_length_um"] = bio_optical_config.length
-        if bio_optical_config.Mie:
-            algfile.attrs["description"] = (
-                "Optical properties for snow algal "
-                "cell: sphere of radius {}um".format(str(bio_optical_config.radius))
-            )
-        algfile.attrs["psd"] = "monodisperse"
-        algfile.attrs["density_kg_m3"] = bio_optical_config.wet_density
-        algfile.attrs["wvl"] = wvl_rescaled
-        algfile.attrs["information"] = bio_optical_config.information
-        algfile.to_netcdf(
-            str(
-                bio_optical_config.savepath_netcdf
-                + bio_optical_config.filename_netcdf
-                + ".nc"
-            ),
-            mode="w",
-        )
+    from biosnicar.classes.impurity import invalidate_lap_cache
 
-    return
+    stem = bio_optical_config.impurity_stem
+
+    # Locate lap.npz relative to the package
+    import biosnicar as _pkg
+    npz_path = os.path.join(
+        os.path.dirname(os.path.dirname(_pkg.__file__)),
+        "Data", "OP_data", "480band", "lap.npz",
+    )
+
+    # Load existing data into a mutable dict
+    existing = dict(np.load(npz_path))
+
+    # Add the three optical-property arrays
+    existing[f"{stem}__ss_alb"] = np.squeeze(ss_alb)
+    existing[f"{stem}__asm_prm"] = np.squeeze(assym)
+
+    # Extinction key depends on unit: 0 = per-cell (ext_xsc), else mass (ext_cff_mss)
+    ext_key = "ext_xsc" if bio_optical_config.unit == 0 else "ext_cff_mss"
+    existing[f"{stem}__{ext_key}"] = np.squeeze(abs_cff_rescaled)
+
+    # Append stem to _names list if not already present
+    names = list(existing.get("_names", np.array([])))
+    if stem not in names:
+        names.append(stem)
+        existing["_names"] = np.array(names)
+
+    np.savez_compressed(npz_path, **existing)
+
+    # Invalidate the module-level cache so subsequent Impurity loads see new data
+    invalidate_lap_cache()
 
 
 if __name__ == "__main__":

@@ -17,6 +17,12 @@ def _get_lap_data():
     return _lap_data
 
 
+def invalidate_lap_cache():
+    """Reset the module-level LAP cache so new data is picked up."""
+    global _lap_data
+    _lap_data = None
+
+
 class Impurity:
     """Light absorbing impurity.
 

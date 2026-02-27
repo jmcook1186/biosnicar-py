@@ -61,13 +61,9 @@ class BioOpticalConfig:
         smooth: (boolean) if True,  apply optional smoothing filter
         window_size: (int) size of window of smoothing filter (dflt value: 25)
         poly_order: (int) polynomial order of smoothing filter (dflt value: 3)
-        save_netcdf = (boolean) if True, saves data in a netcdf file
-        savepath_netcdf = (string) save path directory
-        filename_netcdf = (string) name of the file containing the
-            optical properties
-        information = (string) containing any additional info for
-            metadata in netcdf (e.g. 'Glacier algae OPs derived
-            from GO calculations with empirical abs_cff')
+        save_to_lap = (boolean) if True, saves data to lap.npz archive
+        impurity_stem = (string) stem name for the impurity arrays in lap.npz
+        info = (string) containing any additional info for metadata
 
     """
 
@@ -107,7 +103,6 @@ class BioOpticalConfig:
         self.smooth = inputs["BIOOPTICAL"]["SMOOTH"]
         self.window_size = inputs["BIOOPTICAL"]["WINDOW_SIZE"]
         self.poly_order = inputs["BIOOPTICAL"]["POLY_ORDER"]
-        self.save_netcdf = inputs["BIOOPTICAL"]["SAVE_NETCDF"]
-        self.savepath_netcdf = inputs["BIOOPTICAL"]["SAVEPATH_NETCDF"]
-        self.filename_netcdf = inputs["BIOOPTICAL"]["FILENAME_NETCDF"]
-        self.information = inputs["BIOOPTICAL"]["INFO_NETCDF"] 
+        self.save_to_lap = inputs["BIOOPTICAL"]["SAVE_TO_LAP"]
+        self.impurity_stem = inputs["BIOOPTICAL"]["IMPURITY_STEM"]
+        self.info = inputs["BIOOPTICAL"]["INFO"]

@@ -129,8 +129,7 @@ BIOOPTICAL:
     SAVE_N_K_ABS_CFF: False
     SAVE_PLOT_K_ABS_CFF: False
     SAVE_PATH_FIG: "Data/pigments/"
-    SAVE_NETCDF: False
-    SAVE_PATH_NETCDF: "Data/OP_data/480band/lap/"
-    INFO_NETCDF: "info"
-    FILENAME_NETCDF: "alg"
+    SAVE_TO_LAP: False
+    IMPURITY_STEM: "alg"
+    INFO: "info"
 
