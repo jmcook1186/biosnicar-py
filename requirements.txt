@@ -4,10 +4,8 @@ pandas
 dask[complete]
 matplotlib
 miepython
-netCDF4
 scipy
 seaborn
-xarray
 plotnine
 statsmodels
 pytest

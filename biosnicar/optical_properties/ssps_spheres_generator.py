@@ -5,7 +5,7 @@
 @author: Lou-Anne Chevrollier, University of Aarhus
 
 This code is used to generate the optical properties of an air bubble or grain
-size distribution of effective radius re and save them in a netcdf file that
+size distribution of effective radius re and save them in a .npz file that
 can directly be used in the SNICAR/biosnicar model. The methodology follows that of 
 Flanner et al. 2021 (https://doi.org/10.5194/gmd-14-7673-2021), except that 
 the Mie solver used is that of Wiscombe 1979 (doi:10.5065/D6ZP4414),
@@ -18,12 +18,13 @@ the SNICAR model.
 
 """
 
-import numpy as np
-import pandas as pd
-import miepython as mie
-import xarray as xr
 import glob
+import os
 import time
+
+import numpy as np
+import miepython as mie
+import pandas as pd
 
 ##############################################################################
 # Inputs of the Mie solver
@@ -31,14 +32,14 @@ import time
 
 def set_inputs_to_mie_solver():
     wvl = np.arange(0.205e-6, 5e-6, 0.01e-6)
-    ref_index_ice = xr.open_dataset("Data/OP_data/480band/rfidx_ice.nc")
+    ref_index_ice = np.load("Data/OP_data/480band/rfidx_ice.npz")
     ref_index_water = pd.read_csv(
         "Data/OP_data/480band/refractive_index_water_273K_Rowe2020.csv"
     )
     n_water = ref_index_water.n.values
     k_water = ref_index_water.k.values
-    n_ice = ref_index_ice.re_Pic16.values
-    k_ice = ref_index_ice.im_Pic16.values
+    n_ice = ref_index_ice["re_Pic16"]
+    k_ice = ref_index_ice["im_Pic16"]
     n_air = np.ones(480) + 1e-6 * (
         (77.46 + 0.459 / ((wvl * 1e6) ** 2)) * 101325 * 0.01 / 273.16
     )
@@ -128,7 +129,7 @@ def set_inputs_to_mie_solver():
 ##############################################################################
 
 
-def net_cdf_out(
+def npz_out(
     wvl,
     rds,
     particle_density,
@@ -152,108 +153,31 @@ def net_cdf_out(
     particle_tp,
     filename,
 ):
+    """Save optical properties of a grain/bubble distribution to a .npz file.
 
-    """
-    This function saves the optical properties of a grain/bubble distribution
-    to be used in the SNICAR 480bands model.
     The single scattering properties are pre-computed with Mie theory using
-    the miepython solver created by Scott Prahl's from the algorithm
+    the miepython solver created by Scott Prahl from the algorithm
     of Wiscombe 1979, and then mixed using a lognormal distribution
     following Flanner et al. 2021.
     """
+    os.makedirs(path_to_save, exist_ok=True)
+    radius_str = str(int(np.round(eff_radius_analytic * 1e6))).zfill(4)
+    out_path = f"{path_to_save}/{filename}_{radius_str}.npz"
 
-    file = xr.Dataset(
-        data_vars=dict(
-            asm_prm=(["wvl"], asymmetry),
-            ss_alb=(["wvl"], ssa),
-            ext_xsc=(["wvl"], ext_xsc),
-            sca_xsc=(["wvl"], sca_xsc),
-            abs_xsc=(["wvl"], abs_xsc),
-            ext_cff_mss=(["wvl"], ext_cff_mss),
-            sca_cff_mss=(["wvl"], sca_cff_mss),
-            abs_cff_mss=(["wvl"], abs_cff_mss),
-            ext_cff_vlm=(["wvl"], ext_cff_vlm),
-            sca_cff_vlm=(["wvl"], sca_cff_vlm),
-            abs_cff_vlm=(["wvl"], abs_cff_vlm),
-            rds_swa=eff_radius_analytic,
-            rds_swr=eff_radius_resolved,
-            rds_nma=median_radius,
-            gsd=1.5,
-            prt_dns=particle_density,
-            bnd_nbr=1,
-        ),
-        coords=dict(wvl=wvl, rds=rds),
-        attrs=dict(
-            description=descrip,
-            medium_type=medium_tp,
-            particle_type=particle_tp,
-            size_grid="log",
-            psd_type="lgn",
-        ),
+    np.savez_compressed(
+        out_path,
+        asm_prm=asymmetry,
+        ss_alb=ssa,
+        ext_xsc=ext_xsc,
+        sca_xsc=sca_xsc,
+        abs_xsc=abs_xsc,
+        ext_cff_mss=ext_cff_mss,
+        sca_cff_mss=sca_cff_mss,
+        abs_cff_mss=abs_cff_mss,
+        ext_cff_vlm=ext_cff_vlm,
+        sca_cff_vlm=sca_cff_vlm,
+        abs_cff_vlm=abs_cff_vlm,
     )
-
-    file["wvl"].attrs = {"long_name": "band center wavelength", "units": "meters"}
-    file["rds"].attrs = {"long_name": "particle radius", "units": "meters"}
-    file["asm_prm"].attrs = {"long_name": "asymmetry parameter", "units": "fraction"}
-    file["ss_alb"].attrs = {
-        "long_name": "single scattering albedo",
-        "units": "fraction",
-    }
-    file["ext_xsc"].attrs = {"long_name": "extinction cross-section", "units": "m2"}
-    file["sca_xsc"].attrs = {"long_name": "scattering cross-section", "units": "m2"}
-    file["abs_xsc"].attrs = {"long_name": "absorption cross-section", "units": "m2"}
-    file["ext_cff_mss"].attrs = {
-        "long_name": "mass extinction cross-section",
-        "units": "m2 kg-1",
-    }
-    file["sca_cff_mss"].attrs = {
-        "long_name": "mass scattering cross-section",
-        "units": "m2 kg-1",
-    }
-    file["abs_cff_mss"].attrs = {
-        "long_name": "mass absorption cross-section",
-        "units": "m2 kg-1",
-    }
-    file["ext_cff_vlm"].attrs = {
-        "long_name": "volume absorption cross-section",
-        "units": "m2 m-3",
-    }
-    file["sca_cff_vlm"].attrs = {
-        "long_name": "volume extinction cross-section",
-        "units": "m2 m-3",
-    }
-    file["abs_cff_vlm"].attrs = {
-        "long_name": "volume absorption cross-section",
-        "units": "m2 m-3",
-    }
-    file["rds_swa"].attrs = {
-        "long_name": "Analytic surface area-weighted (effective) radius",
-        "units": "meters",
-    }
-    file["rds_swr"].attrs = {
-        "long_name": "Resolved surface area-weighted (effective) radius",
-        "units": "meters",
-    }
-    file["rds_nma"].attrs = {
-        "long_name": "Analytic number-median radius",
-        "units": "meters",
-    }
-    file["gsd"].attrs = {
-        "long_name": "geometric standard deviation of lognormal distribution",
-        "units": "unitless",
-    }
-    file["prt_dns"].attrs = {"long_name": "particle density", "units": "kg m-3"}
-    file["bnd_nbr"].attrs = {
-        "long_name": "number of bands per wavelength",
-        "units": "number",
-    }
-    file.to_netcdf(
-        str(
-            f"{path_to_save}/{filename}_{str(int(np.round(eff_radius_analytic*1e6))).zfill(4)}.nc"
-        )
-    )
-
-    # return file
 
 
 def n(r, re):
@@ -322,7 +246,7 @@ def compute_ops_of_single_sized_spheres():
     return op_data
 
 ##############################################################################
-# Compute OPs of lognormal distributions of spheres and save netcdf files
+# Compute OPs of lognormal distributions of spheres and save .npz files
 ##############################################################################
 def compute_ops_of_lognormal_distributions_of_spheres(op_data):
     for re in np.concatenate(
@@ -372,7 +296,7 @@ def compute_ops_of_lognormal_distributions_of_spheres(op_data):
             (asm_prm_wvl * sca_cff_mss_wvl) * mass_distribution, axis=1
         ) / np.sum(sca_cff_mss_wvl * mass_distribution, axis=1)
 
-        net_cdf_out(
+        npz_out(
             wvl,
             rds,
             particle_density,

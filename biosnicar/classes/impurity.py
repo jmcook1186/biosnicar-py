@@ -1,7 +1,27 @@
 import os
 import numpy as np
-import xarray as xr
 import biosnicar
+
+# Module-level cache: loaded once on first use
+_lap_data = None
+
+
+def _get_lap_data():
+    global _lap_data
+    if _lap_data is None:
+        npz_path = os.path.join(
+            os.path.dirname(os.path.dirname(biosnicar.__file__)),
+            "Data", "OP_data", "480band", "lap.npz",
+        )
+        _lap_data = np.load(npz_path)
+    return _lap_data
+
+
+def invalidate_lap_cache():
+    """Reset the module-level LAP cache so new data is picked up."""
+    global _lap_data
+    _lap_data = None
+
 
 class Impurity:
     """Light absorbing impurity.
@@ -14,8 +34,7 @@ class Impurity:
         cfactor: concentration factor used to convert field measurements to model config (default=1)
         unit: the unit the concentration should be represented in (0 = ppb, 1 = cells/mL)
         conc: concentration of the impurity in each layer (in units of self.unit)
-        file: name of netCDF file containing optical properties and size distribution
-        impurity_properties: instance of opened file self.file
+        file: name of file containing optical properties and size distribution
         mac: mass absorption coefficient (m2/kg or m2/cell)
         ssa: single scattering albedo
         g: asymmetry parameter
@@ -28,10 +47,8 @@ class Impurity:
         self.conc = conc
         self.file = file
 
-        self.impurity_properties = xr.open_dataset(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/Data/OP_data/480band/lap/" + file)
-        )
+        stem = os.path.splitext(file)[0]
+        lap = _get_lap_data()
 
         if coated:
             mac_stub = "ext_cff_mss_ncl"
@@ -40,8 +57,8 @@ class Impurity:
         else:
             mac_stub = "ext_cff_mss"
 
-        self.mac = self.impurity_properties[mac_stub].values
-        self.ssa = self.impurity_properties["ss_alb"].values
-        self.g = self.impurity_properties["asm_prm"].values
+        self.mac = lap[f"{stem}__{mac_stub}"]
+        self.ssa = lap[f"{stem}__ss_alb"]
+        self.g = lap[f"{stem}__asm_prm"]
 
-        assert len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480 
+        assert len(self.mac) == 480 and len(self.ssa) == 480 and len(self.g) == 480
