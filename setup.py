@@ -57,7 +57,6 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "numpy",
-        "dask",
         "click==8",
         "matplotlib",
         "miepython",

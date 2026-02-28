@@ -7,7 +7,6 @@ dependencies:
     - python-dotenv
     - streamlit
     - pandas
-    - dask[complete]
     - matplotlib
     - miepython
     - netCDF4
