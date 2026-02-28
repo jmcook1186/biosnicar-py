@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from miepython import mie
-from plotnine import aes, geom_line, ggplot
 from scipy.signal import savgol_filter
 
 from biosnicar.classes.bio_optical_config import BioOpticalConfig
+from biosnicar.optical_properties.van_diedenhoven import calc_ssa_and_g
 
 plt.style.use("seaborn")
 
@@ -264,201 +264,43 @@ def calculate_ssps(bio_optical_config, k_rescaled, wvl_rescaled, n_rescaled):
 
     if bio_optical_config.GO:
 
-        # set up lists
-        SSA_list = []
-        Assy_list = []
-        absXS_list = []
-        Chi_abs_list = []
-        X_list = []
-
         # calculate cylinder dimensions
         diameter = 2 * r
         V = L * (np.pi * r**2)  # volume of cylinder in µm3
         Reff = (V / ((4 / 3) * np.pi)) ** 1 / 3  # effective radius
-        # (i.e. radius of sphere with equal volume to real cylinder)
-        Area_total = 2 * (np.pi * r**2) + (2 * np.pi * r) * (
-            L
-        )  # total surface area - 2 x ends plus circumference * length
+        Area_total = 2 * (np.pi * r**2) + (2 * np.pi * r) * L
         Area = Area_total / 4  # projected area
         ar = diameter / L  # aspect ratio
-        delta = 0.3
 
-        # start geometric optics calculation per wavelength
-        for i in np.arange(0, len(wvl), 1):
-            mr = n_algae[i]  # load real RI per wavelength
-            mi = k_algae[i]  # load imaginary RI per wavelength
-            wl = wvl[i]  # load wavelength
+        # SSA and asymmetry parameter via shared Van Diedenhoven parameterization
+        ss_alb, assym = calc_ssa_and_g(ar, V, Area, n_algae, k_algae, wvl)
 
-            # SSA parameterization
-            a = [0.457593, 20.9738]  # for ar=1
-
-            # SSA correction for AR != 1 (Table 2)
-            nc1 = 3
-            nc2 = 4
-            c_ij = np.zeros(nc1 * nc2 * 2).reshape((nc1, nc2, 2))
-            #   ---------- Plates ----------
-            c_ij[:, 0, 0] = [0.000527060, 0.309748, -2.58028]
-            c_ij[:, 1, 0] = [0.00867596, -0.650188, -1.34949]
-            c_ij[:, 2, 0] = [0.0382627, -0.198214, -0.674495]
-            c_ij[:, 3, 0] = [0.0108558, -0.0356019, -0.141318]
-            #   --------- Columns ----------
-            c_ij[:, 0, 1] = [0.000125752, 0.387729, -2.38400]
-            c_ij[:, 1, 1] = [0.00797282, 0.456133, 1.29446]
-            c_ij[:, 2, 1] = [0.00122800, -0.137621, -1.05868]
-            c_ij[:, 3, 1] = [0.000212673, 0.0364655, 0.339646]
-
-            # diffraction g parameterization
-            b_gdiffr = [-0.822315, -1.20125, 0.996653]
-
-            # raytracing g parameterization ar=1
-            p_a_eq_1 = [0.780550, 0.00510997, -0.0878268, 0.111549, -0.282453]
-
-            # ---- g correction for AR != 1 (Also applied to AR=1 as plate)
-            # (Table 3)
-            nq1 = 3
-            nq2 = 7
-            q_ij = np.zeros(nq1 * nq2 * 2).reshape((nq1, nq2, 2))
-            #   ---------- Plates ----------
-            q_ij[:, 0, 0] = [-0.00133106, -0.000782076, 0.00205422]
-            q_ij[:, 1, 0] = [0.0408343, -0.00162734, 0.0240927]
-            q_ij[:, 2, 0] = [0.525289, 0.418336, -0.818352]
-            q_ij[:, 3, 0] = [0.443151, 1.53726, -2.40399]
-            q_ij[:, 4, 0] = [0.00852515, 1.88625, -2.64651]
-            q_ij[:, 5, 0] = [-0.123100, 0.983854, -1.29188]
-            q_ij[:, 6, 0] = [-0.0376917, 0.187708, -0.235359]
-            #   ---------- Columns ----------
-            q_ij[:, 0, 1] = [-0.00189096, 0.000637430, 0.00157383]
-            q_ij[:, 1, 1] = [0.00981029, 0.0409220, 0.00908004]
-            q_ij[:, 2, 1] = [0.732647, 0.0539796, -0.665773]
-            q_ij[:, 3, 1] = [-1.59927, -0.500870, 1.86375]
-            q_ij[:, 4, 1] = [1.54047, 0.692547, -2.05390]
-            q_ij[:, 5, 1] = [-0.707187, -0.374173, 1.01287]
-            q_ij[:, 6, 1] = [0.125276, 0.0721572, -0.186466]
-
-            # refractive index correction of asymmetry parameter
-            c_g = np.zeros(4).reshape(2, 2)
-            c_g[:, 0] = [0.96025050, 0.42918060]
-            c_g[:, 1] = [0.94179149, -0.21600979]
-            # correction for absorption
-            s = [1.00014, 0.666094, -0.535922, -11.7454, 72.3600, -109.940]
-            u = [-0.213038, 0.204016]
-
-            # -------- selector for plates or columns
-            if ar > 1.0:
-                col_pla = 1  # columns
-            else:
-                col_pla = 0  # plates & compacts
-
-            # ------------ Size parameters -------------------
-
-            # --- absorption size parameter (Fig. 4, box 1)
-            Chi_abs = mi / wl * V / Area
-            # ----- scattering size parameter (Fig. 7, box 1)
-            Chi_scat = 2.0 * np.pi * np.sqrt(Area / np.pi) / wl
-
-            # ------------ SINGLE SCATTERING ALBEDO ----------
-
-            if Chi_abs > 0:
-                # for AR=1 (Fig. 4, box 2)
-                w_1 = 1.0 - a[0] * (1.0 - np.exp(-Chi_abs * a[1]))
-                l = np.zeros(nc1)
-                for i in range(nc2):
-                    # (Fig. 4, box 3)
-                    l[:] += c_ij[:, i, col_pla] * np.log10(ar) ** i
-                D_w = (
-                    l[0]
-                    * np.exp(-((np.log(Chi_abs) - l[2]) ** 2) / (2.0 * l[1] ** 2))
-                    / (Chi_abs * l[1] * np.sqrt(2.0 * np.pi))
-                )  # (Fig. 4, box 3)
-                w = w_1 + D_w  # (Fig. 4, box 4)
-            else:
-                w = 1.0
-
-            # --------------- ASYMMETRY PARAMETER ------------
-
-            # diffraction g
-            g_diffr = (
-                b_gdiffr[0] * np.exp(b_gdiffr[1] * np.log(Chi_scat)) + b_gdiffr[2]
-            )  # (Fig. 7, box 2)
-            g_diffr = max([g_diffr, 0.5])
-
-            # raytracing g at 862 nm
-            g_1 = 0.0
-            # (Fig. 7, box 3)
-            for i in range(len(p_a_eq_1)):
-                g_1 += p_a_eq_1[i] * delta**i
-
-            p_delta = np.zeros(nq1)
-            # (Fig. 7, box 4)
-            for i in range(nq2):
-                p_delta += q_ij[:, i, col_pla] * np.log10(ar) ** i
-            Dg = 0.0
-            # (Fig. 7, box 4)
-            for i in range(nq1):
-                Dg += p_delta[i] * delta**i
-            g_rt = 2.0 * (g_1 + Dg) - 1.0  # (Fig. 7, box 5)
-
-            # --------- ref idx correction of asym parameter (Fig. 7, box 6)
-            epsilon = c_g[0, col_pla] + c_g[1, col_pla] * np.log10(ar)
-            mr1 = 1.3038  # reference value @ 862 nm band
-            # abs function added according to corrigendum to original paper
-            C_m = abs(
-                (mr1 - epsilon) / (mr1 + epsilon) * (mr + epsilon) / (mr - epsilon)
-            )
-
-            # ---- correction for absorption (Fig. 7, box 7)
-            if Chi_abs > 0:
-                C_w0 = 0.0
-                for i in range(len(s)):
-                    C_w0 += s[i] * (1.0 - w) ** i
-                k = np.log10(ar) * u[col_pla]
-                C_w1 = k * w - k + 1.0
-                C_w = C_w0 * C_w1
-            else:
-                C_w = 1.0
-
-            # raytracing g at required wavelength
-            g_rt_corr = g_rt * C_m * C_w  # (Fig. 7, box 9)
-
-            # ------ Calc tot asym parameter + check g_tot <= 1 (Fig. 7, box 9)
-            g_tot = 1.0 / (2.0 * w) * ((2.0 * w - 1.0) * g_rt_corr + g_diffr)
-            g_tot = min([g_tot, 1.0])
-
-            absXS = (1 - (np.exp(-4 * np.pi * mi * V / Area * wvl[i]))) * Area
-            X = (2 * np.pi * Reff) / wl
-
-            # append values to output lists
-            X_list.append(X)
-            Chi_abs_list.append(Chi_abs)
-            SSA_list.append(w)
-            Assy_list.append(g_tot)
-            absXS_list.append(absXS)
-            # convert to np arrays to return by the function
-            assym = np.array(Assy_list).flatten()
-            ss_alb = np.array(SSA_list).flatten()
+        # Absorption cross section and size parameter (for optional plots)
+        absXS = (1 - np.exp(-4 * np.pi * k_algae * V / Area * wvl)) * Area
+        X = (2 * np.pi * Reff) / wvl
 
         if bio_optical_config.plot_ssps:
 
             plt.figure(1)
-            plt.plot(wvl, SSA_list, label="{}x{}".format(r, L)),
+            plt.plot(wvl, ss_alb, label="{}x{}".format(r, L)),
             plt.xlim(0.3, 1.4), plt.ylabel("SSA"),
             plt.xlabel("Wavelength (um)"), plt.grid(False),
             plt.legend(loc="best", ncol=2)
 
             plt.figure(2)
-            plt.plot(wvl, Assy_list, label="{}x{}".format(r, L)),
+            plt.plot(wvl, assym, label="{}x{}".format(r, L)),
             plt.xlim(0.3, 1.4), plt.ylabel("Assymetry Parameter"),
             plt.xlabel("Wavelength (um)"), plt.grid(False),
             plt.legend(loc="best", ncol=2)
 
             plt.figure(3)
-            plt.plot(wvl, absXS_list, label="{}x{}".format(r, L)),
+            plt.plot(wvl, absXS, label="{}x{}".format(r, L)),
             plt.xlim(0.3, 1.4), plt.ylabel("Absorption Cross Section"),
             plt.xlabel("Wavelength (um)"), plt.grid(False),
             plt.legend(loc="best", ncol=2)
 
             plt.figure(4)
-            plt.plot(wvl, X_list, label="{}x{}".format(r, L)),
+            plt.plot(wvl, X, label="{}x{}".format(r, L)),
             plt.ylabel("Size Parameter X"), plt.xlabel("Wavelength (um)"),
             plt.grid(False), plt.legend(loc="best", ncol=2)
 
