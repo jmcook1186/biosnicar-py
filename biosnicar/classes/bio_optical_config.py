@@ -52,8 +52,8 @@ class BioOpticalConfig:
         report_dims: (boolean) if True, cell dimensions printed to console
         plot_ssps: (boolean) if True, print plots with ssps
         savefig_ssps: if True, ssps plots saved in the directory savepath
-        plot_n_k_abs_cff: (boolean) if True, plot with n,k and abs_cff printed
-        saveplots_n_k_abs_cff: (boolean) if True, plots saved in the directory savepath
+        plot_k_abs_cff: (boolean) if True, plot with k and abs_cff printed
+        saveplots_k_abs_cff: (boolean) if True, plots saved in the directory savepath
         savefiles_n_k_abs_cff: (boolean) if True, files with k,n and abs_cff
             saved in the directory savepath
         savepath: (boolean) directory for saving data if
@@ -100,14 +100,14 @@ class BioOpticalConfig:
         self.report_dims = inputs["BIOOPTICAL"]["REPORT_DIMS"]
         self.plot_ssps = inputs["BIOOPTICAL"]["PLOT_SSPS"]
         self.savefig_ssps = inputs["BIOOPTICAL"]["SAVEFIG_SSPS"]
-        self.plot_n_k_abs_cff = inputs["BIOOPTICAL"]["PLOT_N_K_ABS_CFF"]
-        self.saveplots_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVEPLOTS_N_K_ABS_CFF"]
-        self.savefiles_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVEFILES_N_K_ABS_CFF"]
-        self.savepath = inputs["BIOOPTICAL"]["SAVEPATH"]
-        self.smooth = inputs["BIOOPTICAL"]["SMOOTH"]
-        self.window_size = inputs["BIOOPTICAL"]["WINDOW_SIZE"]
-        self.poly_order = inputs["BIOOPTICAL"]["POLY_ORDER"]
+        self.plot_k_abs_cff = inputs["BIOOPTICAL"]["PLOT_K_ABS_CFF"]
+        self.saveplots_k_abs_cff = inputs["BIOOPTICAL"]["SAVE_PLOT_K_ABS_CFF"]
+        self.savefiles_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVE_N_K_ABS_CFF"]
+        self.savepath = inputs["BIOOPTICAL"]["SAVE_PATH_FIG"]
+        self.smooth = inputs["CTRL"]["SMOOTH"]
+        self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
+        self.poly_order = inputs["CTRL"]["POLY_ORDER"]
         self.save_netcdf = inputs["BIOOPTICAL"]["SAVE_NETCDF"]
-        self.savepath_netcdf = inputs["BIOOPTICAL"]["SAVEPATH_NETCDF"]
+        self.savepath_netcdf = inputs["BIOOPTICAL"]["SAVE_PATH_NETCDF"]
         self.filename_netcdf = inputs["BIOOPTICAL"]["FILENAME_NETCDF"]
         self.information = inputs["BIOOPTICAL"]["INFO_NETCDF"] 

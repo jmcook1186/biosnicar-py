@@ -170,7 +170,7 @@ def validate_ice(ice):
         len(ice.water),
         len(ice.hex_side),
         len(ice.hex_length),
-        len(ice.ar),
+        len(ice.grain_ar),
         ice.nbr_lyr,
     ]
 

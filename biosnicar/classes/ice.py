@@ -48,7 +48,7 @@ class Ice:
         self.hex_side = inputs["ICE"]["HEX_SIDE"]
         self.hex_length = inputs["ICE"]["HEX_LENGTH"]
         self.shp_fctr = inputs["ICE"]["SHP_FCTR"]
-        self.ar = inputs["ICE"]["AR"]
+        self.grain_ar = inputs["ICE"]["AR"]
         self.nbr_lyr = len(self.dz)
         self.lwc = inputs["ICE"]["LWC"]
         self.lwc_pct_bbl = inputs["ICE"]["LWC_PCT_BBL"]
