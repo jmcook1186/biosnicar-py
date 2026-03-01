@@ -1,11 +1,7 @@
 import os
 import math
 import numpy as np
-<<<<<<< HEAD
-import xarray as xr
-=======
 import yaml
->>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
 
@@ -18,7 +14,10 @@ def _get_fsds_data():
     if _fsds_data is None:
         npz_path = os.path.join(
             os.path.dirname(os.path.dirname(biosnicar.__file__)),
-            "Data", "OP_data", "480band", "fsds.npz",
+            "Data",
+            "OP_data",
+            "480band",
+            "fsds.npz",
         )
         _fsds_data = np.load(npz_path)
     return _fsds_data
@@ -94,8 +93,4 @@ class Illumination:
         else:
             self.Fd = out
             self.Fs = np.zeros(self.nbr_wvl)
-<<<<<<< HEAD
         return
-=======
-        return
->>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74

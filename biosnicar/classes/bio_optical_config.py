@@ -1,6 +1,7 @@
 import numpy as np
 from biosnicar.utils.load_inputs import load_inputs
 
+
 class BioOpticalConfig:
     """Configuration class for bio-optical model.
 
@@ -95,19 +96,6 @@ class BioOpticalConfig:
         self.report_dims = inputs["BIOOPTICAL"]["REPORT_DIMS"]
         self.plot_ssps = inputs["BIOOPTICAL"]["PLOT_SSPS"]
         self.savefig_ssps = inputs["BIOOPTICAL"]["SAVEFIG_SSPS"]
-<<<<<<< HEAD
-        self.plot_k_abs_cff = inputs["BIOOPTICAL"]["PLOT_K_ABS_CFF"]
-        self.saveplots_k_abs_cff = inputs["BIOOPTICAL"]["SAVE_PLOT_K_ABS_CFF"]
-        self.savefiles_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVE_N_K_ABS_CFF"]
-        self.savepath = inputs["BIOOPTICAL"]["SAVE_PATH_FIG"]
-        self.smooth = inputs["CTRL"]["SMOOTH"]
-        self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
-        self.poly_order = inputs["CTRL"]["POLY_ORDER"]
-        self.save_netcdf = inputs["BIOOPTICAL"]["SAVE_NETCDF"]
-        self.savepath_netcdf = inputs["BIOOPTICAL"]["SAVE_PATH_NETCDF"]
-        self.filename_netcdf = inputs["BIOOPTICAL"]["FILENAME_NETCDF"]
-        self.information = inputs["BIOOPTICAL"]["INFO_NETCDF"] 
-=======
         self.plot_n_k_abs_cff = inputs["BIOOPTICAL"]["PLOT_N_K_ABS_CFF"]
         self.saveplots_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVEPLOTS_N_K_ABS_CFF"]
         self.savefiles_n_k_abs_cff = inputs["BIOOPTICAL"]["SAVEFILES_N_K_ABS_CFF"]
@@ -118,4 +106,3 @@ class BioOpticalConfig:
         self.save_to_lap = inputs["BIOOPTICAL"]["SAVE_TO_LAP"]
         self.impurity_stem = inputs["BIOOPTICAL"]["IMPURITY_STEM"]
         self.info = inputs["BIOOPTICAL"]["INFO"]
->>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74

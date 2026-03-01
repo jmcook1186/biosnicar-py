@@ -1,13 +1,10 @@
 import os
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
-import xarray as xr
-=======
 import yaml
->>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
+
 
 class Ice:
     """Snow or ice column physical properties.
@@ -41,8 +38,12 @@ class Ice:
         self.cdom = inputs["ICE"]["CDOM"]
         self.rho = inputs["ICE"]["RHO"]
         self.sfc = np.genfromtxt(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/" + inputs["PATHS"]["SFC"]), delimiter="csv"
+            str(
+                os.path.dirname(os.path.dirname(biosnicar.__file__))
+                + "/"
+                + inputs["PATHS"]["SFC"]
+            ),
+            delimiter="csv",
         )
         self.rf = inputs["ICE"]["RF"]
         self.shp = inputs["ICE"]["SHP"]
@@ -56,13 +57,15 @@ class Ice:
         self.lwc = inputs["ICE"]["LWC"]
         self.lwc_pct_bbl = inputs["ICE"]["LWC_PCT_BBL"]
         self.ref_idx_im_water = pd.read_csv(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/" + inputs["PATHS"]["RI_ICE"] + 
-            'refractive_index_water_273K_Rowe2020.csv'
-        )).k.values
-    
+            str(
+                os.path.dirname(os.path.dirname(biosnicar.__file__))
+                + "/"
+                + inputs["PATHS"]["RI_ICE"]
+                + "refractive_index_water_273K_Rowe2020.csv"
+            )
+        ).k.values
+
         self.calculate_refractive_index(input_file)
-        
 
     def calculate_refractive_index(self, input_file):
         """Calculates ice refractive index from initialized class attributes.
@@ -102,10 +105,6 @@ class Ice:
 
         self.ref_idx_re = refidx_file[str("re_" + ref_idx_name)]
         self.ref_idx_im = refidx_file[str("im_" + ref_idx_name)].copy()
-        self.fl_r_dif_a = fresnel_diffuse_file[
-            str("R_dif_fa_ice_" + ref_idx_name)
-        ]
-        self.fl_r_dif_b = fresnel_diffuse_file[
-            str("R_dif_fb_ice_" + ref_idx_name)
-        ]
+        self.fl_r_dif_a = fresnel_diffuse_file[str("R_dif_fa_ice_" + ref_idx_name)]
+        self.fl_r_dif_b = fresnel_diffuse_file[str("R_dif_fb_ice_" + ref_idx_name)]
         self.op_dir = op_dir_stub
