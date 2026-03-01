@@ -16,8 +16,6 @@ from scipy.signal import savgol_filter
 from biosnicar.classes.bio_optical_config import BioOpticalConfig
 from biosnicar.optical_properties.van_diedenhoven import calc_ssa_and_g
 
-plt.style.use("seaborn")
-
 
 def run_biooptical_model(input_file):
     """Executes functions in bio-optical model.

@@ -187,26 +187,5 @@ def validate_ice(ice):
     return
 
 
-def validate_model_config(model_config):
-    """Validates model configuration.
-
-    Args:
-        model_config: a class containing model config variables
-
-    Returns:
-        None
-
-    Raises:
-        ValueError when wavelengths are incorrect
-
-    """
-    if len(model_config.wavelengths) != 480:
-        raise ValueError("wavelength range incorrectly configured")
-    if model_config.nbr_wvl != 480:
-        raise ValueError("nbr_wvl does not equal 480")
-
-    return
-
-
 if __name__ == "__main__":
     pass

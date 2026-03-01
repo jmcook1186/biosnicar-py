@@ -26,7 +26,7 @@ radiative transfer models.
 
 """
 import numpy as np
-from scipy.signal import savgol_filter
+from biosnicar.rt_solvers.smoothing import apply_smoothing_function
 
 from biosnicar.classes.outputs import Outputs
 
@@ -156,10 +156,6 @@ def toon_solver(tau, ssa, g, L_snw, ice, illumination, model_config, rt_config):
     )
 
     F_abs = absorbed_fluxes(ice, model_config, F_net, F_top_net)
-    # Energy conservation check:
-    # % Incident direct + diffuse radiation equals(absorbed + transmitted +
-    # bulk_reflected)
-    # conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls)
     outputs = get_outputs(
         model_config, ice, illumination, F_top_pls, F_top_net, F_btm_net, F_abs, L_snw
     )
@@ -731,39 +727,6 @@ def absorbed_fluxes(ice, model_config, F_net, F_top_net):
     return F_abs
 
 
-def conservation_of_energy_check(illumination, F_abs, F_btm_net, F_top_pls):
-    """Checks there is no conservation of energy violation.
-
-    Args:
-        illumination: instance of Illumination class
-        F_abs: absorbed flux in each layer
-        F_btm_net: net flux at bottom surface
-        F_top_pls: upwards flux from upper boundary
-
-    Returns:
-        None
-
-    Raises:
-        ValueError is conservation of energy error is detected
-
-    """
-    energy_sum = (
-        (illumination.mu_not * np.pi * illumination.Fs)
-        + illumination.Fd
-        - (sum(F_abs) + F_btm_net + F_top_pls)
-    )
-
-    # spectrally-integrated terms:
-    # energy conservation total error
-    energy_error = abs(np.sum(energy_sum))
-
-    if energy_error > 1e-10:
-        energy_conservation_error = np.sum(abs(energy_sum))
-        raise ValueError(f"CONSERVATION OF ENERGY ERROR OF {energy_conservation_error}")
-
-    return
-
-
 def get_outputs(
     model_config, ice, illumination, F_top_pls, F_top_net, F_btm_net, F_abs, L_snw
 ):
@@ -861,14 +824,6 @@ def get_outputs(
     outputs.absorbed_flux_per_layer = F_abs
 
     return outputs
-
-
-def apply_smoothing_function(albedo, model_config):
-
-    yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
-    albedo = yhat
-
-    return albedo
 
 
 if __name__ == "__main__":

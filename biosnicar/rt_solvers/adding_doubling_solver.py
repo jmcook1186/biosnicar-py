@@ -30,7 +30,7 @@ solid ice layers and fresnel reflection are included.
 """
 
 import numpy as np
-from scipy.signal import savgol_filter
+from biosnicar.rt_solvers.smoothing import apply_smoothing_function
 
 from biosnicar.classes.outputs import Outputs
 
@@ -1190,24 +1190,6 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
     outputs.absorbed_flux_per_layer = F_abs_slr
 
     return outputs
-
-
-def apply_smoothing_function(albedo, model_config):
-    """Applies Savitsky-Golay smoothing function to albedo, if toggled.
-
-    Args:
-        albedo: array of albedo values, likely passed as outputs.albedo
-        model_config: instance of ModelConfig
-
-    Returns:
-        albedo: updated array of albedo values
-
-    """
-
-    yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
-    albedo = yhat
-
-    return albedo
 
 
 if __name__ == "__main__":
