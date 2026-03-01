@@ -14,19 +14,15 @@ from biosnicar.classes import (
 
 
 def setup_snicar(input_file):
-    """Builds impurity array and instances of all classes according to config in yaml file.
+    """Build all model objects from a YAML configuration file.
 
     Args:
-        None
+        input_file: Path to the YAML config, or ``"default"`` to use the
+            bundled ``inputs.yaml``.
 
     Returns:
-        ice: instance of Ice class
-        illumination: instance of Illumination class
-        rt_config: instance of RTConfig class
-        model_config: instance of ModelConfig class
-        plot_config: instance of PlotConfig class
-        display_config: instance of DisplayConfig class
-
+        Tuple of (ice, illumination, rt_config, model_config, plot_config,
+        impurities).
     """
     # define input file
     if input_file == "default":
@@ -55,18 +51,13 @@ def setup_snicar(input_file):
 
 
 def build_classes(input_file):
-    """Instantiates classes according to config in yaml file.
+    """Instantiate model classes from a YAML config file.
 
     Args:
-        None
+        input_file: Path to the YAML configuration file.
 
     Returns:
-        ice: instance of Ice class
-        illumination: instance of Illumination class
-        rt_config: instance of RTConfig class
-        model_config: instance of ModelConfig class
-        plot_config: instance of PlotConfig class
-        display_config: instance of DisplayConfig class
+        Tuple of (ice, illumination, rt_config, model_config, plot_config).
     """
 
     ice = Ice(input_file)
@@ -79,16 +70,13 @@ def build_classes(input_file):
 
 
 def build_impurities_array(input_file):
-    """Creates an array of instances of Impurity.
-
-    creates an array of impurities - each one an instance of Impurity with
-    properties defined in yaml file.
+    """Create a list of Impurity instances from YAML config.
 
     Args:
-        None
+        input_file: Path to the YAML configuration file.
 
     Returns:
-        impurities: array of instances of Impurity
+        List of :class:`~biosnicar.classes.impurity.Impurity` instances.
     """
 
     inputs = load_inputs(input_file)

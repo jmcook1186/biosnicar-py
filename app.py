@@ -1,10 +1,7 @@
 import numpy as np
 import pandas as pd
 import biosnicar
-from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
-from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.drivers.setup_snicar import setup_snicar
-from biosnicar.utils.validate_inputs import validate_inputs
+from biosnicar.drivers.run_model import run_model
 import plotly.express as px
 import streamlit as st
 
@@ -71,68 +68,43 @@ def run_snicar(
     snow_algae: int,
     solar_zenith_angle: int,
 ) -> dict:
-    """Runs biosnicar
+    """Runs biosnicar via the unified run_model() entry point.
 
     Args:
-        layer (str): _description_
-        thickness (float): _description_
-        radius (int): _description_
-        density (int): _description_
-        black_carbon (int): _description_
-        glacier_algae (int): _description_
-        snow_algae (int): _description_
-        solar_zenith_angle (int): _description_
+        layer: "grains" or "solid ice"
+        thickness: total ice thickness in metres
+        radius: grain/bubble radius in microns
+        density: layer density in kg/m³
+        lwc: liquid water content
+        black_carbon: BC concentration in ppb
+        glacier_algae: glacier algae concentration in cells/mL
+        snow_algae: snow algae concentration in cells/mL
+        solar_zenith_angle: solar zenith angle in degrees
 
     Returns:
-        dict: Dict with result for display.
+        dict with albedo Series, broadband albedo, and CSV data.
     """
-
-    input_file = "app_inputs.yaml"
-
     if layer == "grains":
-        layer = 3
+        layer_type = 3
     elif layer == "solid ice":
-        layer = 1
+        layer_type = 1
     else:
         raise ValueError("invalid layer type")
 
-    # first build classes from config file and validate their contents
-    (
-        ice,
-        illumination,
-        rt_config,
-        model_config,
-        plot_config,
-        impurities,
-    ) = setup_snicar(input_file)
-
-    # load base classes from default inputs.yaml
-    # then adjust for user inputs
-    ice.layer_type = [layer, layer]
-    ice.dz = [0.02, thickness-0.02]
-    ice.rds = [radius, radius]
-    ice.rho = [density, density]
-    ice.lwc = [lwc, lwc]
-
-    impurities[0].conc = [black_carbon, 0]
-    impurities[1].conc = [snow_algae, 0]
-    impurities[2].conc = [glacier_algae, 0]
-
-    illumination.solzen = solar_zenith_angle
-    illumination.calculate_irradiance()
-    # validate inputs to ensure no invalid combinations have been chosen
-    status = validate_inputs(ice, illumination, impurities)
-
-    # now get the optical properties of the ice column
-    ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
-    tau, ssa, g, L_snw = mix_in_impurities(
-        ssa_snw, g_snw, mac_snw, ice, impurities, model_config
+    outputs = run_model(
+        solver="adding-doubling",
+        validate=True,
+        solzen=solar_zenith_angle,
+        rds=radius,
+        rho=density,
+        dz=[0.02, thickness - 0.02],
+        lwc=lwc,
+        layer_type=layer_type,
+        impurity_0_conc=[black_carbon, 0],
+        impurity_1_conc=[snow_algae, 0],
+        impurity_2_conc=[glacier_algae, 0],
     )
 
-    # now run one or both of the radiative transfer solvers
-    outputs = adding_doubling_solver(
-        tau, ssa, g, L_snw, ice, illumination, model_config
-    )
     rounded_broandband_albedo = np.round(outputs.BBA, 2)
     wave_length = np.arange(0.205, 5, 0.01)
     albedo = pd.Series(outputs.albedo, index=wave_length, name="albedo")
@@ -142,7 +114,6 @@ def run_snicar(
     return {
         "albedo": albedo,
         "broadband": rounded_broandband_albedo,
-        "status": status,
         "albedo_csv": albedo_csv,
     }
 

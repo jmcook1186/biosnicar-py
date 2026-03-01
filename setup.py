@@ -22,8 +22,7 @@ def get_version(rel_path):
 
 setup(
     name="biosnicar",
-    package_dir={"": "biosnicar"},
-    packages=find_packages(where="biosnicar"),
+    packages=find_packages(exclude=["tests*", "experiments*", "scripts*"]),
     version=get_version("biosnicar/__init__.py"),
     author="BioSNICAR team",
     author_email="biosnicar@proton.me",
@@ -60,9 +59,9 @@ setup(
         "matplotlib",
         "miepython",
         "pandas",
+        "pyyaml",
         "scipy",
         "seaborn",
-        "plotnine",
-        "statsmodels",
+        "tqdm",
     ],
 )

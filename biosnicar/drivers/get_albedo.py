@@ -1,51 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from biosnicar.utils.validate_inputs import validate_inputs
-from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
-from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
-from biosnicar.utils.display import display_out_data, plot_albedo
-from biosnicar.drivers.setup_snicar import setup_snicar
-from biosnicar.rt_solvers.toon_rt_solver import toon_solver
+from biosnicar.drivers.run_model import run_model
 
 
 def get(solver, plot, validate):
-    (
-        ice,
-        illumination,
-        rt_config,
-        model_config,
-        plot_config,
-        impurities,
-    ) = setup_snicar("default")
+    """Run BioSNICAR with default inputs and return spectral albedo.
 
-    if validate:
-        validate_inputs(ice, illumination, impurities)
+    Thin wrapper around :func:`~biosnicar.drivers.run_model.run_model`
+    that returns only the albedo array for backwards compatibility.
 
-    # now get the optical properties of the ice column
-    ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
-    tau, ssa, g, L_snw = mix_in_impurities(
-        ssa_snw, g_snw, mac_snw, ice, impurities, model_config
-    )
+    Args:
+        solver: ``"adding-doubling"`` or ``"toon"``.
+        plot: If True, display a spectral albedo plot.
+        validate: If True, validate inputs before running.
 
-    # now run one or both of the radiative transfer solvers
-    if solver == "toon":
-        print("\nRunning biosnicar with the Toon solver\n")
-        outputs = toon_solver(
-            tau, ssa, g, L_snw, ice, illumination, model_config, rt_config
-        )
-    elif solver == "adding-doubling":
-        print("\nRunning biosnicar with the adding-doubling solver\n")
-
-        outputs = adding_doubling_solver(
-            tau, ssa, g, L_snw, ice, illumination, model_config
-        )
-    else:
-        raise ValueError(
-            "ERROR: solver not recognized, please choose toon or adding-doubling"
-        )
-
-    if plot:
-        plot_albedo(plot_config, model_config, outputs.albedo)
-    display_out_data(outputs)
+    Returns:
+        numpy array of spectral albedo (480 wavelengths).
+    """
+    outputs = run_model(solver=solver, validate=validate, plot=plot)
     return outputs.albedo

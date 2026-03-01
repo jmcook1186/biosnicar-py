@@ -48,11 +48,12 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+import biosnicar
 from biosnicar.optical_properties.van_diedenhoven import calc_ssa_and_g
 
 # Set paths
-SAVEPATH = "./data/GO_files/480band/"
-DATAPATH = "./data/OP_data/480band/rfidx_ice.npz"
+SAVEPATH = str(biosnicar.DATA_DIR / "GO_files" / "480band")
+DATAPATH = str(biosnicar.DATA_DIR / "OP_data" / "480band" / "rfidx_ice.npz")
 RI_SOURCE = 2
 
 

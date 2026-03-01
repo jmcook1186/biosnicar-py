@@ -16,14 +16,7 @@ Example usage::
 
 import itertools
 import re
-import sys
 from pathlib import Path
-
-# Ensure the repo root is on sys.path so `biosnicar.*` imports work
-# even when this file is run directly (e.g. `python biosnicar/drivers/sweep.py`).
-_REPO_ROOT = str(Path(__file__).resolve().parent.parent.parent)
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
 
 import numpy as np
 import pandas as pd
@@ -40,7 +33,7 @@ _IMPURITY_CONC_RE = re.compile(r"^impurity\.(\d+)\.conc$")
 _ILLUMINATION_KEYS = {"solzen", "direct", "incoming"}
 
 # Parameter keys that apply to the ice object (broadcast to all layers)
-_ICE_BROADCAST_KEYS = {"rds", "rho", "dz", "layer_type"}
+_ICE_BROADCAST_KEYS = {"rds", "rho", "dz", "lwc", "layer_type"}
 
 _VALID_KEYS = _ILLUMINATION_KEYS | _ICE_BROADCAST_KEYS
 

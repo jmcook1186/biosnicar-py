@@ -1,4 +1,3 @@
-import os
 import math
 import numpy as np
 import biosnicar
@@ -11,13 +10,7 @@ _fsds_data = None
 def _get_fsds_data():
     global _fsds_data
     if _fsds_data is None:
-        npz_path = os.path.join(
-            os.path.dirname(os.path.dirname(biosnicar.__file__)),
-            "data",
-            "OP_data",
-            "480band",
-            "fsds.npz",
-        )
+        npz_path = str(biosnicar.DATA_DIR / "OP_data" / "480band" / "fsds.npz")
         _fsds_data = np.load(npz_path)
     return _fsds_data
 

@@ -3,6 +3,8 @@ import numpy as np
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
 
+_BASE = str(biosnicar.PROJECT_ROOT)
+
 class ModelConfig:
     """Model configuration.
 
@@ -30,7 +32,7 @@ class ModelConfig:
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]
         self.poly_order = inputs["CTRL"]["POLY_ORDER"]
-        self.dir_base = str(os.path.dirname(os.path.dirname(biosnicar.__file__)))+ "/"
+        self.dir_base = _BASE + "/"
         self.dir_wvl = inputs["PATHS"]["WVL"]
         self.sphere_ice_path = inputs["PATHS"]["SPHERE_ICE"]
         self.sphere_water_path = inputs["PATHS"]["SPHERE_WATER"]

@@ -4,6 +4,8 @@ import pandas as pd
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
 
+_BASE = str(biosnicar.PROJECT_ROOT)
+
 
 class Ice:
     """Snow or ice column physical properties.
@@ -37,11 +39,7 @@ class Ice:
         self.cdom = inputs["ICE"]["CDOM"]
         self.rho = inputs["ICE"]["RHO"]
         self.sfc = np.genfromtxt(
-            str(
-                os.path.dirname(os.path.dirname(biosnicar.__file__))
-                + "/"
-                + inputs["PATHS"]["SFC"]
-            ),
+            _BASE + "/" + inputs["PATHS"]["SFC"],
             delimiter="csv",
         )
         self.rf = inputs["ICE"]["RF"]
@@ -56,12 +54,8 @@ class Ice:
         self.lwc = inputs["ICE"]["LWC"]
         self.lwc_pct_bbl = inputs["ICE"]["LWC_PCT_BBL"]
         self.ref_idx_im_water = pd.read_csv(
-            str(
-                os.path.dirname(os.path.dirname(biosnicar.__file__))
-                + "/"
-                + inputs["PATHS"]["RI_ICE"]
-                + "refractive_index_water_273K_Rowe2020.csv"
-            )
+            os.path.join(_BASE, inputs["PATHS"]["RI_ICE"],
+                         "refractive_index_water_273K_Rowe2020.csv")
         ).k.values
 
         self.calculate_refractive_index(input_file)
@@ -90,8 +84,7 @@ class Ice:
 
         inputs = load_inputs(input_file)
 
-        base = os.path.dirname(os.path.dirname(biosnicar.__file__))
-        ri_ice_dir = os.path.join(base, inputs["PATHS"]["RI_ICE"])
+        ri_ice_dir = os.path.join(_BASE, inputs["PATHS"]["RI_ICE"])
 
         refidx_file = np.load(os.path.join(ri_ice_dir, "rfidx_ice.npz"))
         fresnel_diffuse_file = np.load(

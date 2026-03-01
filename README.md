@@ -69,7 +69,27 @@ The model driver and all the core source code can be found in `./biosnicar`. Fro
 
 This will run the model with all the default settings. The user will see a list of output values printed to the console and a spectral albedo plot appears in a separate window. The code can also be run in an interactive session (Jupyter/iPython) in which case the relevant data and figure will appear in the interactive console.
 
-Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for those in `inputs.yaml`.
+### Programmatic API — `run_model()`
+
+For programmatic use, `run_model()` is the recommended single entry point. It accepts keyword overrides for any model parameter, runs the full pipeline (setup → optical properties → impurity mixing → radiative transfer), and returns an `Outputs` object:
+
+```python
+from biosnicar.drivers.run_model import run_model
+
+# Run with default inputs
+outputs = run_model()
+print(outputs.BBA)
+
+# Override specific parameters
+outputs = run_model(solzen=50, rds=1000, impurity_0_conc=500)
+print(outputs.albedo)  # 480-element spectral albedo
+```
+
+Supported override keys: `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `lwc`, `layer_type`, and `impurity_{i}_conc` (where `i` is the 0-based impurity index). Scalar values for ice parameters are broadcast to all layers; scalar impurity concentrations are applied to the first layer only.
+
+`run_model()` is also accessible as `biosnicar.run_model()` after `import biosnicar`.
+
+Most users will want to experiment with changing input parameters. For batch configuration, adjust the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code.
 
 ### Parameter Sweeps
 
