@@ -4,14 +4,14 @@ This guide covers how to add new data to the three main data categories:
 light-absorbing particles (LAP), incoming irradiance (FSDS), and ice grain
 lookup tables (LUT).
 
-All data lives under `Data/OP_data/480band/`. Each category uses a single
+All data lives under `data/OP_data/480band/`. Each category uses a single
 compressed `.npz` archive loaded once at runtime.
 
 ---
 
 ## 1. Light-Absorbing Particles (LAP)
 
-**Archive:** `Data/OP_data/480band/lap.npz`
+**Archive:** `data/OP_data/480band/lap.npz`
 **Build script:** `scripts/build_consolidated_npz.py`
 
 ### Key scheme
@@ -36,7 +36,7 @@ impurity stems.
    at least `ss_alb`, `asm_prm`, and one of the `ext_*` variables above,
    each of shape `(480,)`.
 
-2. Place the individual `.npz` file in a temporary `Data/OP_data/480band/lap/`
+2. Place the individual `.npz` file in a temporary `data/OP_data/480band/lap/`
    directory alongside the other individual files (you can extract them from
    `lap.npz` if needed, or just add yours).
 
@@ -67,7 +67,7 @@ impurity stems.
 
 ## 2. Incoming Irradiance (FSDS)
 
-**Archive:** `Data/OP_data/480band/fsds.npz`
+**Archive:** `data/OP_data/480band/fsds.npz`
 **Build script:** `scripts/build_consolidated_npz.py`
 
 ### Key scheme
@@ -85,7 +85,7 @@ Keys follow the pattern:
 1. Generate an FSDS file (e.g., from a radiative transfer model). It should
    contain a `flx_frc_sfc` variable of shape `(480,)` in a `.npz` file.
 
-2. Place the individual `.npz` in a temporary `Data/OP_data/480band/fsds/`
+2. Place the individual `.npz` in a temporary `data/OP_data/480band/fsds/`
    directory.
 
 3. Run the consolidation script:
@@ -103,7 +103,7 @@ Keys follow the pattern:
 
 ## 3. Ice Grain Lookup Tables (LUT)
 
-**Archive directory:** `Data/OP_data/480band/luts/`
+**Archive directory:** `data/OP_data/480band/luts/`
 **Build script:** `scripts/build_lookup_tables.py`
 
 The LUT system stores optical properties for ice grains and bubbles indexed
@@ -126,7 +126,7 @@ by effective radius. Each refractive-index variant gets its own `.npz` file.
 
 2. Place them in the appropriate source directory and run the LUT build
    script to consolidate them into the compact `.npz` archives in
-   `Data/OP_data/480band/luts/`.
+   `data/OP_data/480band/luts/`.
 
 ---
 

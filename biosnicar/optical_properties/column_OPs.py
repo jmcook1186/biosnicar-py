@@ -129,7 +129,7 @@ def get_layer_OPs(ice, model_config):
 
             if ice.cdom[i]:
                 cdom = pd.read_csv(
-                    model_config.dir_base + "Data/OP_data/k_cdom_240_750.csv"
+                    model_config.dir_base + "data/OP_data/k_cdom_240_750.csv"
                 )
                 cdom_ref_idx_im = np.array(cdom).flatten()
                 # rescale to SNICAR resolution

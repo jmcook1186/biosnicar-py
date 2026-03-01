@@ -11,7 +11,7 @@ def _get_lap_data():
     if _lap_data is None:
         npz_path = os.path.join(
             os.path.dirname(os.path.dirname(biosnicar.__file__)),
-            "Data", "OP_data", "480band", "lap.npz",
+            "data", "OP_data", "480band", "lap.npz",
         )
         _lap_data = np.load(npz_path)
     return _lap_data

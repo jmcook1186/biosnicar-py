@@ -24,7 +24,7 @@ def run_biooptical_model(input_file):
 
     Calling `run_biooptical_model()` with no arguments runs the full bio-optical model
     with config defined in inputs.yaml. This includes generating new optical properties
-    and saving the resuting files to /Data/480band/laps.
+    and saving the resuting files to /data/480band/laps.
 
     To then incorporate the newly generated impurities into the radiative transfer model
     the new filenames must be used to generate instances of Impurity in setup_snicar().
@@ -448,7 +448,7 @@ def update_lap_npz(bio_optical_config, assym, ss_alb, abs_cff_rescaled):
     import biosnicar as _pkg
     npz_path = os.path.join(
         os.path.dirname(os.path.dirname(_pkg.__file__)),
-        "Data", "OP_data", "480band", "lap.npz",
+        "data", "OP_data", "480band", "lap.npz",
     )
 
     # Load existing data into a mutable dict

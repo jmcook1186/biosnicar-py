@@ -13,7 +13,7 @@ def _get_fsds_data():
     if _fsds_data is None:
         npz_path = os.path.join(
             os.path.dirname(os.path.dirname(biosnicar.__file__)),
-            "Data",
+            "data",
             "OP_data",
             "480band",
             "fsds.npz",

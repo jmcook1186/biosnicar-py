@@ -51,8 +51,8 @@ import numpy as np
 from biosnicar.optical_properties.van_diedenhoven import calc_ssa_and_g
 
 # Set paths
-SAVEPATH = "./Data/GO_files/480band/"
-DATAPATH = "./Data/OP_data/480band/rfidx_ice.npz"
+SAVEPATH = "./data/GO_files/480band/"
+DATAPATH = "./data/OP_data/480band/rfidx_ice.npz"
 RI_SOURCE = 2
 
 

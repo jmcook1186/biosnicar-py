@@ -42,7 +42,7 @@ class ModelConfig:
         self.op_dir_stubs = inputs["PATHS"]["OP_DIR_STUBS"]
         self.savefigpath = inputs["PLOT"]["SAVEPATH"]
         self.lut_dir = os.path.join(
-            self.dir_base, "Data", "OP_data", "480band", "luts"
+            self.dir_base, "data", "OP_data", "480band", "luts"
         )
         self.wavelengths = np.arange(0.205, 4.999, 0.01)
         self.nbr_wvl = len(self.wavelengths)

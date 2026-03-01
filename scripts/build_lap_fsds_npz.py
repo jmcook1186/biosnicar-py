@@ -2,10 +2,10 @@
 """Convert LAP, FSDS, and standalone netCDF files to .npz format.
 
 Converts:
-  - Data/OP_data/480band/lap/*.nc → Data/OP_data/480band/lap/*.npz
-  - Data/OP_data/480band/fsds/*.nc → Data/OP_data/480band/fsds/*.npz
-  - Data/OP_data/480band/rfidx_ice.nc → Data/OP_data/480band/rfidx_ice.npz
-  - Data/OP_data/480band/fl_reflection_diffuse.nc → Data/OP_data/480band/fl_reflection_diffuse.npz
+  - data/OP_data/480band/lap/*.nc → data/OP_data/480band/lap/*.npz
+  - data/OP_data/480band/fsds/*.nc → data/OP_data/480band/fsds/*.npz
+  - data/OP_data/480band/rfidx_ice.nc → data/OP_data/480band/rfidx_ice.npz
+  - data/OP_data/480band/fl_reflection_diffuse.nc → data/OP_data/480band/fl_reflection_diffuse.npz
 
 Usage:
     python scripts/build_lap_fsds_npz.py
@@ -17,7 +17,7 @@ import xarray as xr
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "Data" / "OP_data" / "480band"
+DATA_DIR = BASE_DIR / "data" / "OP_data" / "480band"
 
 
 def convert_lap_files():

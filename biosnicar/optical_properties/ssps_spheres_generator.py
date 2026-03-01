@@ -32,9 +32,9 @@ import pandas as pd
 
 def set_inputs_to_mie_solver():
     wvl = np.arange(0.205e-6, 5e-6, 0.01e-6)
-    ref_index_ice = np.load("Data/OP_data/480band/rfidx_ice.npz")
+    ref_index_ice = np.load("data/OP_data/480band/rfidx_ice.npz")
     ref_index_water = pd.read_csv(
-        "Data/OP_data/480band/refractive_index_water_273K_Rowe2020.csv"
+        "data/OP_data/480band/refractive_index_water_273K_Rowe2020.csv"
     )
     n_water = ref_index_water.n.values
     k_water = ref_index_water.k.values
@@ -46,12 +46,12 @@ def set_inputs_to_mie_solver():
     description = "Wiscombe 1979 solver implemented by Scott Prahl (miepython)"
 
 
-    path_to_save_temp = "Data/OP_data/480band/tmp8"  # path to temporary individual ops
+    path_to_save_temp = "data/OP_data/480band/tmp8"  # path to temporary individual ops
     air_bbl, water_bbl, ice_grain, water_grain = True, False, False, False
     small_sizes = True  # small is below 5000um for bubbles and 1500um for grains
 
     if air_bbl:
-        path_to_save_ops = "Data/OP_data/480band/bubbly_ice_files"
+        path_to_save_ops = "data/OP_data/480band/bubbly_ice_files"
         filename = "bbl"
         medium_type = "ice_Pic16"
         particle_type = "air_stp"
@@ -69,7 +69,7 @@ def set_inputs_to_mie_solver():
             sz_nbr = 500
 
     if water_bbl:
-        path_to_save_ops = "Data/OP_data/480band/bubbly_ice_files"
+        path_to_save_ops = "data/OP_data/480band/bubbly_ice_files"
         filename = "bbl_water"
         medium_type = "ice_Pic16"
         particle_type = "bbl_water"
@@ -87,7 +87,7 @@ def set_inputs_to_mie_solver():
             sz_nbr = 500
 
     if ice_grain:
-        path_to_save_ops = "../Data/OP_data/480band/ice_spherical_grains/ice_Pic16"
+        path_to_save_ops = "../data/OP_data/480band/ice_spherical_grains/ice_Pic16"
         filename = "ice_Pic16"
         medium_type = "air_stp"
         particle_type = "ice_Pic16"
@@ -105,7 +105,7 @@ def set_inputs_to_mie_solver():
             sz_nbr = 500
 
     if water_grain:
-        path_to_save_ops = "../Data/OP_data/480band/water_spherical_grains"
+        path_to_save_ops = "../data/OP_data/480band/water_spherical_grains"
         filename = "water_grain"
         medium_type = "air_stp"
         particle_type = "water_grain"

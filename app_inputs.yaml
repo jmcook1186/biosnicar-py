@@ -31,17 +31,17 @@ ICE:
   AR: [0, 0]
 
 PATHS:
-  WVL: "Data/OP_data/wavelengths.csv"
-  SPHERE_ICE:  "Data/OP_data/480band/ice_spherical_grains/"
-  SPHERE_WATER:  "Data/OP_data/480band/water_spherical_grains/"
-  HEX_ICE: "Data/OP_data/480band/ice_hexagonal_columns/"
-  BUBBLY_ICE: "Data/OP_data/480band/bubbly_ice_files/"
-  RI_ICE: "Data/OP_data/480band/"
+  WVL: "data/OP_data/wavelengths.csv"
+  SPHERE_ICE:  "data/OP_data/480band/ice_spherical_grains/"
+  SPHERE_WATER:  "data/OP_data/480band/water_spherical_grains/"
+  HEX_ICE: "data/OP_data/480band/ice_hexagonal_columns/"
+  BUBBLY_ICE: "data/OP_data/480band/bubbly_ice_files/"
+  RI_ICE: "data/OP_data/480band/"
   OP_DIR_STUBS: ["ice_Wrn84/ice_Wrn84_", "ice_Wrn08/ice_Wrn08_", "ice_Pic16/ice_Pic16_"]
-  SFC: "/Data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
-  FN_ICE: "/Data/OP_data/480band/rfidx_ice.npz"
-  FN_WATER: "/Data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
-  FLX_DIR: "Data/OP_data/480band/fsds/"
+  SFC: "/data/OP_data/480band/r_sfc/blue_ice_spectrum_s10290721.csv"
+  FN_ICE: "/data/OP_data/480band/rfidx_ice.npz"
+  FN_WATER: "/data/OP_data/Refractive_Index_Liquid_Water_Segelstein_1981.csv"
+  FLX_DIR: "data/OP_data/480band/fsds/"
   ILLUMINATION_FILE_STUBS: ["swnb_480bnd_mlw", "swnb_480bnd_mls", "swnb_480bnd_saw",
                           "swnb_480bnd_sas",  "swnb_480bnd_smm", "swnb_480bnd_hmn",
                           "swnb_480bnd_trp"]
@@ -89,29 +89,29 @@ BIOOPTICAL:
     WET_DENSITY: 1060
     DRY_DENSITY: 684
     ABS_CFF_CALC: True
-    PIGMENT_CONC: { "Data/pigments/alloxanthin.csv": 0,
-                    "Data/pigments/antheraxanthin.csv": 0,
-                    "Data/pigments/chl-a.csv": 0,
-                    "Data/pigments/chl-b.csv": 0,
-                    "Data/pigments/lutein.csv": 0,
-                    "Data/pigments/neoxanthin.csv": 0,
-                    "Data/pigments/pheophytin.csv": 0,
-                    "Data/pigments/Photop_carotenoids.csv": 0,
-                    "Data/pigments/Photos_carotenoids.csv": 0,
-                    "Data/pigments/ppg.csv": 0,
-                    "Data/pigments/trans_astaxanthin_ester.csv": 0,
-                    "Data/pigments/trans_astaxanthin.csv": 0,
-                    "Data/pigments/violaxanthin.csv": 0,
-                    "Data/pigments/zeaxanthin.csv": 0,
+    PIGMENT_CONC: { "data/pigments/alloxanthin.csv": 0,
+                    "data/pigments/antheraxanthin.csv": 0,
+                    "data/pigments/chl-a.csv": 0,
+                    "data/pigments/chl-b.csv": 0,
+                    "data/pigments/lutein.csv": 0,
+                    "data/pigments/neoxanthin.csv": 0,
+                    "data/pigments/pheophytin.csv": 0,
+                    "data/pigments/Photop_carotenoids.csv": 0,
+                    "data/pigments/Photos_carotenoids.csv": 0,
+                    "data/pigments/ppg.csv": 0,
+                    "data/pigments/trans_astaxanthin_ester.csv": 0,
+                    "data/pigments/trans_astaxanthin.csv": 0,
+                    "data/pigments/violaxanthin.csv": 0,
+                    "data/pigments/zeaxanthin.csv": 0,
                     }
-    PIGMENT_DIR: "Data/pigments/"
+    PIGMENT_DIR: "data/pigments/"
     ABS_CFF_LOAD_RECONSTRUCTED: False
     ABS_CFF_LOAD_INVIVO: True
     ABS_CFF_FILE: "file.csv"
     PCKG_SA: False
     PCKG_GA: False
-    DIR_PCKG: "Data/pigments/"
-    K_WATER_DIR: "Data/OP_data/k_ice_480.csv"
+    DIR_PCKG: "data/pigments/"
+    K_WATER_DIR: "data/OP_data/k_ice_480.csv"
     UNIT: 0
     CELL_VOLUME: 1500
     N_ALGAE: 1.4
@@ -125,7 +125,7 @@ BIOOPTICAL:
     PLOT_K_ABS_CFF: False
     SAVE_N_K_ABS_CFF: False
     SAVE_PLOT_K_ABS_CFF: False
-    SAVE_PATH_FIG: "Data/pigments/"
+    SAVE_PATH_FIG: "data/pigments/"
     SAVE_TO_LAP: False
     IMPURITY_STEM: "alg"
     INFO: "info"

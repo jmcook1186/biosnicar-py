@@ -2,13 +2,13 @@
 
 ## What changed
 
-Replaced ~11,000 individual netCDF files (1.1 GB) with 11 compressed `.npz` lookup tables (129 MB), achieving an 88% storage reduction in the `Data/OP_data/480band/` directory while preserving bit-exact accuracy at all existing grid points.
+Replaced ~11,000 individual netCDF files (1.1 GB) with 11 compressed `.npz` lookup tables (129 MB), achieving an 88% storage reduction in the `data/OP_data/480band/` directory while preserving bit-exact accuracy at all existing grid points.
 
 ## Files created
 
 - `scripts/build_lookup_tables.py` — One-time conversion script (reads netCDF, writes `.npz`, validates bit-exact equality). Kept in repo so LUTs can be regenerated from any copy of the original netCDF data.
 - `biosnicar/optical_properties/op_lookup.py` — `OpLookupTable` (1D radius index) and `HexOpLookupTable` (2D side/length index) classes with module-level caching and O(1) dict-based lookups.
-- `Data/OP_data/480band/luts/*.npz` — 11 lookup table files:
+- `data/OP_data/480band/luts/*.npz` — 11 lookup table files:
   - `ice_sphere_Pic16.npz` (1,646 radii)
   - `ice_sphere_BH83_Pic16.npz` (1,508 radii)
   - `ice_sphere_BH83_Wrn08.npz` (1,471 radii)
@@ -23,18 +23,18 @@ Replaced ~11,000 individual netCDF files (1.1 GB) with 11 compressed `.npz` look
 
 ## Files modified
 
-- `biosnicar/classes/model_config.py` — Added `self.lut_dir` attribute pointing to `Data/OP_data/480band/luts/`.
+- `biosnicar/classes/model_config.py` — Added `self.lut_dir` attribute pointing to `data/OP_data/480band/luts/`.
 - `biosnicar/optical_properties/column_OPs.py` — Replaced all `xr.open_dataset()` calls with LUT lookups. Removed `import xarray`. Added helper functions (`_sphere_lut_path`, `_hex_lut_path`, `_bubbly_air_lut_path`, `_bubbly_water_lut_path`, `_water_sphere_lut_path`) for LUT filename resolution from existing path config. Modified `add_water_coating()` to accept `ext_cff_mss_ice` as a parameter instead of reading it from a netCDF file.
 
 ## Files deleted
 
 Six netCDF directories (~11,000 files, 1.1 GB total):
-- `Data/OP_data/480band/ice_spherical_grains/`
-- `Data/OP_data/480band/ice_spherical_grains_BH83/`
-- `Data/OP_data/480band/bubbly_ice_files/`
-- `Data/OP_data/480band/bubbly_ice_files_BH83/`
-- `Data/OP_data/480band/ice_hexagonal_columns/`
-- `Data/OP_data/480band/water_spherical_grains/`
+- `data/OP_data/480band/ice_spherical_grains/`
+- `data/OP_data/480band/ice_spherical_grains_BH83/`
+- `data/OP_data/480band/bubbly_ice_files/`
+- `data/OP_data/480band/bubbly_ice_files_BH83/`
+- `data/OP_data/480band/ice_hexagonal_columns/`
+- `data/OP_data/480band/water_spherical_grains/`
 
 ## Verification
 
@@ -70,10 +70,10 @@ Overall reduction: **~88%** across both phases.
 ## Files created
 
 - `scripts/build_lap_fsds_npz.py` — Conversion script for LAP, FSDS, rfidx_ice, and fl_reflection_diffuse files. Validates bit-exact equality (with NaN-aware comparison) against source files.
-- `Data/OP_data/480band/lap/*.npz` — 40 files (variables: `ss_alb`, `asm_prm`, plus `ext_cff_mss`/`ext_xsc`/`ext_cff_mss_ncl` where present in the original).
-- `Data/OP_data/480band/fsds/*.npz` — 647 files (all original data_vars preserved).
-- `Data/OP_data/480band/rfidx_ice.npz` — Refractive index data (8 data_vars + `wvl` coordinate).
-- `Data/OP_data/480band/fl_reflection_diffuse.npz` — Fresnel reflectance data (6 coordinate variables).
+- `data/OP_data/480band/lap/*.npz` — 40 files (variables: `ss_alb`, `asm_prm`, plus `ext_cff_mss`/`ext_xsc`/`ext_cff_mss_ncl` where present in the original).
+- `data/OP_data/480band/fsds/*.npz` — 647 files (all original data_vars preserved).
+- `data/OP_data/480band/rfidx_ice.npz` — Refractive index data (8 data_vars + `wvl` coordinate).
+- `data/OP_data/480band/fl_reflection_diffuse.npz` — Fresnel reflectance data (6 coordinate variables).
 
 ## Files modified
 
@@ -88,10 +88,10 @@ Overall reduction: **~88%** across both phases.
 
 ## Files deleted
 
-- 40 `.nc` files in `Data/OP_data/480band/lap/`
-- 647 `.nc` files in `Data/OP_data/480band/fsds/`
-- `Data/OP_data/480band/rfidx_ice.nc`
-- `Data/OP_data/480band/fl_reflection_diffuse.nc`
+- 40 `.nc` files in `data/OP_data/480band/lap/`
+- 647 `.nc` files in `data/OP_data/480band/fsds/`
+- `data/OP_data/480band/rfidx_ice.nc`
+- `data/OP_data/480band/fl_reflection_diffuse.nc`
 
 ## Key implementation details
 

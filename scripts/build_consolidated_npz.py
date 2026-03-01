@@ -2,8 +2,8 @@
 """Consolidate individual LAP and FSDS .npz files into single archives.
 
 Produces:
-  - Data/OP_data/480band/lap.npz   (40 impurity files → one archive)
-  - Data/OP_data/480band/fsds.npz  (647 illumination files → one archive)
+  - data/OP_data/480band/lap.npz   (40 impurity files → one archive)
+  - data/OP_data/480band/fsds.npz  (647 illumination files → one archive)
 
 Key schemes:
   LAP:  {stem}__{variable}  e.g. "bc_ChCB_rn40_dns1270__ss_alb"
@@ -21,7 +21,7 @@ import numpy as np
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "Data" / "OP_data" / "480band"
+DATA_DIR = BASE_DIR / "data" / "OP_data" / "480band"
 
 
 def build_lap():
