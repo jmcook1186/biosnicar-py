@@ -1,5 +1,6 @@
 import numpy as np
-import yaml
+from biosnicar.utils.load_inputs import load_inputs
+
 
 class BioOpticalConfig:
     """Configuration class for bio-optical model.
@@ -52,8 +53,8 @@ class BioOpticalConfig:
         report_dims: (boolean) if True, cell dimensions printed to console
         plot_ssps: (boolean) if True, print plots with ssps
         savefig_ssps: if True, ssps plots saved in the directory savepath
-        plot_n_k_abs_cff: (boolean) if True, plot with n,k and abs_cff printed
-        saveplots_n_k_abs_cff: (boolean) if True, plots saved in the directory savepath
+        plot_k_abs_cff: (boolean) if True, plot with k and abs_cff printed
+        saveplots_k_abs_cff: (boolean) if True, plots saved in the directory savepath
         savefiles_n_k_abs_cff: (boolean) if True, files with k,n and abs_cff
             saved in the directory savepath
         savepath: (boolean) directory for saving data if
@@ -68,8 +69,7 @@ class BioOpticalConfig:
     """
 
     def __init__(self, input_file):
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.wvl = np.arange(0.200, 5, 0.001)
         self.wet_density = inputs["BIOOPTICAL"]["WET_DENSITY"]

@@ -3,7 +3,6 @@ import os
 from setuptools import find_packages, setup
 
 
-
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
     # intentionally *not* adding an encoding option to open, See:
@@ -58,8 +57,6 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "numpy",
-        "dask",
-        "click==8",
         "matplotlib",
         "miepython",
         "pandas",

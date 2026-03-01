@@ -394,7 +394,7 @@ def match_matlab_config(ice, illumination, rt_config, model_config, input_file):
     ice.ri = 2
     ice.shp = [0] * nbr_lyr
     ice.shp_fctr = [0] * nbr_lyr
-    ice.ar = [0] * nbr_lyr
+    ice.grain_ar = [0] * nbr_lyr
     ice.sfc = np.array([0.25] * model_config.nbr_wvl)
     ice.cdom = [0] * nbr_lyr
     ice.water = [0] * nbr_lyr
@@ -454,9 +454,9 @@ def test_compare_pyspec_to_matspec_ad(get_matlab_data, get_python_data, set_tole
     mat = get_matlab_data
     py = get_python_data
     tol = set_tolerance
-    bb_spec = py.loc[:, :480]
-    bb_spec = mat.loc[:, :480]
-    error = np.array(abs(bb_spec - bb_spec))
+    py_spec = py.loc[:, :480]
+    mat_spec = mat.loc[:, :480]
+    error = np.array(abs(py_spec - mat_spec))
     assert len(error[error > tol]) == 0
 
 
@@ -485,9 +485,9 @@ def test_compare_pyspec_to_matspec_clean(
     mat = get_matlab_data_clean
     py = get_python_data_clean
     tol = set_tolerance
-    bb_spec = py.loc[:, :480]
-    bb_spec = mat.loc[:, :480]
-    error = np.array(abs(bb_spec - bb_spec))
+    py_spec = py.loc[:, :480]
+    mat_spec = mat.loc[:, :480]
+    error = np.array(abs(py_spec - mat_spec))
     assert len(error[error > tol]) == 0
 
 

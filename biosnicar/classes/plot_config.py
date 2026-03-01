@@ -1,4 +1,4 @@
-import yaml
+from biosnicar.utils.load_inputs import load_inputs
 
 class PlotConfig:
     """Configuration for plotting figures.
@@ -22,8 +22,7 @@ class PlotConfig:
     """
 
     def __init__(self, input_file):
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.figsize = inputs["PLOT"]["FIG_SIZE"]
         self.facecolor = inputs["PLOT"]["FACECOLOR"]

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-from pathlib import Path
 from biosnicar.utils.validate_inputs import validate_inputs
 from biosnicar.rt_solvers.adding_doubling_solver import adding_doubling_solver
 from biosnicar.optical_properties.column_OPs import get_layer_OPs, mix_in_impurities
@@ -46,7 +44,6 @@ def get(solver, plot, validate):
         raise ValueError(
             "ERROR: solver not recognized, please choose toon or adding-doubling"
         )
-        return
 
     if plot:
         plot_albedo(plot_config, model_config, outputs.albedo)

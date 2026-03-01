@@ -3,6 +3,7 @@ import math
 import numpy as np
 import yaml
 import biosnicar
+from biosnicar.utils.load_inputs import load_inputs
 
 # Module-level cache: loaded once on first use
 _fsds_data = None
@@ -13,7 +14,10 @@ def _get_fsds_data():
     if _fsds_data is None:
         npz_path = os.path.join(
             os.path.dirname(os.path.dirname(biosnicar.__file__)),
-            "Data", "OP_data", "480band", "fsds.npz",
+            "Data",
+            "OP_data",
+            "480band",
+            "fsds.npz",
         )
         _fsds_data = np.load(npz_path)
     return _fsds_data
@@ -33,8 +37,7 @@ class Illumination:
     """
 
     def __init__(self, input_file):
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.direct = inputs["RTM"]["DIRECT"]
         self.solzen = inputs["RTM"]["SOLZEN"]

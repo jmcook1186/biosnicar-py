@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-import yaml
 from pathlib import Path
 
+from biosnicar.utils.load_inputs import load_inputs
 from biosnicar.classes import (
     Ice,
     Illumination,
@@ -44,7 +44,6 @@ def setup_snicar(input_file):
         plot_config,
     ) = build_classes(input_file)
 
-    print(model_config.window_size)
     return (
         ice,
         illumination,
@@ -92,8 +91,7 @@ def build_impurities_array(input_file):
         impurities: array of instances of Impurity
     """
 
-    with open(input_file, "r") as ymlfile:
-        inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    inputs = load_inputs(input_file)
 
     impurities = []
 
@@ -106,8 +104,6 @@ def build_impurities_array(input_file):
         impurities.append(Impurity(file, coated, unit, name, conc))
 
     return impurities
-
-    print("SETUP OK")
 
 
 if __name__ == "__main__":

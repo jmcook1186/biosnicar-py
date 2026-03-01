@@ -1,4 +1,4 @@
-import yaml
+from biosnicar.utils.load_inputs import load_inputs
 
 class RTConfig:
     """Radiative transfer configuration.
@@ -10,8 +10,7 @@ class RTConfig:
     """
 
     def __init__(self, input_file):
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.aprx_typ = inputs["RTM"]["APRX_TYP"]
         self.delta = inputs["RTM"]["DELTA"] 

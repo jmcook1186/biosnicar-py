@@ -30,7 +30,7 @@ solid ice layers and fresnel reflection are included.
 """
 
 import numpy as np
-from scipy.signal import savgol_filter
+from biosnicar.rt_solvers.smoothing import apply_smoothing_function
 
 from biosnicar.classes.outputs import Outputs
 
@@ -780,94 +780,68 @@ def calc_correction_fresnel_layer(
 
     ref_indx = ice.ref_idx_re + 1j * ice.ref_idx_im
     critical_angle = np.arcsin(ref_indx)
+    nbr_wvl = model_config.nbr_wvl
+    beam_angle = np.arccos(illumination.mu_not)
 
-    for wl in np.arange(0, model_config.nbr_wvl, 1):
-        if np.arccos(illumination.mu_not) < critical_angle[wl]:
-            # in this case, no total internal reflection
+    # --- Fresnel reflection/transmission for direct beam (all wavelengths) ---
+    # Eq. 22 Briegleb & Light 2007: Fresnel amplitude factors
+    R1 = (mu0 - nr * mu0n) / (mu0 + nr * mu0n)
+    R2 = (nr * mu0 - mu0n) / (nr * mu0 + mu0n)
+    T1 = 2 * mu0 / (mu0 + nr * mu0n)
+    T2 = 2 * mu0 / (nr * mu0 + mu0n)
 
-            # compute fresnel reflection and transmission amplitudes
-            # for two polarizations: 1=perpendicular and 2=parallel to
-            # the plane containing incident, reflected and refracted rays.
+    # Eq. 21 Briegleb & Light 2007: unpolarized direct beam
+    Rf_dir_a = 0.5 * (R1**2 + R2**2)
+    Tf_dir_a = 0.5 * (T1**2 + T2**2) * nr * mu0n / mu0
 
-            # Eq. 22  Briegleb & Light 2007
-            # Inputs to equation 21 (i.e. Fresnel formulae for R and T)
-            R1 = (mu0[wl] - nr[wl] * mu0n[wl]) / (
-                mu0[wl] + nr[wl] * mu0n[wl]
-            )  # reflection amplitude factor for perpendicular polarization
-            R2 = (nr[wl] * mu0[wl] - mu0n[wl]) / (
-                nr[wl] * mu0[wl] + mu0n[wl]
-            )  # reflection amplitude factor for parallel polarization
-            T1 = (
-                2 * mu0[wl] / (mu0[wl] + nr[wl] * mu0n[wl])
-            )  # transmission amplitude factor for perpendicular polarization
-            T2 = (
-                2 * mu0[wl] / (nr[wl] * mu0[wl] + mu0n[wl])
-            )  # transmission amplitude factor for parallel polarization
+    # Total internal reflection: override where beam_angle >= critical_angle
+    tir = beam_angle >= critical_angle[:nbr_wvl].real
+    Rf_dir_a[tir] = 1.0
+    Tf_dir_a[tir] = 0.0
 
-            # unpolarized light for direct beam
-            # Eq. 21  Brigleb and light 2007
-            Rf_dir_a = 0.5 * (R1**2 + R2**2)
-            Tf_dir_a = 0.5 * (T1**2 + T2**2) * nr[wl] * mu0n[wl] / mu0[wl]
+    # --- Precalculated diffuse reflectivities/transmissivities ---
+    # Eq. 25 Briegleb & Light 2007
+    Rf_dif_a = ice.fl_r_dif_a[:nbr_wvl]
+    Tf_dif_a = 1 - Rf_dif_a
+    Rf_dif_b = ice.fl_r_dif_b[:nbr_wvl]
+    Tf_dif_b = 1 - Rf_dif_b
 
-        else:  # in this case, total internal reflection occurs
-            Tf_dir_a = 0
-            Rf_dir_a = 1
+    # --- Update layer properties for Fresnel interface ---
+    # Snapshot originals needed by multiple update equations
+    rdif_a_old = rdif_a[:nbr_wvl, lyr].copy()
+    tdif_a_old = tdif_a[:nbr_wvl, lyr].copy()
+    tdif_b_old = tdif_b[:nbr_wvl, lyr].copy()
+    rdir_old = rdir[:nbr_wvl, lyr].copy()
+    tdir_old = tdir[:nbr_wvl, lyr].copy()
 
-        # precalculated diffuse reflectivities and transmissivities
-        # for incident radiation above and below fresnel layer, using
-        # the direct albedos and accounting for complete internal
-        # reflection from below. Precalculated because high order
-        # number of gaussian points (~256) is required for convergence:
+    # denom interface scattering
+    rintfc = 1 / (1 - Rf_dif_b * rdif_a_old)
 
-        # Eq. 25  Brigleb and light 2007
-        # diffuse reflection of flux arriving from above
+    # layer transmissivity to DIRECT radiation (Eq. B7)
+    tdir[:nbr_wvl, lyr] = (
+        Tf_dir_a * tdir_old
+        + Tf_dir_a * rdir_old * Rf_dif_b * rintfc * tdif_a_old
+    )
 
-        # reflection from diffuse unpolarized radiation
-        Rf_dif_a = ice.fl_r_dif_a[wl]
-        Tf_dif_a = 1 - Rf_dif_a  # transmission from diffuse unpolarized radiation
+    # layer reflectivity to DIRECT radiation (Eq. B7)
+    rdir[:nbr_wvl, lyr] = Rf_dir_a + Tf_dir_a * rdir_old * rintfc * Tf_dif_b
 
-        # diffuse reflection of flux arriving from below
-        Rf_dif_b = ice.fl_r_dif_b[wl]
-        Tf_dif_b = 1 - Rf_dif_b
+    # layer reflectivity to DIFFUSE radiation from above (Eq. B9)
+    rdif_a[:nbr_wvl, lyr] = Rf_dif_a + Tf_dif_a * rdif_a_old * rintfc * Tf_dif_b
 
-        # -----------------------------------------------------------------------
-        # the lyr = lyrfrsnl layer properties are updated to combine
-        # the fresnel (refractive) layer, always taken to be above
-        # the present layer lyr (i.e. be the top interface):
+    # layer reflectivity to DIFFUSE radiation from below (Eq. B10)
+    rdif_b[:nbr_wvl, lyr] = (
+        rdif_b[:nbr_wvl, lyr] + tdif_b_old * Rf_dif_b * rintfc * tdif_a_old
+    )
 
-        # denom interface scattering
-        rintfc = 1 / (1 - Rf_dif_b * rdif_a[wl, lyr])
+    # layer transmissivity to DIFFUSE radiation from above (Eq. B9)
+    tdif_a[:nbr_wvl, lyr] = tdif_a_old * rintfc * Tf_dif_a
 
-        # layer transmissivity to DIRECT radiation
-        # Eq. B7  Briegleb & Light 2007
-        tdir[wl, lyr] = (
-            Tf_dir_a * tdir[wl, lyr]
-            + Tf_dir_a * rdir[wl, lyr] * Rf_dif_b * rintfc * tdif_a[wl, lyr]
-        )
+    # layer transmissivity to DIFFUSE radiation from below (Eq. B10)
+    tdif_b[:nbr_wvl, lyr] = tdif_b_old * rintfc * Tf_dif_b
 
-        # layer reflectivity to DIRECT radiation
-        # Eq. B7  Briegleb & Light 2007
-        rdir[wl, lyr] = Rf_dir_a + Tf_dir_a * rdir[wl, lyr] * rintfc * Tf_dif_b
-
-        # R BAR = layer reflectivity to DIFFUSE radiation (above)
-        # Eq. B9  Briegleb & Light 2007
-        rdif_a[wl, lyr] = Rf_dif_a + Tf_dif_a * rdif_a[wl, lyr] * rintfc * Tf_dif_b
-
-        # R BAR = layer reflectivity to DIFFUSE radiation (below)
-        # Eq. B10  Briegleb & Light 2007
-        rdif_b[wl, lyr] = (
-            rdif_b[wl, lyr] + tdif_b[wl, lyr] * Rf_dif_b * rintfc * tdif_a[wl, lyr]
-        )
-
-        # T BAR layer transmissivity to DIFFUSE radiation (above),
-        # Eq. B9  Briegleb & Light 2007
-        tdif_a[wl, lyr] = tdif_a[wl, lyr] * rintfc * Tf_dif_a
-
-        # Eq. B10  Briegleb & Light 2007
-        tdif_b[wl, lyr] = tdif_b[wl, lyr] * rintfc * Tf_dif_b
-
-        # update trnlay to include fresnel transmission
-        trnlay[wl, lyr] = Tf_dir_a * trnlay[wl, lyr]
+    # update trnlay to include fresnel transmission
+    trnlay[:nbr_wvl, lyr] = Tf_dir_a * trnlay[:nbr_wvl, lyr]
 
     return rdif_a, rdif_b, tdif_a, tdif_b, trnlay, rdir, tdir
 
@@ -1216,24 +1190,6 @@ def get_outputs(illumination, albedo, model_config, L_snw, F_abs, F_btm_net):
     outputs.absorbed_flux_per_layer = F_abs_slr
 
     return outputs
-
-
-def apply_smoothing_function(albedo, model_config):
-    """Applies Savitsky-Golay smoothing function to albedo, if toggled.
-
-    Args:
-        albedo: array of albedo values, likely passed as outputs.albedo
-        model_config: instance of ModelConfig
-
-    Returns:
-        albedo: updated array of albedo values
-
-    """
-
-    yhat = savgol_filter(albedo, model_config.window_size, model_config.poly_order)
-    albedo = yhat
-
-    return albedo
 
 
 if __name__ == "__main__":

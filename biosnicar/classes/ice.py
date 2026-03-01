@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import yaml
 import biosnicar
+from biosnicar.utils.load_inputs import load_inputs
+
 
 class Ice:
     """Snow or ice column physical properties.
@@ -29,16 +31,19 @@ class Ice:
 
     def __init__(self, input_file):
         # use config to calculate refractive indices
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.dz = inputs["ICE"]["DZ"]
         self.layer_type = inputs["ICE"]["LAYER_TYPE"]
         self.cdom = inputs["ICE"]["CDOM"]
         self.rho = inputs["ICE"]["RHO"]
         self.sfc = np.genfromtxt(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/" + inputs["PATHS"]["SFC"]), delimiter="csv"
+            str(
+                os.path.dirname(os.path.dirname(biosnicar.__file__))
+                + "/"
+                + inputs["PATHS"]["SFC"]
+            ),
+            delimiter="csv",
         )
         self.rf = inputs["ICE"]["RF"]
         self.shp = inputs["ICE"]["SHP"]
@@ -47,18 +52,20 @@ class Ice:
         self.hex_side = inputs["ICE"]["HEX_SIDE"]
         self.hex_length = inputs["ICE"]["HEX_LENGTH"]
         self.shp_fctr = inputs["ICE"]["SHP_FCTR"]
-        self.ar = inputs["ICE"]["AR"]
+        self.grain_ar = inputs["ICE"]["AR"]
         self.nbr_lyr = len(self.dz)
         self.lwc = inputs["ICE"]["LWC"]
         self.lwc_pct_bbl = inputs["ICE"]["LWC_PCT_BBL"]
         self.ref_idx_im_water = pd.read_csv(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/" + inputs["PATHS"]["RI_ICE"] + 
-            'refractive_index_water_273K_Rowe2020.csv'
-        )).k.values
-    
+            str(
+                os.path.dirname(os.path.dirname(biosnicar.__file__))
+                + "/"
+                + inputs["PATHS"]["RI_ICE"]
+                + "refractive_index_water_273K_Rowe2020.csv"
+            )
+        ).k.values
+
         self.calculate_refractive_index(input_file)
-        
 
     def calculate_refractive_index(self, input_file):
         """Calculates ice refractive index from initialized class attributes.
@@ -82,8 +89,7 @@ class Ice:
         if self.rf < 0 or self.rf > 2:
             raise ValueError("Ice ref index type out of range - between 0 and 2 only")
 
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         base = os.path.dirname(os.path.dirname(biosnicar.__file__))
         ri_ice_dir = os.path.join(base, inputs["PATHS"]["RI_ICE"])
@@ -99,10 +105,6 @@ class Ice:
 
         self.ref_idx_re = refidx_file[str("re_" + ref_idx_name)]
         self.ref_idx_im = refidx_file[str("im_" + ref_idx_name)].copy()
-        self.fl_r_dif_a = fresnel_diffuse_file[
-            str("R_dif_fa_ice_" + ref_idx_name)
-        ]
-        self.fl_r_dif_b = fresnel_diffuse_file[
-            str("R_dif_fb_ice_" + ref_idx_name)
-        ]
+        self.fl_r_dif_a = fresnel_diffuse_file[str("R_dif_fa_ice_" + ref_idx_name)]
+        self.fl_r_dif_b = fresnel_diffuse_file[str("R_dif_fb_ice_" + ref_idx_name)]
         self.op_dir = op_dir_stub
