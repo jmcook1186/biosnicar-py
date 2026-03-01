@@ -2,17 +2,12 @@ streamlit
 pandas
 matplotlib
 miepython
+netCDF4
 scipy
 seaborn
-<<<<<<< HEAD
 xarray
-=======
-plotnine
-statsmodels
->>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74
 pytest
 tqdm
 pyyaml
 plotly
 .
-
