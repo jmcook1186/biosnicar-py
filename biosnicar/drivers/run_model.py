@@ -30,6 +30,12 @@ _ILLUMINATION_KEYS = {"solzen", "direct", "incoming"}
 # Parameter keys that apply to the ice object (broadcast to all layers)
 _ICE_BROADCAST_KEYS = {"rds", "rho", "dz", "lwc", "layer_type"}
 
+# All per-layer ice list attributes (used to resize when nbr_lyr changes)
+_ICE_ALL_LIST_ATTRS = [
+    "dz", "layer_type", "cdom", "rho", "rds", "shp", "water",
+    "hex_side", "hex_length", "shp_fctr", "grain_ar", "lwc",
+]
+
 
 def run_model(
     input_file="default",
@@ -124,6 +130,24 @@ def _apply_overrides(overrides, ice, illumination, impurities, input_file):
     needs_irradiance = False
     needs_refractive = False
 
+    # Determine the new layer count from any list-valued ice override
+    new_nbr_lyr = None
+    for key, value in overrides.items():
+        if key in _ICE_BROADCAST_KEYS and isinstance(value, list):
+            new_nbr_lyr = len(value)
+            break
+
+    # If layer count is changing, resize all per-layer ice attributes first
+    if new_nbr_lyr is not None and new_nbr_lyr != ice.nbr_lyr:
+        for attr in _ICE_ALL_LIST_ATTRS:
+            old = getattr(ice, attr)
+            if len(old) < new_nbr_lyr:
+                # Extend by repeating last value
+                setattr(ice, attr, old + [old[-1]] * (new_nbr_lyr - len(old)))
+            elif len(old) > new_nbr_lyr:
+                setattr(ice, attr, old[:new_nbr_lyr])
+        ice.nbr_lyr = new_nbr_lyr
+
     for key, value in overrides.items():
         # Illumination scalars
         if key in _ILLUMINATION_KEYS:
@@ -134,7 +158,6 @@ def _apply_overrides(overrides, ice, illumination, impurities, input_file):
         elif key in _ICE_BROADCAST_KEYS:
             if isinstance(value, list):
                 setattr(ice, key, value)
-                ice.nbr_lyr = len(ice.dz)
             else:
                 setattr(ice, key, [value] * ice.nbr_lyr)
             needs_refractive = True
