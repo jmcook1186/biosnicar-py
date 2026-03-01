@@ -5,7 +5,7 @@
 This file calculates the optial properties (single scattering albedo, assymetry
 parameter, mass absorption coefficient and extinction, scattering and absorption cross
 sections) for ice grains shaped as arbitrarily large hexagonal plates or columns.
-The optical propertiesare then saved into netCDF files in the correct format for
+The optical properties are then saved into .npz files in the correct format for
 loading into BioSNICAR.
 
 The main function calc_optical_params() is based upon the equations of
@@ -32,9 +32,9 @@ Optional plots and printed values for the optical params are provided by setting
 plots to true and the dimensions of the crystals can be reported by setting
 report_dims to true in the function call.
 
-The final function, net_cdf_updater() is used to dump the optical parameters and
-metadata into a netcdf file and save it into the working directory to be used as
-a lookup library for the two-stream radiative transfer model BoSNICAR_GO.
+The final function, npz_updater() is used to dump the optical parameters
+into a .npz file and save it into the working directory to be used as
+a lookup library for the two-stream radiative transfer model BioSNICAR.
 
 The function calls are provided at the bottom of this script in a loop, where the
 user can define the range of side lengths and depths to be looped over.
@@ -43,16 +43,16 @@ NOTE: The extinction coefficient in the current implementation is 2 for all size
 parameters as assumed in the conventional geometric optics approximation.
 """
 
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import xarray as xr
 
 from biosnicar.optical_properties.van_diedenhoven import calc_ssa_and_g
 
 # Set paths
 SAVEPATH = "./Data/GO_files/480band/"
-DATAPATH = "./Data/rfidx_ice.nc"
+DATAPATH = "./Data/OP_data/480band/rfidx_ice.npz"
 RI_SOURCE = 2
 
 
@@ -81,20 +81,20 @@ def preprocess_RI(ri_source, path_to_ri):
         wavelengths: numpy array of wavelengths (um)
     """
 
-    refidx = xr.open_dataset(path_to_ri)
-    wavelengths = refidx["wvl"].values
+    refidx = np.load(path_to_ri)
+    wavelengths = refidx["wvl"]
 
     if ri_source == 0:
-        reals = refidx["re_Wrn84"].values
-        imags = refidx["im_Wrn84"].values
+        reals = refidx["re_Wrn84"]
+        imags = refidx["im_Wrn84"]
 
     elif ri_source == 1:
-        reals = refidx["re_Wrn08"].values
-        imags = refidx["im_Wrn08"].values
+        reals = refidx["re_Wrn08"]
+        imags = refidx["im_Wrn08"]
 
     elif ri_source == 2:
-        reals = refidx["re_Pic16"].values
-        imags = refidx["im_Pic16"].values
+        reals = refidx["re_Pic16"]
+        imags = refidx["im_Pic16"]
 
     return reals, imags, wavelengths
 
@@ -175,61 +175,37 @@ def calc_optical_params(
     return g_list, ssa_list, mac_list, depth, side_length, diameter
 
 
-def net_cdf_updater(
+def npz_updater(
     ri_source, savepath, g_list, ssa_list, mac_list, depth, side_length, density
 ):
-    """Updates a template NetCDF file with new OP data.
+    """Saves optical properties to a compressed .npz file.
 
     Args:
-        ri_source: chocie of refractive index file
+        ri_source: choice of refractive index file
         savepath: path to save output data
         g_list: asymmetry parameter
         ssa_list: single scattering albedo
         mac_list: mass absorption coefficient
-        depth: length of hexagional column (um)
+        depth: length of hexagonal column (um)
         side_length: length of side of hexagonal face (um)
         density: density of material in kg/m3.
 
     Returns:
-        None but saves NetCDF file to savepath
+        None but saves .npz file to savepath
 
     """
 
-    filepath_in = savepath
-    mac_in = np.squeeze(mac_list)
-    ssa_in = np.squeeze(ssa_list)
-    g_in = np.squeeze(g_list)
+    ri_stubs = {0: "ice_Wrn84", 1: "ice_Wrn08", 2: "ice_Pic16"}
+    stub = ri_stubs[ri_source]
+    out_dir = os.path.join(savepath, stub)
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"{stub}_{side_length}_{depth}.npz")
 
-    if ri_source == 0:
-        stb1 = "ice_Wrn84/"
-        stb2 = "ice_Wrn84_"
-
-    elif ri_source == 1:
-        stb1 = "ice_Wrn08/"
-        stb2 = "ice_Wrn08_"
-
-    elif ri_source == 2:
-        stb1 = "ice_Pic16/"
-        stb2 = "ice_Pic16_"
-
-    icefile = pd.DataFrame()
-    icefile["asm_prm"] = g_in
-    icefile["ss_alb"] = ssa_in
-    icefile["ext_cff_mss"] = mac_in
-    icefile = icefile.to_xarray()
-    icefile.attrs["medium_type"] = "air"
-    icefile.attrs[
-        "description"
-    ] = f"""Optical properties for ice grain: hexagonal column of side
-    length {side_length}um and length {depth}um"""
-    icefile.attrs["psd"] = "monodisperse"
-    icefile.attrs["side_length_um"] = depth
-    icefile.attrs["density_kg_m3"] = density
-    icefile.attrs[
-        "origin"
-    ] = "Optical properties derived from geometrical optics calculations"
-    icefile.to_netcdf(
-        str(filepath_in + stb1 + stb2 + "{}_{}.nc".format(str(side_length), str(depth)))
+    np.savez_compressed(
+        out_path,
+        asm_prm=np.squeeze(g_list),
+        ss_alb=np.squeeze(ssa_list),
+        ext_cff_mss=np.squeeze(mac_list),
     )
 
     return
@@ -255,7 +231,7 @@ def net_cdf_updater(
 #             side_length, depth, reals, imags, wavelengths, plots=False, report_dims=True
 #         )
 
-#         net_cdf_updater(
+#         npz_updater(
 #             RI_SOURCE, SAVEPATH, g_list, ssa_list, mac_list, depth, side_length, 917
 #         )
 

@@ -1,7 +1,8 @@
 import codecs
 import os
-
 from setuptools import find_packages, setup
+
+
 
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
@@ -62,6 +63,11 @@ setup(
         "pandas",
         "scipy",
         "seaborn",
+<<<<<<< HEAD
         "xarray",
+=======
+        "plotnine",
+        "statsmodels",
+>>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74
     ],
 )

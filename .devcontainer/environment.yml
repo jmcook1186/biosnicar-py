@@ -8,10 +8,10 @@ dependencies:
     - pandas
     - matplotlib
     - miepython
-    - netCDF4
     - scipy
     - seaborn
-    - xarray
+    - plotnine
+    - statsmodels
     - pytest
     - tqdm
     - pyyaml

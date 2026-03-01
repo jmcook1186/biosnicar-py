@@ -421,11 +421,11 @@ def match_matlab_config(ice, illumination, rt_config, model_config, input_file):
     impurities = []
 
     conc = [0] * nbr_lyr
-    impurity0 = Impurity("bc_ChCB_rn40_dns1270.nc", False, 0, "bc", conc)
+    impurity0 = Impurity("bc_ChCB_rn40_dns1270.npz", False, 0, "bc", conc)
     impurities.append(impurity0)
 
     assert (impurities[0].name == "bc") and (
-        impurities[0].file == "bc_ChCB_rn40_dns1270.nc"
+        impurities[0].file == "bc_ChCB_rn40_dns1270.npz"
     )
 
     return ice, illumination, impurities, rt_config, model_config
@@ -644,7 +644,7 @@ def test_var_fuzzer(rds, rho, zen, dust, algae, fuzz, input_file):
         conc1 = [0] * len(ice.dz)
         conc1[0] = algae
         impurity0 = Impurity(
-            "mie_sot_ChC90_dns_1317.nc",
+            "mie_sot_ChC90_dns_1317.npz",
             False,
             0,
             "bc",
@@ -655,7 +655,7 @@ def test_var_fuzzer(rds, rho, zen, dust, algae, fuzz, input_file):
         conc2 = [0] * len(ice.dz)
         conc2[0] = dust
         impurity1 = Impurity(
-            "dust_balkanski_central_size1.nc",
+            "dust_balkanski_central_size1.npz",
             False,
             0,
             "dust1",

@@ -48,7 +48,7 @@ def validate_snow_algae(impurities):
     """
 
     for i, impurity in enumerate(impurities):
-        if impurity.file == "snw_alg_r025um_chla020_chlb025_cara150_carb140.nc" and (
+        if impurity.file == "snw_alg_r025um_chla020_chlb025_cara150_carb140.npz" and (
             np.sum(impurity.conc) > 0
         ):
             if impurity.unit != 0:
@@ -61,7 +61,7 @@ def validate_snow_algae(impurities):
                 print("be warned the snow algae optical properties")
                 print("are theoretical and yet to be field validated")
         elif (
-            impurity.file == "Data/OP_data/480band/lap/SA_Chevrollier2022_r8.99.nc"
+            impurity.file == "SA_Chevrollier2022_r8.99.npz"
             and (np.sum(impurity.conc) > 0)
         ):
             if impurity.unit != 1:
@@ -93,14 +93,14 @@ def validate_glacier_algae(impurities):
     """
 
     for i, impurity in enumerate(impurities):
-        if impurity.file == "GA_Chevrollier2022_r4.9_L18.8.nc" and (
+        if impurity.file == "GA_Chevrollier2022_r4.9_L18.8.npz" and (
             np.sum(impurity.conc) > 0
         ):
             if impurity.unit != 1:
                 raise ValueError(
                     "\nyour chosen glacier algae file has its absorption coefficient in m2/cell, so please express concentration in cells/mL"
                 )
-        elif impurity.file == "Cook2020_glacier_algae_4_40.nc" and (
+        elif impurity.file == "Cook2020_glacier_algae_4_40.npz" and (
             np.sum(impurity.conc) > 0
         ):
             if impurity.unit != 0:

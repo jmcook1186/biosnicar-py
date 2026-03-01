@@ -1,7 +1,11 @@
 import os
 import numpy as np
 import pandas as pd
+<<<<<<< HEAD
 import xarray as xr
+=======
+import yaml
+>>>>>>> d468b9445d541238e37924b8c9fbb7befad01d74
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
 
@@ -84,24 +88,24 @@ class Ice:
 
         inputs = load_inputs(input_file)
 
-        refidx_file = xr.open_dataset(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/" + inputs["PATHS"]["RI_ICE"] + "rfidx_ice.nc"))
-        fresnel_diffuse_file = xr.open_dataset(
-            str(os.path.dirname(os.path.dirname(biosnicar.__file__))
-                 + "/" +
-            inputs["PATHS"]["RI_ICE"] + "fl_reflection_diffuse.nc"))
+        base = os.path.dirname(os.path.dirname(biosnicar.__file__))
+        ri_ice_dir = os.path.join(base, inputs["PATHS"]["RI_ICE"])
+
+        refidx_file = np.load(os.path.join(ri_ice_dir, "rfidx_ice.npz"))
+        fresnel_diffuse_file = np.load(
+            os.path.join(ri_ice_dir, "fl_reflection_diffuse.npz")
+        )
 
         rf = inputs["ICE"]["RF"]
         op_dir_stub = inputs["PATHS"]["OP_DIR_STUBS"][rf]
         ref_idx_name = op_dir_stub[4:9]
 
-        self.ref_idx_re = refidx_file[str("re_" + ref_idx_name)].values
-        self.ref_idx_im = refidx_file[str("im_" + ref_idx_name)].values
+        self.ref_idx_re = refidx_file[str("re_" + ref_idx_name)]
+        self.ref_idx_im = refidx_file[str("im_" + ref_idx_name)].copy()
         self.fl_r_dif_a = fresnel_diffuse_file[
             str("R_dif_fa_ice_" + ref_idx_name)
-        ].values
+        ]
         self.fl_r_dif_b = fresnel_diffuse_file[
             str("R_dif_fb_ice_" + ref_idx_name)
-        ].values
-        self.op_dir = op_dir_stub 
+        ]
+        self.op_dir = op_dir_stub
