@@ -4,7 +4,6 @@ channels:
   - defaults
 dependencies:
   - pip:
-    - python-dotenv
     - streamlit
     - pandas
     - matplotlib
@@ -13,11 +12,8 @@ dependencies:
     - scipy
     - seaborn
     - xarray
-    - plotnine
-    - statsmodels
     - pytest
     - tqdm
     - pyyaml
-    - bump2version
     - plotly
 prefix: /opt/conda

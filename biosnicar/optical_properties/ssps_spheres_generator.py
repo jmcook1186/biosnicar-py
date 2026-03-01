@@ -121,7 +121,7 @@ def set_inputs_to_mie_solver():
             sz_max = 1e-01
             sz_nbr = 500
 
-    return wvl, ref_index_ice, ref_index_water, n_water, k_water, n_ice, k_ice, n_air, k_in, n_ext, sz_min, sz_max, sz_nbr, path_to_save_temp, air_bbl, water_bbl, ice_grain, water_grain, path_to_save_ops, filename, medium_type, particle_type, particle_density, description
+    return wvl, ref_index_ice, ref_index_water, n_water, k_water, n_ice, k_ice, n_air, n_in, k_in, n_ext, sz_min, sz_max, sz_nbr, path_to_save_temp, air_bbl, water_bbl, ice_grain, water_grain, path_to_save_ops, filename, medium_type, particle_type, particle_density, description
 
 ##############################################################################
 # Functions
@@ -298,7 +298,9 @@ def n(r, re):
 ##############################################################################
 # Compute OPs of single-size spheres
 ##############################################################################
-def compute_ops_of_single_sized_spheres():
+def compute_ops_of_single_sized_spheres(
+    wvl, n_in, k_in, n_ext, sz_min, sz_max, sz_nbr, path_to_save_temp, filename
+):
     rds = np.logspace(np.log10(sz_min), np.log10(sz_max), sz_nbr)
 
     start = time.time()
@@ -319,12 +321,15 @@ def compute_ops_of_single_sized_spheres():
     )
     op_data = np.array([np.load(fname) for fname in op_filenames_ordered])
 
-    return op_data
+    return op_data, rds
 
 ##############################################################################
 # Compute OPs of lognormal distributions of spheres and save netcdf files
 ##############################################################################
-def compute_ops_of_lognormal_distributions_of_spheres(op_data):
+def compute_ops_of_lognormal_distributions_of_spheres(
+    op_data, rds, wvl, particle_density, path_to_save_ops,
+    description, medium_type, particle_type, filename
+):
     for re in np.concatenate(
         [np.arange(10e-6, 100e-6, 5e-6), np.arange(100e-6, 5000e-6, 10e-6)]
     ):

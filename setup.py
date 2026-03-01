@@ -57,14 +57,11 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "numpy",
-        "click==8",
         "matplotlib",
         "miepython",
         "pandas",
         "scipy",
         "seaborn",
         "xarray",
-        "plotnine",
-        "statsmodels",
     ],
 )

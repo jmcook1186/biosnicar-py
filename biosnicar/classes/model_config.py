@@ -1,7 +1,7 @@
 import os
 import numpy as np
-import yaml
 import biosnicar
+from biosnicar.utils.load_inputs import load_inputs
 
 class ModelConfig:
     """Model configuration.
@@ -25,8 +25,7 @@ class ModelConfig:
     """
 
     def __init__(self, input_file):
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.smooth = inputs["CTRL"]["SMOOTH"]
         self.window_size = inputs["CTRL"]["WINDOW_SIZE"]

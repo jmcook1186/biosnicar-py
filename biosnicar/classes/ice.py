@@ -2,8 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
-import yaml
 import biosnicar
+from biosnicar.utils.load_inputs import load_inputs
 
 class Ice:
     """Snow or ice column physical properties.
@@ -30,8 +30,7 @@ class Ice:
 
     def __init__(self, input_file):
         # use config to calculate refractive indices
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.dz = inputs["ICE"]["DZ"]
         self.layer_type = inputs["ICE"]["LAYER_TYPE"]
@@ -83,8 +82,7 @@ class Ice:
         if self.rf < 0 or self.rf > 2:
             raise ValueError("Ice ref index type out of range - between 0 and 2 only")
 
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         refidx_file = xr.open_dataset(
             str(os.path.dirname(os.path.dirname(biosnicar.__file__))

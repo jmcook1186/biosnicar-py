@@ -2,8 +2,8 @@ import os
 import math
 import numpy as np
 import xarray as xr
-import yaml
 import biosnicar
+from biosnicar.utils.load_inputs import load_inputs
 
 class Illumination:
     """Properties of incoming irradiance.
@@ -20,8 +20,7 @@ class Illumination:
     """
 
     def __init__(self, input_file):
-        with open(input_file, "r") as ymlfile:
-            inputs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        inputs = load_inputs(input_file)
 
         self.direct = inputs["RTM"]["DIRECT"]
         self.solzen = inputs["RTM"]["SOLZEN"]
@@ -86,6 +85,4 @@ class Illumination:
         else:
             self.Fd = out
             self.Fs = np.zeros(self.nbr_wvl)
-        return
-
         return
