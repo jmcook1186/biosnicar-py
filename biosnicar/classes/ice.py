@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-import yaml
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
 

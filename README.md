@@ -71,6 +71,32 @@ This will run the model with all the default settings. The user will see a list 
 
 Most users will want to experiment with changing input parameters. This is achieved by adjusting the values in the config file `inputs.yaml`. The nature of each parameter is described in in-line annotations to guide the user. Invalid combinations of values will be rejected by our error-checking code. Most users should have no reason to modify any other file in this repository except for those in `inputs.yaml`.
 
+### Parameter Sweeps
+
+For sensitivity analysis or exploring how albedo responds to changing conditions, the `parameter_sweep` function runs the model over the Cartesian product of any supported input parameters and returns a pandas DataFrame:
+
+```python
+from biosnicar.drivers.sweep import parameter_sweep
+
+df = parameter_sweep(
+    params={
+        "solzen": [30, 40, 50, 60, 70],
+        "rds": [100, 200, 500, 1000],
+    }
+)
+
+# Pivot table of broadband albedo
+df.pivot_table(values="BBA", index="solzen", columns="rds").plot()
+```
+
+Supported parameter keys include `solzen`, `direct`, `incoming`, `rds`, `rho`, `dz`, `layer_type`, and `impurity.{i}.conc` (where `i` is the 0-based impurity index). The function also accepts `solver` (`"adding-doubling"` or `"toon"`), `return_spectral=True` to include 480-band spectral albedo in the output, and `progress=True` for a tqdm progress bar.
+
+A complete demo script is provided at `scripts/sweep_demo.py`:
+
+```
+python scripts/sweep_demo.py
+```
+
 More complex applications of the model code, for example, model inversions, field/model comparisons etc are included under `/experiments`, with details provided in that module's own README.
 
 We have also maintained a separate version of the biosnicar codebase that uses a "functional" programming style rather than the object-oriented approach taken here. We refer to this as biosnicar Classic and it is available in the `classic` branch of this repository. it might be useful for people already familiar with FORTRAN or Matlab implementations from previous literature. The two branches are entirely equivalent in their simulations but very different in their programming style. The object-oriented approach is preferred because it is more Pythonic, more flexible and easier to debug.

@@ -1,7 +1,6 @@
 import os
 import math
 import numpy as np
-import yaml
 import biosnicar
 from biosnicar.utils.load_inputs import load_inputs
 
