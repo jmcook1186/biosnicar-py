@@ -2,3 +2,56 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "biosnicar"
+dynamic = ["version"]
+description = "Snow and ice albedo modelling in Python"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "BioSNICAR team", email = "biosnicar@proton.me" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "Development Status :: 3 - Alpha",
+    "Natural Language :: English",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Hydrology",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "miepython",
+    "pandas",
+    "pyyaml",
+    "scipy",
+    "seaborn",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+inverse = ["scikit-learn>=1.0"]
+mcmc    = ["emcee>=3"]
+app     = ["streamlit", "plotly"]
+dev     = ["pytest", "scikit-learn>=1.0", "emcee>=3", "streamlit", "plotly"]
+
+[project.urls]
+"Bug Tracker"   = "https://github.com/jmcook1186/biosnicar-py/issues"
+"Source"        = "https://github.com/jmcook1186/biosnicar-py"
+"Documentation" = "https://biosnicar-go-py.readthedocs.io/en/latest/"
+
+[tool.setuptools.dynamic]
+version = {attr = "biosnicar.__version__"}
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "experiments*", "scripts*"]
