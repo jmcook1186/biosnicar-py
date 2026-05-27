@@ -30,6 +30,7 @@ solid ice layers and fresnel reflection are included.
 """
 
 import numpy as np
+from scipy.ndimage import binary_dilation
 from biosnicar.rt_solvers.smoothing import apply_smoothing_function
 
 from biosnicar.classes.outputs import Outputs
@@ -240,7 +241,20 @@ def adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config):
     )
 
     if model_config.smooth:
-        outputs.albedo = apply_smoothing_function(outputs.albedo, model_config)
+        # Identify bands in total internal reflection (TIR) before smoothing.
+        # At SZA > ~55° the direct beam exceeds the critical angle at ice's
+        # anomalous-dispersion bands (~2.93–3.09 µm), giving albedo = 1.0.
+        # The Savitzky-Golay filter produces large ringing artefacts across
+        # these step discontinuities, undershooting inside TIR and falsely
+        # elevating adjacent bands.  We preserve the raw solver output in the
+        # TIR bands and a guard zone of window_size // 2 bands on each side,
+        # so the polynomial is never fitted across the discontinuity.
+        raw = outputs.albedo.copy()
+        tir_guard = binary_dilation(
+            np.isclose(raw, 1.0), iterations=model_config.window_size // 2
+        )
+        smoothed = apply_smoothing_function(raw, model_config)
+        outputs.albedo = np.where(tir_guard, raw, smoothed)
 
     # Final clamp to [0, 1].  The two-stream approximation can produce
     # slightly unphysical albedo in bands with extreme optical depth

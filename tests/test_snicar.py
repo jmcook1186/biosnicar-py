@@ -686,5 +686,103 @@ def test_var_fuzzer(rds, rho, zen, dust, algae, fuzz, input_file):
     return
 
 
+def test_tir_smoothing_high_sza():
+    """Regression for #111: SG filter must not distort TIR albedo at SZA > ~55°.
+
+    At oblique solar angles the direct beam can exceed the critical angle at
+    ice anomalous-dispersion bands (~2.93–3.09 µm), producing physically exact
+    albedo = 1.0 (total internal reflection, TIR).  The SG smoothing filter
+    previously undershooting TIR bands (0.67–0.95 instead of 1.0) and falsely
+    elevated adjacent guard bands (~0.33 instead of ~0.0004).
+
+    Checks:
+    - TIR bands remain exactly 1.0 after smoothing.
+    - Guard bands (within window // 2 of TIR) deviate < 0.01 from raw values.
+    - All albedo values lie in [0, 1].
+    """
+    from scipy.ndimage import binary_dilation
+
+    input_file = "biosnicar/inputs.yaml"
+    half_w = 7 // 2  # matches default window_size=7
+
+    ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar(
+        input_file
+    )
+    # Solid ice with Fresnel surface — the only configuration that produces TIR
+    ice.layer_type = [1]
+    ice.dz = [0.02]
+    ice.rds = [100]
+    ice.rho = [300]
+    ice.nbr_lyr = 1
+    ice.lwc = [0]
+    ice.lwc_pct_bbl = [0]
+    ice.calculate_refractive_index(input_file)
+    illumination.solzen = 60
+    illumination.calculate_irradiance()
+    for imp in impurities:
+        imp.conc = [0] * ice.nbr_lyr
+
+    ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+    tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config)
+
+    model_config.smooth = False
+    raw = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config).albedo.copy()
+
+    model_config.smooth = True
+    smoothed = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config).albedo.copy()
+
+    tir = np.isclose(raw, 1.0)
+    assert tir.sum() > 0, "Expected TIR bands at SZA=60 for solid ice (layer_type=1)"
+
+    assert np.all(smoothed[tir] == 1.0), (
+        f"TIR bands distorted by smoothing: min={smoothed[tir].min():.4f} "
+        f"(expected 1.0; was as low as 0.67 before fix)"
+    )
+
+    guard = binary_dilation(tir, iterations=half_w) & ~tir
+    if guard.any():
+        max_dev = np.max(np.abs(smoothed[guard] - raw[guard]))
+        assert max_dev < 0.01, (
+            f"Guard bands falsely elevated: max deviation={max_dev:.4f} "
+            f"(was ~0.33 before fix)"
+        )
+
+    assert np.all((smoothed >= 0.0) & (smoothed <= 1.0))
+
+
+def test_tir_smoothing_no_regression_low_sza():
+    """Regression for #111: at SZA=30 (no TIR), smoothing must be unchanged.
+
+    The TIR guard logic must be a strict no-op when no TIR bands exist, so
+    that standard snow configurations are unaffected by the fix.
+    """
+    from scipy.signal import savgol_filter
+
+    input_file = "biosnicar/inputs.yaml"
+
+    ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar(
+        input_file
+    )
+    illumination.solzen = 30
+    illumination.calculate_irradiance()
+
+    ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+    tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config)
+
+    model_config.smooth = False
+    raw = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config).albedo.copy()
+
+    model_config.smooth = True
+    smoothed = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config).albedo.copy()
+
+    assert not np.any(np.isclose(raw, 1.0)), "Unexpected TIR bands at SZA=30"
+
+    # With no TIR bands the guard mask is empty, so output must equal plain SG + clip
+    expected = np.clip(
+        savgol_filter(raw, model_config.window_size, model_config.poly_order), 0.0, 1.0
+    )
+    np.testing.assert_array_equal(smoothed, expected)
+
+
 if __name__ == "__main__":
     pass
