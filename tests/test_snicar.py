@@ -717,7 +717,10 @@ def test_tir_smoothing_high_sza():
     ice.lwc = [0]
     ice.lwc_pct_bbl = [0]
     ice.calculate_refractive_index(input_file)
-    illumination.solzen = 60
+    # Genuine TIR (n_re < 1 gate) fires where n_re < sin(SZA).  Min n_re for
+    # Picard 2016 ice is ~0.954, so SZA must exceed arcsin(0.954) ≈ 72.5°.
+    # Use SZA=80° to exercise the confirmed genuine-TIR path.
+    illumination.solzen = 80
     illumination.calculate_irradiance()
     for imp in impurities:
         imp.conc = [0] * ice.nbr_lyr
@@ -732,7 +735,7 @@ def test_tir_smoothing_high_sza():
     smoothed = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config).albedo.copy()
 
     tir = np.isclose(raw, 1.0)
-    assert tir.sum() > 0, "Expected TIR bands at SZA=60 for solid ice (layer_type=1)"
+    assert tir.sum() > 0, "Expected TIR bands at SZA=80 for solid ice (layer_type=1)"
 
     assert np.all(smoothed[tir] == 1.0), (
         f"TIR bands distorted by smoothing: min={smoothed[tir].min():.4f} "
@@ -782,6 +785,58 @@ def test_tir_smoothing_no_regression_low_sza():
         savgol_filter(raw, model_config.window_size, model_config.poly_order), 0.0, 1.0
     )
     np.testing.assert_array_equal(smoothed, expected)
+
+
+def test_no_false_tir_sza89_4um():
+    """Regression for false-TIR bug: no albedo=1 block at SZA=89, 4-5 µm.
+
+    Before the fix, 70 bands at 4.145-4.835 µm (n_re≈1.34-1.35, n_im≈0.016-0.031)
+    were overridden to Rf=1.0, creating a spurious second TIR block entirely
+    outside the Reststrahlen region.  The physical Fresnel reflectance there is
+    ~0.90 (grazing-angle high reflection), not 1.0.
+
+    After the fix, those bands are computed correctly via the Fresnel formula and
+    albedo stays near 0.90, not 1.0.
+    """
+    input_file = "biosnicar/inputs.yaml"
+    ice, illumination, rt_config, model_config, plot_config, impurities = setup_snicar(
+        input_file
+    )
+    ice.layer_type = [1]
+    ice.dz = [0.02]
+    ice.rds = [100]
+    ice.rho = [300]
+    ice.nbr_lyr = 1
+    ice.lwc = [0]
+    ice.lwc_pct_bbl = [0]
+    ice.calculate_refractive_index(input_file)
+    illumination.solzen = 89
+    illumination.calculate_irradiance()
+    for imp in impurities:
+        imp.conc = [0] * ice.nbr_lyr
+
+    ssa_snw, g_snw, mac_snw = get_layer_OPs(ice, model_config)
+    tau, ssa, g, L_snw = mix_in_impurities(ssa_snw, g_snw, mac_snw, ice, impurities, model_config)
+
+    model_config.smooth = False
+    raw = adding_doubling_solver(tau, ssa, g, L_snw, ice, illumination, model_config).albedo.copy()
+
+    wvl = np.arange(0.205, 4.999, 0.01)
+    false_tir_window = (wvl >= 4.1) & (wvl <= 4.9)
+
+    # After fix: no band in 4.1-4.9 µm should be at 1.0 (n_re≈1.35 there)
+    n_false = np.sum(np.isclose(raw[false_tir_window], 1.0))
+    assert n_false == 0, (
+        f"False TIR at SZA=89 in 4.1-4.9 µm: {n_false} bands incorrectly at 1.0 "
+        "(n_re≈1.35 — outside Reststrahlen; see docs/TIR_CRITERION_BUG.md)"
+    )
+    # Bands should be near 0.85-0.95 (physically correct grazing-angle Fresnel)
+    assert raw[false_tir_window].max() < 0.98, (
+        f"Albedo unexpectedly high in 4.1-4.9 µm at SZA=89: {raw[false_tir_window].max():.4f}"
+    )
+    assert raw[false_tir_window].min() > 0.75, (
+        f"Albedo unexpectedly low in 4.1-4.9 µm at SZA=89: {raw[false_tir_window].min():.4f}"
+    )
 
 
 if __name__ == "__main__":
