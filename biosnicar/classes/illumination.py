@@ -69,7 +69,11 @@ class Illumination:
 
         if self.direct:
             cloud_stub = "_clr_"
-            coszen_stub = str("SZA" + str(self.solzen).rjust(2, "0"))
+            # Build the flux-LUT key from the same rounded integer SZA used for
+            # mu_not above; the archive is keyed by zero-padded integer degrees
+            # (SZA00..SZA89), so a float solzen (e.g. 50.0) must not leak into
+            # the key string (it would yield "SZA50.0" -> KeyError).
+            coszen_stub = f"SZA{int(np.rint(self.solzen)):02d}"
 
         key = self.stubs[self.incoming] + cloud_stub + coszen_stub
         fsds = _get_fsds_data()

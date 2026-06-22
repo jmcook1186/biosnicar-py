@@ -139,20 +139,17 @@ def miecoated(m1, m2, x, y):
 
     """
 
-    # to reduce computing time
-    if x == y:
-        return mie(m1, y)
-
-    # to avoid a singularity at x=0
-    elif x == 0:
-        return mie(m2, y)
-
-    # to reduce computing time
-    elif m1 == m2:
-        return mie(m1, y)
+    # Degenerate cases (no coating x==y, uniform composition m1==m2) reduce to a
+    # homogeneous sphere and are computed correctly by the general routine below.
+    # A zero inner radius is the only genuine singularity (the Riccati-Bessel
+    # recursion divides by x), so nudge it to a negligible value -> effectively a
+    # homogeneous sphere of the coating material.  (These cases previously called
+    # the miepython *module* as a function, raising TypeError if ever reached.)
+    if x == 0:
+        x = 1e-12
 
     # this is the normal situation
-    elif x > 0:
+    if x > 0:
         nmax = int(round(2 + y + 4 * y ** (1 / 3)))
         n1 = nmax - 1
         n = np.arange(1, nmax + 1, 1)
@@ -183,7 +180,7 @@ def miecoated(m1, m2, x, y):
         qsca = 2 * q / y2
         qabs = qext - qsca
         fn = (f[0, :] - f[1, :]) * cn
-        gn = (-1) ^ n
+        gn = (-1.0) ** n
         f_3 = fn * gn
         q = sum(f_3)
         qb = q * q.conj() / y2
@@ -238,8 +235,8 @@ def miecoated_driver(rice, rwater, fn_ice, rf_ice, fn_water, wvl):
     # density of water at 1 degree C in kg m-3
     WatDensity = 999
 
-    # density of ice in kg m-3
-    IceDensity = 934
+    # density of ice in kg m-3 (unified with the rest of the codebase; was 934)
+    IceDensity = 917
 
     IceVol = 4 / 3 * np.pi * rice**3
     WatVol = (4 / 3 * np.pi * rwater**3) - IceVol

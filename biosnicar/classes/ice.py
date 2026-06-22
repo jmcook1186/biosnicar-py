@@ -19,7 +19,7 @@ class Ice:
         cdom: array containing Boolean (1/0) toggling presence of cdom in each layer
         rho: array containing density of each layer in kg/m3
         sfc: array with reflectance of underlying surface per wavelength
-        rf: refractive index to use, 0,1,2 or 3 (see docs for definition)
+        rf: refractive index to use, 0, 1 or 2 (see docs for definition)
         shp: grain shape per layer where layer_type==1
         rds: grain radius (layer_type==0) or bubble radius (layer_type==0) in each layer
         water: radius of grain+water coating in each layer where layer_type==0
