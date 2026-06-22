@@ -150,8 +150,9 @@ def calc_optical_params(
     ssa_list, g_list = calc_ssa_and_g(ar, V, Area, reals, imags, wavelengths)
 
     # Absorption cross section and mass absorption coefficient
+    # (density 917 kg/m3 — unified with the rest of the codebase; was 914)
     absXS = Area * (1 - np.exp(-4 * np.pi * imags * V / (Area * wavelengths)))
-    mac_list = absXS / V * 914
+    mac_list = absXS / V * 917
 
     if plots:
         plt.figure(1)
