@@ -21,6 +21,23 @@ def test_override_solzen_changes_bba():
     assert out1.BBA != out2.BBA
 
 
+def test_float_solzen_does_not_raise():
+    """A float solar zenith angle must not raise (regression).
+
+    The solar-flux LUT is keyed by zero-padded integer degrees (SZA00..SZA89),
+    while the public API documents solzen as a float. A float (or single-digit)
+    zenith must round to the integer key rather than leaking "SZA50.0" into the
+    lookup and raising KeyError.
+    """
+    integer = run_model(solzen=50)
+    for sz in (50.0, 49.6, 5, 5.0):
+        out = run_model(solzen=sz)
+        assert 0 < out.BBA < 1
+    # 50.0 and 49.6 both round to 50 -> identical result to the integer call
+    assert run_model(solzen=50.0).BBA == integer.BBA
+    assert run_model(solzen=49.6).BBA == integer.BBA
+
+
 def test_override_rds_changes_bba():
     """Changing grain radius produces a different BBA."""
     out1 = run_model(rds=200)

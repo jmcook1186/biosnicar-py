@@ -480,7 +480,7 @@ def correct_for_asphericity(ice, g_snw, ssa_snw, i, model_config):
         # Eqn. 3.1 in Fu (2007)
         gg_snw_F07_tmp = g_f07_c0 + g_f07_c1 * ar_tmp + g_f07_c2 * ar_tmp**2
 
-    # 3=hexagonal plate,
+    # 2 = hexagonal plate,
     # He et al. 2017 parameterization
     if ice.shp[i] == 2:
 
@@ -515,7 +515,7 @@ def correct_for_asphericity(ice, g_snw, ssa_snw, i, model_config):
             g_f07_p0 + g_f07_p1 * np.log(ar_tmp) + g_f07_p2 * (np.log(ar_tmp)) ** 2
         )
 
-    # 4=koch snowflake,
+    # 3 = koch snowflake,
     # He et al. (2017)
     #  parameterization
     if ice.shp[i] == 3:
