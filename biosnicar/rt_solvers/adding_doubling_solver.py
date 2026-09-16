@@ -817,8 +817,14 @@ def calc_correction_fresnel_layer(
     Rf_dir_a = 0.5 * (R1**2 + R2**2)
     Tf_dir_a = 0.5 * (T1**2 + T2**2) * nr * mu0n / mu0
 
-    # Total internal reflection: override where beam_angle >= critical_angle
-    tir = beam_angle >= critical_angle[:nbr_wvl].real
+    # Restrict TIR detection to the Reststrahlen anomalous-dispersion band
+    # (~2.5–4.0 µm).  Outside this window the complex-arcsin criterion misfires
+    # at near-grazing SZA because any nonzero k causes arcsin(n+ik).real to dip
+    # just below π/2, spuriously triggering the override on normal-ice bands.
+    # See docs/TIR_CRITERION_BUG.md.
+    wvl = 0.205 + np.arange(nbr_wvl) * 0.01
+    in_reststrahlen = (wvl >= 2.5) & (wvl <= 4.0)
+    tir = in_reststrahlen & (beam_angle >= critical_angle[:nbr_wvl].real)
     Rf_dir_a[tir] = 1.0
     Tf_dir_a[tir] = 0.0
 
