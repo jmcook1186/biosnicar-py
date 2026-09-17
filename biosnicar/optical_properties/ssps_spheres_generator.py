@@ -23,10 +23,10 @@ import os
 import time
 
 import numpy as np
-import miepython as mie
 import pandas as pd
 
 import biosnicar
+from biosnicar.utils.optional_deps import import_miepython
 
 _DATA = str(biosnicar.DATA_DIR)
 
@@ -229,6 +229,7 @@ def n(r, re):
 def compute_ops_of_single_sized_spheres(
     wvl, n_in, k_in, n_ext, sz_min, sz_max, sz_nbr, path_to_save_temp, filename
 ):
+    mie = import_miepython()
     rds = np.logspace(np.log10(sz_min), np.log10(sz_max), sz_nbr)
 
     start = time.time()

@@ -6,7 +6,6 @@ German Research Centre for Geosciences (GFZ, <https://www.gfz-potsdam.de>)
 """
 import numpy as np
 import pandas as pd
-import miepython as mie
 from scipy.interpolate import interp1d
 from scipy.special import jv, yv
 from tqdm import tqdm

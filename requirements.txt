@@ -2,7 +2,6 @@ streamlit
 numpy
 pandas
 matplotlib
-miepython
 scipy
 seaborn
 tqdm

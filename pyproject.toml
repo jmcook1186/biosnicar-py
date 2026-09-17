@@ -7,7 +7,7 @@ name = "biosnicar"
 dynamic = ["version"]
 description = "Snow and ice albedo modelling in Python"
 readme = "README.md"
-license = "MIT"
+license = { text = "MIT"}
 authors = [{ name = "BioSNICAR team", email = "biosnicar@proton.me" }]
 requires-python = ">=3.10"
 classifiers = [
@@ -27,11 +27,11 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Hydrology",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
     "Topic :: Utilities",
+    "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
     "numpy",
     "matplotlib",
-    "miepython",
     "pandas",
     "pyyaml",
     "scipy",
@@ -43,7 +43,8 @@ dependencies = [
 inverse = ["scikit-learn>=1.0"]
 mcmc    = ["emcee>=3"]
 app     = ["streamlit", "plotly"]
-dev     = ["pytest", "scikit-learn>=1.0", "emcee>=3", "streamlit", "plotly"]
+mie     = ["miepython"]
+dev     = ["pytest", "scikit-learn>=1.0", "emcee>=3", "streamlit", "plotly", "miepython"]
 
 [project.urls]
 "Bug Tracker"   = "https://github.com/jmcook1186/biosnicar-py/issues"
